@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
@@ -106,6 +107,8 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                 .add(ModItems.IRON_PLATE.get());
         this.tag(ItemTags.create(ResourceLocation.parse("c:plates/steel")))
                 .add(ModItems.STEEL_PLATE.get());
+        this.tag(ItemTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
+                .add(ModBlocks.STEEL_BLOCK.get().asItem());
 
         this.tag(ItemTags.HEAD_ARMOR)
                 .add(ModItems.STEEL_HELMET.get())
