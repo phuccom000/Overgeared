@@ -1,8 +1,8 @@
 {
   "type": "overgeared:rock_knapping",
   "pattern": [
-    "x",
-    "x"
+    " x",
+    " x"
   ],
   "result": {
     "id": "overgeared:stone_sword_blade",
