@@ -1,6 +1,9 @@
 package net.stirdrem.overgeared.recipe;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -527,13 +530,35 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
             return !requiresHeated || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
         }
 
-        /* ---------------- JSON Codec ---------------- */
+        public static final Codec<ForgingIngredient> CODEC = new Codec<>() {
+            private <T> boolean getBool(DynamicOps<T> ops, T input, String key) {
+                return ops.get(input, key).flatMap(ops::getBooleanValue).result().orElse(false);
+            }
 
-        public static final Codec<ForgingIngredient> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-                Ingredient.CODEC.fieldOf("item").forGetter(ForgingIngredient::ingredient),
-                Codec.BOOL.optionalFieldOf("requires_heated", false).forGetter(ForgingIngredient::requiresHeated),
-                Codec.BOOL.optionalFieldOf("transfer_nbt", false).forGetter(ForgingIngredient::transferNBT)
-        ).apply(inst, ForgingIngredient::new));
+            @Override
+            public <T> DataResult<Pair<ForgingIngredient, T>> decode(DynamicOps<T> ops, T input) {
+                return Ingredient.CODEC.parse(ops, input).map(ing -> Pair.of(
+                        new ForgingIngredient(ing, getBool(ops, input, "requires_heated"), getBool(ops, input, "transfer_nbt")),
+                        input
+                ));
+            }
+
+            @Override
+            public <T> DataResult<T> encode(ForgingIngredient input, DynamicOps<T> ops, T prefix) {
+                return Ingredient.CODEC.encode(input.ingredient, ops, prefix).flatMap(encoded -> {
+                    if (!input.requiresHeated && !input.transferNBT) return DataResult.success(encoded);
+                    
+                    DataResult<T> result = DataResult.success(encoded);
+                    if (input.requiresHeated) {
+                        result = result.flatMap(m -> ops.mergeToMap(m, ops.createString("requires_heated"), ops.createBoolean(true)));
+                    }
+                    if (input.transferNBT) {
+                        result = result.flatMap(m -> ops.mergeToMap(m, ops.createString("transfer_nbt"), ops.createBoolean(true)));
+                    }
+                    return result;
+                });
+            }
+        };
 
         /* ---------------- Network Codec ---------------- */
 
