@@ -13,16 +13,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.networking.packet.KnappingChipC2SPacket;
+import org.jetbrains.annotations.NotNull;
 
 import static net.minecraft.sounds.SoundEvents.STONE_BREAK;
 
 public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu> {
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/rock_knapping_gui.png");
     private static final ResourceLocation CHIPPED_TEXTURE = OvergearedMod.loc("textures/gui/blank.png");
-    private static final ResourceLocation UNCHIPPED_TEXTURE =
-            ResourceLocation.parse("minecraft:textures/block/stone.png");
-    private static final WidgetSprites WIDGET_SPRITES = new
-            WidgetSprites(UNCHIPPED_TEXTURE, CHIPPED_TEXTURE, UNCHIPPED_TEXTURE, CHIPPED_TEXTURE);
+    private static final ResourceLocation DEFAULT_UNCHIPPED = ResourceLocation.tryBuild("minecraft", "textures/block/stone.png");
 
     private static final int GRID_ORIGIN_X = 32;
     private static final int GRID_ORIGIN_Y = 19;
@@ -39,28 +37,24 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
     protected void init() {
         super.init();
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
-        addKnappingButtons(); // Build initial button states
+        addKnappingButtons();
     }
 
     @Override
     protected void containerTick() {
         super.containerTick();
         if (menu.isKnappingFinished()) {
-            this.clearWidgets(); // Clears old buttons
+            this.clearWidgets();
         }
     }
 
     private void addKnappingButtons() {
-        this.clearWidgets(); // Clears old buttons
+        this.clearWidgets();
 
         if (menu.isKnappingFinished()) return;
 
         boolean hasResult = !menu.getSlot(9).getItem().isEmpty();
-        boolean resultCollected = menu.isResultCollected(); // Need to track this in menu
-
-        // Knapping is only finished when result is collected
-        // Allow continuing knapping if there's a result, but it hasn't been collected
-        boolean canContinueKnapping = hasResult && !resultCollected;
+        boolean resultCollected = menu.isResultCollected();
 
         for (int i = 0; i < 9; i++) {
             int col = i % 3;
@@ -71,10 +65,12 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
             final int index = i;
             boolean isChipped = menu.isChipped(i);
 
+            // Determine texture for this specific button
+            WidgetSprites buttonSprites = getWidgetSprites(isChipped, resultCollected);
 
-            ImageButton button = new KnappingImageButton(x, y, SLOT_SIZE, SLOT_SIZE, WIDGET_SPRITES,
+            ImageButton button = new KnappingImageButton(x, y, SLOT_SIZE, SLOT_SIZE, buttonSprites,
                     btn -> {
-                        if ((!hasResult || canContinueKnapping) && !isChipped) {
+                        if ((!hasResult || (!resultCollected && hasResult)) && !isChipped) {
                             menu.setChip(index);
                             if (!resultCollected) {
                                 PacketDistributor.sendToServer(new KnappingChipC2SPacket(index));
@@ -83,10 +79,31 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
                         }
                     }
             );
+
+            // Set button to inactive if already chipped
+            button.active = !isChipped;
+
             this.addRenderableWidget(button);
         }
     }
 
+    private @NotNull WidgetSprites getWidgetSprites(boolean isChipped, boolean resultCollected) {
+        ResourceLocation currentTexture;
+        if (isChipped || resultCollected) {
+            currentTexture = CHIPPED_TEXTURE;
+        } else {
+            // Get the current unchipped texture from menu
+            currentTexture = menu.getUnchippedTexture() != null ? menu.getUnchippedTexture() : DEFAULT_UNCHIPPED;
+        }
+
+        // Create WidgetSprites for this button
+        return new WidgetSprites(
+                currentTexture,  // enabled, not hovered
+                CHIPPED_TEXTURE,  // enabled, hovered
+                currentTexture, // disabled, not hovered
+                CHIPPED_TEXTURE  // disabled, hovered
+        );
+    }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
@@ -104,7 +121,6 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
         int x = this.leftPos;
         int y = this.topPos;
 
-        // Draw main background
         graphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
     }
 
@@ -129,8 +145,7 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
         @Override
         public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             ResourceLocation resourceLocation = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-            // we're using guiGraphics.blit instead of blitSprite because our textures are not in the gui atlas
-            guiGraphics.blit(resourceLocation, this.getX(), this.getY(), 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+            guiGraphics.blit(resourceLocation, this.getX(), this.getY(), 0, 0, width, height, width, height);
         }
     }
 }

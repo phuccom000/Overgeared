@@ -35,9 +35,9 @@ import java.util.*;
  */
 @EmiEntrypoint
 public class OvergearedEmiPlugin implements EmiPlugin {
-    
+
     public static final EmiStack WORKSTATION = EmiStack.of(ModBlocks.SMITHING_ANVIL.get());
-    
+
     public static final EmiRecipeCategory FORGING_CATEGORY = new EmiRecipeCategory(
             OvergearedMod.loc("forging"),
             WORKSTATION,
@@ -48,7 +48,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             return Component.translatable("gui.overgeared.smithing_anvil");
         }
     };
-    
+
     public static final EmiStack KNAPPING_WORKSTATION = EmiStack.of(ModItems.ROCK.get());
     public static final EmiRecipeCategory KNAPPING_CATEGORY = new EmiRecipeCategory(
             OvergearedMod.loc("rock_knapping"),
@@ -60,7 +60,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             return Component.translatable("gui.overgeared.rock_knapping");
         }
     };
-    
+
     public static final EmiStack ALLOY_WORKSTATION = EmiStack.of(ModBlocks.ALLOY_FURNACE.get());
     public static final EmiRecipeCategory ALLOY_SMELTING_CATEGORY = new EmiRecipeCategory(
             OvergearedMod.loc("alloy_smelting"),
@@ -108,7 +108,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             return Component.translatable("container.overgeared.casting_furnace");
         }
     };
-    
+
     // Priority for sorting recipes by category
     private static final Map<String, Integer> CATEGORY_PRIORITY = Map.of(
             "tool_head", 0,
@@ -117,33 +117,33 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             "plate", 3,
             "misc", 4
     );
-    
+
     @Override
     public void register(EmiRegistry registry) {
         OvergearedMod.LOGGER.info("Registering EMI plugin for Overgeared recipes.");
-        
+
         // Register the forging category
         registry.addCategory(FORGING_CATEGORY);
-        
+
         // Register all smithing anvil blocks as workstations (ordered by tier: Stone -> Iron -> A -> B)
         registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.STONE_SMITHING_ANVIL.get()));
         registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.SMITHING_ANVIL.get()));
         registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.TIER_A_SMITHING_ANVIL.get()));
         registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.TIER_B_SMITHING_ANVIL.get()));
-        
+
         // Register Knapping
         registry.addCategory(KNAPPING_CATEGORY);
-        registry.addWorkstation(KNAPPING_CATEGORY, KNAPPING_WORKSTATION);
-        
+        //registry.addWorkstation(KNAPPING_CATEGORY, KNAPPING_WORKSTATION);
+
         for (RecipeHolder<RockKnappingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.KNAPPING.get())) {
             registry.addRecipe(new KnappingEmiRecipe(holder));
         }
-        
+
         // Register Alloy Smelting
         registry.addCategory(ALLOY_SMELTING_CATEGORY);
         registry.addWorkstation(ALLOY_SMELTING_CATEGORY, ALLOY_WORKSTATION);
         registry.addWorkstation(ALLOY_SMELTING_CATEGORY, NETHER_ALLOY_WORKSTATION); // Nether alloy smelter can also do basic alloy smelting? Usually yes.
-        
+
         for (RecipeHolder<AlloySmeltingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.ALLOY_SMELTING.get())) {
             registry.addRecipe(new AlloySmeltingEmiRecipe(holder));
         }
@@ -151,57 +151,57 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         // Register Nether Alloy Smelting
         registry.addCategory(NETHER_ALLOY_SMELTING_CATEGORY);
         registry.addWorkstation(NETHER_ALLOY_SMELTING_CATEGORY, NETHER_ALLOY_WORKSTATION);
-        
+
         for (RecipeHolder<NetherAlloySmeltingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.NETHER_ALLOY_SMELTING.get())) {
             registry.addRecipe(new NetherAlloySmeltingEmiRecipe(holder));
         }
-        
+
         // Register Fletching
         registry.addCategory(FLETCHING_CATEGORY);
         registry.addWorkstation(FLETCHING_CATEGORY, FLETCHING_WORKSTATION);
-        
+
         for (RecipeHolder<FletchingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FLETCHING.get())) {
             registry.addRecipe(new FletchingEmiRecipe(holder));
         }
-        
+
         // Register Casting
         registry.addCategory(CASTING_CATEGORY);
         registry.addWorkstation(CASTING_CATEGORY, CASTING_WORKSTATION);
-        
+
         for (RecipeHolder<CastingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.CASTING.get())) {
             registry.addRecipe(new CastingEmiRecipe(holder));
         }
-        
+
         // Collect and sort all forging recipes
         List<RecipeHolder<ForgingRecipe>> allRecipes = new ArrayList<>(
                 registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FORGING.get())
         );
-        
+
         // Sort recipes by category priority, then alphabetically by output name
         allRecipes.sort((a, b) -> {
             String catA = categorizeRecipe(a.value());
             String catB = categorizeRecipe(b.value());
-            
+
             int priorityA = CATEGORY_PRIORITY.getOrDefault(catA, 999);
             int priorityB = CATEGORY_PRIORITY.getOrDefault(catB, 999);
-            
+
             if (priorityA != priorityB) {
                 return Integer.compare(priorityA, priorityB);
             }
-            
+
             // Fallback: alphabetical by display name
             return a.value().getResultItem(null).getDisplayName().getString()
                     .compareToIgnoreCase(b.value().getResultItem(null).getDisplayName().getString());
         });
-        
+
         // Add sorted recipes
         for (RecipeHolder<ForgingRecipe> holder : allRecipes) {
             registry.addRecipe(new ForgingEmiRecipe(holder));
         }
-        
+
         OvergearedMod.LOGGER.info("EMI plugin registered successfully.");
     }
-    
+
     /**
      * Categorize a recipe for sorting purposes.
      */
@@ -215,5 +215,5 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         }
         return "misc";
     }
-    
+
 }

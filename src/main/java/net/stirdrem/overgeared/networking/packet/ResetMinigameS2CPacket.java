@@ -32,7 +32,7 @@ public record ResetMinigameS2CPacket(BlockPos anvilPos) implements CustomPacketP
             if (!(context.player() instanceof ServerPlayer player)) return;
             BlockEntity be = player.level().getBlockEntity(payload.anvilPos);
             if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) return;
-            String quality = anvil.minigameQuality();
+            String quality = anvil.minigameQuality().getDisplayName();
             OvergearedMod.LOGGER.debug(
                     "Resetting minigame for {} at anvil {} with quality {}",
                     player.getName().getString(), payload.anvilPos, quality

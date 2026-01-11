@@ -213,6 +213,10 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                 .add(
                         Items.LAVA_BUCKET
                 );
+        this.tag(ModTags.Items.KNAPPABLES)
+                .add(
+                        ModItems.ROCK.get()
+                );
         this.tag(ModTags.Items.TOOL_CAST)
                 .add(
                         ModItems.CLAY_TOOL_CAST.get(),

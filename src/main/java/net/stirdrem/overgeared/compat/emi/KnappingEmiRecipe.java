@@ -8,7 +8,9 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.resources.ResourceLocation;
 
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 
@@ -64,26 +66,27 @@ public class KnappingEmiRecipe implements EmiRecipe {
     public void addWidgets(WidgetHolder widgets) {
         int startX = 4;
         int startY = 4;
-        
+
         // Input Slot
         widgets.addSlot(inputs.get(0), startX, startY + EmiLayoutConstants.SLOT_SIZE);
-        
+
         // Grid starts after input slot + padding
         int gridStartX = startX + 24;
 
         boolean[][] pattern = recipe.pattern();
-        
+
+
         // Draw stones based on exact grid position
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 3; c++) {
                 if (pattern[r][c]) {
-                    widgets.addTexture(STONE_TEXTURE, 
-                        gridStartX + c * EmiLayoutConstants.SLOT_SIZE, 
-                        startY + r * EmiLayoutConstants.SLOT_SIZE, 
-                        EmiLayoutConstants.SLOT_SIZE, EmiLayoutConstants.SLOT_SIZE, 
-                        0, 0, 
-                        16, 16, 
-                        16, 16
+                    widgets.addTexture(resolveUnchippedTexture(recipe),
+                            gridStartX + c * EmiLayoutConstants.SLOT_SIZE,
+                            startY + r * EmiLayoutConstants.SLOT_SIZE,
+                            EmiLayoutConstants.SLOT_SIZE, EmiLayoutConstants.SLOT_SIZE,
+                            0, 0,
+                            16, 16,
+                            16, 16
                     );
                 }
             }
@@ -96,4 +99,19 @@ public class KnappingEmiRecipe implements EmiRecipe {
         // Output
         widgets.addSlot(outputs.getFirst(), gridStartX + gridSize + 32, startY + EmiLayoutConstants.SLOT_SIZE - 4).large(true).recipeContext(this);
     }
+
+    private ResourceLocation resolveUnchippedTexture(RockKnappingRecipe recipe) {
+        ItemStack[] stacks = recipe.getIngredient().getItems();
+
+        for (ItemStack stack : stacks) {
+            ResourceLocation tex = KnappingResourceReloadListener.getTexture(stack);
+            if (tex != null) {
+                return tex;
+            }
+        }
+
+        // Fallback if no datapack entry exists
+        return STONE_TEXTURE;
+    }
+
 }

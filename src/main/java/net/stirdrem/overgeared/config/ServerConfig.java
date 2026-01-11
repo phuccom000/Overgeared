@@ -91,7 +91,6 @@ public class ServerConfig {
     public static final ModConfigSpec.IntValue QUALITY_WEIGHT_PERFECT;
     public static final ModConfigSpec.IntValue QUALITY_WEIGHT_MASTER;
     public static final ModConfigSpec.ConfigValue<List<? extends List<?>>> CASTING_TOOL_TYPES;
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> MATERIAL_TYPES;
     public static final ModConfigSpec.ConfigValue<List<? extends List<?>>> MATERIAL_SETTING;
     public static final ModConfigSpec.BooleanValue ENABLE_CASTING;
     public static ModConfigSpec.IntValue DEFAULT_ZONE_STARTING_SIZE;
@@ -367,20 +366,6 @@ public class ServerConfig {
                                 list.size() == 2 &&
                                 list.get(0) instanceof String &&
                                 list.get(1) instanceof Number
-                );
-
-
-        MATERIAL_TYPES = builder
-                .comment("Material Types: [material_id]")
-                .defineListAllowEmpty(
-                        List.of("materialTypes"),
-                        () -> List.of(
-                                "iron",
-                                "gold",
-                                "copper",
-                                "steel"
-                        ),
-                        entry -> entry instanceof String
                 );
 
 

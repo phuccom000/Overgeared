@@ -1,7 +1,9 @@
 package net.stirdrem.overgeared.screen;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,9 +19,11 @@ import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
 import net.stirdrem.overgeared.item.custom.KnappableRockItem;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
+import net.stirdrem.overgeared.util.ModTags;
 
 public class RockKnappingMenu extends AbstractContainerMenu {
     private final Container craftingGrid = new SimpleContainer(9); // 3x3 grid
@@ -55,14 +59,18 @@ public class RockKnappingMenu extends AbstractContainerMenu {
         ItemStack mainHandItem = player.getMainHandItem();
         ItemStack offHandItem = player.getOffhandItem();
 
-        if (mainHandItem.getItem() instanceof KnappableRockItem) {
+        boolean valid = false;
+
+        if (mainHandItem.is(ModTags.Items.KNAPPABLES)) {
             this.inputRock = mainHandItem.copy();
-        } else if (offHandItem.getItem() instanceof KnappableRockItem) {
+            valid = true;
+        } else if (offHandItem.is(ModTags.Items.KNAPPABLES)) {
             this.inputRock = offHandItem.copy();
-        } else {
-            // No knappable rock found - close the menu
-            playerInv.player.closeContainer();
-            return;
+            valid = true;
+        }
+
+        if (!valid) {
+            this.inputRock = ItemStack.EMPTY; // dummy
         }
 
         // Add player inventory slots
@@ -125,6 +133,14 @@ public class RockKnappingMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; ++col) {
             this.addSlot(new Slot(playerInv, col, 8 + col * 18, 142));
         }
+    }
+
+    public ResourceLocation getUnchippedTexture() {
+        return KnappingResourceReloadListener.getTexture(inputRock);
+    }
+
+    public SoundEvent getSound() {
+        return KnappingResourceReloadListener.getSound(inputRock);
     }
 
     @Override
@@ -243,8 +259,8 @@ public class RockKnappingMenu extends AbstractContainerMenu {
             // Remove chip (make unchipped)
             craftingGrid.setItem(index, ItemStack.EMPTY);
         } else {
-            // Add chip (make chipped) - using a marker item
-            craftingGrid.setItem(index, new ItemStack(net.minecraft.world.item.Items.FLINT));
+            // Add chip (make chipped)
+            craftingGrid.setItem(index, new ItemStack(inputRock.getItem()));
         }
 
         updateResult();

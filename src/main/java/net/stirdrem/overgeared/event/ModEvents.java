@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -114,22 +115,31 @@ public class ModEvents {
     }
 
     private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus) {
-        List<ItemAttributeModifiers.Entry> originalModifiers = event.getModifiers();
+        // Get all modifiers currently on the item
+        var modifiers = event.getModifiers();
 
-        Holder<Attribute> attributeHolder = new Holder.Direct<>(attribute);
-
-        List<ItemAttributeModifiers.Entry> matchingEntries = originalModifiers.stream()
-                .filter(entry -> entry.attribute().equals(attributeHolder))
+        // Filter for the target attribute
+        var targetModifiers = modifiers.stream()
+                .filter(entry -> entry.attribute().is(BuiltInRegistries.ATTRIBUTE.wrapAsHolder(attribute)))
                 .toList();
 
-        if (matchingEntries.isEmpty()) return;
+        // Modify each one
+        for (var entry : targetModifiers) {
+            AttributeModifier originalModifier = entry.modifier();
 
-        for (ItemAttributeModifiers.Entry entry : matchingEntries) {
-            AttributeModifier modifier = entry.modifier();
-            if (modifier.amount() == 0) continue;
+            if (originalModifier.amount() == 0) {
+                continue;
+            }
 
-            event.removeModifier(attributeHolder, modifier.id());
-            event.addModifier(attributeHolder, createModifiedAttribute(modifier, bonus), entry.slot());
+            // Remove original
+            event.removeModifier(entry.attribute(), originalModifier.id());
+
+            // Add modified version
+            event.addModifier(
+                    entry.attribute(),
+                    createModifiedAttribute(originalModifier, bonus),
+                    entry.slot()
+            );
         }
     }
 
@@ -243,7 +253,7 @@ public class ModEvents {
                 ModItemInteractEvents.playerAnvilPositions.remove(playerId);
                 ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
                 Block block = player.level().getBlockState(anvilPos).getBlock();
-                blueprintQuality = anvil.minigameQuality();
+                blueprintQuality = anvil.minigameQuality().getDisplayName();
                 /*if (block instanceof AbstractSmithingAnvilNew anvilNew) {
                     anvilNew.setMinigameOn(false);
                 }*/
@@ -266,7 +276,7 @@ public class ModEvents {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
-            quality = anvil.minigameQuality();
+            quality = anvil.minigameQuality().getDisplayName();
         }
         AnvilMinigameEvents.reset(quality);
         Block block = player.level().getBlockState(anvilPos).getBlock();
@@ -286,7 +296,7 @@ public class ModEvents {
             anvil.setChanged();
             anvil.setMinigameOn(false);
             anvil.clearOwner(); // Clear ownership from the anvil itself
-            quality = anvil.minigameQuality();
+            quality = anvil.minigameQuality().getDisplayName();
         }
 
         AnvilMinigameEvents.reset(quality);
@@ -349,6 +359,10 @@ public class ModEvents {
                     .withStyle(ChatFormatting.RED));
         }
 
+        if (stack.is(ModTags.Items.KNAPPABLES)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.knappable")
+                    .withStyle(ChatFormatting.GRAY));
+        }
 
         // Smithing Hammer special tooltip
         if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {

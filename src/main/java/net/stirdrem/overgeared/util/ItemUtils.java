@@ -1,16 +1,24 @@
 package net.stirdrem.overgeared.util;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.components.ModComponents;
+import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
+import org.checkerframework.common.aliasing.qual.Unique;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -80,5 +88,24 @@ public final class ItemUtils {
         // Remove heated-related components (we're cooling the item)
         target.remove(ModComponents.HEATED_COMPONENT);
         target.remove(ModComponents.HEATED_TIME);
+    }
+
+    @Unique
+    public static boolean isDurabilityBlacklisted(ItemStack stack) {
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
+
+        for (String entry : blacklist) {
+            if (entry.startsWith("#")) {
+                // Handle tag entries like "#forge:tools/hammers"
+                ResourceLocation tagId = ResourceLocation.tryParse(entry.substring(1));
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
+                if (stack.is(tag)) return true;
+            } else {
+                // Handle direct item IDs
+                if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
+            }
+        }
+        return DurabilityBlacklistReloadListener.isBlacklisted(stack);
     }
 }

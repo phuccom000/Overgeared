@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ForgingQualityHelper;
+import net.stirdrem.overgeared.util.ItemUtils;
 import net.stirdrem.overgeared.util.ModTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,6 +51,43 @@ public abstract class ItemStackMixin {
             float multiplier = quality.getDamageMultiplier();
             cir.setReturnValue(baseSpeed * multiplier);
         }
+    }
+
+    @Inject(
+            method = "getMaxDamage()I",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void modifyDurabilityBasedOnQuality(CallbackInfoReturnable<Integer> cir) {
+        ItemStack stack = (ItemStack) (Object) this;
+
+        if (!stack.isDamageableItem()) {
+            return;
+        }
+
+        int originalDurability = cir.getReturnValue();
+        boolean blacklisted = ItemUtils.isDurabilityBlacklisted(stack);
+
+        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
+        int newBaseDurability = blacklisted ? originalDurability : (int) (originalDurability * baseMultiplier);
+
+        // Apply quality multiplier
+        if (stack.has(ModComponents.FORGING_QUALITY)) {
+            float multiplier = ForgingQualityHelper.getQualityMultiplier(stack);
+            newBaseDurability = (int) (newBaseDurability * multiplier);
+        }
+
+        // Apply durability reductions
+        if (stack.has(ModComponents.REDUCED_GRIND_COUNT)) {
+            Integer reductions = stack.get(ModComponents.REDUCED_GRIND_COUNT.get());
+            if (reductions != null) {
+                float durabilityPenaltyMultiplier = 1.0f - (reductions * ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue());
+                durabilityPenaltyMultiplier = Math.max(0.1f, durabilityPenaltyMultiplier);
+                newBaseDurability = (int) (newBaseDurability * durabilityPenaltyMultiplier);
+            }
+        }
+
+        cir.setReturnValue(newBaseDurability);
     }
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))

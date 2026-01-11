@@ -34,6 +34,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
@@ -52,7 +53,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
-    protected static String quality = null;
+    protected static ForgingQuality quality = null;
     protected static AnvilTier tier;
 
     public AbstractSmithingAnvil(AnvilTier anvilTier, Properties properties) {
@@ -60,12 +61,12 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         tier = anvilTier;
     }
 
-    public String getQuality() {
+    public ForgingQuality getQuality() {
         // Return current quality or default if null
-        return quality != null ? quality : "none";
+        return quality != null ? quality : ForgingQuality.NONE;
     }
 
-    public static void setQuality(String quality) {
+    public static void setQuality(ForgingQuality quality) {
         AbstractSmithingAnvil.quality = quality;
     }
 
@@ -83,9 +84,9 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
             if (blockEntity instanceof AbstractSmithingAnvilBlockEntity) {
                 ((AbstractSmithingAnvilBlockEntity) blockEntity).drops();
 
-                 if (!pLevel.isClientSide()) {
-                     ModEvents.resetMinigameForAnvil(pLevel, pPos);
-                 }
+                if (!pLevel.isClientSide()) {
+                    ModEvents.resetMinigameForAnvil(pLevel, pPos);
+                }
             }
         }
         super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
@@ -93,7 +94,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
-                                                Player player, BlockHitResult hit) {
+                                               Player player, BlockHitResult hit) {
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) {
             return InteractionResult.PASS;
@@ -109,7 +110,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
             if (currentOwner != null && !currentOwner.equals(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
                 Player ownerPlayer = level.getPlayerByUUID(currentOwner);
                 String ownerName = ownerPlayer != null ? ownerPlayer.getDisplayName().getString() : "Another player";
-                
+
                 serverPlayer.sendSystemMessage(
                         Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
                                 .withStyle(ChatFormatting.RED),
@@ -137,7 +138,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
             if (player.isCrouching()) {
                 return ItemInteractionResult.SUCCESS; // Let server handle opening menu
             }
-            
+
             if (anvil.hasRecipe() && isHammer) {
                 // Check if this is our anvil
                 BlockPos ourAnvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
@@ -145,7 +146,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     // Not our anvil - don't process hit
                     return ItemInteractionResult.SUCCESS;
                 }
-                
+
                 // Check if minigame is visible (quality recipe with minigame enabled)
                 if (AnvilMinigameEvents.isVisible()) {
                     // Process the hit client-side to update minigame state
@@ -172,7 +173,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
             if (currentOwner != null && !currentOwner.equals(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
                 Player ownerPlayer = level.getPlayerByUUID(currentOwner);
                 String ownerName = ownerPlayer != null ? ownerPlayer.getDisplayName().getString() : "Another player";
-                
+
                 serverPlayer.sendSystemMessage(
                         Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
                                 .withStyle(ChatFormatting.RED),
@@ -194,7 +195,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     );
                     return ItemInteractionResult.FAIL;
                 }
-                
+
                 // Check minigame visibility from server tracking
                 Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
                 if (visible == null && anvil.isMinigameOn()) {
@@ -203,12 +204,12 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     player.openMenu(anvil, pos);
                     return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
-                
+
                 // Process the hammer hit
                 held.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 anvil.increaseForgingProgress(level, pos, state);
                 spawnAnvilParticles(level, pos);
-                
+
                 // Play appropriate sound based on hits remaining
                 if (anvil.getHitsRemaining() == 1) {
                     if (anvil.isFailedResult()) {
@@ -221,7 +222,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                 }
                 return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
-            
+
             // Has recipe but can't hammer - open menu
             ModItemInteractEvents.hideMinigame((ServerPlayer) player);
         } else {
@@ -261,9 +262,9 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
     @Override
     public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
-         if (!level.isClientSide()) {
-             ModEvents.resetMinigameForAnvil(level, pos);
-         }
+        if (!level.isClientSide()) {
+            ModEvents.resetMinigameForAnvil(level, pos);
+        }
         super.onBlockExploded(state, level, pos, explosion);
     }
 

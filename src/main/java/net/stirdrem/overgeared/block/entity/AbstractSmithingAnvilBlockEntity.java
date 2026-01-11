@@ -281,9 +281,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         if (recipe.hasQuality()) {
             if (ServerConfig.ENABLE_MINIGAME.get()) {
-                String qualityStr = determineForgingQuality();
-                if (!Objects.equals(qualityStr, ForgingQuality.NONE.getDisplayName())) {
-                    ForgingQuality quality = ForgingQuality.fromString(qualityStr);
+                ForgingQuality quality = determineForgingQuality();
+                if (!Objects.equals(quality, ForgingQuality.NONE)) {
                     if (quality != null) {
                         // Clamp to minimum quality if needed
                         if (minimumQuality != null && quality.ordinal() < minimumQuality.ordinal()) {
@@ -320,16 +319,16 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         } else if (recipe.needsMinigame()) {
             // Handle minigame result without quality
             if (ServerConfig.ENABLE_MINIGAME.get()) {
-                String quality = determineForgingQuality();
-                if (!Objects.equals(quality, ForgingQuality.NONE.getDisplayName())) {
+                ForgingQuality quality = determineForgingQuality();
+                if (!Objects.equals(quality, ForgingQuality.NONE)) {
                     boolean fail = false;
 
-                    if (quality.equals(ForgingQuality.POOR.getDisplayName())) {
+                    if (quality.equals(ForgingQuality.POOR)) {
                         fail = true;
-                    } else if (quality.equals(ForgingQuality.WELL.getDisplayName())) {
+                    } else if (quality.equals(ForgingQuality.WELL)) {
                         float failChance = ServerConfig.FAIL_ON_WELL_QUALITY_CHANCE.get().floatValue();
                         fail = new Random().nextFloat() < failChance;
-                    } else if (quality.equals(ForgingQuality.EXPERT.getDisplayName())) {
+                    } else if (quality.equals(ForgingQuality.EXPERT)) {
                         float failChance = ServerConfig.FAIL_ON_EXPERT_QUALITY_CHANCE.get().floatValue();
                         fail = new Random().nextFloat() < failChance;
                     }
@@ -393,8 +392,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         BlueprintQuality currentQuality = BlueprintQuality.fromString(currentQualityStr);
 
         // Attempt to read the ForgingQuality from result
-        String forgingQualityStr = anvilBlock.getQuality();
-        ForgingQuality resultQuality = ForgingQuality.fromString(forgingQualityStr);
+        ForgingQuality resultQuality = anvilBlock.getQuality();
 
         if (currentQuality == null
                 || currentQuality == BlueprintQuality.PERFECT
@@ -507,13 +505,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         recipeHandler.setStackInSlot(11, itemHandler.getStackInSlot(11));
 
         RecipeWrapper recipeInput = new RecipeWrapper(recipeHandler);
-        
+
         // Try to use Polymorph's selected recipe if available
         Optional<RecipeHolder<ForgingRecipe>> polymorphRecipe = Polymorph.getSelectedRecipe(this, recipeInput);
         if (polymorphRecipe.isPresent()) {
             return polymorphRecipe.filter(holder -> matchesRecipeExactly(holder.value()));
         }
-        
+
         // Fallback to best match when Polymorph is not available
         return ForgingRecipe.findBestMatchHolder(level, recipeInput)
                 .filter(holder -> matchesRecipeExactly(holder.value()));
@@ -672,9 +670,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return recipe.matches(recipeInput, level);
     }
 
-    protected String determineForgingQuality() {
-        String quality = anvilBlock.getQuality();
-        if (quality == null) return "well";
+    protected ForgingQuality determineForgingQuality() {
+        ForgingQuality quality = anvilBlock.getQuality();
+        if (quality == null) return ForgingQuality.WELL;
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         ForgingRecipe recipe = recipeOptional.get();
         if (!recipe.getBlueprintTypes().isEmpty()) {
@@ -687,32 +685,30 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             // If blueprint is missing or invalid, fallback logic
             if (blueprint.isEmpty() || blueprintData == null) {
-                return switch (quality.toLowerCase()) {
-                    case "poor" -> ForgingQuality.POOR.getDisplayName();
-                    default -> "well"; // Cap quality at 'well' without blueprint
+                return switch (quality) {
+                    case ForgingQuality.POOR -> ForgingQuality.POOR;
+                    default -> ForgingQuality.WELL; // Cap quality at 'well' without blueprint
                 };
             }
 
             String blueprintQualityStr = blueprintData.quality().toLowerCase();
 
             // Determine capped quality
-            int anvilTierIndex = qualityTiers.indexOf(quality.toLowerCase());
+            int anvilTierIndex = qualityTiers.indexOf(quality.getDisplayName().toLowerCase());
             int blueprintTierIndex = qualityTiers.indexOf(blueprintQualityStr);
 
             // Default to lowest if any tier is missing
             if (anvilTierIndex == -1 || blueprintTierIndex == -1) {
-                return ForgingQuality.NONE.getDisplayName();
+                return ForgingQuality.NONE;
             }
 
             int finalIndex = Math.min(anvilTierIndex, blueprintTierIndex);
 
             switch (qualityTiers.get(finalIndex)) {
                 case "poor":
-                    return ForgingQuality.POOR.getDisplayName();
-                case "well":
-                    return ForgingQuality.WELL.getDisplayName();
+                    return ForgingQuality.POOR;
                 case "expert":
-                    return ForgingQuality.EXPERT.getDisplayName();
+                    return ForgingQuality.EXPERT;
                 case "perfect": {
                     Random random = new Random();
 
@@ -737,69 +733,69 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                             && random.nextFloat() < ServerConfig.MASTER_FROM_INGREDIENT_CHANCE.get();
 
                     if ("master".equals(blueprintQualityStr) || masterRoll || ingredientMasterRoll) {
-                        return ForgingQuality.MASTER.getDisplayName();
+                        return ForgingQuality.MASTER;
                     } else {
-                        return ForgingQuality.PERFECT.getDisplayName();
+                        return ForgingQuality.PERFECT;
                     }
                 }
                 case "master":
-                    return ForgingQuality.MASTER.getDisplayName();
+                    return ForgingQuality.MASTER;
                 default:
-                    return ForgingQuality.WELL.getDisplayName();
+                    return ForgingQuality.WELL;
             }
         }
         return quality;
     }
 
-    public String minigameQuality() {
+    public ForgingQuality minigameQuality() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty()) {
-            return "none"; // no recipe = base fallback
+            return ForgingQuality.NONE; // no recipe = base fallback
         }
 
         ForgingRecipe recipe = recipeOptional.get();
         if (!recipe.getBlueprintTypes().isEmpty()) {
             if (!recipe.getQualityDifficulty().equals(ForgingQuality.NONE))
-                return recipe.getQualityDifficulty().getDisplayName();
-            else return blueprintQuality();
-        } else return recipe.getQualityDifficulty().getDisplayName();
+                return recipe.getQualityDifficulty();
+            else return qualityFromBlueprint();
+        } else return recipe.getQualityDifficulty();
     }
 
-    public String blueprintQuality() {
-        String quality = anvilBlock.getQuality();
+    public ForgingQuality qualityFromBlueprint() {
+        ForgingQuality quality = anvilBlock.getQuality();
         if (quality == null) {
-            return ForgingQuality.NONE.getDisplayName(); // fallback when global quality is missing
+            return ForgingQuality.NONE; // fallback when global quality is missing
         }
 
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty()) {
-            return "poor"; // no recipe = base fallback
+            return ForgingQuality.POOR; // no recipe = base fallback
         }
 
         ForgingRecipe recipe = recipeOptional.get();
         if (!recipe.getBlueprintTypes().isEmpty()) {
             if (!recipe.getQualityDifficulty().equals(ForgingQuality.NONE))
-                return recipe.getQualityDifficulty().getDisplayName();
+                return recipe.getQualityDifficulty();
             ItemStack blueprint = this.itemHandler.getStackInSlot(BLUEPRINT_SLOT);
 
             // Quality tiers in order
-            List<String> qualityTiers = List.of("poor", "well", "expert", "perfect", "master");
+            List<ForgingQuality> qualityTiers = List.of(ForgingQuality.POOR, ForgingQuality.WELL, ForgingQuality.EXPERT, ForgingQuality.PERFECT, ForgingQuality.MASTER);
 
             // Missing or invalid blueprint → cap quality
-            String poor = quality.equalsIgnoreCase("poor")
+            String poor = quality.equals(ForgingQuality.POOR)
                     ? ForgingQuality.POOR.getDisplayName()
                     : ForgingQuality.NONE.getDisplayName();
             BlueprintData blueprintData = blueprint.get(ModComponents.BLUEPRINT_DATA);
             if (blueprint.isEmpty() || blueprintData == null) {
-                return poor;
+                return ForgingQuality.POOR;
             }
 
             String bpQuality = blueprintData.quality().toLowerCase();
             // ensure it’s in our tier list, otherwise default
-            return qualityTiers.contains(bpQuality) ? bpQuality : ForgingQuality.NONE.getDisplayName();
+            return qualityTiers.contains(ForgingQuality.fromString(bpQuality)) ? ForgingQuality.fromString(bpQuality) : ForgingQuality.NONE;
         }
 
-        return ForgingQuality.NONE.getDisplayName(); // fallback if no blueprint types
+        return ForgingQuality.NONE; // fallback if no blueprint types
     }
 
     public void setProgress(int progress) {

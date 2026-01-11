@@ -66,6 +66,7 @@ import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.screen.FletchingStationMenu;
+import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
 
@@ -258,7 +259,7 @@ public class ModItemInteractEvents {
                             PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(!isVisible, pos));
                             playerMinigameVisibility.put(player.getUUID(), !isVisible);
                         } else {
-                            quality.set(anvilBE.minigameQuality());
+                            quality.set(anvilBE.minigameQuality().getDisplayName());
                             AnvilMinigameEvents.reset(quality.get());
                             playerAnvilPositions.put(player.getUUID(), pos);
                             playerMinigameVisibility.put(player.getUUID(), true);
@@ -321,7 +322,7 @@ public class ModItemInteractEvents {
             String quality = "perfect";
             if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
-                quality = anvilBE.minigameQuality();
+                quality = anvilBE.minigameQuality().getDisplayName();
             }
             // 3. Clear client-side state
             ClientAnvilMinigameData.putOccupiedAnvil(pos, null);
@@ -542,7 +543,7 @@ public class ModItemInteractEvents {
     }
 
     private static void handleCauldronInteraction(Level level, BlockPos pos, Player player,
-            ItemStack heldStack, BlockState state) {
+                                                  ItemStack heldStack, BlockState state) {
         IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
         int waterLevel = state.getValue(levelProperty);
 
@@ -565,11 +566,11 @@ public class ModItemInteractEvents {
 
     private static void coolItem(Player player, ItemStack stack) {
         if (stack.getCount() <= 0) return;
-        
+
         Item cooled = getCooledItem(stack.getItem(), player.level());
         boolean hasCoolingRecipe = (cooled != null);
         boolean isHeated = stack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
-        
+
         // If neither has cooling recipe nor is heated, nothing to do
         if (!hasCoolingRecipe && !isHeated) return;
 
@@ -620,13 +621,13 @@ public class ModItemInteractEvents {
     private static void coolItemEntity(ItemEntity entity) {
         ItemStack stack = entity.getItem();
         Level level = entity.level();
-        
+
         if (stack.getCount() <= 0) return;
 
         Item cooled = getCooledItem(stack.getItem(), level);
         boolean hasCoolingRecipe = (cooled != null);
         boolean isHeated = stack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
-        
+
         // If neither has cooling recipe nor is heated, nothing to do
         if (!hasCoolingRecipe && !isHeated) return;
 
@@ -656,7 +657,7 @@ public class ModItemInteractEvents {
             stack.remove(ModComponents.HEATED_COMPONENT);
             stack.remove(ModComponents.HEATED_TIME);
         }
-        
+
         entity.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
     }
 
@@ -1061,5 +1062,48 @@ public class ModItemInteractEvents {
         player.openMenu(provider, pos);
         event.setCancellationResult(InteractionResult.sidedSuccess(false));
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onUsingKnappable(PlayerInteractEvent.RightClickItem event) {
+        Player player = event.getEntity();
+        ItemStack usedStack = event.getItemStack();
+
+        // Only trigger for knappable items
+        if (!usedStack.is(ModTags.Items.KNAPPABLES)) {
+            return;
+        }
+
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
+
+        // Require BOTH hands to be knappable
+        if (!(mainHand.is(ModTags.Items.KNAPPABLES) && offHand.is(ModTags.Items.KNAPPABLES))) {
+            return;
+        }
+        // Both items must be the SAME item
+        if (mainHand.getItem() != offHand.getItem()) {
+            return;
+        }
+        // Prevent vanilla handling
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+
+        if (!player.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+
+            player.level().playSound(
+                    null,
+                    player.blockPosition(),
+                    SoundEvents.STONE_PLACE,
+                    SoundSource.PLAYERS,
+                    0.6f,
+                    1.0f
+            );
+
+            serverPlayer.openMenu(new RockKnappingMenuProvider(), buf -> {
+                ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, mainHand);
+                ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, offHand);
+            });
+        }
     }
 }

@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 
@@ -35,7 +36,7 @@ public record PacketSendCounterC2SPacket(String quality, BlockPos pos) implement
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
             if (!(player.level().getBlockState(payload.pos).getBlock() instanceof AbstractSmithingAnvil)) return;
-            AbstractSmithingAnvil.setQuality(payload.quality);
+            AbstractSmithingAnvil.setQuality(ForgingQuality.fromString(payload.quality));
         });
     }
 }

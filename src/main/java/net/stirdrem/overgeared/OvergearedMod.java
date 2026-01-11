@@ -16,6 +16,7 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.item.ModCreativeModeTabs;
 import net.stirdrem.overgeared.item.ModItems;
+import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.recipe.ModRecipeSerializers;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.screen.ModMenuTypes;
@@ -40,6 +41,7 @@ public final class OvergearedMod {
         ModRecipeSerializers.register(modEventBus);
         ModRecipeTypes.register(modEventBus);
         ModSounds.register(modEventBus);
+        ModLootModifiers.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, ServerConfig.SERVER_CONFIG);
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.CLIENT_CONFIG);

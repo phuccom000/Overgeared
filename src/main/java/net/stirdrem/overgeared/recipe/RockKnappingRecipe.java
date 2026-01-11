@@ -7,18 +7,29 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * @param pattern  true means clicked, false means unclicked
- * @param mirrored whether the pattern should accept mirror versions
+ * pattern  true means clicked, false means unclicked
+ * mirrored whether the pattern should accept mirror versions
  */
-public record RockKnappingRecipe(ItemStack output, boolean[][] pattern,
-                                 boolean mirrored) implements Recipe<RecipeInput> {
-    public RockKnappingRecipe(ItemStack output, boolean[][] pattern, boolean mirrored) {
+public class RockKnappingRecipe implements Recipe<RecipeInput> {
+
+    private final ItemStack output;
+    private final Ingredient ingredient;
+
+    private final boolean[][] pattern;
+    private final boolean mirrored;
+
+    public RockKnappingRecipe(ItemStack output, Ingredient ingredient, boolean[][] pattern, boolean mirrored) {
         this.output = output;
+        this.ingredient = ingredient;
         this.pattern = pattern;
         this.mirrored = mirrored;
 
@@ -31,6 +42,14 @@ public record RockKnappingRecipe(ItemStack output, boolean[][] pattern,
     @Override
     public boolean matches(RecipeInput input, Level world) {
         if (input.size() != 9) return false;
+
+        // Validate ingredient
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = input.getItem(i);
+            if (!stack.isEmpty() && !ingredient.test(stack)) {
+                return false;
+            }
+        }
 
         // Convert recipe input to 3x3 grid (true = unchipped, false = chipped)
         boolean[][] inputGrid = new boolean[3][3];
@@ -136,31 +155,49 @@ public record RockKnappingRecipe(ItemStack output, boolean[][] pattern,
         return ModRecipeTypes.KNAPPING.get();
     }
 
+    public Ingredient getIngredient() {
+        return ingredient;
+    }
+
     public static class Serializer implements RecipeSerializer<RockKnappingRecipe> {
+
         private static final Codec<boolean[][]> PATTERN_CODEC = Codec.STRING.listOf().xmap(
                 list -> {
                     boolean[][] pattern = new boolean[3][3];
-                    for (int i = 0; i < Math.min(3, list.size()); i++) {
-                        String row = list.get(i);
-                        for (int j = 0; j < Math.min(3, row.length()); j++) {
-                            char c = row.charAt(j);
-                            pattern[i][j] = (c == 'x' || c == 'X');
+                    for (int y = 0; y < Math.min(list.size(), 3); y++) {
+                        String row = list.get(y);
+                        for (int x = 0; x < Math.min(row.length(), 3); x++) {
+                            pattern[y][x] = row.charAt(x) == 'x' || row.charAt(x) == 'X';
                         }
                     }
                     return pattern;
                 },
                 pattern -> {
-                    java.util.List<String> list = new java.util.ArrayList<>();
-                    for (int i = 0; i < 3; i++) {
-                        StringBuilder row = new StringBuilder();
-                        for (int j = 0; j < 3; j++) {
-                            row.append(pattern[i][j] ? 'x' : ' ');
+                    List<String> out = new ArrayList<>();
+                    for (int y = 0; y < 3; y++) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int x = 0; x < 3; x++) {
+                            sb.append(pattern[y][x] ? 'x' : ' ');
                         }
-                        list.add(row.toString());
+                        out.add(sb.toString());
                     }
-                    return list;
+                    return out;
                 }
         );
+
+        public static final MapCodec<RockKnappingRecipe> CODEC = RecordCodecBuilder.mapCodec(inst ->
+                inst.group(
+                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.output),
+                        Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
+                        PATTERN_CODEC.fieldOf("pattern").forGetter(r -> r.pattern),
+                        Codec.BOOL.optionalFieldOf("mirrored", false).forGetter(r -> r.mirrored)
+                ).apply(inst, RockKnappingRecipe::new)
+        );
+
+        @Override
+        public MapCodec<RockKnappingRecipe> codec() {
+            return CODEC;
+        }
 
         public static final StreamCodec<RegistryFriendlyByteBuf, boolean[][]> PATTERN_STREAM_CODEC = new StreamCodec<>() {
             @Override
@@ -184,26 +221,38 @@ public record RockKnappingRecipe(ItemStack output, boolean[][] pattern,
             }
         };
 
-        @Override
-        public MapCodec<RockKnappingRecipe> codec() {
-            return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                    ItemStack.CODEC.fieldOf("result").forGetter(RockKnappingRecipe::output),
-                    PATTERN_CODEC.fieldOf("pattern").forGetter(RockKnappingRecipe::pattern),
-                    Codec.BOOL.optionalFieldOf("mirrored", false).forGetter(RockKnappingRecipe::mirrored)
-            ).apply(instance, RockKnappingRecipe::new));
-        }
+        public static final StreamCodec<RegistryFriendlyByteBuf, RockKnappingRecipe> NETWORK_CODEC =
+                StreamCodec.composite(
+                        ItemStack.STREAM_CODEC,
+                        RockKnappingRecipe::output,
+                        Ingredient.CONTENTS_STREAM_CODEC,
+                        RockKnappingRecipe::ingredient,
+                        PATTERN_STREAM_CODEC,
+                        RockKnappingRecipe::pattern,
+                        ByteBufCodecs.BOOL,
+                        RockKnappingRecipe::mirrored,
+                        RockKnappingRecipe::new
+                );
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, RockKnappingRecipe> streamCodec() {
-            return StreamCodec.composite(
-                    ItemStack.STREAM_CODEC,
-                    RockKnappingRecipe::output,
-                    PATTERN_STREAM_CODEC,
-                    RockKnappingRecipe::pattern,
-                    ByteBufCodecs.BOOL,
-                    RockKnappingRecipe::mirrored,
-                    RockKnappingRecipe::new
-            );
+            return NETWORK_CODEC;
         }
+    }
+
+    public boolean[][] pattern() {
+        return pattern;
+    }
+
+    public Boolean mirrored() {
+        return mirrored;
+    }
+
+    public Ingredient ingredient() {
+        return ingredient;
+    }
+
+    public ItemStack output() {
+        return output;
     }
 }
