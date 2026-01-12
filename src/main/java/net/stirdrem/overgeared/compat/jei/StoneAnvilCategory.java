@@ -1,4 +1,4 @@
-package net.stirdrem.overgeared.compat;
+package net.stirdrem.overgeared.compat.jei;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -13,7 +13,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,14 +28,14 @@ import net.stirdrem.overgeared.util.ModTags;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
+public class StoneAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
     private static final ResourceLocation BACKGROUND_LOCATION =
             ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/explanation_jei.png");
 
     public static final ResourceLocation UID =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_anvil");
+            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "stone_anvil");
 
-    public static final RecipeType<ExplanationRecipe> STEEL_ANVIL_GET =
+    public static final RecipeType<ExplanationRecipe> STONE_ANVIL_GET =
             new RecipeType<>(UID, ExplanationRecipe.class);
 
     private final IDrawable background;
@@ -45,12 +44,12 @@ public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
     private final List<ItemStack> hammerItems;
     private static final int CYCLE_TIME = 60; // 3 seconds at 20 ticks/second
 
-    public SteelAnvilCategory(IGuiHelper guiHelper, RegistryAccess registryAccess) {
+    public StoneAnvilCategory(IGuiHelper guiHelper, RegistryAccess registryAccess) {
         this.background = guiHelper.drawableBuilder(BACKGROUND_LOCATION, 0, 0, 150, 120)
                 .setTextureSize(150, 120) // This ensures the texture isn't stretched
                 .build();
-        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModBlocks.SMITHING_ANVIL.get()));
-        this.title = Component.translatable("jei.overgeared.category.steel_anvil");
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModBlocks.STONE_SMITHING_ANVIL.get()));
+        this.title = Component.translatable("jei.overgeared.category.stone_anvil");
 
         // Get all items from the smithing hammers tag
         TagKey<Item> hammerTag = ModTags.Items.SMITHING_HAMMERS;
@@ -64,7 +63,7 @@ public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
 
     @Override
     public RecipeType<ExplanationRecipe> getRecipeType() {
-        return STEEL_ANVIL_GET;
+        return STONE_ANVIL_GET;
     }
 
     @Override
@@ -103,7 +102,7 @@ public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
         // First paragraph
         renderWrappedText(
                 guiGraphics,
-                Component.translatable("jei.overgeared.steel_anvil.description"),
+                Component.translatable("jei.overgeared.stone_anvil.description1"),
                 textX, textY,
                 textWidth,
                 ChatFormatting.DARK_GRAY.getColor(), // White color
@@ -118,5 +117,10 @@ public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
         for (int i = 0; i < lines.size(); i++) {
             guiGraphics.drawString(font, lines.get(i), x, y + (i * font.lineHeight), color, shadow);
         }
+    }
+
+    public static int calculateTextHeight(Component text, int width) {
+        Font font = Minecraft.getInstance().font;
+        return font.split(text, width).size() * font.lineHeight;
     }
 }

@@ -1,4 +1,4 @@
-package net.stirdrem.overgeared.compat;
+package net.stirdrem.overgeared.compat.jei;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;

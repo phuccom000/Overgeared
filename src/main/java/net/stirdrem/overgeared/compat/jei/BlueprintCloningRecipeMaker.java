@@ -1,6 +1,5 @@
-package net.stirdrem.overgeared.compat;
+package net.stirdrem.overgeared.compat.jei;
 
-import mezz.jei.api.helpers.IStackHelper;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;

@@ -1,4 +1,4 @@
-package net.stirdrem.overgeared.compat;
+package net.stirdrem.overgeared.compat.jei;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -19,61 +19,58 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.recipe.INetherAlloyRecipe;
-import net.stirdrem.overgeared.recipe.INetherAlloyRecipe;
+import net.stirdrem.overgeared.recipe.IAlloyRecipe;
 
 import java.util.List;
 
 
-public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INetherAlloyRecipe> {
+public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe> {
 
     public static final ResourceLocation UID =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "nether_alloy_smelting");
+            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "alloy_smelting");
     public static final ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/nether_furnace_jei.png");
+            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/furnace_jei.png");
 
     // JEI recipe type — placed under vanilla smelting tab
-    public static final RecipeType<INetherAlloyRecipe> ALLOY_SMELTING_TYPE =
-            new RecipeType<>(UID, INetherAlloyRecipe.class);
+    public static final RecipeType<IAlloyRecipe> ALLOY_SMELTING_TYPE =
+            new RecipeType<>(UID, IAlloyRecipe.class);
 
     private final IDrawable background;
     private final IDrawable icon;
-    private final int animationTime = 100; // full cycle in ticks
+    private final int animationTime = 200; // full cycle in ticks
     private final IDrawableAnimated arrowAnimated;
     private final IDrawableStatic arrowStatic;
     private final IDrawableAnimated flameAnimated;
     private final IDrawableStatic flameStatic;
-    private final int textureWidth = 143;
-    private final int textureHeight = 54;
 
-    public NetherAlloySmeltingRecipeCategory(IGuiHelper helper) {
-        this.background = helper.drawableBuilder(TEXTURE, 0, 0, 120, textureHeight)
-                .setTextureSize(textureWidth, textureHeight)
+    public AlloySmeltingRecipeCategory(IGuiHelper helper) {
+        this.background = helper.drawableBuilder(TEXTURE, 0, 0, 107, 43)
+                .setTextureSize(130, 43)
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE.get()));
+                new ItemStack(ModBlocks.ALLOY_FURNACE.get()));
 
-        arrowStatic = helper.drawableBuilder(TEXTURE, 120, 14, 23, 16).setTextureSize(textureWidth, textureHeight).build();
+        arrowStatic = helper.drawableBuilder(TEXTURE, 107, 14, 22, 16).setTextureSize(130, 43).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
 
-        flameStatic = helper.drawableBuilder(TEXTURE, 120, 0, 14, 13).setTextureSize(textureWidth, textureHeight).build();
+        flameStatic = helper.drawableBuilder(TEXTURE, 107, 0, 14, 13).setTextureSize(130, 43).build();
         flameAnimated = helper.createAnimatedDrawable(
                 flameStatic,
-                50, // burn time
+                100, // burn time
                 IDrawableAnimated.StartDirection.TOP,
                 true
         );
     }
 
     @Override
-    public RecipeType<INetherAlloyRecipe> getRecipeType() {
+    public RecipeType<IAlloyRecipe> getRecipeType() {
         return ALLOY_SMELTING_TYPE;
     }
 
     @Override
     public Component getTitle() {
-        return Component.translatable("gui.overgeared.jei.category.nether_alloy_smelting");
+        return Component.translatable("gui.overgeared.jei.category.alloy_smelting");
     }
 
     @Override
@@ -86,11 +83,12 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
         return this.icon;
     }
 
+
     @Override
-    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(IAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Float exp = recipe.getExperience();
-        arrowAnimated.draw(guiGraphics, 60, 19);
-        flameAnimated.draw(guiGraphics, 64, 39);
+        arrowAnimated.draw(guiGraphics, 47, 9);
+        flameAnimated.draw(guiGraphics, 51, 29);
 
         // Draw experience with formatting to avoid trailing .0
         String expText;
@@ -104,30 +102,46 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
         int textWidth = Minecraft.getInstance().font.width(expText);
         int xPos = this.background.getWidth() - textWidth; // 5 pixels from right edge
 
-        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, textureHeight - 9, 0xFFFFFFFF, true);
+        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, 35, 0xFFFFFFFF, true);
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, INetherAlloyRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, IAlloyRecipe recipe, IFocusGroup focuses) {
         List<Ingredient> ingredients = recipe.getIngredientsList();
 
         // Add multiple input slots based on the recipe ingredients
         // Position inputs in a grid pattern to accommodate up to 4 ingredients
         int inputCount = ingredients.size();
 
-        // Add 9 input slots in a 3x3 grid
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                int slotIndex = row * 3 + col;
-                if (slotIndex < ingredients.size()) {
-                    builder.addSlot(RecipeIngredientRole.INPUT, 1 + col * 18, 1 + row * 18)
-                            .addIngredients(ingredients.get(slotIndex));
-                }
+        if (inputCount >= 1) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 1, 1)
+                    .addIngredients(ingredients.get(0));
+        }
+        if (inputCount >= 2) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
+                    .addIngredients(ingredients.get(1));
+        }
+        if (inputCount >= 3) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 19, 1)
+                    .addIngredients(ingredients.get(2));
+        }
+        if (inputCount >= 4) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 19, 19)
+                    .addIngredients(ingredients.get(3));
+        }
+
+        // If there are more than 4 ingredients (unlikely but possible), add them in additional rows
+        if (inputCount > 4) {
+            for (int i = 4; i < inputCount && i < 8; i++) {
+                int row = (i - 4) / 2;
+                int col = (i - 4) % 2;
+                builder.addSlot(RecipeIngredientRole.INPUT, 37 + col * 18, 1 + row * 18)
+                        .addIngredients(ingredients.get(i));
             }
         }
 
         // Output slot
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20)
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 86, 10)
                 .addItemStack(recipe.getResultItem(null));
     }
 }
