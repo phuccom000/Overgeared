@@ -1,12 +1,13 @@
 package net.stirdrem.overgeared;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 import java.util.function.Supplier;
 
-public enum BlueprintQuality {
+public enum BlueprintQuality implements StringRepresentable {
     POOR("poor", 10, ChatFormatting.RED, () -> ServerConfig.POOR_MAX_USE),
     WELL("well", 15, ChatFormatting.YELLOW, () -> ServerConfig.WELL_MAX_USE),
     EXPERT("expert", 20, ChatFormatting.BLUE, () -> ServerConfig.EXPERT_MAX_USE),
@@ -23,6 +24,11 @@ public enum BlueprintQuality {
         this.defaultUse = defaultUse;
         this.color = color;
         this.configSupplier = configSupplier;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return id;
     }
 
     public static int compare(String q1, String q2) {
@@ -96,5 +102,4 @@ public enum BlueprintQuality {
     public String getId() {
         return id;
     }
-
 }

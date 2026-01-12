@@ -1,6 +1,8 @@
 package net.stirdrem.overgeared;
 
-public enum AnvilTier {
+import net.minecraft.util.StringRepresentable;
+
+public enum AnvilTier implements StringRepresentable {
     STONE("stone", "gui.overgeared.tier.stone"),
     IRON("iron", "gui.overgeared.tier.iron"),
     ABOVE_A("above_a", "gui.overgeared.tier.tier_a"),
@@ -12,6 +14,11 @@ public enum AnvilTier {
     AnvilTier(String displayName, String lang) {
         this.displayName = displayName;
         this.lang = lang;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return displayName;
     }
 
     public String getDisplayName() {

@@ -40,7 +40,8 @@ public class BlueprintCloningRecipe extends CustomRecipe {
             }
         }
 
-        return !emptyBlueprint.isEmpty() && blueprintCount > 0;
+        // Change from > 0 to == 1 (Only 1 Blueprint Source Allowed)
+        return !emptyBlueprint.isEmpty() && blueprintCount == 1;
     }
 
     @Override
@@ -92,7 +93,7 @@ public class BlueprintCloningRecipe extends CustomRecipe {
 
         private static final StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> STREAM_CODEC = 
             StreamCodec.composite(
-                net.minecraft.network.codec.ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC),
+                CraftingBookCategory.STREAM_CODEC,
                 CustomRecipe::category,
                 BlueprintCloningRecipe::new
             );

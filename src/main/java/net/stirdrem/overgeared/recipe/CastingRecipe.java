@@ -5,13 +5,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -24,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CastingRecipe implements Recipe<RecipeInput> {
-
-    private final ResourceLocation id;
     private final String group;
     private final CraftingBookCategory category;
     private final Map<String, Integer> requiredMaterials;
@@ -36,17 +35,8 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     private final boolean needPolishing;
 
     // Constructor that matches Codec field order
-    public CastingRecipe(
-            String group,
-            CraftingBookCategory category,
-            Map<String, Integer> requiredMaterials,
-            ItemStack result,
-            float experience,
-            int cookingTime,
-            String toolType,
-            boolean needPolishing
-    ) {
-        this.id = null; // Will be set by RecipeManager
+    public CastingRecipe(String group, CraftingBookCategory category, Map<String, Integer> requiredMaterials, ItemStack result,
+                         float experience, int cookingTime, String toolType, boolean needPolishing) {
         this.group = group;
         this.category = category;
         this.requiredMaterials = requiredMaterials;
@@ -55,43 +45,6 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         this.cookingTime = cookingTime;
         this.toolType = toolType.toLowerCase();
         this.needPolishing = needPolishing;
-    }
-
-    // Factory method for creating with ID (used by serializer)
-    private CastingRecipe(
-            ResourceLocation id,
-            String group,
-            CraftingBookCategory category,
-            Map<String, Integer> requiredMaterials,
-            ItemStack result,
-            float experience,
-            int cookingTime,
-            String toolType,
-            boolean needPolishing
-    ) {
-        this.id = id;
-        this.group = group;
-        this.category = category;
-        this.requiredMaterials = requiredMaterials;
-        this.result = result;
-        this.experience = experience;
-        this.cookingTime = cookingTime;
-        this.toolType = toolType.toLowerCase();
-        this.needPolishing = needPolishing;
-    }
-
-    // Static factory method for Codec
-    public static CastingRecipe create(
-            String group,
-            CraftingBookCategory category,
-            Map<String, Integer> requiredMaterials,
-            ItemStack result,
-            float experience,
-            int cookingTime,
-            String toolType,
-            boolean needPolishing
-    ) {
-        return new CastingRecipe(group, category, requiredMaterials, result, experience, cookingTime, toolType, needPolishing);
     }
 
     @Override
@@ -141,7 +94,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
     @Override
     public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries) {
-        ItemStack cast = input.getItem(3);
+        ItemStack cast = input.getItem(1);
         if (cast.isEmpty()) return ItemStack.EMPTY;
 
         CastData castData = cast.get(ModComponents.CAST_DATA.get());
@@ -152,7 +105,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
         // Transfer forging quality from cast
         if (!castData.quality().isEmpty() && !castData.quality().equals("none")) {
-            out.set(ModComponents.FORGING_QUALITY.get(), net.stirdrem.overgeared.ForgingQuality.fromString(castData.quality()));
+            out.set(ModComponents.FORGING_QUALITY.get(), ForgingQuality.fromString(castData.quality()));
         }
 
         // Polishing flag
@@ -164,31 +117,40 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         out.set(ModComponents.HEATED_COMPONENT.get(), true);
 
         // Creator tooltip - check if cast has a custom name using Components API
-        if (cast.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+        if (cast.has(DataComponents.CUSTOM_NAME) && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
             // Get the custom name component
-            var customName = cast.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+            var customName = cast.get(DataComponents.CUSTOM_NAME);
             if (customName != null) {
                 out.set(ModComponents.CREATOR.get(), customName.getString());
             }
         }
 
-        /* -------------------------------------------------- */
-        /* DAMAGE CAST — CAST STAYS IN SLOT                   */
-        /* -------------------------------------------------- */
+        // IMPORTANT: return the RESULT item
+        return out;
+    }
 
-        if (cast.isDamageableItem()) {
-            int newDamage = cast.getDamageValue() + 1;
+    @Override
+    public NonNullList<ItemStack> getRemainingItems(RecipeInput input) {
+        NonNullList<ItemStack> remaining = NonNullList.withSize(input.size(), ItemStack.EMPTY);
 
-            if (newDamage >= cast.getMaxDamage()) {
-                // Cast breaks
-                cast.shrink(1);
-            } else {
-                cast.setDamageValue(newDamage);
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack stack = input.getItem(i);
+
+            // Handles cast durability
+            if (i == 1 && stack.getItem() instanceof ToolCastItem) {
+                if (stack.isDamageableItem()) {
+                    ItemStack damaged = stack.copy();
+                    int newDamage = damaged.getDamageValue() + 1;
+
+                    if (newDamage < damaged.getMaxDamage()) {
+                        damaged.setDamageValue(newDamage);
+                        remaining.set(i, damaged);
+                    }
+                }
             }
         }
 
-        // IMPORTANT: return the RESULT item
-        return out;
+        return remaining;
     }
 
     /* ============================================================= */
@@ -203,7 +165,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         Map<String, Integer> materialsInt = new HashMap<>();
         double total = 0;
         for (var e : requiredMaterials.entrySet()) {
-            materialsInt.put(e.getKey(), e.getValue().intValue());
+            materialsInt.put(e.getKey(), e.getValue());
             total += e.getValue();
         }
 
@@ -297,116 +259,58 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         private static final Codec<Map<String, Integer>> MATERIALS_CODEC =
                 Codec.unboundedMap(Codec.STRING, Codec.INT);
 
-        private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
-                instance.group(
-                        Codec.STRING.optionalFieldOf("group", "").forGetter(CastingRecipe::getGroup),
+        private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
+                CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
+                MATERIALS_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
+                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
+                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime),
+                Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
+                Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing)
+        ).apply(instance, CastingRecipe::new));
 
-                        CraftingBookCategory.CODEC
-                                .optionalFieldOf("category", CraftingBookCategory.MISC)
-                                .forGetter(r -> r.category),
-
-                        MATERIALS_CODEC
-                                .fieldOf("input")
-                                .forGetter(CastingRecipe::getRequiredMaterials),
-
-                        ItemStack.CODEC
-                                .fieldOf("result")
-                                .forGetter(r -> r.result),
-
-                        Codec.FLOAT
-                                .optionalFieldOf("experience", 0f)
-                                .forGetter(CastingRecipe::getExperience),
-
-                        Codec.INT
-                                .optionalFieldOf("cookingtime", 200)
-                                .forGetter(CastingRecipe::getCookingTime),
-
-                        Codec.STRING
-                                .fieldOf("tool_type")
-                                .forGetter(CastingRecipe::getToolType),
-
-                        Codec.BOOL
-                                .optionalFieldOf("need_polishing", false)
-                                .forGetter(CastingRecipe::requiresPolishing)
-                ).apply(instance, CastingRecipe::create)
+        private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
+                Serializer::toNetwork, Serializer::fromNetwork
         );
 
+        private static CastingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            String group = buffer.readUtf();
+            CraftingBookCategory craftingBookCategory = buffer.readEnum(CraftingBookCategory.class);
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC =
-                StreamCodec.of(
-                        (buf, recipe) -> {
-                            // group
-                            ByteBufCodecs.STRING_UTF8.encode(buf, recipe.getGroup());
+            int size = buffer.readVarInt();
+            Map<String, Integer> reqMaterials = new HashMap<>();
+            for (int i = 0; i < size; i++) {
+                String key = buffer.readUtf();
+                int value = buffer.readVarInt();
+                reqMaterials.put(key, value);
+            }
 
-                            // category
-                            ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC).encode(buf, recipe.category);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            float experience = buffer.readFloat();
+            int cookingTime = buffer.readVarInt();
+            String toolType = buffer.readUtf();
+            boolean need_polishing = buffer.readBoolean();
 
-                            // input (materials)
-                            buf.writeInt(recipe.requiredMaterials.size());
-                            recipe.requiredMaterials.forEach((k, v) -> {
-                                ByteBufCodecs.STRING_UTF8.encode(buf, k);
-                                ByteBufCodecs.VAR_INT.encode(buf, v);
-                            });
+            return new CastingRecipe(group, craftingBookCategory, reqMaterials, result, experience, cookingTime, toolType, need_polishing);
+        }
 
-                            // result
-                            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, CastingRecipe recipe) {
+            buffer.writeUtf(recipe.group);
+            buffer.writeEnum(recipe.category);
 
-                            // experience
-                            buf.writeFloat(recipe.getExperience());
+            buffer.writeVarInt(recipe.requiredMaterials.size());
+            recipe.requiredMaterials.forEach((k, v) -> {
+                ByteBufCodecs.STRING_UTF8.encode(buffer, k);
+                ByteBufCodecs.VAR_INT.encode(buffer, v);
+            });
 
-                            // cooking time
-                            ByteBufCodecs.VAR_INT.encode(buf, recipe.getCookingTime());
-
-                            // tool type
-                            ByteBufCodecs.STRING_UTF8.encode(buf, recipe.toolType);
-
-                            // need_polishing
-                            ByteBufCodecs.BOOL.encode(buf, recipe.needPolishing);
-                        },
-                        buf -> {
-                            // group
-                            String group = ByteBufCodecs.STRING_UTF8.decode(buf);
-
-                            // category
-                            CraftingBookCategory category =
-                                    ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC).decode(buf);
-
-                            // input (materials)
-                            int size = buf.readInt();
-                            Map<String, Integer> reqMaterials = new HashMap<>();
-                            for (int i = 0; i < size; i++) {
-                                String key = ByteBufCodecs.STRING_UTF8.decode(buf);
-                                int value = ByteBufCodecs.VAR_INT.decode(buf);
-                                reqMaterials.put(key, value);
-                            }
-
-                            // result
-                            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
-
-                            // experience
-                            float xp = buf.readFloat();
-
-                            // cooking time
-                            int time = ByteBufCodecs.VAR_INT.decode(buf);
-
-                            // tool type
-                            String toolType = ByteBufCodecs.STRING_UTF8.decode(buf);
-
-                            // need_polishing
-                            boolean needPolish = ByteBufCodecs.BOOL.decode(buf);
-
-                            return CastingRecipe.create(
-                                    group,
-                                    category,
-                                    reqMaterials,
-                                    result,
-                                    xp,
-                                    time,
-                                    toolType,
-                                    needPolish
-                            );
-                        }
-                );
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            buffer.writeFloat(recipe.experience);
+            buffer.writeVarInt(recipe.cookingTime);
+            buffer.writeUtf(recipe.toolType);
+            buffer.writeBoolean(recipe.needPolishing);
+        }
 
         @Override
         public MapCodec<CastingRecipe> codec() {

@@ -14,9 +14,8 @@ import java.util.function.Supplier;
 public class ModComponents {
     public static final DeferredRegister<DataComponentType<?>> COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, OvergearedMod.MOD_ID);
 
-    public static final Supplier<DataComponentType<Boolean>> HEATED_COMPONENT = COMPONENTS.register(
-            "heated",
-            () -> DataComponentType.<Boolean>builder()
+    public static final Supplier<DataComponentType<Boolean>> HEATED_COMPONENT =
+            COMPONENTS.register("heated", () -> DataComponentType.<Boolean>builder()
                     .persistent(Codec.BOOL)
                     .networkSynchronized(ByteBufCodecs.BOOL)
                     .build());

@@ -49,10 +49,10 @@ public class CoolingRecipe implements Recipe<SingleRecipeInput> {
     }
 
     public static class Serializer implements RecipeSerializer<CoolingRecipe> {
-        public static final MapCodec<CoolingRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<CoolingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC_NONEMPTY.fieldOf("input").forGetter(r -> r.ingredient),
                 ItemStack.CODEC.fieldOf("output").forGetter(r -> r.result)
-        ).apply(i, CoolingRecipe::new));
+        ).apply(instance, CoolingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, CoolingRecipe> STREAM_CODEC = StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, r -> r.ingredient,

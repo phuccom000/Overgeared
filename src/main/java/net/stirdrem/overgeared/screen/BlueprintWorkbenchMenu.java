@@ -74,7 +74,7 @@ public class BlueprintWorkbenchMenu extends AbstractContainerMenu {
 
         // Create new blueprint if output is empty or doesn't match
         if (output.isEmpty()) {
-            ItemStack newOutput = new ItemStack(ModItems.BLUEPRINT);
+            ItemStack newOutput = new ItemStack(ModItems.BLUEPRINT.get());
             newOutput.set(ModComponents.BLUEPRINT_DATA, new BlueprintData(
                     BlueprintQuality.WELL.name(),
                     toolType.getId(),

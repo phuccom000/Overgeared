@@ -131,14 +131,14 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<AlloySmeltingRecipe> {
-        public static final MapCodec<AlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<AlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.fieldOf("group").forGetter(r -> r.group),
                 CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
                 Ingredient.CODEC.listOf(0, 4).fieldOf("ingredients").forGetter(r -> r.inputs),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.output),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
                 Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
-        ).apply(i, AlloySmeltingRecipe::new));
+        ).apply(instance, AlloySmeltingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, AlloySmeltingRecipe> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, r -> r.group,
