@@ -9,6 +9,7 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.entity.ArrowTier;
@@ -66,17 +67,15 @@ public class UpgradeArrowItem extends ArrowItem {
                 default -> "item.overgeared.arrow";
             };
 
-            boolean hasEffects = potionContents.getAllEffects().iterator().hasNext();
 
-            if (hasEffects) {
-                boolean isLingering = stack.getOrDefault(ModComponents.LINGERING_STATUS, false);
+            boolean isLingering = stack.getOrDefault(ModComponents.LINGERING_STATUS, false);
 
-                if (isLingering) {
-                    return tierName + ".lingering_named";
-                } else {
-                    return tierName + ".tipped_named";
-                }
+            if (isLingering) {
+                return tierName + ".lingering_named";
+            } else {
+                return tierName + ".tipped_named";
             }
+
         }
 
         return super.getDescriptionId(stack);
@@ -85,12 +84,9 @@ public class UpgradeArrowItem extends ArrowItem {
     @Override
     public Component getName(ItemStack stack) {
         PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-
-        if (!potionContents.equals(PotionContents.EMPTY)) {
-            // Check if there are any effects
-            boolean hasEffects = potionContents.getAllEffects().iterator().hasNext();
-
-            if (hasEffects && potionContents.potion().isPresent()) {
+        String baseDescId = getDescriptionId(stack);
+        if (!potionContents.equals(PotionContents.EMPTY) || potionContents.is(Potions.WATER)) {
+            if (potionContents.potion().isPresent()) {
                 // Get the potion registry key
                 var potionHolder = potionContents.potion().get();
                 var potionKey = BuiltInRegistries.POTION.getKey(potionHolder.value());
@@ -111,18 +107,18 @@ public class UpgradeArrowItem extends ArrowItem {
                         } else if (potionId.startsWith("strong_")) {
                             basePotionId = potionId.substring(7); // Remove "strong_"
                         }
-                        
+
                         String effectKey = "item.overgeared.arrow.effect." + basePotionId;
                         Component effectComponent = Component.translatable(effectKey);
 
-                        return Component.translatable(getDescriptionId(stack), effectComponent);
+                        return Component.translatable(baseDescId, effectComponent);
                     }
                 }
             }
 
-            return Component.translatable(getDescriptionId(stack) + ".no_effect");
+            return Component.translatable(baseDescId + ".no_effect");
         }
 
-        return Component.translatable(getDescriptionId(stack));
+        return Component.translatable(baseDescId);
     }
 }

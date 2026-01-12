@@ -98,11 +98,6 @@ public class ShapedNetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INe
         return pattern;
     }
 
-    public static class Type implements RecipeType<ShapedNetherAlloySmeltingRecipe> {
-        public static final Type INSTANCE = new Type();
-        public static final String ID = "shaped_nether_alloy_smelting";
-    }
-
     // -----------------------------
     // Serializer
     // -----------------------------
@@ -121,7 +116,7 @@ public class ShapedNetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INe
                     if (pattern.size() != 3) {
                         throw new IllegalArgumentException("3x3 pattern must have exactly 3 rows");
                     }
-                    
+
                     NonNullList<Ingredient> ingredients = NonNullList.withSize(9, Ingredient.EMPTY);
                     for (int y = 0; y < 3; y++) {
                         String row = pattern.get(y);

@@ -12,11 +12,14 @@ import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.common.Tags;
 
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
+import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
@@ -171,6 +174,8 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         for (RecipeHolder<CastingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.CASTING.get())) {
             registry.addRecipe(new CastingEmiRecipe(holder));
         }
+
+        registry.addRecipe(new DragonBreathEmiRecipe());
 
         // Collect and sort all forging recipes
         List<RecipeHolder<ForgingRecipe>> allRecipes = new ArrayList<>(

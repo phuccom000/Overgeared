@@ -9,6 +9,7 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.entity.ModEntities;
@@ -62,11 +63,8 @@ public class LingeringArrowItem extends ArrowItem {
     public Component getName(ItemStack stack) {
         PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 
-        if (!potionContents.equals(PotionContents.EMPTY)) {
-            // Check if there are any effects
-            boolean hasEffects = potionContents.getAllEffects().iterator().hasNext();
-
-            if (hasEffects && potionContents.potion().isPresent()) {
+        if (!potionContents.equals(PotionContents.EMPTY) || potionContents.is(Potions.WATER)) {
+            if (potionContents.potion().isPresent()) {
                 // Get the potion registry key
                 var potionHolder = potionContents.potion().get();
                 var potionKey = BuiltInRegistries.POTION.getKey(potionHolder.value());
@@ -87,7 +85,7 @@ public class LingeringArrowItem extends ArrowItem {
                         } else if (potionId.startsWith("strong_")) {
                             basePotionId = potionId.substring(7); // Remove "strong_"
                         }
-                        
+
                         String effectKey = "item.overgeared.arrow.effect." + basePotionId;
                         Component effectComponent = Component.translatable(effectKey);
 

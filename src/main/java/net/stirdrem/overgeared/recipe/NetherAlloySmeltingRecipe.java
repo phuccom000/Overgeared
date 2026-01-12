@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //TODO: make this extend AlloySmeltingRecipe to cut down on duplicate code
-public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
+public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAlloyRecipe {
     private final String group;
     private final CraftingBookCategory category;
     private final List<Ingredient> ingredients;
