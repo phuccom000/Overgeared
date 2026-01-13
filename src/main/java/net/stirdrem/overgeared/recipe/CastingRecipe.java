@@ -16,6 +16,7 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
         // Tool cast (slot 3)
         ItemStack cast = input.getItem(1);
-        if (!(cast.getItem() instanceof ToolCastItem)) return false;
+        if (!(cast.getItem() instanceof ToolCastItem) || cast.is(ModItems.UNFIRED_TOOL_CAST)) return false;
 
         // Get cast data component
         CastData castData = cast.get(ModComponents.CAST_DATA.get());

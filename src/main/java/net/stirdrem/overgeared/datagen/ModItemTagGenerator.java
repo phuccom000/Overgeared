@@ -219,6 +219,7 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                 );
         this.tag(ModTags.Items.TOOL_CAST)
                 .add(
+                        ModItems.UNFIRED_TOOL_CAST.get(),
                         ModItems.CLAY_TOOL_CAST.get(),
                         ModItems.NETHER_TOOL_CAST.get()
                 );

@@ -6,6 +6,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,7 +38,7 @@ public class CastingEmiRecipe implements EmiRecipe {
     private final CastingRecipe recipe;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
-    private final EmiStack emiCastStack;
+    private final List<EmiStack> emiCastStack;
 
     // Store material requirements for display-time resolution
     private final Map<String, Integer> requiredMaterials;
@@ -56,7 +57,7 @@ public class CastingEmiRecipe implements EmiRecipe {
 
         // Build inputs list (cast only - materials resolved at display time)
         List<EmiIngredient> inputList = new ArrayList<>();
-        inputList.add(EmiIngredient.of(List.of(emiCastStack)));
+        inputList.add(EmiIngredient.of(emiCastStack));
         this.inputs = inputList;
 
         this.outputs = List.of(EmiStack.of(recipe.getResultItem(null)));
@@ -65,22 +66,33 @@ public class CastingEmiRecipe implements EmiRecipe {
     /**
      * Creates a cast ItemStack with the tool type and max value set.
      */
-    private EmiStack createCast(int maxValue) {
+    private List<EmiStack> createCast(int maxValue) {
         CastData castData = new CastData(
                 "", // quality
                 recipe.getToolType(),
                 Map.of(), // empty materials (unfilled)
                 0, // current
-                maxValue, // max - set to total required materials
+                maxValue, // max - total required materials
                 List.of(), // input
                 ItemStack.EMPTY, // output
                 false // heated
         );
 
-        ItemStack cast = new ItemStack(ModItems.CLAY_TOOL_CAST.get());
-        cast.set(ModComponents.CAST_DATA.get(), castData);
-        return EmiStack.of(cast);
+        List<EmiStack> stacks = new ArrayList<>();
+
+        // Clay cast
+        ItemStack clayCast = new ItemStack(ModItems.CLAY_TOOL_CAST.get());
+        clayCast.set(ModComponents.CAST_DATA.get(), castData);
+        stacks.add(EmiStack.of(clayCast));
+
+        // Nether cast
+        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST.get());
+        netherCast.set(ModComponents.CAST_DATA.get(), castData);
+        stacks.add(EmiStack.of(netherCast));
+
+        return stacks;
     }
+
 
     /**
      * Builds material stacks at display time using config-based material values.
@@ -90,53 +102,38 @@ public class CastingEmiRecipe implements EmiRecipe {
         List<EmiStack> validStacks = new ArrayList<>();
 
         for (Map.Entry<String, Integer> entry : requiredMaterials.entrySet()) {
-            String materialId = entry.getKey().toLowerCase();
+            String requiredMaterialId = entry.getKey();
             int amountNeeded = entry.getValue();
 
-            // Try different tag patterns
-            String[] tagPatterns = {
-                    "c:storage_blocks/" + materialId,
-                    "c:ingots/" + materialId,
-                    "c:nuggets/" + materialId
-            };
+            // Iterate all registered items and find matching materials
+            BuiltInRegistries.ITEM.forEach(item -> {
+                // Skip air
+                if (item == Items.AIR) return;
 
-            for (String tagPath : tagPatterns) {
-                TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(tagPath));
-                Ingredient ingredient = Ingredient.of(tag);
+                ItemStack stack = new ItemStack(item);
 
-                ItemStack[] items = ingredient.getItems();
-                for (ItemStack stack : items) {
-                    // Skip barriers (empty tags) and air
-                    if (stack.is(Items.BARRIER) || stack.isEmpty()) {
-                        continue;
-                    }
+                // Only accept valid materials
+                if (!ConfigHelper.isValidMaterial(item)) return;
 
-                    // Use ConfigHelper to get the actual material value for this item
-                    int materialValue = ConfigHelper.getMaterialValue(stack);
+                // Only accept items that match the required material ID
+                String materialId = ConfigHelper.getMaterialForItem(item);
+                if (!materialId.equalsIgnoreCase(requiredMaterialId)) return;
 
-                    // If config doesn't have this item, use default based on tag type
-                    if (materialValue <= 0) {
-                        if (tagPath.contains("storage_blocks")) {
-                            materialValue = 81;
-                        } else if (tagPath.contains("ingots")) {
-                            materialValue = 9;
-                        } else if (tagPath.contains("nuggets")) {
-                            materialValue = 1;
-                        }
-                    }
+                int materialValue = ConfigHelper.getMaterialValue(item);
+                if (materialValue <= 0) return;
 
-                    if (materialValue > 0) {
-                        int count = (int) Math.ceil((double) amountNeeded / materialValue);
-                        ItemStack copy = stack.copy();
-                        copy.setCount(count);
-                        validStacks.add(EmiStack.of(copy));
-                    }
-                }
-            }
+                int count = (int) Math.ceil((double) amountNeeded / materialValue);
+
+                ItemStack copy = stack.copy();
+                copy.setCount(count);
+
+                validStacks.add(EmiStack.of(copy));
+            });
         }
 
         return validStacks;
     }
+
 
     @Override
     public EmiRecipeCategory getCategory() {
@@ -193,7 +190,7 @@ public class CastingEmiRecipe implements EmiRecipe {
         // Cast slot (bottom-left) - shows empty tool cast
         int castX = offsetX;
         int castY = offsetY + EmiLayoutConstants.SLOT_SIZE + 2;
-        widgets.addSlot(emiCastStack, castX, castY);
+        widgets.addSlot(EmiIngredient.of(emiCastStack), castX, castY);
 
         // Arrow (middle, vertically centered)
         int arrowX = offsetX + EmiLayoutConstants.SLOT_SIZE + 8;

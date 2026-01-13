@@ -1,12 +1,15 @@
 package net.stirdrem.overgeared.util;
+
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
@@ -37,7 +40,7 @@ public class ConfigHelper {
      */
     public static int getMaxMaterialAmount(String toolType) {
         for (var e : ServerConfig.CASTING_TOOL_TYPES.get()) {
-          if (e.get(0).equals(toolType)) {
+            if (e.get(0).equals(toolType)) {
                 return ((Number) e.get(1)).intValue();
             }
         }
@@ -55,7 +58,6 @@ public class ConfigHelper {
     public static String getMaterialDisplayName(String materialId) {
         return "material.overgeared." + materialId.toLowerCase();
     }
-
 
 
     // Cache for tool type mappings (populated from RecipeManager)
@@ -79,12 +81,12 @@ public class ConfigHelper {
                 .map(r -> r.value().toolType())
                 .findFirst()
                 .orElse("none");
-        
+
         // Cache the result for use in contexts without Level access
         if (!"none".equals(toolType)) {
             toolTypeCache.put(stack.getItem(), toolType);
         }
-        
+
         return toolType;
     }
 
@@ -112,7 +114,7 @@ public class ConfigHelper {
 
         // Fallback to config for backward compatibility
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          String key = (String) e.get(0);
+            String key = (String) e.get(0);
             if (matchesItemOrTag(item, key)) {
                 return (String) e.get(1);
             }
@@ -140,7 +142,7 @@ public class ConfigHelper {
 
         // Fallback to config for backward compatibility
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          String key = (String) e.get(0);
+            String key = (String) e.get(0);
             if (matchesItemOrTag(item, key)) {
                 return ((Number) e.get(2)).intValue();
             }
@@ -166,7 +168,7 @@ public class ConfigHelper {
 
         // Fallback to config for backward compatibility
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          String key = (String) e.getFirst();
+            String key = (String) e.getFirst();
             if (matchesItemOrTag(item, key)) {
                 return true;
             }
@@ -191,7 +193,7 @@ public class ConfigHelper {
 
         // Add config entries (will override datapack if same material ID)
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          String key = (String) e.getFirst();
+            String key = (String) e.getFirst();
             if (matchesItemOrTag(item, key)) {
                 String materialId = (String) e.get(1);
                 int value = ((Number) e.get(2)).intValue();
@@ -206,19 +208,30 @@ public class ConfigHelper {
      * Helper: matches an item against an item ID or tag key
      */
     private static boolean matchesItemOrTag(Item item, String key) {
-        // Exact match by registry name
+        // Direct item match
         if (BuiltInRegistries.ITEM.getKey(item).toString().equals(key)) return true;
 
-        // Tag check if the key starts with "#"
+        // Tag match
         if (key.startsWith("#")) {
-            String tagId = key.substring(1); // Remove #
-            TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(tagId));
+            ResourceLocation tagId = ResourceLocation.tryParse(key.substring(1));
+            if (tagId == null) return false;
 
-            return new ItemStack(item).is(tag);
+            // ---- Item tag check ----
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
+            if (item.getDefaultInstance().is(itemTag)) {
+                return true;
+            }
+
+            // ---- Block tag check (for BlockItems) ----
+            if (item instanceof BlockItem blockItem) {
+                TagKey<Block> blockTag = TagKey.create(Registries.BLOCK, tagId);
+                return blockItem.getBlock().defaultBlockState().is(blockTag);
+            }
         }
 
         return false;
     }
+
 
     // -----------------------
     // New utility methods for datapack integration
@@ -237,7 +250,7 @@ public class ConfigHelper {
 
         // From config
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          materialIds.add((String) e.get(1));
+            materialIds.add((String) e.get(1));
         }
 
         return materialIds;
@@ -256,7 +269,7 @@ public class ConfigHelper {
 
         // From config
         for (var e : ServerConfig.MATERIAL_SETTING.get()) {
-          if (e.get(1).equals(materialId)) {
+            if (e.get(1).equals(materialId)) {
                 items.add((String) e.getFirst());
             }
         }

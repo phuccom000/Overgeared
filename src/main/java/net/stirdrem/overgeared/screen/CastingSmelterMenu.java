@@ -8,6 +8,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.stirdrem.overgeared.block.entity.CastingSmelterBlockEntity;
+import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -132,7 +133,7 @@ public class CastingSmelterMenu extends AbstractContainerMenu {
         /* ================= PLAYER INVENTORY → BLOCK ================= */
         else if (index >= 4) {
             // TOOL CAST → CAST SLOT (try this first)
-            if (stack.is(ModTags.Items.TOOL_CAST)) {
+            if (stack.is(ModTags.Items.TOOL_CAST) && !stack.is(ModItems.UNFIRED_TOOL_CAST)) {
                 if (!this.moveItemStackTo(
                         stack,
                         CastingSmelterBlockEntity.SLOT_CAST,
