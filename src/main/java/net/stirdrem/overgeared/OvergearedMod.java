@@ -48,6 +48,7 @@ import net.stirdrem.overgeared.client.AnvilMinigameOverlay;
 import net.stirdrem.overgeared.client.ClientInit;
 import net.stirdrem.overgeared.client.PopupOverlay;
 import net.stirdrem.overgeared.command.ModCommands;
+import net.stirdrem.overgeared.compat.curios.CuriosModPlugin;
 import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.entity.ModEntities;
 
@@ -132,6 +133,10 @@ public class OvergearedMod {
         MinecraftForge.EVENT_BUS.register(this);
         modEventBus.addListener(this::addCreative);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+
+        if (ModList.get().isLoaded("curios")) {
+            MinecraftForge.EVENT_BUS.register(CuriosModPlugin.class);
+        }
 
         polymorph = ModList.get().isLoaded("polymorph");
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ServerConfig.SERVER_CONFIG);

@@ -319,8 +319,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
         }
 
-        CompoundTag resultTag = result.getOrCreateTag();
-
+        CompoundTag resultTag = result.getTag();
+        if (resultTag == null) resultTag = new CompoundTag();
         // Base result NBT
         if (recipe.hasQuality()
                 && player != null
@@ -382,6 +382,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 }
             }
         }
+        if (!resultTag.isEmpty())
+            result.setTag(resultTag);
 
         transferIngredientNBT(result, recipe);
 
@@ -496,7 +498,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     private void transferIngredientNBT(ItemStack result, ForgingRecipe recipe) {
-        CompoundTag resultTag = result.getOrCreateTag();
+        CompoundTag resultTag = result.getTag();
+        if (resultTag == null)
+            resultTag = new CompoundTag();
 
         List<ForgingRecipe.ForgingIngredient> ingredients =
                 recipe.getForgingIngredients();
@@ -548,7 +552,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             );
         }
 
-        result.setTag(resultTag);
+        if (!resultTag.isEmpty()) {
+            result.setTag(resultTag);
+        }
     }
 
 
@@ -1047,7 +1053,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (stack.isEmpty()) continue;
             if (!stack.is(ModTags.Items.HEATED_METALS)) continue;
 
-            CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = stack.getTag();
+            if (tag == null) tag = new CompoundTag();
             long heatedSince = tag.getLong(HEATED_TIME_TAG);
 
             // Initialize timestamp if not present

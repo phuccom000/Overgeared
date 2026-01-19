@@ -188,6 +188,9 @@ repositories {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url 'https://maven.su5ed.dev/releases' }
+    maven { url 'https://maven.fabricmc.net' }
     exclusiveContent {
         forRepository {
             maven {
@@ -248,13 +251,34 @@ dependencies {
     implementation fg.deobf("curse.maven:cupboard-326652:5470032")
     implementation fg.deobf("curse.maven:recipe-essentials-forge-fabric-907856:6165709")
     //implementation fg.deobf("curse.maven:ewewukeks-musket-mod-354562:5805565")
-    implementation fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:6970299")
+    //implementation fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:6970299")
     implementation fg.deobf("curse.maven:caelus-308989:5281700")
     implementation fg.deobf("curse.maven:attribute-setter-1064034:7196879")
     /*    implementation fg.deobf("curse.maven:amendments-896746:6913537")
     implementation fg.deobf("curse.maven:accessories-938917:6201361")*/
-    implementation fg.deobf("curse.maven:playeranimator-658587:4587214")
-    implementation fg.deobf("curse.maven:geckolib-388172:7025129")
+    //implementation fg.deobf("curse.maven:playeranimator-658587:4587214")
+    //implementation fg.deobf("curse.maven:geckolib-388172:7025129")
+
+    // Compile against only the API artifact
+    compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api"))
+    // Use the full Curios API jar at runtime
+    //runtimeOnly(fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}"))
+    /*runtimeOnly fg.deobf("curse.maven:lionfish-api-1001614:5922047")
+    runtimeOnly fg.deobf("curse.maven:lendercataclysm-551586:6906993")*/
+    runtimeOnly fg.deobf("curse.maven:selene-499980:6983934")
+    //implementation("io.wispforest:accessories-neoforge:${accessories_version}")
+    runtimeOnly fg.deobf("curse.maven:owo-lib-532610:4749199")
+
+    runtimeOnly fg.deobf("curse.maven:amendments-896746:6913537")
+    implementation fg.deobf("curse.maven:accessories-938917:7164863")
+    runtimeOnly fg.deobf("curse.maven:playeranimator-658587:4587214")
+    runtimeOnly fg.deobf("curse.maven:forgified-fabric-api-889079:6885853")
+    implementation fg.deobf("curse.maven:better-combat-by-daedelus-639842:7287334")
+    runtimeOnly fg.deobf("curse.maven:connector-extras-913445:5490637")
+    runtimeOnly fg.deobf("curse.maven:sinytra-connector-890127:5761411")
+    implementation fg.deobf("curse.maven:knights-and-heraldry-1176972:7369538")
+    runtimeOnly fg.deobf("curse.maven:stoneycore-1209106:7373481")
+    runtimeOnly fg.deobf("blank:geckolib-fabric-1.20.1:4.8.2")
 
     /*implementation fg.deobf("curse.maven:forgified-fabric-api-889079:6885853")
     implementation fg.deobf("curse.maven:better-combat-by-daedelus-639842:5625757")
@@ -277,12 +301,12 @@ dependencies {
     //implementation fg.deobf("curse.maven:savage-and-ravage-381736:6040963")
     //implementation fg.deobf("curse.maven:hold-my-items-reforged-1246920:6608415")
 
-    /*runtimeOnly fg.deobf("curse.maven:epic-knights-armor-and-weapons-509041:6373737")
+    runtimeOnly fg.deobf("curse.maven:epic-knights-armor-and-weapons-509041:6373737")
     runtimeOnly fg.deobf("curse.maven:epic-knights-addon-925866:6036869")
     runtimeOnly fg.deobf("curse.maven:epic-knights-slavic-armory-942000:5458480")
     runtimeOnly fg.deobf("curse.maven:cloth-config-348521:5729105")
     runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
-    */
+
     //runtimeOnly fg.deobf("curse.maven:archery-expansion-1164945:6424928")
     //runtimeOnly fg.deobf("curse.maven:archery-expansion-squared-1217171:6425344")
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

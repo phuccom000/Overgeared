@@ -114,11 +114,12 @@ public class ModEvents {
             if (isWeapon(item)) {
                 applyWeaponAttributes(event, quality);
             }
-            if (isArmor(item)) {
+            if (isArmor(item))
                 applyArmorAttributes(event, quality);
-            }
+
         }
     }
+
 
     private static void applyWeaponAttributes(ItemAttributeModifierEvent event, String quality) {
         double damageBonus = getDamageBonusForQuality(quality);
