@@ -20,6 +20,8 @@ public class ServerConfig {
 
     // --- Heated Items ---
     public static final ModConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
+    public static final ModConfigSpec.IntValue COOLING_CHECK_RATE;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> COOLING_BLOCK_ENTITY_BLACKLIST;
 
     // --- Arrow Settings ---
     public static final ModConfigSpec.BooleanValue ENABLE_DRAGON_BREATH_RECIPE;
@@ -153,6 +155,22 @@ public class ServerConfig {
 
         builder.push("Heated Items");
         HEATED_ITEM_COOLDOWN_TICKS = builder.comment("How many ticks before a heated item cools off in inventory (default: 1200 = 60s)").defineInRange("heatedItemCooldownTicks", 1200, 1, Integer.MAX_VALUE);
+        COOLING_CHECK_RATE = builder.comment("How often (in ticks) to check containers for heated items to cool. Lower = more responsive but more CPU. Minimum 20 ticks (1 second).").defineInRange("coolingCheckRate", 20, 20, 1200);
+        COOLING_BLOCK_ENTITY_BLACKLIST = builder
+                .comment(
+                        "Block entity types that should NOT be checked for item cooling.",
+                        "Use the full registry name, e.g. 'minecraft:furnace', 'minecraft:blast_furnace'.",
+                        "Useful for excluding containers you don't want affected by cooling."
+                )
+                .define(
+                        List.of("coolingBlockEntityBlacklist"),
+                        List.of(
+                                "minecraft:furnace",
+                                "minecraft:blast_furnace"
+                        ),
+                        o -> o instanceof List<?> list && list.stream().allMatch(e -> e instanceof String)
+                );
+
         builder.pop();
 
         builder.push("Arrow Fletching Settings");

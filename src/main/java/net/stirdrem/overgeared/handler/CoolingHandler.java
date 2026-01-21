@@ -19,6 +19,8 @@ import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ChunkHelper;
 import net.stirdrem.overgeared.util.ModTags;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -32,15 +34,17 @@ import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
  */
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class CoolingHandler {
-    private static final int COOLING_CHECK_RATE = 20; // Check every 20 ticks (1 second)
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onWorldTick(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-        if (level.getGameTime() % COOLING_CHECK_RATE != 0) return;
+        
+        int checkRate = ServerConfig.COOLING_CHECK_RATE.get();
+        if (level.getGameTime() % checkRate != 0) return;
 
         long now = level.getGameTime();
         int cooldown = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        List<String> blacklist = (List<String>) ServerConfig.COOLING_BLOCK_ENTITY_BLACKLIST.get();
 
         List<BlockPos> blockEntityPositions = ChunkHelper.getBlockEntityPositions(level)
                 .stream()
@@ -52,6 +56,12 @@ public class CoolingHandler {
         for (BlockPos pos : blockEntityPositions) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be == null || be.isRemoved() || !be.hasLevel()) continue;
+
+            // Check if block entity type is blacklisted
+            ResourceLocation beType = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
+            if (beType != null && blacklist.contains(beType.toString())) {
+                continue;
+            }
 
             // Prefer Container interface for direct slot access (bypasses slot restrictions)
             if (be instanceof Container container) {
@@ -144,7 +154,9 @@ public class CoolingHandler {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (player.level().getGameTime() % COOLING_CHECK_RATE != 0) return;
+        
+        int checkRate = ServerConfig.COOLING_CHECK_RATE.get();
+        if (player.level().getGameTime() % checkRate != 0) return;
 
         long now = player.level().getGameTime();
         int cooldown = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
