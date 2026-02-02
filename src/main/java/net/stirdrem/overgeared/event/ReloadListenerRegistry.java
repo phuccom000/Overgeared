@@ -16,5 +16,6 @@ public class ReloadListenerRegistry {
         event.addListener(new CastingToolTypesReloadListener());
         event.addListener(new MaterialSettingsReloadListener());
         event.addListener(new KnappingResourceReloadListener());
+        event.addListener(new RockInteractionReloadListener());
     }
 }

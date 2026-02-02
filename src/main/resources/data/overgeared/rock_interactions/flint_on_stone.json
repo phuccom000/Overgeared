@@ -1,0 +1,12 @@
+{
+  "input_block": "minecraft:stone",
+  "result_block": "minecraft:cobblestone",
+  "tools": [
+    {
+      "item": "minecraft:flint",
+      "drop_item": "overgeared:knappable_rock",
+      "drop_chance": 0.30,
+      "break_chance": 0.10
+    }
+  ]
+}
