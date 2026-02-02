@@ -54,8 +54,7 @@ public class ServerConfig {
     // --- Tool/Blueprint Settings ---
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> AVAILABLE_TOOL_TYPES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> HIDDEN_TOOL_TYPES;
-    public static final ForgeConfigSpec.IntValue MASTER_MAX_USE;
-    public static final ForgeConfigSpec.IntValue PERFECT_MAX_USE;
+
     public static final ForgeConfigSpec.IntValue EXPERT_MAX_USE;
     public static final ForgeConfigSpec.IntValue WELL_MAX_USE;
     public static final ForgeConfigSpec.IntValue POOR_MAX_USE;
@@ -281,8 +280,6 @@ public class ServerConfig {
 
         EXPERT_ABOVE_INCREASE_BLUEPRINT = builder.comment("Only increase blueprint's use if you get Expert or above in minigame.").define("expertAboveIncreaseBlueprintToggle", true);
 
-        MASTER_MAX_USE = builder.comment("Uses required to reach the next quality after Master").defineInRange("masterMaxUse", 0, 0, Integer.MAX_VALUE);
-        PERFECT_MAX_USE = builder.comment("Uses required to reach the next quality after Perfect").defineInRange("perfectMaxUse", 50, 0, 1000);
         EXPERT_MAX_USE = builder.comment("Uses required to reach the next quality after Expert").defineInRange("expertMaxUse", 20, 0, 1000);
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);
@@ -318,9 +315,19 @@ public class ServerConfig {
         builder.pop();
 
         builder.push("Knapping Settings");
-        GET_ROCK_USING_FLINT = builder.comment("Toggle for obtaining rock using flint").define("useFlintGetRock", true);
-        ROCK_DROPPING_CHANCE = builder.defineInRange("rockDroppingChance", 0.1, 0, 1);
-        FLINT_BREAKING_CHANCE = builder.defineInRange("flintBreakingChance", 0.1, 0, 1);
+
+        GET_ROCK_USING_FLINT = builder
+                .comment("Fallback: Allow getting rocks by using flint on stone when no datapack interaction is found")
+                .define("useFlintGetRock", true);
+
+        ROCK_DROPPING_CHANCE = builder
+                .comment("Fallback: Chance to drop a rock when using flint on stone if datapack values are unavailable")
+                .defineInRange("rockDroppingChance", 0.1, 0, 1);
+
+        FLINT_BREAKING_CHANCE = builder
+                .comment("Fallback: Chance for flint breaking when flint is used on stone if datapack values are unavailable")
+                .defineInRange("flintBreakingChance", 0.1, 0, 1);
+
         builder.pop();
         builder.push("Loot Quality");
         ENABLE_LOOT_QUALITY = builder.comment("Toggle for loot quality").define("enableLootQuality", true);

@@ -7,8 +7,8 @@ public enum BlueprintQuality {
     POOR("poor", ServerConfig.POOR_MAX_USE.get(), ChatFormatting.RED),
     WELL("well", ServerConfig.WELL_MAX_USE.get(), ChatFormatting.YELLOW),
     EXPERT("expert", ServerConfig.EXPERT_MAX_USE.get(), ChatFormatting.BLUE),
-    PERFECT("perfect", ServerConfig.PERFECT_MAX_USE.get(), ChatFormatting.GOLD),
-    MASTER("master", ServerConfig.MASTER_MAX_USE.get(), ChatFormatting.LIGHT_PURPLE); // Final tier
+    PERFECT("perfect", 0, ChatFormatting.GOLD),
+    MASTER("master", 0, ChatFormatting.LIGHT_PURPLE); // Final tier
 
     private final String id;
     private final int use;

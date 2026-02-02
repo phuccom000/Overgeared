@@ -2,6 +2,7 @@ package net.stirdrem.overgeared;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import io.wispforest.accessories.api.events.AdjustAttributeModifierCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -48,6 +49,7 @@ import net.stirdrem.overgeared.client.AnvilMinigameOverlay;
 import net.stirdrem.overgeared.client.ClientInit;
 import net.stirdrem.overgeared.client.PopupOverlay;
 import net.stirdrem.overgeared.command.ModCommands;
+import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.compat.curios.CuriosModPlugin;
 import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.entity.ModEntities;
@@ -126,8 +128,8 @@ public class OvergearedMod {
 
         ModAttributes.register(modEventBus);
 
-        MinecraftForge.EVENT_BUS.register(TickScheduler.class);
 
+        MinecraftForge.EVENT_BUS.register(TickScheduler.class);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::sendImc);
         MinecraftForge.EVENT_BUS.register(this);
@@ -223,6 +225,15 @@ public class OvergearedMod {
     private void commonSetup(final FMLCommonSetupEvent event) {
         ModMessages.register();
         ToolTypeRegistry.init();
+        event.enqueueWork(() -> {
+            // Check if Accessories mod is loaded
+            if (ModList.get().isLoaded("accessories")) {
+                AttributeModifierHandler.register();
+                OvergearedMod.LOGGER.info("Accessories mod detected - AttributeModifierHandler registered");
+            } else {
+                OvergearedMod.LOGGER.info("Accessories mod not present - skipping AttributeModifierHandler registration");
+            }
+        });
 
         if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get())
             BrewingRecipeRegistry.addRecipe(
