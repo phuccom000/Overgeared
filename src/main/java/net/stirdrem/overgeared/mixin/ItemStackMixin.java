@@ -51,12 +51,12 @@ public abstract class ItemStackMixin {
     )
     private void modifyDurabilityBasedOnQuality(CallbackInfoReturnable<Integer> cir) {
         ItemStack stack = (ItemStack) (Object) this;
-
-        if (!stack.isDamageableItem()) {
+        int originalDurability = cir.getReturnValue();
+        
+        if (originalDurability <= 0) {
             return;
         }
 
-        int originalDurability = cir.getReturnValue();
         boolean blacklisted = OvergearedMod.isDurabilityBlacklisted(stack);
 
         float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();

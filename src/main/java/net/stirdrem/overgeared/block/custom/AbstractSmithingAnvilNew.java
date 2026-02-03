@@ -243,23 +243,6 @@ public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implement
         super.onBlockExploded(state, level, pos, explosion);
     }
 
-    protected void resetMinigameData(Level level, BlockPos pos) {
-        if (!level.isClientSide()) {
-            for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-                UUID playerId = player.getUUID();
-                if (ModItemInteractEvents.playerAnvilPositions.getOrDefault(playerId, BlockPos.ZERO).equals(pos)) {
-                    // Send reset packet only to this specific player
-                    ModMessages.sendToPlayer(new ResetMinigameS2CPacket(pos), player);
-
-                    // Clear server-side tracking for this player
-                    ModItemInteractEvents.playerAnvilPositions.remove(playerId);
-                    ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
-                    break; // Only reset the first player found (should only be one)
-                }
-            }
-        }
-    }
-
     public static String getTier() {
         return tier.getDisplayName();
     }

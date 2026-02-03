@@ -37,6 +37,7 @@ import net.minecraftforge.event.village.WandererTradesEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -89,13 +90,18 @@ public class ModEvents {
     }
 
     private static void handleAnvilDistance(ServerPlayer player, Level level) {
+        // If Valkyrien Skies is on the mod list, skip the vanilla distance check entirely
+        if (ModList.get().isLoaded("valkyrienskies")) {
+            return;
+        }
+
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
-            if ((be instanceof AbstractSmithingAnvilBlockEntity)) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
-                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get(); // e.g. 7
-                if (distSq > maxDist * maxDist) {
+                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+                if (distSq > (double) maxDist * maxDist) {
                     resetMinigameForPlayer(player);
                 }
             }
