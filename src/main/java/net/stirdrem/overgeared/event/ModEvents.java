@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -42,6 +43,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -55,7 +57,6 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class ModEvents {
     private static final int HEATED_ITEM_CHECK_INTERVAL = 20; // 1 second
-    private static final float BURN_DAMAGE = 1.0f;
 
     //private static final Map<UUID, Integer> playerTimeoutCounters = new HashMap<>();
 
@@ -90,11 +91,29 @@ public class ModEvents {
     }
 
     private static void handleAnvilDistance(ServerPlayer player, Level level) {
-        // If Valkyrien Skies is on the mod list, skip the vanilla distance check entirely
         if (ModList.get().isLoaded("valkyrienskies")) {
+            if (level instanceof ServerLevel serverLevel) {
+                if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
+                    BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
+                    BlockEntity be = serverLevel.getBlockEntity(anvilPos);
+
+                    if (be instanceof AbstractSmithingAnvilBlockEntity) {
+                        Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverLevel, anvilPos);
+                        Vec3 playerWorldPos = player.position();
+
+                        double distSq = playerWorldPos.distanceToSqr(anvilWorldPos);
+                        int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+
+                        if (distSq > (double) maxDist * maxDist) {
+                            resetMinigameForPlayer(player);
+                        }
+                    }
+                }
+            }
             return;
         }
 
+        // Fallback: vanilla behavior when Valkyrien Skies is not loaded
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
