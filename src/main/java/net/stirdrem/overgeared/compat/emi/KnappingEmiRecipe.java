@@ -27,7 +27,7 @@ public class KnappingEmiRecipe implements EmiRecipe {
     public KnappingEmiRecipe(RecipeHolder<RockKnappingRecipe> holder) {
         this.id = holder.id();
         this.recipe = holder.value();
-        this.outputs = List.of(EmiStack.of(recipe.output()));
+        this.outputs = List.of(EmiStack.of(recipe.getResult()));
         // Recipe always consumes 1 Rock
         this.inputs = List.of(EmiStack.of(ModItems.ROCK.get()));
     }
@@ -73,7 +73,7 @@ public class KnappingEmiRecipe implements EmiRecipe {
         // Grid starts after input slot + padding
         int gridStartX = startX + 24;
 
-        boolean[][] pattern = recipe.pattern();
+        boolean[][] pattern = recipe.getPattern().getPattern();
 
 
         // Draw stones based on exact grid position
@@ -101,7 +101,7 @@ public class KnappingEmiRecipe implements EmiRecipe {
     }
 
     private ResourceLocation resolveUnchippedTexture(RockKnappingRecipe recipe) {
-        ItemStack[] stacks = recipe.ingredient().getItems();
+        ItemStack[] stacks = recipe.getIngredient().getItems();
 
         for (ItemStack stack : stacks) {
             ResourceLocation tex = KnappingResourceReloadListener.getTexture(stack);

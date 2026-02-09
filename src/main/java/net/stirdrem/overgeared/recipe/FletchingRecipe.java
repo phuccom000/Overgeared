@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.recipe;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -119,7 +120,7 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
     }
 
     public static class Serializer implements RecipeSerializer<FletchingRecipe> {
-        public static final MapCodec<FletchingRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<FletchingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.optionalFieldOf("tip", Ingredient.EMPTY).forGetter(r -> r.tip),
                 Ingredient.CODEC.optionalFieldOf("shaft", Ingredient.EMPTY).forGetter(r -> r.shaft),
                 Ingredient.CODEC.optionalFieldOf("feather", Ingredient.EMPTY).forGetter(r -> r.feather),
@@ -127,38 +128,39 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 ItemStack.CODEC.optionalFieldOf("result_tipped", ItemStack.EMPTY).forGetter(r -> r.resultTipped),
                 ItemStack.CODEC.optionalFieldOf("result_lingering", ItemStack.EMPTY).forGetter(r -> r.resultLingering),
-                com.mojang.serialization.Codec.STRING.optionalFieldOf("tipped_tag", "Potion").forGetter(r -> r.tippedTag),
-                com.mojang.serialization.Codec.STRING.optionalFieldOf("lingering_tag", "LingeringPotion").forGetter(r -> r.lingeringTag)
-        ).apply(i, FletchingRecipe::new));
+                Codec.STRING.optionalFieldOf("tipped_tag", "Potion").forGetter(r -> r.tippedTag),
+                Codec.STRING.optionalFieldOf("lingering_tag", "LingeringPotion").forGetter(r -> r.lingeringTag)
+        ).apply(instance, FletchingRecipe::new));
 
-        public static final StreamCodec<RegistryFriendlyByteBuf, FletchingRecipe> STREAM_CODEC = new StreamCodec<>() {
-            @Override
-            public FletchingRecipe decode(RegistryFriendlyByteBuf buffer) {
-                Ingredient tip = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-                Ingredient shaft = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-                Ingredient feather = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-                Ingredient potion = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-                ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
-                ItemStack resultTipped = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
-                ItemStack resultLingering = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
-                String tippedTag = buffer.readUtf();
-                String lingeringTag = buffer.readUtf();
-                return new FletchingRecipe(tip, shaft, feather, potion, result, resultTipped, resultLingering, tippedTag, lingeringTag);
-            }
+        public static final StreamCodec<RegistryFriendlyByteBuf, FletchingRecipe> STREAM_CODEC = StreamCodec.of(
+            Serializer::toNetwork, Serializer::fromNetwork
+        );
 
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, FletchingRecipe recipe) {
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.tip);
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.shaft);
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.feather);
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.potion);
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultTipped);
-                ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultLingering);
-                buffer.writeUtf(recipe.tippedTag);
-                buffer.writeUtf(recipe.lingeringTag);
-            }
-        };
+        private static FletchingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            Ingredient tip = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+            Ingredient shaft = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+            Ingredient feather = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+            Ingredient potion = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            ItemStack resultTipped = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
+            ItemStack resultLingering = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
+            String tippedTag = buffer.readUtf();
+            String lingeringTag = buffer.readUtf();
+
+            return new FletchingRecipe(tip, shaft, feather, potion, result, resultTipped, resultLingering, tippedTag, lingeringTag);
+        }
+
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, FletchingRecipe recipe) {
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.tip);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.shaft);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.feather);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.potion);
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultTipped);
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultLingering);
+            buffer.writeUtf(recipe.tippedTag);
+            buffer.writeUtf(recipe.lingeringTag);
+        }
 
         @Override
         public MapCodec<FletchingRecipe> codec() {

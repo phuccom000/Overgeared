@@ -18,6 +18,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.recipe.OvergearedShapelessRecipe;
+import net.stirdrem.overgeared.recipe.ingredients.IngredientWithRemainder;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -26,7 +27,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
     private final RecipeCategory category;
     private final Item result;
     private final int count;
-    private final List<Ingredient> ingredients = Lists.newArrayList();
+    private final List<IngredientWithRemainder> ingredients = Lists.newArrayList();
     private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
     @Nullable
     private String group;
@@ -66,7 +67,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
 
     public OvergearedShapelessRecipeBuilder requires(Ingredient pIngredient, int pQuantity) {
         for (int i = 0; i < pQuantity; ++i) {
-            this.ingredients.add(pIngredient);
+            this.ingredients.add(new IngredientWithRemainder(pIngredient, false, 0));
         }
         return this;
     }
@@ -99,7 +100,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
         this.criteria.forEach(advBuilder::addCriterion);
 
         // Ingredients
-        NonNullList<Ingredient> ingredients = NonNullList.create();
+        NonNullList<IngredientWithRemainder> ingredients = NonNullList.create();
         ingredients.addAll(this.ingredients);
 
         // Default remainder & durability arrays (all false / 0)
@@ -111,9 +112,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
                 this.group == null ? "" : this.group,
                 determineBookCategory(this.category),
                 new ItemStack(this.result, this.count),
-                ingredients,
-                remainder,
-                durability
+                ingredients
         );
 
         output.accept(

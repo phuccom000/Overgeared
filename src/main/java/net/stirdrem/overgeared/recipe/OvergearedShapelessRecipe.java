@@ -1,6 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -12,33 +13,16 @@ import net.minecraft.world.item.crafting.*;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.recipe.ingredients.IngredientWithRemainder;
 
 public class OvergearedShapelessRecipe extends ShapelessRecipe {
-
     private final NonNullList<IngredientWithRemainder> ingredientsWithRemainder;
     private final ItemStack result;
 
-    public OvergearedShapelessRecipe(
-            String group,
-            CraftingBookCategory category,
-            ItemStack result,
-            NonNullList<Ingredient> ingredients,
-            boolean[] remainder,
-            int[] durability
-    ) {
-        super(group, category, result, ingredients);
+    public OvergearedShapelessRecipe(String group, CraftingBookCategory category, ItemStack result, NonNullList<IngredientWithRemainder> ingredients) {
+        super(group, category, result, convertToBaseIngredients(ingredients));
 
-        this.ingredientsWithRemainder = NonNullList.create();
-        for (int i = 0; i < ingredients.size(); i++) {
-            this.ingredientsWithRemainder.add(
-                    new IngredientWithRemainder(
-                            ingredients.get(i),
-                            i < remainder.length && remainder[i],
-                            i < durability.length ? durability[i] : 0
-                    )
-            );
-        }
-
+        this.ingredientsWithRemainder = ingredients;
         this.result = result;
     }
 
@@ -204,164 +188,60 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
         return ModRecipeSerializers.CRAFTING_SHAPELESS.get();
     }
 
-    // Custom ingredient class with remainder support
-    public static class IngredientWithRemainder {
-        private final Ingredient ingredient;
-        private final boolean remainder;
-        private final int durabilityDecrease;
+    public static class Serializer implements RecipeSerializer<OvergearedShapelessRecipe> {
 
-        public IngredientWithRemainder(Ingredient ingredient, boolean remainder, int durabilityDecrease) {
-            this.ingredient = ingredient;
-            this.remainder = remainder;
-            this.durabilityDecrease = durabilityDecrease;
-        }
+        public static final MapCodec<OvergearedShapelessRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("group", "").forGetter(ShapelessRecipe::getGroup),
+                CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(ShapelessRecipe::category),
+                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                IngredientWithRemainder.CODEC.listOf(0, 9).fieldOf("ingredients").flatXmap(list -> {
+                        IngredientWithRemainder[] ingredients = list.toArray(IngredientWithRemainder[]::new);
+                        int size = ShapedRecipePattern.getMaxHeight() * ShapedRecipePattern.getMaxWidth();
+                        if (ingredients.length == 0) {
+                            return DataResult.error(() -> "No ingredients for shapeless recipe");
+                        } else {
+                            return ingredients.length > size ? DataResult.error(() -> "Too many ingredients for shapeless recipe. The maximum is: The maximum is: %s".formatted(size)) : DataResult.success(NonNullList.of(IngredientWithRemainder.EMPTY, ingredients));
+                        }
+                }, DataResult::success).forGetter(r -> r.ingredientsWithRemainder)
+        ).apply(instance, OvergearedShapelessRecipe::new));
 
-        public Ingredient getIngredient() {
-            return ingredient;
-        }
+        public static final StreamCodec<RegistryFriendlyByteBuf, OvergearedShapelessRecipe> STREAM_CODEC = StreamCodec.of(
+                Serializer::toNetwork, Serializer::fromNetwork
+        );
 
-        public boolean hasRemainder() {
-            return remainder;
-        }
+        public static OvergearedShapelessRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            String group = buffer.readUtf();
+            CraftingBookCategory category = buffer.readEnum(CraftingBookCategory.class);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
 
-        public int getDurabilityDecrease() {
-            return durabilityDecrease;
-        }
-
-        public ItemStack getRemainder(ItemStack original) {
-            if (!remainder) return ItemStack.EMPTY;
-
-            ItemStack stack = original.copy();
-            stack.setCount(1);
-
-            if (durabilityDecrease > 0 && stack.isDamageableItem()) {
-                int newDamage = stack.getDamageValue() + durabilityDecrease;
-                if (newDamage >= stack.getMaxDamage()) {
-                    return ItemStack.EMPTY;
-                }
-                stack.setDamageValue(newDamage);
+            int ingredientCount = buffer.readVarInt();
+            NonNullList<IngredientWithRemainder> ingredients = NonNullList.create();
+            for (int i = 0; i < ingredientCount; i++) {
+                ingredients.add(IngredientWithRemainder.STREAM_CODEC.decode(buffer));
             }
 
-            return stack;
+            return new OvergearedShapelessRecipe(group, category, result, ingredients);
         }
-    }
 
+        public static void toNetwork(RegistryFriendlyByteBuf buffer, OvergearedShapelessRecipe recipe) {
+            buffer.writeUtf(recipe.getGroup());
+            buffer.writeEnum(recipe.category());
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
 
-    public static class Serializer implements RecipeSerializer<OvergearedShapelessRecipe> {
+            buffer.writeVarInt(recipe.ingredientsWithRemainder.size());
+            for (IngredientWithRemainder ingredient : recipe.ingredientsWithRemainder) {
+                IngredientWithRemainder.STREAM_CODEC.encode(buffer, ingredient);
+            }
+        }
 
         @Override
         public MapCodec<OvergearedShapelessRecipe> codec() {
-            return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                    Codec.STRING.optionalFieldOf("group", "")
-                            .forGetter(OvergearedShapelessRecipe::getGroup),
-                    CraftingBookCategory.CODEC
-                            .optionalFieldOf("category", CraftingBookCategory.MISC)
-                            .forGetter(OvergearedShapelessRecipe::category),
-                    ItemStack.CODEC
-                            .fieldOf("result")
-                            .forGetter(r -> r.result),
-                    Ingredient.CODEC_NONEMPTY
-                            .listOf()
-                            .xmap(
-                                    list -> {
-                                        NonNullList<Ingredient> nn = NonNullList.create();
-                                        nn.addAll(list);
-                                        return nn;
-                                    },
-                                    list -> list
-                            )
-                            .fieldOf("ingredients")
-                            .forGetter(r -> r.getIngredients()),
-                    Codec.BOOL.listOf()
-                            .optionalFieldOf("remainder", java.util.List.of())
-                            .forGetter(r -> r.ingredientsWithRemainder
-                                    .stream()
-                                    .map(IngredientWithRemainder::hasRemainder)
-                                    .toList()),
-                    Codec.INT.listOf()
-                            .optionalFieldOf("durability_decrease", java.util.List.of())
-                            .forGetter(r -> r.ingredientsWithRemainder
-                                    .stream()
-                                    .map(IngredientWithRemainder::getDurabilityDecrease)
-                                    .toList())
-            ).apply(instance, (group, category, result, ingredients, remainder, durability) -> {
-
-                boolean[] rem = new boolean[ingredients.size()];
-                int[] dur = new int[ingredients.size()];
-
-                for (int i = 0; i < ingredients.size(); i++) {
-                    rem[i] = i < remainder.size() && remainder.get(i);
-                    dur[i] = i < durability.size() ? durability.get(i) : 0;
-                }
-
-                return new OvergearedShapelessRecipe(
-                        group,
-                        category,
-                        result,
-                        ingredients,
-                        rem,
-                        dur
-                );
-            }));
+            return CODEC;
         }
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, OvergearedShapelessRecipe> streamCodec() {
-            return new StreamCodec<>() {
-                @Override
-                public OvergearedShapelessRecipe decode(RegistryFriendlyByteBuf buf) {
-                    String group = buf.readUtf();
-                    CraftingBookCategory category = buf.readEnum(CraftingBookCategory.class);
-                    ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
-
-                    int ingredientCount = buf.readVarInt();
-                    NonNullList<Ingredient> ingredients = NonNullList.create();
-                    for (int i = 0; i < ingredientCount; i++) {
-                        ingredients.add(Ingredient.CONTENTS_STREAM_CODEC.decode(buf));
-                    }
-
-                    boolean[] remainder = new boolean[ingredientCount];
-                    for (int i = 0; i < ingredientCount; i++) {
-                        remainder[i] = buf.readBoolean();
-                    }
-
-                    int[] durability = new int[ingredientCount];
-                    for (int i = 0; i < ingredientCount; i++) {
-                        durability[i] = buf.readVarInt();
-                    }
-
-                    return new OvergearedShapelessRecipe(
-                            group,
-                            category,
-                            result,
-                            ingredients,
-                            remainder,
-                            durability
-                    );
-                }
-
-                @Override
-                public void encode(RegistryFriendlyByteBuf buf, OvergearedShapelessRecipe recipe) {
-                    buf.writeUtf(recipe.getGroup());
-                    buf.writeEnum(recipe.category());
-                    ItemStack.STREAM_CODEC.encode(buf, recipe.result);
-
-                    int size = recipe.getIngredients().size();
-                    buf.writeVarInt(size);
-
-                    for (Ingredient ingredient : recipe.getIngredients()) {
-                        Ingredient.CONTENTS_STREAM_CODEC.encode(buf, ingredient);
-                    }
-
-                    for (IngredientWithRemainder iwr : recipe.ingredientsWithRemainder) {
-                        buf.writeBoolean(iwr.hasRemainder());
-                    }
-
-                    for (IngredientWithRemainder iwr : recipe.ingredientsWithRemainder) {
-                        buf.writeVarInt(iwr.getDurabilityDecrease());
-                    }
-                }
-            };
+            return STREAM_CODEC;
         }
     }
 }

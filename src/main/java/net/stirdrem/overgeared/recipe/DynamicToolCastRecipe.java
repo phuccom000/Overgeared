@@ -156,8 +156,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
         private static final StreamCodec<RegistryFriendlyByteBuf, DynamicToolCastRecipe> STREAM_CODEC = 
             StreamCodec.composite(
-                net.minecraft.network.codec.ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC),
-                CustomRecipe::category,
+                CraftingBookCategory.STREAM_CODEC, CustomRecipe::category,
                 DynamicToolCastRecipe::new
             );
 

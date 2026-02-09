@@ -14,7 +14,6 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: make this extend AlloySmeltingRecipe to cut down on duplicate code
 public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAlloyRecipe {
     private final String group;
     private final CraftingBookCategory category;
@@ -129,14 +128,14 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
     }
 
     public static class Serializer implements RecipeSerializer<NetherAlloySmeltingRecipe> {
-        public static final MapCodec<NetherAlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<NetherAlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                 CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
                 Ingredient.CODEC.listOf(0, 9).fieldOf("ingredients").forGetter(r -> r.ingredients),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
-        ).apply(i, NetherAlloySmeltingRecipe::new));
+                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
+        ).apply(instance, NetherAlloySmeltingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, NetherAlloySmeltingRecipe> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, r -> r.group,
