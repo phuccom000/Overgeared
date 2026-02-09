@@ -109,21 +109,64 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, INetherAlloyRecipe recipe, IFocusGroup focuses) {
         List<Ingredient> ingredients = recipe.getIngredientsList();
+        boolean isShaped = recipe.isShaped();
 
-        // Add multiple input slots based on the recipe ingredients
-        // Position inputs in a grid pattern to accommodate up to 4 ingredients
-        int inputCount = ingredients.size();
+        if (isShaped) {
+            // Get the dimensions of the shaped recipe
+            int width = recipe.getWidth();
+            int height = recipe.getHeight();
 
-        // Add 9 input slots in a 3x3 grid
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                int slotIndex = row * 3 + col;
-                if (slotIndex < ingredients.size()) {
-                    builder.addSlot(RecipeIngredientRole.INPUT, 1 + col * 18, 1 + row * 18)
-                            .addIngredients(ingredients.get(slotIndex));
+            // Calculate starting position to center the pattern in the 3x3 grid
+            int startX = (3 - width) * 18 / 2 + 1;
+            int startY = (3 - height) * 18 / 2 + 1;
+
+            // Fill the 3x3 grid
+            for (int gridRow = 0; gridRow < 3; gridRow++) {
+                for (int gridCol = 0; gridCol < 3; gridCol++) {
+
+                    // Calculate position relative to the centered pattern
+                    int patternRow = gridRow - ((3 - height) / 2);
+                    int patternCol = gridCol - ((3 - width) / 2);
+
+                    // Check if this grid position is within the recipe pattern
+                    boolean isInPattern = patternRow >= 0 && patternRow < height &&
+                            patternCol >= 0 && patternCol < width;
+
+                    var slot = builder.addSlot(RecipeIngredientRole.INPUT,
+                            1 + gridCol * 18,
+                            1 + gridRow * 18);
+
+                    if (isInPattern) {
+                        // Get the ingredient from the pattern
+                        int index = patternRow * width + patternCol;
+                        if (index < ingredients.size()) {
+                            Ingredient ingredient = ingredients.get(index);
+                            if (!ingredient.isEmpty()) {
+                                slot.addIngredients(ingredient);
+                            }
+                            // If ingredient is empty, slot stays empty (shows pattern hole)
+                        }
+                    }
+                    // If not in pattern, slot stays empty
                 }
             }
-        }
+        } else
+            // Always draw a full 3x3 grid
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    int index = row * 3 + col;
+                    Ingredient ingredient = index < ingredients.size()
+                            ? ingredients.get(index)
+                            : Ingredient.EMPTY;
+
+                    var slot = builder.addSlot(RecipeIngredientRole.INPUT,
+                            1 + col * 18,
+                            1 + row * 18);
+                    if (!ingredient.isEmpty()) {
+                        slot.addIngredients(ingredient);
+                    }
+                }
+            }
 
         // Output slot
         builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20)

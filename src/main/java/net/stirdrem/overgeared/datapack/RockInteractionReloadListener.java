@@ -126,7 +126,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
         RockInteractionData data = new RockInteractionData(inputBlock, tools, resultBlock);
         DATA.put(id, data);
     }
-    
+
     public Collection<RockInteractionData> getAll() {
         return DATA.values();
     }

@@ -125,6 +125,21 @@ public class NetherAlloySmeltingRecipe implements Recipe<SimpleContainer>, INeth
         return experience;
     }
 
+    @Override
+    public boolean isShaped() {
+        return false;
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;
+    }
+
     public int getCookingTime() {
         return cookingTime;
     }

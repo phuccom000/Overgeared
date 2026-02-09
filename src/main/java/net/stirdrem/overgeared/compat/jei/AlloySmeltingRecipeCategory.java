@@ -108,40 +108,58 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, IAlloyRecipe recipe, IFocusGroup focuses) {
         List<Ingredient> ingredients = recipe.getIngredientsList();
+        boolean isShaped = recipe.isShaped();
 
-        // Add multiple input slots based on the recipe ingredients
-        // Position inputs in a grid pattern to accommodate up to 4 ingredients
-        int inputCount = ingredients.size();
+        if (isShaped) {
+            // Get the dimensions of the shaped recipe
+            int width = recipe.getWidth();
+            int height = recipe.getHeight();
 
-        if (inputCount >= 1) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 1, 1)
-                    .addIngredients(ingredients.get(0));
-        }
-        if (inputCount >= 2) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
-                    .addIngredients(ingredients.get(1));
-        }
-        if (inputCount >= 3) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 19, 1)
-                    .addIngredients(ingredients.get(2));
-        }
-        if (inputCount >= 4) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 19, 19)
-                    .addIngredients(ingredients.get(3));
-        }
+            // Fill the 2x2 grid, showing empty slots for pattern holes
+            for (int gridRow = 0; gridRow < 2; gridRow++) {
+                for (int gridCol = 0; gridCol < 2; gridCol++) {
 
-        // If there are more than 4 ingredients (unlikely but possible), add them in additional rows
-        if (inputCount > 4) {
-            for (int i = 4; i < inputCount && i < 8; i++) {
-                int row = (i - 4) / 2;
-                int col = (i - 4) % 2;
-                builder.addSlot(RecipeIngredientRole.INPUT, 37 + col * 18, 1 + row * 18)
-                        .addIngredients(ingredients.get(i));
+                    // Calculate position relative to the pattern
+                    // Since it's a 2x2 grid, pattern must be 1x1, 1x2, 2x1, or 2x2
+
+                    // Check if this grid position is within the recipe pattern
+                    boolean isInPattern = gridRow < height && gridCol < width;
+
+                    var slot = builder.addSlot(RecipeIngredientRole.INPUT,
+                            1 + gridCol * 18,
+                            1 + gridRow * 18);
+
+                    if (isInPattern) {
+                        // Get the ingredient from the pattern
+                        int index = gridRow * width + gridCol;
+                        if (index < ingredients.size()) {
+                            Ingredient ingredient = ingredients.get(index);
+                            if (!ingredient.isEmpty()) {
+                                slot.addIngredients(ingredient);
+                            }
+                            // If ingredient is empty, slot stays empty (shows pattern hole)
+                        }
+                    }
+                    // If not in pattern, slot stays empty
+                }
+            }
+        } else {
+            // Always draw a 2x2 grid
+            for (int i = 0; i < 4; i++) {
+                Ingredient ingredient = i < ingredients.size()
+                        ? ingredients.get(i)
+                        : Ingredient.EMPTY;
+
+                int x = (i % 2) * 18 + 1;
+                int y = (i / 2) * 18 + 1;
+
+                builder.addSlot(RecipeIngredientRole.INPUT, x, y)
+                        .addIngredients(ingredient);
             }
         }
-
         // Output slot
         builder.addSlot(RecipeIngredientRole.OUTPUT, 86, 10)
                 .addItemStack(recipe.getResultItem(null));
+        
     }
 }

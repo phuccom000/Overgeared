@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IAlloyRecipe {
     List<Ingredient> getIngredientsList();
@@ -12,4 +13,10 @@ public interface IAlloyRecipe {
     ItemStack getResultItem(RegistryAccess registryAccess);
 
     float getExperience();
+
+    boolean isShaped();
+
+    int getWidth();
+
+    int getHeight();
 }

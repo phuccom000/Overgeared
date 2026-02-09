@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecipe {
     private final ResourceLocation id;
@@ -123,6 +124,21 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
 
     public float getExperience() {
         return experience;
+    }
+
+    @Override
+    public boolean isShaped() {
+        return false;
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;
     }
 
     public int getCookingTime() {
