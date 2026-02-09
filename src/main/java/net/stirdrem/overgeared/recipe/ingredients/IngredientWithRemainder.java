@@ -21,7 +21,7 @@ public class IngredientWithRemainder {
     }
 
     public static final Codec<IngredientWithRemainder> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(o -> o.ingredient),
+            Ingredient.MAP_CODEC_NONEMPTY.forGetter(o -> o.ingredient),
             Codec.BOOL.optionalFieldOf("remainder", false).forGetter(o -> o.remainder),
             Codec.INT.optionalFieldOf("durability_decrease", 0).forGetter(o -> o.durabilityDecrease)
     ).apply(instance, IngredientWithRemainder::new));

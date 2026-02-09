@@ -1,6 +1,8 @@
 package net.stirdrem.overgeared.item.custom;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -20,32 +22,28 @@ import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ToolCastItem extends Item {
-    private final boolean allowMaterialInsert;
     private final boolean haveDurability;
 
-    public ToolCastItem(boolean allowMaterialInsert, boolean haveDurability, Properties props) {
+    public ToolCastItem(boolean haveDurability, Properties props) {
         super(props);
-        this.allowMaterialInsert = allowMaterialInsert;
         this.haveDurability = haveDurability;
     }
 
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-        return false;
-    }
-
-    @Override
-    public int getEnchantmentValue(ItemStack stack) {
-        return 0;
+    public Component getName(ItemStack stack) {
+        CastData castData = stack.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
+        if (!castData.toolType().isEmpty()) {
+            String name = super.getDescriptionId(stack).replace("item", "cast");
+            Component toolType = Component.translatable("tooltype.overgeared." + castData.toolType().toLowerCase());
+            return Component.translatable(name, toolType);
+        }
+        return super.getName(stack);
     }
 
     @Override
@@ -63,7 +61,7 @@ public class ToolCastItem extends Item {
         CastData data = castStack.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
         boolean heated = castStack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
 
-
+        // Return Output if exists
         if (data.hasOutput()) {
             ItemStack output = data.output();
             if (heated) {
@@ -78,19 +76,15 @@ public class ToolCastItem extends Item {
             castStack.set(ModComponents.CAST_DATA, data.cleared());
 
             player.level().playSound(
-                    null,
-                    player.blockPosition(),
-                    SoundEvents.ITEM_PICKUP,
-                    SoundSource.PLAYERS,
-                    0.8F,
-                    1.2F
+                    null, player.blockPosition(),
+                    SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS,
+                    0.8F, 1.2F
             );
-            return InteractionResultHolder.sidedSuccess(
-                    castStack,
-                    player.level().isClientSide()
-            );
+
+            return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
         }
 
+        // Return input materials
         List<ItemStack> inputItems = data.input();
         if (inputItems.isEmpty()) {
             player.displayClientMessage(
@@ -108,15 +102,11 @@ public class ToolCastItem extends Item {
 
         castStack.set(ModComponents.CAST_DATA, data.withoutInputs());
 
-        return InteractionResultHolder.sidedSuccess(
-                castStack,
-                player.level().isClientSide()
-        );
+        return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
     }
 
     @Override
     public boolean overrideStackedOnOther(ItemStack castStack, Slot slot, ClickAction action, Player player) {
-        if (!allowMaterialInsert) return false;
         if (action != ClickAction.SECONDARY) return false;
         if (!slot.allowModification(player)) return false;
 
@@ -133,7 +123,6 @@ public class ToolCastItem extends Item {
 
     @Override
     public boolean overrideOtherStackedOnMe(ItemStack castStack, ItemStack otherStack, Slot slot, ClickAction action, Player player, SlotAccess slotAccess) {
-        if (!allowMaterialInsert) return false;
         if (action != ClickAction.SECONDARY) return false;
 
         if (insertMaterial(castStack, otherStack, player)) {
@@ -146,10 +135,8 @@ public class ToolCastItem extends Item {
 
     private boolean insertMaterial(ItemStack cast, ItemStack material, Player player) {
         CastData data = cast.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
-        
-        if (data.hasOutput()) {
-            return false;
-        }
+
+        if (data.hasOutput()) return false;
         if (material.isEmpty()) return false;
 
         if (!ConfigHelper.isValidMaterial(material)) {
@@ -182,10 +169,8 @@ public class ToolCastItem extends Item {
 
     private void playInsertSound(Player player) {
         player.level().playSound(
-                player,
-                player.blockPosition(),
-                SoundEvents.BUNDLE_INSERT,
-                SoundSource.PLAYERS,
+                player, player.blockPosition(),
+                SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS,
                 0.7F, 1.1F
         );
     }
@@ -207,11 +192,7 @@ public class ToolCastItem extends Item {
 
     @Override
     public int getMaxStackSize(ItemStack stack) {
-        // Casts that hold materials (Clay, Nether) should never stack
-        if (this.allowMaterialInsert) {
-            return 1;
-        }
-        return super.getMaxStackSize(stack);
+        return 1;
     }
 
     @Override
@@ -244,6 +225,25 @@ public class ToolCastItem extends Item {
                             )
                             .withStyle(ChatFormatting.GRAY)
             );
+        }
+
+        // If the cast has an output, only show output
+        if (data.hasOutput()) {
+            ItemStack output = data.output();
+            tooltip.add(
+                    Component.translatable("tooltip.overgeared.tool_cast.contains")
+                            .withStyle(ChatFormatting.GRAY)
+            );
+            tooltip.add(
+                    Component.literal("  • ")
+                            .append(output.getHoverName())
+                            .withStyle(ChatFormatting.GOLD)
+            );
+            tooltip.add(
+                    Component.translatable("tooltip.overgeared.cast_right_click")
+                            .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
+            );
+            return;
         }
 
         if (!data.materials().isEmpty()) {
@@ -280,15 +280,11 @@ public class ToolCastItem extends Item {
             tooltip.add(
                     Component.translatable("tooltip.overgeared.tool_cast.amount")
                             .append(" ")
-                            .append(
-                                    Component.literal(String.format("%.2f", amt))
-                                            .withStyle(ChatFormatting.YELLOW)
-                            )
+                            .append(Component.literal(String.format("%.2f", amt))
+                                    .withStyle(ChatFormatting.YELLOW))
                             .append(" / ")
-                            .append(
-                                    Component.literal(String.format("%.2f", maxAmt))
-                                            .withStyle(ChatFormatting.WHITE)
-                            )
+                            .append(Component.literal(String.format("%.2f", maxAmt))
+                                    .withStyle(ChatFormatting.WHITE))
                             .withStyle(ChatFormatting.GRAY)
             );
             if (amt / maxAmt != 1)
@@ -297,20 +293,7 @@ public class ToolCastItem extends Item {
                                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
                 );
         }
-        if (data.hasOutput()) {
-            ItemStack output = data.output();
 
-            tooltip.add(
-                    Component.translatable("tooltip.overgeared.tool_cast.contains")
-                            .withStyle(ChatFormatting.GRAY)
-            );
-
-            tooltip.add(
-                    Component.literal("  • ")
-                            .append(output.getHoverName())
-                            .withStyle(ChatFormatting.GOLD)
-            );
-        }
         if (!data.materials().isEmpty() || !data.input().isEmpty() || data.hasOutput()) {
             tooltip.add(
                     Component.translatable("tooltip.overgeared.cast_right_click")
@@ -323,5 +306,20 @@ public class ToolCastItem extends Item {
     @Override
     public boolean isRepairable(ItemStack stack) {
         return false;
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        return false;
+    }
+
+    @Override
+    public int getEnchantmentValue(ItemStack stack) {
+        return 0;
     }
 }
