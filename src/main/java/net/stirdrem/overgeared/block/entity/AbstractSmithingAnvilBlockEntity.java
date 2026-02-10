@@ -48,8 +48,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
-
 public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider, WorldlyContainer {
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
@@ -77,6 +75,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     private boolean minigameOn = false;
     protected AbstractSmithingAnvil anvilBlock;
     protected static final int BLUEPRINT_SLOT = 11;
+    protected boolean hasHeatedItems = false;
     // Define slot indices
     private static final int[] TOP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}; // input grid
     private static final int[] BOTTOM_SLOTS = new int[]{OUTPUT_SLOT};
@@ -911,12 +910,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     // Not the happiest with this due to constantly checking if it's open etc., maybe figure smth out :)
     public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
-        if (level.isClientSide || level.getGameTime() % 20 != 0) return;
-
-        // If viewers > 0, the ContainerCoolingMixin is already handling this!
-        if (this instanceof WorldlyContainer && getViewerCount(level, pos) > 0) {
-            return; 
-        }
+        if (!this.hasHeatedItems || level.isClientSide) return;
+        if (level.getGameTime() % 20 != 0) return;
+        if (getViewerCount(level, pos) > 0) return; 
 
         boolean hasHeatedItems = false;
 
@@ -933,6 +929,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 }
             }
         }
+
+        this.hasHeatedItems = hasHeatedItems;
     }
 
     private int getViewerCount(Level level, BlockPos pos) {
@@ -979,6 +977,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     @Override
     public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
+
+        if (!stack.isEmpty() && stack.getItem() instanceof HeatedItem) {
+            this.hasHeatedItems = true;
+        }
     }
 
     @Override
@@ -997,6 +999,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             itemHandler.setStackInSlot(i, ItemStack.EMPTY);
         }
+
+        this.hasHeatedItems = false;
     }
 
 }
