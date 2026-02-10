@@ -37,14 +37,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -59,8 +55,6 @@ import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
 import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.item.custom.ToolCastItem;
-import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSetStartedC2SPacket;
@@ -78,8 +72,6 @@ import net.stirdrem.overgeared.item.custom.HeatedItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static net.stirdrem.overgeared.components.ModComponents.HEATED_COMPONENT;
@@ -89,11 +81,6 @@ import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
 public class ModItemInteractEvents {
     public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
     public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
-    private static final Set<ItemEntity> trackedEntities = ConcurrentHashMap.newKeySet();
-
-    private static final ConcurrentMap<ItemEntity, Long> trackedSinceMs = new ConcurrentHashMap<>();
-    private static final long TRACKED_PRUNE_MS = 2 * 60 * 1000L;
-    private static final Random RANDOM = new Random();
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {

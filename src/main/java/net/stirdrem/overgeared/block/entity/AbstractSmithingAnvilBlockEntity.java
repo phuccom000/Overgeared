@@ -38,8 +38,11 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
+import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 import net.stirdrem.overgeared.util.ModTags;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import net.minecraft.world.phys.AABB;
+import net.stirdrem.overgeared.item.custom.HeatedItem;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -911,22 +914,20 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (level.isClientSide || level.getGameTime() % 20 != 0) return;
 
         // If viewers > 0, the ContainerCoolingMixin is already handling this!
-        if (this instanceof WorldlyContainer worldly && getViewerCount(level, pos) > 0) {
+        if (this instanceof WorldlyContainer && getViewerCount(level, pos) > 0) {
             return; 
         }
 
         boolean hasHeatedItems = false;
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
-        long currentTick = level.getGameTime();
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
 
-            if (stack.getItem() instanceof HeatedItem heatedItem) {
+            if (stack.getItem() instanceof HeatedItem) {
                 hasHeatedItems = true;
 
-                if(heatedItem.handleCoolingContainer(stack, level)) {
+                if(HeatedItem.handleCoolingContainer(this.itemHandler, slot, level)) {
                     this.setChanged();
                     level.sendBlockUpdated(pos, state, state, 3);
                 }
@@ -937,7 +938,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     private int getViewerCount(Level level, BlockPos pos) {
         return level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(8.0))
                     .stream()
-                    .filter(p -> p.containerMenu instanceof YourAnvilMenu menu && menu.isBlockEntity(this))
+                    .filter(p -> p.containerMenu instanceof AbstractSmithingAnvilMenu menu && menu.blockEntity == this)
                     .mapToInt(p -> 1).sum();
     }
 

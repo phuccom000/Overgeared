@@ -14,10 +14,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.effect.MobEffects;
@@ -87,7 +87,7 @@ public class HeatedItem extends Item {
 
     // Handles ticking while dropped on the ground
     @Override
-    public boolean onEntityTick(ItemStack stack, ItemEntity entity) {
+    public boolean onEntityItemUpdate(ItemStack stack, ItemEntity entity) {
         if (entity.level().isClientSide) return false;
 
         handleCoolingItemEntity(stack, entity.level(), entity);
@@ -118,22 +118,34 @@ public class HeatedItem extends Item {
         entity.setItem(cooledStack);
     }
 
-    // Not the biggest fan of this either, figure out a way for better in slot swapping
-    public static boolean handleCoolingContainer(ItemStack stack, Level level) {
+    public static boolean handleCoolingContainer(Slot slot, Level level) {
         if (level.isClientSide) return false;
+        ItemStack stack = slot.getItem();
 
         Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return false;
         if (!hasCooled(stack, level)) return false;
 
-        ItemStack tempStack = new ItemStack(cooled, stack.getCount());
-        copyComponentsExceptHeated(tempStack, stack);
+        ItemStack newStack = new ItemStack(cooled, stack.getCount());
+        copyComponentsExceptHeated(stack, newStack);
 
-        // Double make sure
-        stack.remove(ModComponents.HEATED_COMPONENT);
-        stack.remove(ModComponents.HEATED_TIME);
+        slot.set(newStack);
+        return true;
+    }
 
-        stack.setItem(cooled);
+    public static boolean handleCoolingContainer(IItemHandler handler, int index, Level level) {
+        if (level.isClientSide) return false;
+        ItemStack stack = handler.getStackInSlot(index);
+
+        Item cooled = getCooledItem(stack.getItem(), level);
+        if (cooled == null) return false;
+        if (!hasCooled(stack, level)) return false;
+
+        ItemStack newStack = new ItemStack(cooled, stack.getCount());
+        copyComponentsExceptHeated(stack, newStack);
+
+        handler.extractItem(index, stack.getCount(), false);
+        handler.insertItem(index, newStack, false);
         return true;
     }
 
@@ -157,8 +169,8 @@ public class HeatedItem extends Item {
             lEntity.setItemInHand(InteractionHand.MAIN_HAND, newStack);
         } else if (isOff) {
             lEntity.setItemInHand(InteractionHand.OFF_HAND, newStack);
-        } else if (!lEntity.getInventory().add(newStack)) {
-            lEntity.drop(newStack, false);
+        } else if (lEntity instanceof Player player) {
+            if (!player.getInventory().add(newStack)) player.drop(newStack, false);
         }
     }
 
