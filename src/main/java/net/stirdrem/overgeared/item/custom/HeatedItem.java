@@ -117,11 +117,13 @@ public class HeatedItem extends Item {
         return true;
     }
 
-    public static void setCooled(ItemStack stack, LivingEntity lEntity, Item cooled = null) {
-        if (cooled == null) {
-            Item cooled = getCooledItem(stack.getItem(), lEntity.level());
-            if (cooled == null) return;
-        }
+    public static void setCooled(ItemStack stack, LivingEntity lEntity) {
+        Item cooled = getCooledItem(stack.getItem(), lEntity.level());
+        setCooled(stack, lEntity, cooled);
+    }
+
+    public static void setCooled(ItemStack stack, LivingEntity lEntity, Item cooled) {
+        if (cooled == null) return;
 
         ItemStack newStack = new ItemStack(cooled, stack.getCount());
         copyComponentsExceptHeated(stack, newStack);
@@ -140,7 +142,16 @@ public class HeatedItem extends Item {
         }
     }
 
-    private bool hasCooled(ItemStack stack, Level level, BlockPos pos = null) {
+    private bool hasCooled(ItemStack stack, Level level, BlockPos pos) {
+        if (hasCooled(stack, level)) {
+            if (pos != null) level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7f, 1.0f);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool hasCooled(ItemStack stack, Level level) {
         //Neither of these should happen but still
         if (stack.isEmpty()) return false;
         if (!(stack.is(ModTags.Items.HEATED_METALS) || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)))) return false;
@@ -159,7 +170,6 @@ public class HeatedItem extends Item {
         // Still cooling
         if (tick - heatedSince < cooldownTicks) return false;
 
-        if (pos != null) level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7f, 1.0f);
         return true;
     }
 }
