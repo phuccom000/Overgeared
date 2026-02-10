@@ -89,7 +89,7 @@ public class HeatedItem extends Item {
     }
 
     private void handleCoolingLivingEntity(ItemStack stack, Level level, LivingEntity lEntity) {
-        Item cooled = getCooledItem(stack.getItem(), player.level());
+        Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return;
         if (!hasCooled(stack, level, entity.blockPosition())) return;
 
@@ -113,8 +113,8 @@ public class HeatedItem extends Item {
     }
 
     // Not the biggest fan of this either, figure out a way for better in slot swapping
-    public static bool handleCoolingContainer(ItemStack stack, Level level) {
-        if (entity.level().isClientSide) return false;
+    public static boolean handleCoolingContainer(ItemStack stack, Level level) {
+        if (level.isClientSide) return false;
 
         Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return false;
@@ -156,7 +156,7 @@ public class HeatedItem extends Item {
         }
     }
 
-    private bool hasCooled(ItemStack stack, Level level, BlockPos pos) {
+    private boolean hasCooled(ItemStack stack, Level level, BlockPos pos) {
         if (hasCooled(stack, level)) {
             if (pos != null) level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7f, 1.0f);
             return true;
@@ -165,7 +165,7 @@ public class HeatedItem extends Item {
         return false;
     }
 
-    private bool hasCooled(ItemStack stack, Level level) {
+    private boolean hasCooled(ItemStack stack, Level level) {
         //Neither of these should happen but still
         if (stack.isEmpty()) return false;
         if (!(stack.is(ModTags.Items.HEATED_METALS) || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)))) return false;
