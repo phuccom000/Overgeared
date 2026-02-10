@@ -1,10 +1,12 @@
 package net.stirdrem.overgeared.recipe;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.stirdrem.overgeared.OvergearedMod;
+import org.spongepowered.asm.mixin.Dynamic;
 
 import java.util.function.Supplier;
 
@@ -21,7 +23,7 @@ public class ModRecipeSerializers {
     public static final Supplier<RecipeSerializer<BlueprintCloningRecipe>> CRAFTING_BLUEPRINTCLONING =
             RECIPE_SERIALIZERS.register("crafting_cloning", BlueprintCloningRecipe.Serializer::new);
     public static final Supplier<RecipeSerializer<DynamicToolCastRecipe>> CRAFTING_DYNAMIC_TOOL_CAST =
-            RECIPE_SERIALIZERS.register("crafting_cast", DynamicToolCastRecipe.Serializer::new);
+            RECIPE_SERIALIZERS.register("crafting_cast", () -> new SimpleCraftingRecipeSerializer<>(DynamicToolCastRecipe::new));
     public static final Supplier<RecipeSerializer<ClayToolCastRecipe>> CLAY_TOOL_CAST =
             RECIPE_SERIALIZERS.register("crafting_initial_cast", ClayToolCastRecipe.Serializer::new);
     public static final Supplier<RecipeSerializer<FletchingRecipe>> FLETCHING_SERIALIZER =

@@ -16,13 +16,13 @@ import java.util.List;
 
 public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     private final String group;
-    private final CraftingBookCategory category;
+    private final CookingBookCategory category;
     private final List<Ingredient> inputs;
     private final ItemStack output;
     private final float experience;
     private final int cookingTime;
 
-    public AlloySmeltingRecipe(String group, CraftingBookCategory category, List<Ingredient> inputs, ItemStack output, float experience, int cookingTime) {
+    public AlloySmeltingRecipe(String group, CookingBookCategory category, List<Ingredient> inputs, ItemStack output, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.inputs = inputs;
@@ -100,7 +100,7 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
         return group;
     }
 
-    public CraftingBookCategory getCraftingBookCategory() {
+    public CookingBookCategory getCraftingBookCategory() {
         return category;
     }
 
@@ -133,7 +133,7 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     public static class Serializer implements RecipeSerializer<AlloySmeltingRecipe> {
         public static final MapCodec<AlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.fieldOf("group").forGetter(r -> r.group),
-                CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
+                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
                 Ingredient.CODEC.listOf(0, 4).fieldOf("ingredients").forGetter(r -> r.inputs),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.output),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
@@ -142,7 +142,7 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
 
         public static final StreamCodec<RegistryFriendlyByteBuf, AlloySmeltingRecipe> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, r -> r.group,
-                CraftingBookCategory.STREAM_CODEC, r -> r.category,
+                ByteBufCodecs.fromCodec(CookingBookCategory.CODEC), r -> r.category,
                 Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list(4)), r -> r.inputs,
                 ItemStack.STREAM_CODEC, r -> r.output,
                 ByteBufCodecs.FLOAT, r -> r.experience,

@@ -103,12 +103,12 @@ public class ToolCastBlastingRecipeBuilder implements RecipeBuilder {
         CastBlastingRecipe recipe = new CastBlastingRecipe(
                 group == null ? "" : group,
                 bookCategory,
-                new ItemStack(result),
-                experience,
-                cookTime,
-                requiredMaterials,
+                materialInput,
                 toolType,
-                needPolishing != null ? needPolishing : true
+                new ItemStack(result),
+                needPolishing != null ? needPolishing : true,
+                experience,
+                cookTime
         );
 
         // Use the suffix convention from the old Result.getId()
