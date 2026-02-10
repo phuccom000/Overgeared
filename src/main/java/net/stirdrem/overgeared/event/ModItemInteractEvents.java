@@ -458,7 +458,7 @@ public class ModItemInteractEvents {
 
         // Check if the player is holding a heated metal and targeting water
         if (stack.is(ModTags.Items.HEATED_METALS)) {
-            HitResult hit = player.pick(5.0D, 0.0F, false);
+            HitResult hit = player.pick(5.0D, 0.0F, true);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = ((BlockHitResult) hit).getBlockPos();
                 BlockState state = world.getBlockState(pos);

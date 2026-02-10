@@ -91,7 +91,7 @@ public class HeatedItem extends Item {
         if (entity.level().isClientSide) return false;
 
         handleCoolingItemEntity(stack, entity.level(), entity);
-        return true;
+        return false;
     }
 
     private void handleCoolingLivingEntity(ItemStack stack, Level level, LivingEntity lEntity) {
