@@ -1,3 +1,5 @@
+package net.stirdrem.overgeared.item.custom;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -160,7 +162,7 @@ public class HeatedItem extends Item {
         }
     }
 
-    private boolean hasCooled(ItemStack stack, Level level, BlockPos pos) {
+    private static boolean hasCooled(ItemStack stack, Level level, BlockPos pos) {
         if (hasCooled(stack, level)) {
             if (pos != null) level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7f, 1.0f);
             return true;
@@ -169,7 +171,7 @@ public class HeatedItem extends Item {
         return false;
     }
 
-    private boolean hasCooled(ItemStack stack, Level level) {
+    private static boolean hasCooled(ItemStack stack, Level level) {
         //Neither of these should happen but still
         if (stack.isEmpty()) return false;
         if (!(stack.is(ModTags.Items.HEATED_METALS) || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)))) return false;

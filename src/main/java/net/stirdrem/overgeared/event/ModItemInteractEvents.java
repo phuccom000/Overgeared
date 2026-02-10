@@ -107,6 +107,7 @@ public class ModItemInteractEvents {
         }
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ItemStack heldItem = event.getItemStack();
+        BlockPos pos = event.getPos();
         BlockState state = level.getBlockState(pos);
 
         // Smithing
