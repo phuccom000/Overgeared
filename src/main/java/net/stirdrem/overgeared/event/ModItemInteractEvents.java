@@ -85,14 +85,7 @@ public class ModItemInteractEvents {
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
-        if (level.isClientSide) {
-                event.setUseBlock(TriState.FALSE);
-                event.setUseItem(TriState.FALSE);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
-        }
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        Player player = event.getEntity();
         ItemStack heldItem = event.getItemStack();
         BlockPos pos = event.getPos();
         BlockState state = level.getBlockState(pos);
@@ -100,20 +93,25 @@ public class ModItemInteractEvents {
         // Smithing
         if (heldItem.is(ModTags.Items.SMITHING_HAMMERS) && event.getHand() == InteractionHand.MAIN_HAND) {
             onUseSmithingHammer(event, player, level, state);
+            return;
         }
+
+        if (level.isClientSide) return;
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        
         // Fletching
-        else if (state.is(Blocks.FLETCHING_TABLE)  && event.getHand() == InteractionHand.MAIN_HAND) {
-            onUseFletching(event, player, level);
+        if (state.is(Blocks.FLETCHING_TABLE) && event.getHand() == InteractionHand.MAIN_HAND) {
+            onUseFletching(event, serverPlayer, level);
         }
         // Heated Ingot on Cauldron (maybe any water-y block later?)
-        else if (state.is(Blocks.WATER_CAULDRON)) {
-            onUseCauldron(event, player, heldItem, state);
+        else if (state.is(Blocks.WATER_CAULDRON) && heldItem.is(ModTags.Items.HEATED_METALS)) {
+            onUseCauldron(event, serverPlayer, heldItem, state);
         }
         // Stone
         else {
             for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
                 if (!data.matches(state, heldItem)) continue;
-                onFlintUsedOnStone(event, player, heldItem, level, data);
+                onFlintUsedOnStone(event, serverPlayer, heldItem, level, data);
                 return;
             }
         }
@@ -301,8 +299,8 @@ public class ModItemInteractEvents {
         int waterLevel = state.getValue(levelProperty);
 
         if (waterLevel <= 0) return;
-        if (!(heldItem.getItem() instanceof HeatedItem heatedItem)) return;
-        heatedItem.setCooled(heldItem, player);
+        if (!(heldItem.getItem() instanceof HeatedItem)) return;
+        HeatedItem.setCooled(heldItem, player);
         
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
