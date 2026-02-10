@@ -19,7 +19,7 @@ public class ModItems {
             DeferredRegister.createItems(OvergearedMod.MOD_ID);
 
     public static final DeferredItem<Item> CRUDE_STEEL = registerSimpleItem("crude_steel");
-    public static final DeferredItem<Item> HEATED_CRUDE_STEEL = registerSimpleItem("heated_crude_steel");
+    public static final DeferredItem<Item> HEATED_CRUDE_STEEL = registerSimpleItem("heated_crude_steel", () -> new HeatedItem(new Item.Properties()));
 
     public static final DeferredItem<Item> ROCK = registerSimpleItem("knappable_rock");
 
@@ -44,11 +44,11 @@ public class ModItems {
 
     public static final DeferredItem<Item> NETHERITE_ALLOY = registerSimpleItem("netherite_alloy");
 
-    public static final DeferredItem<Item> HEATED_IRON_INGOT = registerSimpleItem("heated_iron_ingot");
-    public static final DeferredItem<Item> HEATED_COPPER_INGOT = registerSimpleItem("heated_copper_ingot");
-    public static final DeferredItem<Item> HEATED_STEEL_INGOT = registerSimpleItem("heated_steel_ingot");
-    public static final DeferredItem<Item> HEATED_SILVER_INGOT = registerSimpleItem("heated_silver_ingot");
-    public static final DeferredItem<Item> HEATED_NETHERITE_ALLOY = registerSimpleItem("heated_netherite_alloy");
+    public static final DeferredItem<Item> HEATED_IRON_INGOT = registerItem("heated_iron_ingot", () -> new HeatedItem(new Item.Properties()));
+    public static final DeferredItem<Item> HEATED_COPPER_INGOT = registerSimpleItem("heated_copper_ingot", () -> new HeatedItem(new Item.Properties()));
+    public static final DeferredItem<Item> HEATED_STEEL_INGOT = registerSimpleItem("heated_steel_ingot", () -> new HeatedItem(new Item.Properties()));
+    public static final DeferredItem<Item> HEATED_SILVER_INGOT = registerSimpleItem("heated_silver_ingot", () -> new HeatedItem(new Item.Properties()));
+    public static final DeferredItem<Item> HEATED_NETHERITE_ALLOY = registerSimpleItem("heated_netherite_alloy", () -> new HeatedItem(new Item.Properties()));
 
     public static final DeferredItem<Item> COPPER_PLATE = registerSimpleItem("copper_plate");
     public static final DeferredItem<Item> IRON_PLATE = registerSimpleItem("iron_plate");

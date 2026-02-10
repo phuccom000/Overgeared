@@ -617,7 +617,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
             resetProgress(pos);
         }
-        tickHeatedIngredients(lvl);
+        tickHeatedIngredients(lvl, pos, st);
     }
 
     public int getHitsRemaining() {
@@ -906,38 +906,39 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         setChanged(); // mark dirty for save
     }
 
-    /**
-     * Ticks heated ingredients in the anvil slots and cools them down after the configured time.
-     * Uses HEATED_TIME data component to track when items were heated.
-     */
-    public void tickHeatedIngredients(Level level) {
-        if (level.isClientSide) return;
-        long tick = level.getGameTime();
+    // Not the happiest with this due to constantly checking if it's open etc., maybe figure smth out :)
+    public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
+        if (level.isClientSide || level.getGameTime() % 20 != 0) return;
+
+        // If viewers > 0, the ContainerCoolingMixin is already handling this!
+        if (this instanceof WorldlyContainer worldly && getViewerCount(level, pos) > 0) {
+            return; 
+        }
+
+        boolean hasHeatedItems = false;
         int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        long currentTick = level.getGameTime();
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
-            if (!stack.is(ModTags.Items.HEATED_METALS)) continue;
 
-            // Check if item has HEATED_TIME component
-            Long heatedSince = stack.get(ModComponents.HEATED_TIME);
-            if (heatedSince == null) {
-                // Item is heated but doesn't have a timestamp - set it now
-                stack.set(ModComponents.HEATED_TIME, tick);
-                continue;
-            }
+            if (stack.getItem() instanceof HeatedItem heatedItem) {
+                hasHeatedItems = true;
 
-            // Check if enough time has passed to cool down
-            if (tick - heatedSince >= cooldownTicks) {
-                // Cool down the item - replace with cooled version
-                ItemStack cooledItem = getCooledItem(stack, level);
-                if (!cooledItem.isEmpty()) {
-                    itemHandler.setStackInSlot(slot, cooledItem);
-                    setChanged();
+                if(heatedItem.handleCoolingContainer(stack, level)) {
+                    this.setChanged();
+                    level.sendBlockUpdated(pos, state, state, 3);
                 }
             }
         }
+    }
+
+    private int getViewerCount(Level level, BlockPos pos) {
+        return level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(8.0))
+                    .stream()
+                    .filter(p -> p.containerMenu instanceof YourAnvilMenu menu && menu.isBlockEntity(this))
+                    .mapToInt(p -> 1).sum();
     }
 
     @Override

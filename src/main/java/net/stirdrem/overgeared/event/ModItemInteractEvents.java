@@ -83,7 +83,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static net.stirdrem.overgeared.components.ModComponents.HEATED_COMPONENT;
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
-import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
 
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class ModItemInteractEvents {
@@ -97,44 +96,46 @@ public class ModItemInteractEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        ItemStack heldStack = event.getItemStack();
         Level level = event.getLevel();
-        BlockPos pos = event.getPos();
-        Player player = event.getEntity();
+        if (level.isClientSide) {
+                event.setUseBlock(TriState.FALSE);
+                event.setUseItem(TriState.FALSE);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
+        }
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        ItemStack heldItem = event.getItemStack();
         BlockState state = level.getBlockState(pos);
 
-        // Check if the item is heated either by tag or NBT
-        boolean isHeatedItem = heldStack.is(ModTags.Items.HEATED_METALS)
-                || (Boolean.TRUE.equals(heldStack.get(HEATED_COMPONENT)));
-
-        if (!isHeatedItem) {
-            return;
+        // Smithing
+        if (heldItem.is(ModTags.Items.SMITHING_HAMMERS) && event.getHand() == InteractionHand.MAIN_HAND) {
+            onUseSmithingHammer(event, player, level, state)
         }
-
-        // Handle water cauldron interaction
-        if (state.is(Blocks.WATER_CAULDRON)) {
-            handleCauldronInteraction(level, pos, player, heldStack, state);
-            // Remove the "Heated" tag if it exists
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
+        // Fletching
+        else if (state.is(Blocks.FLETCHING_TABLE)  && event.getHand() == InteractionHand.MAIN_HAND) {
+            onUseFletching(event, player, level);
+        }
+        // Heated Ingot on Cauldron (maybe any water-y block later?)
+        else if (state.is(Blocks.WATER_CAULDRON)) {
+            onUseCauldron(event, player, heldItem, state);
+        }
+        // Stone
+        else {
+            for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
+                if (!data.matches(state, heldItem)) continue;
+                onFlintUsedOnStone(event, player, heldItem, level, data);
+                return;
+            }
         }
     }
 
-    @SubscribeEvent
-    public static void onUseSmithingHammer(PlayerInteractEvent.RightClickBlock event) {
-        Player player = event.getEntity();
-        Level level = event.getLevel();
+    public static void onUseSmithingHammer(PlayerInteractEvent.RightClickBlock event, Player player, Level level, BlockState state) {
         BlockPos pos = event.getPos();
-        ItemStack heldItem = event.getItemStack();
-
-        if (!heldItem.is(ModTags.Items.SMITHING_HAMMERS)) return;
-        if (event.getHand() != InteractionHand.MAIN_HAND) return;
-
         BlockEntity be = level.getBlockEntity(pos);
-        BlockState clickedState = level.getBlockState(pos);
 
         // Shift-right-click to convert stone into smithing anvil
-        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.ANVIL_BASES)
+        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.ANVIL_BASES)
                 && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
@@ -151,7 +152,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && clickedState.is(Blocks.ANVIL)
+        if (!level.isClientSide && player.isCrouching() && state.is(Blocks.ANVIL)
                 && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
@@ -288,6 +289,92 @@ public class ModItemInteractEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
+    private void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
+        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
+
+        BlockPos pos = event.getPos();
+        SimpleMenuProvider provider = new SimpleMenuProvider(
+                (windowId, playerInv, p) ->
+                        new FletchingStationMenu(windowId, playerInv, ContainerLevelAccess.create(level, pos)),
+                Component.translatable("container.overgeared.fletching_table")
+        );
+        player.openMenu(provider, pos);
+
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
+    private void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state) {
+        // Check if the item is heated either by tag or NBT
+        if (!(heldItem.is(ModTags.Items.HEATED_METALS) || (Boolean.TRUE.equals(heldItem.get(HEATED_COMPONENT))))) return;
+
+        IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
+        int waterLevel = state.getValue(levelProperty);
+
+        if (waterLevel <= 0) return;
+        if (!(heldItem.getItem() instanceof HeatedItem heatedItem)) return;
+        heatedItem.setCooled(heldItem, player);
+        
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
+    public static void onFlintUsedOnStone(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, Level level, RockInteractionData data) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        RockInteractionData.ToolEntry tool = data.getTool(heldItem);
+        if (tool == null) return;
+
+        BlockPos pos = event.getPos();
+        // Drop roll
+        if (level.random.nextFloat() < tool.dropChance()) {
+            ItemStack dropStack = tool.dropItem().copy();
+
+            double sx = pos.getX() + 0.5;
+            double sy = pos.getY() + 0.9;
+            double sz = pos.getZ() + 0.5;
+
+            double dx = player.getX() - sx;
+            double dy = (player.getEyeY()) - sy; // eyeY helper exists now
+            double dz = player.getZ() - sz;
+
+            double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (len > 0) {
+                dx /= len;
+                dy /= len;
+                dz /= len;
+            }
+
+            ItemEntity item = new ItemEntity(serverLevel, sx, sy, sz, dropStack);
+            item.setDeltaMovement(dx * 0.25, dy * 0.25, dz * 0.25);
+            item.setPickUpDelay(10); // setDefaultPickUpDelay removed
+            serverLevel.addFreshEntity(item);
+
+            level.setBlockAndUpdate(pos, data.getResultBlock().defaultBlockState());
+        }
+
+        // Tool damage / break roll
+        if (level.random.nextFloat() < tool.breakChance()) {
+
+            if (heldItem.isDamageableItem()) {
+                heldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(event.getHand()));
+            } else {
+                heldItem.shrink(1);
+            }
+
+            level.playSound(null, player.blockPosition(),
+                    SoundEvents.ITEM_BREAK, SoundSource.PLAYERS,
+                    0.8F, 1.0F);
+        } else {
+            level.playSound(null, pos,
+                    SoundEvents.STONE_HIT, SoundSource.BLOCKS,
+                    1.0F, 1.0F);
+        }
+
+        player.swing(event.getHand(), true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
     public static void handleAnvilOwnershipSync(CompoundTag syncData) {
         UUID owner = null;
         if (syncData.contains("anvilOwner")) {
@@ -372,6 +459,7 @@ public class ModItemInteractEvents {
         PacketDistributor.sendToPlayer(player, new HideMinigameS2CPacket());
     }
 
+    // Probably would be better to move all of RightClickItem events into one method, too tired to do it right now :(
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         ItemStack stack = event.getItemStack();
@@ -379,20 +467,22 @@ public class ModItemInteractEvents {
         Level world = event.getLevel();
         if (world.isClientSide()) return;
 
-        // 🔹 Check if the player is holding a heated metal and targeting water
+        // Check if the player is holding a heated metal and targeting water
         if (stack.is(ModTags.Items.HEATED_METALS)) {
             HitResult hit = player.pick(5.0D, 0.0F, false);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = ((BlockHitResult) hit).getBlockPos();
                 BlockState state = world.getBlockState(pos);
                 if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
-                    coolItem(player, stack);
+                    
+                    if (!(stack.getItem() instanceof HeatedItem heatedItem)) return;
+                    heatedItem.setCooled(stack, player);
+
                     event.setCancellationResult(InteractionResult.SUCCESS);
                     event.setCanceled(true);
                 }
             }
         }
-        if (world.isClientSide()) return;
 
         HitResult hit = player.pick(5.0D, 0.0F, false);
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
@@ -547,44 +637,21 @@ public class ModItemInteractEvents {
         }
     }
 
-    private static void handleCauldronInteraction(Level level, BlockPos pos, Player player,
-                                                  ItemStack heldStack, BlockState state) {
-        IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
-        int waterLevel = state.getValue(levelProperty);
-
-        if (waterLevel > 0) {
-            // Cool the ingot
-            coolItem(player, heldStack);
-        }
-    }
-
-    private static ItemStack coolSingleStack(ItemStack stack, Level level) {
-        Item cooled = getCooledItem(stack.getItem(), level);
-        if (cooled == null) return stack;
-
-        ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
-        // Copy all components except heated ones for mod compatibility
-        copyComponentsExceptHeated(stack, cooledStack);
-
-        return cooledStack;
-    }
-
-    private static void coolItem(Player player, ItemStack stack) {
+    // Currently casts do nothing, BUT keeping the code in case there's plans for implementation :)
+    // Do note that it would be better to move it to it's own item like HeatedItem is
+    /*private static void coolItem(Player player, ItemStack stack) {
+        ItemStack stack = entity.getItem();
         if (stack.getCount() <= 0) return;
 
-        Item cooled = getCooledItem(stack.getItem(), player.level());
-        boolean hasCoolingRecipe = (cooled != null);
         boolean isHeated = stack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
-
-        // If neither has cooling recipe nor is heated, nothing to do
-        if (!hasCoolingRecipe && !isHeated) return;
+        if (!stack.getOrDefault(ModComponents.HEATED_COMPONENT, false)) return;
 
         // === Tool Cast special handling ===
         if (stack.getItem() instanceof ToolCastItem) {
             CastData data = stack.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
             if (data.hasOutput()) {
                 ItemStack output = data.output();
-                ItemStack cooledOutput = coolSingleStack(output, player.level());
+                ItemStack cooledOutput = coolSingleStack(output, player.level()); // Not implemented here due to no need, example can be found in HeatedItem
                 stack.set(ModComponents.CAST_DATA, data.withOutput(cooledOutput).withHeated(false));
                 // Remove HEATED_COMPONENT from the cast itself so players stop taking damage
                 stack.remove(ModComponents.HEATED_COMPONENT);
@@ -593,78 +660,12 @@ public class ModItemInteractEvents {
             return; // Don't process further for casts
         }
 
-        if (hasCoolingRecipe) {
-            // Create cooled stack and transfer components
-            ItemStack cooledStack = new ItemStack(cooled, 1);
-            // Copy all components except heated ones for mod compatibility
-            copyComponentsExceptHeated(stack, cooledStack);
-
-            stack.shrink(1);
-
-            if (stack.isEmpty()) {
-                if (player.getMainHandItem() == stack) {
-                    player.setItemInHand(InteractionHand.MAIN_HAND, cooledStack);
-                } else if (player.getOffhandItem() == stack) {
-                    player.setItemInHand(InteractionHand.OFF_HAND, cooledStack);
-                } else if (!player.getInventory().add(cooledStack)) {
-                    player.drop(cooledStack, false);
-                }
-            } else {
-                if (!player.getInventory().add(cooledStack)) {
-                    player.drop(cooledStack, false);
-                }
-            }
-        } else {
-            // Just remove the heated component and heated time e.g. for quenching
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
-        }
+        // Just remove the heated component and heated time e.g. for quenching
+        stack.remove(ModComponents.HEATED_COMPONENT);
+        stack.remove(ModComponents.HEATED_TIME);
 
         player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
-    }
-
-    private static void coolItemEntity(ItemEntity entity) {
-        ItemStack stack = entity.getItem();
-        Level level = entity.level();
-
-        if (stack.getCount() <= 0) return;
-
-        Item cooled = getCooledItem(stack.getItem(), level);
-        boolean hasCoolingRecipe = (cooled != null);
-        boolean isHeated = stack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
-
-        // If neither has cooling recipe nor is heated, nothing to do
-        if (!hasCoolingRecipe && !isHeated) return;
-
-        // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem) {
-            CastData data = stack.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
-            if (data.hasOutput()) {
-                ItemStack output = data.output();
-                ItemStack cooledOutput = coolSingleStack(output, level);
-                stack.set(ModComponents.CAST_DATA, data.withOutput(cooledOutput).withHeated(false));
-                // Remove HEATED_COMPONENT from the cast itself
-                stack.remove(ModComponents.HEATED_COMPONENT);
-            }
-            entity.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
-            return; // Don't process further for casts
-        }
-
-        if (hasCoolingRecipe) {
-            // === Create cooled stack and transfer components ===
-            ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
-            // Copy all components except heated ones for mod compatibility
-            copyComponentsExceptHeated(stack, cooledStack);
-
-            entity.setItem(cooledStack);
-        } else {
-            // Just remove the heated component and heated time (quenching without recipe)
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
-        }
-
-        entity.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
-    }
+    }*/
 
     private static void grindItem(Player player, ItemStack heldStack) {
         Item cooledItem = getGrindable(heldStack.getItem(), player.level());
@@ -746,127 +747,6 @@ public class ModItemInteractEvents {
                 .orElse(false);
     }
 
-    private static final Map<ServerLevel, List<ItemEntity>> trackedEntitiesPerWorld = new HashMap<>();
-
-    @SubscribeEvent
-    public static void onEntityJoin(EntityJoinLevelEvent event) {
-        if (!(event.getEntity() instanceof ItemEntity itemEntity)) return;
-
-        ItemStack stack = itemEntity.getItem();
-        boolean isHeatedItem = Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
-
-        if (hasCoolingRecipe(stack.getItem(), event.getLevel()) || isHeatedItem) {
-            // Only track if cooled ingot exists or item is heated
-            if (!(event.getLevel() instanceof ServerLevel serverLevel)) return;
-
-            // Track per world
-            trackedEntitiesPerWorld
-                    .computeIfAbsent(serverLevel, w -> new ArrayList<>())
-                    .add(itemEntity);
-
-            // Only track items that already have HeatedTime
-            Long heatedTime = stack.get(ModComponents.HEATED_TIME);
-            if (heatedTime != null) {
-                trackedSinceMs.put(itemEntity, heatedTime);
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityPickupItem(ItemEntityPickupEvent.Post event) {
-        if (!(event.getItemEntity().level() instanceof ServerLevel serverLevel)) return;
-
-        List<ItemEntity> tracked = trackedEntitiesPerWorld.get(serverLevel);
-        if (tracked != null) {
-            tracked.remove(event.getItemEntity());
-            if (tracked.isEmpty()) trackedEntitiesPerWorld.remove(serverLevel);
-        }
-
-        trackedSinceMs.remove(event.getItemEntity());
-    }
-
-    private static final Map<Item, Boolean> COOLING_CACHE = new HashMap<>();
-
-    private static boolean hasCoolingRecipeCached(Item item, Level level) {
-        return COOLING_CACHE.computeIfAbsent(item, (i) -> hasCoolingRecipe(i, level) // your existing function
-        );
-    }
-
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return;
-
-        // Iterate over all loaded worlds
-        for (ServerLevel level : server.getAllLevels()) {
-            long now = level.getGameTime();
-
-            // Only run every 10 ticks
-            if (now % 10 != 0) continue;
-
-            List<ItemEntity> tracked = trackedEntitiesPerWorld.get(level);
-            if (tracked == null || tracked.isEmpty()) continue;
-
-            Iterator<ItemEntity> it = tracked.iterator();
-
-            while (it.hasNext()) {
-                ItemEntity entity = it.next();
-                if (!entity.isAlive()) {
-                    it.remove();
-                    trackedSinceMs.remove(entity);
-                    continue;
-                }
-
-                ItemStack stack = entity.getItem();
-
-                // --- Check if heated ---
-                boolean isHeated = Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))
-                        || hasCoolingRecipeCached(stack.getItem(), level);
-
-                if (!isHeated) {
-                    it.remove();
-                    trackedSinceMs.remove(entity);
-                    continue;
-                }
-
-                Long started = trackedSinceMs.get(entity);
-                boolean cooled = false;
-
-                // --- Time-based cooling ---
-                if (started != null && now - started > ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get()) {
-                    cooled = true;
-                }
-
-                // --- Water-based cooling ---
-                BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(
-                        entity.getX(), entity.getY(), entity.getZ());
-
-                BlockState state = level.getBlockState(pos);
-                if (state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON)) {
-                    cooled = true;
-                }
-
-                if (cooled) {
-                    // Cool entire stack
-                    coolItemEntity(entity);
-
-                    // Clear timestamp
-                    trackedSinceMs.remove(entity);
-
-                    // Remove entity if stack is empty
-                    if (entity.getItem().isEmpty()) {
-                        it.remove();
-                    }
-                }
-            }
-
-            // Clean up empty lists to avoid memory leaks
-            if (tracked.isEmpty()) {
-                trackedEntitiesPerWorld.remove(level);
-            }
-        }
-    }
-
 // TODO: this should be replaced with DataAttachments
 //    @SubscribeEvent
 //    public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
@@ -875,78 +755,6 @@ public class ModItemInteractEvents {
 //                    new HeatedItemProvider());
 //        }
 //    }
-
-    @SubscribeEvent
-    public static void onFlintUsedOnStone(PlayerInteractEvent.RightClickBlock event) {
-        Level level = event.getLevel();
-        if (level.isClientSide) return; // field now, not method
-
-        if (!(level instanceof ServerLevel serverLevel)) return;
-
-        BlockPos pos = event.getPos();
-        BlockState state = level.getBlockState(pos);
-        ItemStack heldItem = event.getItemStack();
-        Player player = event.getEntity();
-
-        for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
-
-            if (!data.matches(state, heldItem)) continue;
-
-            RockInteractionData.ToolEntry tool = data.getTool(heldItem);
-            if (tool == null) continue;
-
-            // 🎲 Drop roll
-            if (level.random.nextFloat() < tool.dropChance()) {
-                ItemStack dropStack = tool.dropItem().copy();
-
-                double sx = pos.getX() + 0.5;
-                double sy = pos.getY() + 0.9;
-                double sz = pos.getZ() + 0.5;
-
-                double dx = player.getX() - sx;
-                double dy = (player.getEyeY()) - sy; // eyeY helper exists now
-                double dz = player.getZ() - sz;
-
-                double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                if (len > 0) {
-                    dx /= len;
-                    dy /= len;
-                    dz /= len;
-                }
-
-                ItemEntity item = new ItemEntity(serverLevel, sx, sy, sz, dropStack);
-                item.setDeltaMovement(dx * 0.25, dy * 0.25, dz * 0.25);
-                item.setPickUpDelay(10); // setDefaultPickUpDelay removed
-                serverLevel.addFreshEntity(item);
-
-                level.setBlockAndUpdate(pos, data.getResultBlock().defaultBlockState());
-            }
-
-            // 🔨 Tool damage / break roll
-            if (level.random.nextFloat() < tool.breakChance()) {
-
-                if (heldItem.isDamageableItem()) {
-                    heldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(event.getHand()));
-                } else {
-                    heldItem.shrink(1);
-                }
-
-                level.playSound(null, player.blockPosition(),
-                        SoundEvents.ITEM_BREAK, SoundSource.PLAYERS,
-                        0.8F, 1.0F);
-            } else {
-                level.playSound(null, pos,
-                        SoundEvents.STONE_HIT, SoundSource.BLOCKS,
-                        1.0F, 1.0F);
-            }
-
-            player.swing(event.getHand(), true);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
-        }
-    }
-
 
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
@@ -1042,46 +850,6 @@ public class ModItemInteractEvents {
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onRightClickFletching(PlayerInteractEvent.RightClickBlock event) {
-        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
-
-        Level level = event.getLevel();
-        BlockPos pos = event.getPos();
-        BlockState state = level.getBlockState(pos);
-
-        if (!state.is(Blocks.FLETCHING_TABLE)) return;
-
-        // Only respond to main hand
-        if (event.getHand() != InteractionHand.MAIN_HAND) return;
-
-        // Cancel client prediction (prevents block placing sound)
-        if (level.isClientSide) {
-            event.setUseBlock(TriState.FALSE);
-            event.setUseItem(TriState.FALSE);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            return;
-        }
-
-        // Server side
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-
-        SimpleMenuProvider provider = new SimpleMenuProvider(
-                (windowId, playerInv, p) ->
-                        new FletchingStationMenu(windowId, playerInv, ContainerLevelAccess.create(level, pos)),
-                Component.translatable("container.overgeared.fletching_table")
-        );
-
-        player.openMenu(provider, pos);
-
-        event.setUseBlock(TriState.FALSE);
-        event.setUseItem(TriState.FALSE);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
-    }
-
 
     @SubscribeEvent
     public static void onUsingKnappable(PlayerInteractEvent.RightClickItem event) {

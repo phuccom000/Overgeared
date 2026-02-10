@@ -7,7 +7,7 @@
   ],
   "mixins": [
     "BrewingStandBlockEntityMixin",
-    "ChunkMapAccessor",
+    "ContainerCoolingMixin",
     "ItemStackMixin",
     "ItemStackStackingMixin",
     "PotionItemMixin",
