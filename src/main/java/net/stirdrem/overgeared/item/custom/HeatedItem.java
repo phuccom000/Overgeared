@@ -75,7 +75,7 @@ public class HeatedItem extends Item {
     }
 
     private void handleCoolingLivingEntity(ItemStack stack, Level level, LivingEntity lEntity) {
-        Item cooled = getCooledItem(stack.getItem(), player.level())
+        Item cooled = getCooledItem(stack.getItem(), player.level());
         if (cooled == null) return;
         if (!hasCooled(stack, level, entity.blockPosition())) return;
 
@@ -83,7 +83,7 @@ public class HeatedItem extends Item {
     }
 
     private void handleCoolingItemEntity(ItemStack stack, Level level, ItemEntity entity) {
-        Item cooled = getCooledItem(stack.getItem(), level)
+        Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return;
 
         // Quick check if thrown into water
@@ -102,7 +102,7 @@ public class HeatedItem extends Item {
     public static bool handleCoolingContainer(ItemStack stack, Level level) {
         if (entity.level().isClientSide) return false;
 
-        Item cooled = getCooledItem(stack.getItem(), level)
+        Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return false;
         if (!hasCooled(stack, level)) return false;
 
@@ -119,7 +119,7 @@ public class HeatedItem extends Item {
 
     public static void setCooled(ItemStack stack, LivingEntity lEntity, Item cooled = null) {
         if (cooled == null) {
-            Item cooled = getCooledItem(stack.getItem(), lEntity.level())
+            Item cooled = getCooledItem(stack.getItem(), lEntity.level());
             if (cooled == null) return;
         }
 
@@ -146,7 +146,7 @@ public class HeatedItem extends Item {
         if (!(stack.is(ModTags.Items.HEATED_METALS) || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)))) return false;
 
         long tick = level.getGameTime();
-        if (tick % 10 != 0) return false
+        if (tick % 10 != 0) return false;
         int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
         Long heatedSince = stack.get(ModComponents.HEATED_TIME);
 

@@ -110,7 +110,7 @@ public class ModItemInteractEvents {
 
         // Smithing
         if (heldItem.is(ModTags.Items.SMITHING_HAMMERS) && event.getHand() == InteractionHand.MAIN_HAND) {
-            onUseSmithingHammer(event, player, level, state)
+            onUseSmithingHammer(event, player, level, state);
         }
         // Fletching
         else if (state.is(Blocks.FLETCHING_TABLE)  && event.getHand() == InteractionHand.MAIN_HAND) {
