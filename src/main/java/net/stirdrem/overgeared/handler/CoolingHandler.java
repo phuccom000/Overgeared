@@ -55,6 +55,7 @@ public class CoolingHandler {
 
         for (BlockPos pos : blockEntityPositions) {
             BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof RandomizableContainerBlockEntity lbe && lbe.getLootTable() != null) continue;
             if (be == null || be.isRemoved() || !be.hasLevel()) continue;
 
             // Check if block entity type is blacklisted
