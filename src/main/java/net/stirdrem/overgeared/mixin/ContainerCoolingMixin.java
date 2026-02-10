@@ -1,40 +1,39 @@
 package net.stirdrem.overgeared.mixin;
 
-import java.util.List;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.item.custom.HeatedItem;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.inventory.ContainerListener;
 
-@Mixin(AbstractContainerMenu.class)
+@Mixin(ServerPlayer.class)
 public class ContainerCoolingMixin {
 
-    @Shadow @Final private List<ContainerListener> containerListeners;
+    @Unique
+    private AbstractContainerMenu overgeared$lastMenu = null;
 
-    @Inject(method = "broadcastChanges", at = @At("HEAD"))
-    private void tickOpenContainer(CallbackInfo ci) {
-        AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
-        Level level = null;
+    @Inject(method = "doTick", at = @At("HEAD"))
+    private void tickContainerCooling(CallbackInfo ci) {
+        ServerPlayer player = (ServerPlayer) (Object) this;
+        AbstractContainerMenu menu = player.containerMenu;
 
-        for (Slot slot : menu.slots) {
-            if (slot.container instanceof BlockEntity be) {
-                level = be.getLevel();
-                if (level != null && !level.isClientSide) break;
-            }
-        }
-        if (level == null || level.isClientSide) return;
+        boolean justOpened = (menu != player.inventoryMenu && overgeared$lastMenu != menu);
+        overgeared$lastMenu = menu;
+
+        // No external container open — inventoryTick handles the player's own inventory
+        if (menu == player.inventoryMenu) return;
+
+        Level level = player.level();
+        if (level.isClientSide) return;
 
         for (Slot slot : menu.slots) {
             if (slot.getItem().getItem() instanceof HeatedItem) {
-                HeatedItem.handleCoolingContainer(slot, level);
+                HeatedItem.handleCoolingContainer(slot, level, justOpened);
             }
         }
     }

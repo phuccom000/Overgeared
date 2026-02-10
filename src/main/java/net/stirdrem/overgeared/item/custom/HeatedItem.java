@@ -119,12 +119,16 @@ public class HeatedItem extends Item {
     }
 
     public static boolean handleCoolingContainer(Slot slot, Level level) {
+        return handleCoolingContainer(slot, level, false);
+    }
+
+    public static boolean handleCoolingContainer(Slot slot, Level level, boolean skipThrottle) {
         if (level.isClientSide) return false;
         ItemStack stack = slot.getItem();
 
         Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return false;
-        if (!hasCooled(stack, level)) return false;
+        if (!hasCooled(stack, level, skipThrottle)) return false;
 
         ItemStack newStack = new ItemStack(cooled, stack.getCount());
         copyComponentsExceptHeated(stack, newStack);
@@ -184,12 +188,16 @@ public class HeatedItem extends Item {
     }
 
     private static boolean hasCooled(ItemStack stack, Level level) {
+        return hasCooled(stack, level, false);
+    }
+
+    private static boolean hasCooled(ItemStack stack, Level level, boolean skipThrottle) {
         //Neither of these should happen but still
         if (stack.isEmpty()) return false;
         if (!(stack.is(ModTags.Items.HEATED_METALS) || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)))) return false;
 
         long tick = level.getGameTime();
-        if (tick % 10 != 0) return false;
+        if (!skipThrottle && tick % 10 != 0) return false;
         int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
         Long heatedSince = stack.get(ModComponents.HEATED_TIME);
 

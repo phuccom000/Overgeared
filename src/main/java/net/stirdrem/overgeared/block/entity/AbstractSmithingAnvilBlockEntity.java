@@ -57,6 +57,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             setChanged();
             if (level == null || level.isClientSide()) return;
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+
+            if (slot < 9 && getStackInSlot(slot).getItem() instanceof HeatedItem) {
+                hasHeatedItems = true;
+            }
         }
     };
     protected final ContainerData data;
@@ -560,6 +564,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void tick(Level lvl, BlockPos pos, BlockState st) {
         if (!pos.equals(this.worldPosition)) return; // sanity check
+        tickHeatedIngredients(lvl, pos, st);
         try {
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
@@ -619,7 +624,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
             resetProgress(pos);
         }
-        tickHeatedIngredients(lvl, pos, st);
     }
 
     public int getHitsRemaining() {
