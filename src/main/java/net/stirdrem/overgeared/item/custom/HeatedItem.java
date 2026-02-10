@@ -20,6 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.stirdrem.overgeared.components.ModComponents;
+import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
 import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
