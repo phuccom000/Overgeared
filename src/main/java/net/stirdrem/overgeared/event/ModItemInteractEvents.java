@@ -74,6 +74,7 @@ import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
+import net.stirdrem.overgeared.item.custom.HeatedItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -289,7 +290,7 @@ public class ModItemInteractEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
-    private void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
+    private static void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
         if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
 
         BlockPos pos = event.getPos();
@@ -304,7 +305,7 @@ public class ModItemInteractEvents {
         event.setCanceled(true);
     }
 
-    private void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state) {
+    private static void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state) {
         // Check if the item is heated either by tag or NBT
         if (!(heldItem.is(ModTags.Items.HEATED_METALS) || (Boolean.TRUE.equals(heldItem.get(HEATED_COMPONENT))))) return;
 

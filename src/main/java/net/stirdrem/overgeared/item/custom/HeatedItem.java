@@ -5,6 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -68,11 +69,11 @@ public class HeatedItem extends Item {
                     EquipmentSlot equipSlot = tongsStack == lEntity.getMainHandItem()
                             ? EquipmentSlot.MAINHAND
                             : EquipmentSlot.OFFHAND;
-                    tongsStack.hurtAndBreak(1, player, equipSlot);
+                    tongsStack.hurtAndBreak(1, lEntity, equipSlot);
                     lastTongsHit.put(uuid, tick);
                 }
             } else {
-                // No tongs - damage the player
+                // No tongs - damage the entity
                 if (!lEntity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
                     lEntity.hurt(lEntity.damageSources().hotFloor(), 1.0f);
                 }
@@ -94,7 +95,7 @@ public class HeatedItem extends Item {
     private void handleCoolingLivingEntity(ItemStack stack, Level level, LivingEntity lEntity) {
         Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled == null) return;
-        if (!hasCooled(stack, level, entity.blockPosition())) return;
+        if (!hasCooled(stack, level, lEntity.blockPosition())) return;
 
         setCooled(stack, lEntity, cooled);
     }
@@ -127,8 +128,8 @@ public class HeatedItem extends Item {
         copyComponentsExceptHeated(tempStack, stack);
 
         // Double make sure
-        target.remove(ModComponents.HEATED_COMPONENT);
-        target.remove(ModComponents.HEATED_TIME);
+        stack.remove(ModComponents.HEATED_COMPONENT);
+        stack.remove(ModComponents.HEATED_TIME);
 
         stack.setItem(cooled);
         return true;
