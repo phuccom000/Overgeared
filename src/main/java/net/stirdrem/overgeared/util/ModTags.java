@@ -29,6 +29,7 @@ public class ModTags {
         public static final TagKey<Item> HOT_ITEMS = tag("hot_items");
         public static final TagKey<Item> SMITHING_HAMMERS = tag("smithing_hammers");
         public static final TagKey<Item> TOOL_CAST = tag("tool_casts");
+        public static final TagKey<Item> USABLE_TOOL_CAST = tag("usable_tool_casts");
 
         private static TagKey<Item> tag(String name) {
             return ItemTags.create(OvergearedMod.loc(name));
