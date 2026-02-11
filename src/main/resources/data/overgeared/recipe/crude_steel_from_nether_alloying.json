@@ -3,7 +3,7 @@
   "category": "misc",
   "group": "misc",
   "experience": 0.5,
-  "cookingtime": 150,
+  "cooking_time": 150,
   "ingredients": [
     {
       "item": "minecraft:iron_ingot"
