@@ -42,7 +42,7 @@ import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 import net.stirdrem.overgeared.util.ModTags;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import net.minecraft.world.phys.AABB;
-import net.stirdrem.overgeared.item.custom.HeatedItem;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +58,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (level == null || level.isClientSide()) return;
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 
-            if (slot < 9 && getStackInSlot(slot).getItem() instanceof HeatedItem) {
+            if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
                 hasHeatedItems = true;
             }
         }
@@ -924,7 +924,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             ItemStack stack = itemHandler.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
 
-            if (stack.getItem() instanceof HeatedItem) {
+            if (HeatedItem.isHeated(stack)) {
                 hasHeatedItems = true;
 
                 if(HeatedItem.handleCoolingContainer(this.itemHandler, slot, level)) {
@@ -982,7 +982,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
 
-        if (!stack.isEmpty() && stack.getItem() instanceof HeatedItem) {
+        if (!stack.isEmpty() && HeatedItem.isHeated(stack)) {
             this.hasHeatedItems = true;
         }
     }

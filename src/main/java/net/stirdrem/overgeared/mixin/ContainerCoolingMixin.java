@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.item.custom.HeatedItem;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +32,7 @@ public class ContainerCoolingMixin {
         if (level.isClientSide) return;
 
         for (Slot slot : menu.slots) {
-            if (slot.getItem().getItem() instanceof HeatedItem) {
+            if (HeatedItem.isHeated(slot.getItem())) {
                 HeatedItem.handleCoolingContainer(slot, level, justOpened);
             }
         }

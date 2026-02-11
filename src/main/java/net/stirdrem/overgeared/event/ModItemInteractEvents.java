@@ -68,7 +68,7 @@ import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
-import net.stirdrem.overgeared.item.custom.HeatedItem;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -104,7 +104,7 @@ public class ModItemInteractEvents {
             onUseFletching(event, serverPlayer, level);
         }
         // Heated Ingot on Cauldron (maybe any water-y block later?)
-        else if (state.is(Blocks.WATER_CAULDRON) && heldItem.is(ModTags.Items.HEATED_METALS)) {
+        else if (state.is(Blocks.WATER_CAULDRON) && HeatedItem.isHeated(heldItem)) {
             onUseCauldron(event, serverPlayer, heldItem, state);
         }
         // Stone
@@ -164,8 +164,6 @@ public class ModItemInteractEvents {
         if (!(be instanceof
                 AbstractSmithingAnvilBlockEntity anvilBE)) return;
         UUID playerUUID = player.getUUID();
-
-        if (!player.isCrouching()) return;
 
         if (!level.isClientSide) {
             if (!(player instanceof ServerPlayer serverPlayer)) return;
@@ -292,16 +290,14 @@ public class ModItemInteractEvents {
     }
 
     private static void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state) {
-        // Check if the item is heated either by tag or NBT
-        if (!(heldItem.is(ModTags.Items.HEATED_METALS) || (Boolean.TRUE.equals(heldItem.get(HEATED_COMPONENT))))) return;
+        if (!HeatedItem.isHeated(heldItem)) return;
 
         IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
         int waterLevel = state.getValue(levelProperty);
 
         if (waterLevel <= 0) return;
-        if (!(heldItem.getItem() instanceof HeatedItem)) return;
-        HeatedItem.setCooled(heldItem, player);
-        
+        HeatedItem.setCooledSingle(heldItem, player);
+
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
@@ -454,16 +450,14 @@ public class ModItemInteractEvents {
         Level world = event.getLevel();
         if (world.isClientSide()) return;
 
-        // Check if the player is holding a heated metal and targeting water
-        if (stack.is(ModTags.Items.HEATED_METALS)) {
+        // Check if the player is holding a heated item and targeting water
+        if (HeatedItem.isHeated(stack)) {
             HitResult hit = player.pick(5.0D, 0.0F, true);
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = ((BlockHitResult) hit).getBlockPos();
                 BlockState state = world.getBlockState(pos);
                 if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
-                    
-                    if (!(stack.getItem() instanceof HeatedItem heatedItem)) return;
-                    heatedItem.setCooled(stack, player);
+                    HeatedItem.setCooledSingle(stack, player);
 
                     event.setCancellationResult(InteractionResult.SUCCESS);
                     event.setCanceled(true);
@@ -474,7 +468,7 @@ public class ModItemInteractEvents {
         HitResult hit = player.pick(5.0D, 0.0F, false);
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
         BlockState state = world.getBlockState(pos);
-        if (player.isCrouching() && state.is(ModTags.Blocks.GRINDSTONES)) {
+        if (state.is(ModTags.Blocks.GRINDSTONES)) {
 
             if (player.getMainHandItem() != stack) {
                 return;
