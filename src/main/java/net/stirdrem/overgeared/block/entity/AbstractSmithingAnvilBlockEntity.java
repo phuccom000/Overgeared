@@ -77,6 +77,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
+    private long lastCraftTick = -1;
     protected AbstractSmithingAnvil anvilBlock;
     protected static final int BLUEPRINT_SLOT = 11;
     protected boolean hasHeatedItems = false;
@@ -257,6 +258,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         maxProgress = 0;
         lastRecipe = null;
         if (level != null && !level.isClientSide()) {
+            if (minigameOn) lastCraftTick = level.getGameTime();
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
         }
         player = null;
@@ -910,6 +912,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public void setMinigameOn(boolean value) {
         this.minigameOn = value;
         setChanged(); // mark dirty for save
+    }
+
+    /** True if a minigame craft completed very recently (same tick). */
+    public boolean justCrafted(long currentTick) {
+        return lastCraftTick >= 0 && currentTick - lastCraftTick <= 2;
     }
 
     // Not the happiest with this due to constantly checking if it's open etc., maybe figure smth out :)

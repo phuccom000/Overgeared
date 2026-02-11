@@ -172,8 +172,9 @@ public class ModItemInteractEvents {
 
         // Minigame already running — cancel event so useItemOn doesn't also process a hit.
         // Server-side hits are handled by PacketSendCounterC2SPacket (sent per client minigame hit).
+        // Also cancel if craft just completed this tick (prevents GUI opening on last hit).
         if (!level.isClientSide) {
-            if (anvilBE.isMinigameOn()) {
+            if (anvilBE.isMinigameOn() || anvilBE.justCrafted(level.getGameTime())) {
                 event.setCanceled(true);
                 event.setCancellationResult(InteractionResult.SUCCESS);
                 return;
