@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.mixin;
 
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -25,11 +24,7 @@ public class MobHeatedItemMixin {
         for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND}) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (!HeatedItem.isHeated(stack)) continue;
-
-            if (!entity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                entity.hurt(entity.damageSources().hotFloor(), 1.0f);
-            }
-            HeatedItem.handleCoolingLivingEntity(stack, level, entity);
+            HeatedItem.tickInventory(stack, level, entity);
             break;
         }
     }

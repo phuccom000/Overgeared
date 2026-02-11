@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
@@ -26,8 +27,6 @@ import net.stirdrem.overgeared.util.ModTags;
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
 import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
 
-// Utility class handling all heated item behaviour (cooling, damage, etc.)
-// Not an Item class — heated items are regular items identified by tag/component.
 public final class HeatedItem {
     // Per-entity last-hit tick to prevent multiple tongs damage per tick
     private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
@@ -97,8 +96,7 @@ public final class HeatedItem {
             copyComponentsExceptHeated(stack, cooledStack);
             entity.setItem(cooledStack);
         } else {
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
+            removeHeat(stack);
         }
     }
 
@@ -128,8 +126,7 @@ public final class HeatedItem {
             copyComponentsExceptHeated(stack, newStack);
             slot.set(newStack);
         } else {
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
+            removeHeat(stack);
         }
         return true;
     }
@@ -148,8 +145,7 @@ public final class HeatedItem {
             handler.extractItem(index, stack.getCount(), false);
             handler.insertItem(index, newStack, false);
         } else {
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
+            removeHeat(stack);
         }
         return true;
     }
@@ -177,12 +173,10 @@ public final class HeatedItem {
                 if (!player.getInventory().add(newStack)) player.drop(newStack, false);
             }
         } else if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {
-            stack.remove(ModComponents.HEATED_COMPONENT);
-            stack.remove(ModComponents.HEATED_TIME);
+            removeHeat(stack);
         }
     }
 
-    // Cools a single item from the stack (for right-click interactions)
     public static void setCooledSingle(ItemStack stack, Player player) {
         Level level = player.level();
         Item cooled = getCooledItem(stack.getItem(), level);
@@ -200,8 +194,7 @@ public final class HeatedItem {
             copyComponentsExceptHeated(stack, cooledStack);
         } else {
             cooledStack = stack.copyWithCount(1);
-            cooledStack.remove(ModComponents.HEATED_COMPONENT);
-            cooledStack.remove(ModComponents.HEATED_TIME);
+            removeHeat(cooledStack);
         }
 
         stack.shrink(1);
@@ -243,5 +236,14 @@ public final class HeatedItem {
         if (tick - heatedSince < cooldownTicks) return false;
 
         return true;
+    }
+
+    private static void removeHeat(ItemStack stack) {
+        stack.remove(ModComponents.HEATED_COMPONENT);
+        stack.remove(ModComponents.HEATED_TIME);
+        CastData data = stack.get(ModComponents.CAST_DATA);
+        if (data != null && data.heated()) {
+            stack.set(ModComponents.CAST_DATA, data.withHeated(false));
+        }
     }
 }

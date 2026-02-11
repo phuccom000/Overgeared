@@ -618,36 +618,6 @@ public class ModItemInteractEvents {
         }
     }
 
-    // Currently casts do nothing, BUT keeping the code in case there's plans for implementation :)
-    // Do note that it would be better to move it to it's own item like HeatedItem is
-    /*private static void coolItem(Player player, ItemStack stack) {
-        ItemStack stack = entity.getItem();
-        if (stack.getCount() <= 0) return;
-
-        boolean isHeated = stack.getOrDefault(ModComponents.HEATED_COMPONENT, false);
-        if (!stack.getOrDefault(ModComponents.HEATED_COMPONENT, false)) return;
-
-        // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem) {
-            CastData data = stack.getOrDefault(ModComponents.CAST_DATA, CastData.EMPTY);
-            if (data.hasOutput()) {
-                ItemStack output = data.output();
-                ItemStack cooledOutput = coolSingleStack(output, player.level()); // Not implemented here due to no need, example can be found in HeatedItem
-                stack.set(ModComponents.CAST_DATA, data.withOutput(cooledOutput).withHeated(false));
-                // Remove HEATED_COMPONENT from the cast itself so players stop taking damage
-                stack.remove(ModComponents.HEATED_COMPONENT);
-            }
-            player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
-            return; // Don't process further for casts
-        }
-
-        // Just remove the heated component and heated time e.g. for quenching
-        stack.remove(ModComponents.HEATED_COMPONENT);
-        stack.remove(ModComponents.HEATED_TIME);
-
-        player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
-    }*/
-
     private static void grindItem(Player player, ItemStack heldStack) {
         Item cooledItem = getGrindable(heldStack.getItem(), player.level());
         if (cooledItem != null) {
