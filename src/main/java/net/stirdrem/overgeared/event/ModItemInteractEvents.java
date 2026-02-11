@@ -191,7 +191,16 @@ public class ModItemInteractEvents {
                 return;
             }
         } else {
-            if (AnvilMinigameEvents.minigameStarted) return;
+            if (AnvilMinigameEvents.minigameStarted) {
+                // Re-show hidden minigame when clicking the anvil again
+                if (!AnvilMinigameEvents.isVisible()) {
+                    AnvilMinigameEvents.setIsVisible(pos, true);
+                    playerMinigameVisibility.put(playerUUID, true);
+                    event.setCanceled(true);
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                }
+                return;
+            }
         }
 
         // --- First-click minigame initiation ---
