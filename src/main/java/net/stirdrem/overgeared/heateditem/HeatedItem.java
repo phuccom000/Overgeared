@@ -14,6 +14,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.InteractionHand;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.effect.MobEffects;
@@ -90,6 +92,13 @@ public final class HeatedItem {
         boolean inWater = state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON);
 
         if (!inWater && !hasCooled(stack, level, pos)) return;
+
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
+                    entity.getX(), entity.getY() + 0.25, entity.getZ(),
+                    6, 0.15, 0.15, 0.15, 0.02);
+            level.playSound(null, entity.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.0f);
+        }
 
         if (cooled != null) {
             ItemStack cooledStack = new ItemStack(cooled, stack.getCount());

@@ -72,7 +72,7 @@ import net.stirdrem.overgeared.heateditem.HeatedItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+
 
 import static net.stirdrem.overgeared.components.ModComponents.HEATED_COMPONENT;
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
@@ -165,109 +165,80 @@ public class ModItemInteractEvents {
                 AbstractSmithingAnvilBlockEntity anvilBE)) return;
         UUID playerUUID = player.getUUID();
 
+        // Let useItemOn handle: no recipe, non-quality direct hammering, minigame disabled
+        if (!anvilBE.hasRecipe()) return;
+        if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) return;
+        if (!ServerConfig.ENABLE_MINIGAME.get()) return;
+
+        // Minigame already running — cancel event so useItemOn doesn't also process a hit.
+        // Server-side hits are handled by PacketSendCounterC2SPacket (sent per client minigame hit).
+        if (!level.isClientSide) {
+            if (anvilBE.isMinigameOn()) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                return;
+            }
+        } else {
+            if (AnvilMinigameEvents.minigameStarted) return;
+        }
+
+        // --- First-click minigame initiation ---
         if (!level.isClientSide) {
             if (!(player instanceof ServerPlayer serverPlayer)) return;
-            // Server-side ownership logic
-            if (anvilBE.hasRecipe() && !ServerConfig.ENABLE_MINIGAME.get()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.no_minigame").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-            if (!anvilBE.hasRecipe()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-
-            if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED), true);
-                return;
-            }
 
             UUID currentOwner = anvilBE.getOwnerUUID();
             if (currentOwner != null && !currentOwner.equals(playerUUID)) {
                 serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-
-            if (currentOwner == null && !playerAnvilPositions.containsKey(player.getUUID())) {
-                anvilBE.setOwner(playerUUID);
-
-                // ADD SERVER-SIDE TRACKING
-                playerAnvilPositions.put(playerUUID, pos);
-                playerMinigameVisibility.put(playerUUID, true);
-
-                CompoundTag sync = new CompoundTag();
-                sync.putUUID("anvilOwner", playerUUID);
-                sync.putLong("anvilPos", pos.asLong());
-                PacketDistributor.sendToAllPlayers(new MinigameSyncS2CPacket(sync));
-                return;
-            }
-
-            if (playerAnvilPositions.get(player.getUUID()) != null && !pos.equals(playerAnvilPositions.get(player.getUUID()))) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-        } else {
-            if (anvilBE.hasRecipe() && !ServerConfig.ENABLE_MINIGAME.get()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.no_minigame").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-            if (!anvilBE.hasRecipe()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            // Client should trust the server's sync data in ClientAnvilMinigameData
-            UUID currentOwner = ClientAnvilMinigameData.getOccupiedAnvil(pos);
-            if (currentOwner != null && !currentOwner.equals(player.getUUID())) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            if (player.getUUID().equals(currentOwner)
-                    || currentOwner == null
-                    && ClientAnvilMinigameData.getPendingMinigamePos() == null) {
-                BlockPos pos1 = pos;
-                BlockPos anvilPos = playerAnvilPositions.get(player.getUUID());
-                if (playerAnvilPositions.get(player.getUUID()) != null && !pos.equals(playerAnvilPositions.get(player.getUUID()))) {
-                    //player.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED));
-                    event.setCanceled(true);
-                    event.setCancellationResult(InteractionResult.PASS);
-                    return;
-                }
-                if (anvilBE.hasRecipe() || anvilBE.needsMinigame()) {
-                    anvilBE.setOwner(playerUUID);
-                    AtomicReference<String> quality = new AtomicReference<>("perfect");
-                    Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
-                    recipeOpt.ifPresent(recipe -> {
-                        if (AnvilMinigameEvents.minigameStarted) {
-                            boolean isVisible = AnvilMinigameEvents.isVisible();
-                            AnvilMinigameEvents.setIsVisible(pos, !isVisible);
-                            PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(!isVisible, pos));
-                            playerMinigameVisibility.put(player.getUUID(), !isVisible);
-                        } else {
-                            quality.set(anvilBE.minigameQuality().getDisplayName());
-                            AnvilMinigameEvents.reset(quality.get());
-                            playerAnvilPositions.put(player.getUUID(), pos);
-                            playerMinigameVisibility.put(player.getUUID(), true);
-                            AnvilMinigameEvents.setMinigameStarted(pos, true);
-                            PacketDistributor.sendToServer(new MinigameSetStartedC2SPacket(pos));
-                            PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(true, pos));
-                            AnvilMinigameEvents.setHitsRemaining(anvilBE.getRequiredProgress());
-                        }
-                    });
-                }
                 event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.PASS);
+                event.setCancellationResult(InteractionResult.FAIL);
                 return;
             }
 
-            ClientAnvilMinigameData.setPendingMinigame(pos);
-            return;
+            BlockPos existingAnvil = playerAnvilPositions.get(playerUUID);
+            if (existingAnvil != null && !pos.equals(existingAnvil)) {
+                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED), true);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+                return;
+            }
+
+            // Start minigame on server
+            anvilBE.setOwner(playerUUID);
+            anvilBE.setPlayer(player);
+            anvilBE.setMinigameOn(true);
+            playerAnvilPositions.put(playerUUID, pos);
+            playerMinigameVisibility.put(playerUUID, true);
+
+            CompoundTag sync = new CompoundTag();
+            sync.putUUID("anvilOwner", playerUUID);
+            sync.putLong("anvilPos", pos.asLong());
+            PacketDistributor.sendToAllPlayers(new MinigameSyncS2CPacket(sync));
+        } else {
+            // Client-side ownership check
+            UUID currentOwner = ClientAnvilMinigameData.getOccupiedAnvil(pos);
+            if (currentOwner != null && !currentOwner.equals(playerUUID)) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+                return;
+            }
+
+            BlockPos existingAnvil = playerAnvilPositions.get(playerUUID);
+            if (existingAnvil != null && !pos.equals(existingAnvil)) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+                return;
+            }
+
+            // Start minigame on client
+            anvilBE.setOwner(playerUUID);
+            String quality = anvilBE.minigameQuality().getDisplayName();
+            AnvilMinigameEvents.reset(quality);
+            playerAnvilPositions.put(playerUUID, pos);
+            playerMinigameVisibility.put(playerUUID, true);
+            AnvilMinigameEvents.setMinigameStarted(pos, true);
+            PacketDistributor.sendToServer(new MinigameSetStartedC2SPacket(pos));
+            PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(true, pos));
+            AnvilMinigameEvents.setHitsRemaining(anvilBE.getRequiredProgress());
         }
 
         event.setCanceled(true);

@@ -17,12 +17,25 @@ public class ContainerCoolingMixin {
     @Unique
     private AbstractContainerMenu overgeared$lastMenu = null;
 
+    // Runs before sendAllDataToRemote — cools items before the client ever sees them
+    @Inject(method = "initMenu", at = @At("HEAD"))
+    private void onInitMenu(AbstractContainerMenu menu, CallbackInfo ci) {
+        ServerPlayer player = (ServerPlayer) (Object) this;
+        Level level = player.level();
+        if (level.isClientSide) return;
+
+        for (Slot slot : menu.slots) {
+            if (HeatedItem.isHeated(slot.getItem())) {
+                HeatedItem.handleCoolingContainer(slot, level, true);
+            }
+        }
+    }
+
     @Inject(method = "doTick", at = @At("HEAD"))
     private void tickContainerCooling(CallbackInfo ci) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         AbstractContainerMenu menu = player.containerMenu;
 
-        boolean justOpened = (menu != player.inventoryMenu && overgeared$lastMenu != menu);
         overgeared$lastMenu = menu;
 
         // No external container open — inventoryTick handles the player's own inventory
@@ -33,7 +46,7 @@ public class ContainerCoolingMixin {
 
         for (Slot slot : menu.slots) {
             if (HeatedItem.isHeated(slot.getItem())) {
-                HeatedItem.handleCoolingContainer(slot, level, justOpened);
+                HeatedItem.handleCoolingContainer(slot, level);
             }
         }
     }

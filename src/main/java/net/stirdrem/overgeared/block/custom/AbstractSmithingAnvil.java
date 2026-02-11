@@ -182,8 +182,9 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                 return ItemInteractionResult.FAIL;
             }
 
-            // Allow hammering for non-quality recipes OR when minigame is disabled
-            if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
+            // Allow direct hammering for non-quality recipes OR when minigame is disabled
+            // (Minigame hits are handled by PacketSendCounterC2SPacket, not here)
+            if (isHammer && ((!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
                 // Check if player is at the correct anvil
                 BlockPos playerAnvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (playerAnvilPos != null && !pos.equals(playerAnvilPos)) {
@@ -234,7 +235,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
     }
 
-    protected void spawnAnvilParticles(Level level, BlockPos pos) {
+    public static void spawnAnvilParticles(Level level, BlockPos pos) {
         if (level instanceof ServerLevel serverLevel) {
 
             Random random = new Random();
