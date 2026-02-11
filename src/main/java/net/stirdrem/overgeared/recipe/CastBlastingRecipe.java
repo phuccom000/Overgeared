@@ -142,6 +142,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
         if (cast.isDamageableItem()) {
             int newDamage = cast.getDamageValue() + 1;
             if (newDamage >= cast.getMaxDamage()) {
+                result.set(ModComponents.HEATED_COMPONENT, true);
                 return result;
             } else {
                 cast.setDamageValue(newDamage);

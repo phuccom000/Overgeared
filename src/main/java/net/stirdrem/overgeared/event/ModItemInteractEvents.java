@@ -165,6 +165,13 @@ public class ModItemInteractEvents {
                 AbstractSmithingAnvilBlockEntity anvilBE)) return;
         UUID playerUUID = player.getUUID();
 
+        // Block interaction if a craft just finished (prevents GUI opening on last minigame hit)
+        if (!level.isClientSide && anvilBE.justCrafted(level.getGameTime())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+
         // Let useItemOn handle: no recipe, non-quality direct hammering, minigame disabled
         if (!anvilBE.hasRecipe()) return;
         if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) return;
@@ -172,9 +179,8 @@ public class ModItemInteractEvents {
 
         // Minigame already running — cancel event so useItemOn doesn't also process a hit.
         // Server-side hits are handled by PacketSendCounterC2SPacket (sent per client minigame hit).
-        // Also cancel if craft just completed this tick (prevents GUI opening on last hit).
         if (!level.isClientSide) {
-            if (anvilBE.isMinigameOn() || anvilBE.justCrafted(level.getGameTime())) {
+            if (anvilBE.isMinigameOn()) {
                 event.setCanceled(true);
                 event.setCancellationResult(InteractionResult.SUCCESS);
                 return;
