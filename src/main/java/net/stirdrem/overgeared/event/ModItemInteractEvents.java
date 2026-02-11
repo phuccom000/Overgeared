@@ -107,6 +107,11 @@ public class ModItemInteractEvents {
         else if (state.is(Blocks.WATER_CAULDRON) && HeatedItem.isHeated(heldItem)) {
             onUseCauldron(event, serverPlayer, heldItem, state);
         }
+        // Grindstone (intercept before vanilla opens its GUI)
+        else if (state.is(ModTags.Blocks.GRINDSTONES) && event.getHand() == InteractionHand.MAIN_HAND
+                && !heldItem.isEmpty()) {
+            onUseGrindstone(event, serverPlayer, heldItem, level, pos);
+        }
         // Stone
         else {
             for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
@@ -280,6 +285,99 @@ public class ModItemInteractEvents {
         event.setCanceled(true);
     }
 
+    private static void onUseGrindstone(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack stack, Level level, BlockPos pos) {
+        // Grinding recipe (e.g. diamond shard)
+        if (hasGrindingRecipe(stack.getItem(), level)) {
+            grindItem(player, stack);
+            level.playSound(null, player.blockPosition(), SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.2f);
+            spawnGrindParticles(level, pos);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
+        }
+
+        // Polishing (POLISHED = false → true)
+        if (Boolean.FALSE.equals(stack.get(ModComponents.POLISHED))) {
+            if (stack.getCount() > 1) {
+                ItemStack polishedItem = stack.copy();
+                polishedItem.setCount(1);
+                polishedItem.set(ModComponents.POLISHED, true);
+                stack.shrink(1);
+                if (!player.getInventory().add(polishedItem)) {
+                    player.drop(polishedItem, false);
+                }
+            } else {
+                stack.set(ModComponents.POLISHED, true);
+            }
+            level.playSound(null, player.blockPosition(), SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.2f);
+            spawnGrindParticles(level, pos);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
+        }
+
+        // Durability restore
+        if (stack.isDamageableItem() && stack.getDamageValue() > 0) {
+            if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
+            }
+
+            // Check blacklist
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            List<? extends String> blacklist = ServerConfig.GRINDING_BLACKLIST.get();
+            for (String entry : blacklist) {
+                if (entry.startsWith("#")) {
+                    ResourceLocation tagId = ResourceLocation.parse(entry.substring(1));
+                    TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
+                    if (stack.is(tag)) return; // blacklisted — let vanilla GUI open
+                } else {
+                    if (itemId.equals(ResourceLocation.parse(entry))) return;
+                }
+            }
+            if (GrindingBlacklistReloadListener.isBlacklisted(stack)) return;
+
+            int reducedCount = stack.getOrDefault(ModComponents.REDUCED_GRIND_COUNT, 0);
+            int originalDurability = stack.getItem().getMaxDamage(stack);
+            float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
+            float grindReduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
+
+            float qualityMultiplier = 1.0f;
+            ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
+            if (quality != null) {
+                qualityMultiplier = quality.getDamageMultiplier();
+            }
+            int newOriginalDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
+            float penaltyMultiplier = Math.max(0.1f, 1.0f - (reducedCount * grindReduction));
+            int effectiveMaxDurability = Math.max(1, (int) (newOriginalDurability * penaltyMultiplier));
+            int currentDamage = stack.getDamageValue();
+
+            if (currentDamage <= (newOriginalDurability - effectiveMaxDurability)) {
+                stack.set(ModComponents.REDUCED_GRIND_COUNT, reducedCount + 1);
+                stack.setDamageValue(0);
+                level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                spawnGrindParticles(level, pos);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
+            }
+
+            float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue();
+            int theoreticalMaxDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
+            int repairAmount = Math.max(1, (int) (theoreticalMaxDurability * restorePercent));
+            int newDamage = Math.max(theoreticalMaxDurability - effectiveMaxDurability, currentDamage - repairAmount);
+
+            stack.setDamageValue(newDamage);
+            stack.set(ModComponents.REDUCED_GRIND_COUNT, reducedCount + 1);
+            level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            spawnGrindParticles(level, pos);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+        }
+        // If none of the above matched, don't cancel — vanilla grindstone GUI opens
+    }
+
     public static void onFlintUsedOnStone(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, Level level, RockInteractionData data) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         RockInteractionData.ToolEntry tool = data.getTool(heldItem);
@@ -443,147 +541,11 @@ public class ModItemInteractEvents {
             }
         }
 
-        HitResult hit = player.pick(5.0D, 0.0F, false);
-        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-        BlockState state = world.getBlockState(pos);
-        if (state.is(ModTags.Blocks.GRINDSTONES)) {
-
-            if (player.getMainHandItem() != stack) {
-                return;
-            }
-
-            if (hasGrindingRecipe(stack.getItem(), event.getLevel())) {
-                grindItem(player, stack);
-                world.playSound(null, player.blockPosition(),
-                        SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
-                        1.0f, 1.2f); // Higher pitch for polishing sound
-                spawnGrindParticles(world, pos);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
-            }
-            if (Boolean.FALSE.equals(stack.get(ModComponents.POLISHED))) {
-                // Only convert 1 item in the stack
-                if (stack.getCount() > 1) {
-                    // Split 1 item from the stack
-                    ItemStack polishedItem = stack.copy();
-                    polishedItem.setCount(1);
-                    polishedItem.set(ModComponents.POLISHED, true);
-
-                    // Reduce held stack by 1
-                    stack.shrink(1);
-
-                    // Try to add the polished item to player's inventory
-                    if (!player.getInventory().add(polishedItem)) {
-                        // If inventory is full, drop the item in the world
-                        player.drop(polishedItem, false);
-                    }
-                } else {
-                    // Only one item in stack, just polish it directly
-                    stack.set(ModComponents.POLISHED, true);
-                }
-
-                world.playSound(null, player.blockPosition(),
-                        SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
-                        1.0f, 1.2f); // Higher pitch for polishing sound
-                spawnGrindParticles(world, pos);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
-            }
-
-            if (stack.isDamageableItem() && stack.getDamageValue() > 0) {
-                if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
-                    return;
-                }
-                Item item = stack.getItem();
-                // Check blacklist
-                ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-                List<? extends String> blacklist = ServerConfig.GRINDING_BLACKLIST.get();
-
-                for (String entry : blacklist) {
-                    if (entry.startsWith("#")) {
-                        // Handle tag-based blacklist entries
-                        ResourceLocation tagId = ResourceLocation.parse(entry.substring(1));
-                        TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
-                        if (stack.is(tag)) {
-                            event.setCancellationResult(InteractionResult.PASS);
-                            event.setCanceled(true);
-                            return;
-                        }
-                    } else {
-                        // Handle direct item blacklist entries
-                        if (itemId.equals(ResourceLocation.parse(entry))) {
-                            event.setCancellationResult(InteractionResult.PASS);
-                            event.setCanceled(true);
-                            return;
-                        }
-                    }
-                }
-
-                boolean isBlacklisted = GrindingBlacklistReloadListener.isBlacklisted(stack);
-                if (isBlacklisted) {
-                    event.setCancellationResult(InteractionResult.PASS);
-                    event.setCanceled(true);
-                    return;
-                }
-
-                int reducedCount = stack.getOrDefault(ModComponents.REDUCED_GRIND_COUNT, 0);
-
-                // Base vanilla durability
-                int originalDurability = stack.getItem().getMaxDamage(stack);
-                // Config multipliers
-                float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
-                float grindReduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
-
-                // Quality multiplier (if any)
-                float qualityMultiplier = 1.0f;
-                ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
-                if (quality != null) {
-                    qualityMultiplier = quality.getDamageMultiplier();
-                }
-                int newOriginalDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
-
-                // Final durability multiplier, clamped to 10% minimum
-                float penaltyMultiplier = Math.max(0.1f, 1.0f - (reducedCount * grindReduction));
-
-                int effectiveMaxDurability = (int) (newOriginalDurability * penaltyMultiplier);
-                effectiveMaxDurability = Math.max(1, effectiveMaxDurability); // Clamp to avoid zero
-
-                int currentDamage = stack.getDamageValue();
-
-                // If already fully repaired relative to reduced max, skip
-                if (currentDamage <= (newOriginalDurability - effectiveMaxDurability)) {
-                    stack.set(ModComponents.REDUCED_GRIND_COUNT, reducedCount + 1);
-                    stack.setDamageValue(0);
-                    event.getLevel().playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-                    spawnGrindParticles(world, pos);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
-                    return;
-                }
-
-                float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue(); // e.g., 0.05F for 5%
-                int theoreticalMaxDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
-                int repairAmount = Math.max(1, (int) (theoreticalMaxDurability * restorePercent));
-
-                // Respect effective max cap
-                int newDamage = Math.max(theoreticalMaxDurability - effectiveMaxDurability, currentDamage - repairAmount);
-
-                stack.setDamageValue(newDamage);
-                stack.set(ModComponents.REDUCED_GRIND_COUNT, reducedCount + 1);
-                event.getLevel().playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-                spawnGrindParticles(world, pos);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-            }
-
-        }
         ItemStack mainHand = player.getMainHandItem();
         // Only hide if MAIN HAND is not a hammer
-        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) || !state.is(ModTags.Blocks.SMITHING_ANVIL)) {
+        HitResult hit = player.pick(5.0D, 0.0F, false);
+        BlockState hitState = world.getBlockState(((BlockHitResult) hit).getBlockPos());
+        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) || !hitState.is(ModTags.Blocks.SMITHING_ANVIL)) {
             hideMinigame((ServerPlayer) player);
         }
     }
