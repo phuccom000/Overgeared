@@ -178,7 +178,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                 Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 100).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime)
         ).apply(instance, CastSmeltingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastSmeltingRecipe> STREAM_CODEC = StreamCodec.of(

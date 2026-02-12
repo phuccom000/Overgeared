@@ -137,7 +137,7 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
                 Ingredient.CODEC.listOf(0, 4).fieldOf("ingredients").forGetter(r -> r.inputs),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.output),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, AlloySmeltingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, AlloySmeltingRecipe> STREAM_CODEC = StreamCodec.composite(

@@ -245,7 +245,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, CastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(

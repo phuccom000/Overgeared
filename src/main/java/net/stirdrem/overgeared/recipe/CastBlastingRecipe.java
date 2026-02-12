@@ -179,7 +179,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                 Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 100).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime)
         ).apply(instance, CastBlastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastBlastingRecipe> STREAM_CODEC = StreamCodec.of(

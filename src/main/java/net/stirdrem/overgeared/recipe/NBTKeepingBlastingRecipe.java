@@ -42,7 +42,7 @@ public class NBTKeepingBlastingRecipe extends BlastingRecipe {
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 100).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime)
         ).apply(instance, NBTKeepingBlastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingBlastingRecipe> STREAM_CODEC = StreamCodec.of(

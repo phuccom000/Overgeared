@@ -41,7 +41,7 @@ public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
+                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, NBTKeepingSmeltingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingSmeltingRecipe> STREAM_CODEC = StreamCodec.of(
