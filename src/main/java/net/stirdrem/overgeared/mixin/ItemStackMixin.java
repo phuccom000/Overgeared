@@ -101,7 +101,6 @@ public abstract class ItemStackMixin {
 
 
         // Process heated items in inventory - cool them down after time
-        // Process heated items in inventory - cool them down after time
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
 
