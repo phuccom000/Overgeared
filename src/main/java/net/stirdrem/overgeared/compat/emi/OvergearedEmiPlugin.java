@@ -235,6 +235,13 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         if (ServerConfig.GET_ROCK_USING_FLINT.get())
             registry.addRecipe(new FlintKnappingEmiRecipe());
 
+        // Register Clay + Nether Tool Cast recipes (one of each per tool type)
+        for (RecipeHolder<ItemToToolTypeRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE.get())) {
+            ItemToToolTypeRecipe recipe = holder.value();
+            registry.addRecipe(new ToolCastEmiRecipe(recipe.toolType(), recipe.input(), false));
+            registry.addRecipe(new ToolCastEmiRecipe(recipe.toolType(), recipe.input(), true));
+        }
+
         // Collect and sort all forging recipes
         List<RecipeHolder<ForgingRecipe>> allRecipes = new ArrayList<>(
                 registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FORGING.get())

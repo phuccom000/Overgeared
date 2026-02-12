@@ -3,7 +3,7 @@
   "category": "misc",
   "group": "misc",
   "experience": 2,
-  "cookingtime": 300,
+  "cooking_time": 300,
   "ingredients": [
     {
       "item": "minecraft:netherite_scrap"
