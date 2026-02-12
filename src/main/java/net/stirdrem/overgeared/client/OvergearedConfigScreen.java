@@ -127,6 +127,11 @@ public class OvergearedConfigScreen extends Screen {
                 () -> getBoolean("General Configs.enableModTooltips"),
                 v -> setBoolean("General Configs.enableModTooltips", v)
         ));
+        configList.addConfigEntry(new BooleanEntry(
+                "Enable crouch required for forging/grinding",
+                () -> getBoolean("General Configs.requireCrouchForForgingGrinding"),
+                v -> setBoolean("General Configs.requireCrouchForForgingGrinding", v)
+        ));
     }
 
     private void buildLootQuality() {
@@ -396,6 +401,11 @@ public class OvergearedConfigScreen extends Screen {
                 () -> getInt("Heated Items.heatedItemCooldownTicks"),
                 v -> setInt("Heated Items.heatedItemCooldownTicks", v),
                 1, Integer.MAX_VALUE
+        ));
+        configList.addConfigEntry(new BlacklistEntry(
+                "Cooling Block Entity Blacklist",
+                () -> getStringList("Heated Items.coolingBlockEntityBlacklist"),
+                v -> setStringList("Heated Items.coolingBlockEntityBlacklist", v)
         ));
     }
 
@@ -949,6 +959,7 @@ public class OvergearedConfigScreen extends Screen {
     private void resetAllToDefaults() {
         // Reset all boolean values
         setBoolean("General Configs.enableModTooltips", true);
+        setBoolean("General Configs.requireCrouchForForgingGrinding", true);
         setBoolean("Loot Quality.enableLootQuality", true);
         setBoolean("Minigame Common Settings.enableMinigame", true);
         setBoolean("Anvil Conversion.enableStoneToAnvil", true);

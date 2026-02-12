@@ -89,12 +89,10 @@ public class BlueprintCloningRecipe extends CustomRecipe {
     public static class Serializer implements RecipeSerializer<BlueprintCloningRecipe> {
         private static final MapCodec<BlueprintCloningRecipe> CODEC = 
             CraftingBookCategory.CODEC.fieldOf("category")
-                .xmap(BlueprintCloningRecipe::new, CustomRecipe::category);
+                .xmap(BlueprintCloningRecipe::new, BlueprintCloningRecipe::category);
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> STREAM_CODEC = 
-            StreamCodec.composite(
-                CraftingBookCategory.STREAM_CODEC,
-                CustomRecipe::category,
+        private static final StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> STREAM_CODEC = StreamCodec.composite(
+                CraftingBookCategory.STREAM_CODEC, BlueprintCloningRecipe::category,
                 BlueprintCloningRecipe::new
             );
 

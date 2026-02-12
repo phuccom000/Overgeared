@@ -11,9 +11,13 @@ import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
+import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.util.ConfigHelper;
+import net.stirdrem.overgeared.util.ModTags;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DynamicToolCastRecipe extends CustomRecipe {
@@ -26,48 +30,52 @@ public class DynamicToolCastRecipe extends CustomRecipe {
     public boolean matches(CraftingInput input, Level level) {
         ItemStack cast = ItemStack.EMPTY;
         CastData castData = null;
-        int existingAmount = 0;
-        int addedAmount = 0;
-        int maxAmount = 0;
-        boolean foundMaterial = false;
+        int materialCount = 0;
+        int totalMaterialValue = 0;
 
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
 
-            // === CAST ===
-            if (stack.is(ModItems.CLAY_TOOL_CAST.get()) || stack.is(ModItems.NETHER_TOOL_CAST.get())) {
-                if (!cast.isEmpty()) return false; // only one cast allowed
+            // Check for Cast
+            if (stack.getItem() instanceof ToolCastItem) {
+                // Only one cast allowed
+                if (!cast.isEmpty()) return false;
 
                 castData = stack.get(ModComponents.CAST_DATA);
                 if (castData == null) return false;
 
-                String toolType = castData.toolType();
-                if (toolType.isBlank()) return false;
+                // Cannot add materials if cast has output
+                if (castData.hasOutput()) return false;
+
+                // Must have a valid tool type
+                if (castData.toolType().isBlank()) return false;
 
                 cast = stack;
-                existingAmount = castData.amount();
-                maxAmount = ConfigHelper.getMaxMaterialAmount(toolType);
                 continue;
             }
 
-            // === MATERIAL ===
-            String material = ConfigHelper.getMaterialForItem(stack);
-            if (!material.equals("none")) {
-                foundMaterial = true;
-                addedAmount += ConfigHelper.getMaterialValue(stack);
+            // Check for valid material
+            if (ConfigHelper.isValidMaterial(stack)) {
+                materialCount++;
+                totalMaterialValue += ConfigHelper.getMaterialValue(stack);
                 continue;
             }
 
-            // === INVALID ITEM ===
+            // If Item is Invalid
             return false;
         }
 
-        if (cast.isEmpty() || !foundMaterial) return false;
+        if (cast.isEmpty() || materialCount == 0) return false;
 
-        // ❌ Overflow check
-        if (maxAmount > 0 && existingAmount + addedAmount > maxAmount) {
-            return false;
+        // Check overflow
+        if (castData != null) {
+            int existingAmount = castData.amount();
+            int maxAmount = ConfigHelper.getMaxMaterialAmount(castData.toolType());
+
+            if (maxAmount > 0 && existingAmount + totalMaterialValue > maxAmount) {
+                return false;
+            }
         }
 
         return true;
@@ -80,57 +88,79 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         ItemStack cast = ItemStack.EMPTY;
         CastData castData = null;
         Map<String, Integer> materialTotals = new HashMap<>();
-        int newAmount = 0;
-        int maxAmount = 0;
-        String toolType = "none";
+        List<ItemStack> addedInputs = new ArrayList<>();
+        int addedAmount = 0;
 
-        // Scan grid
+        // Scan grid and add materials
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
+            if (stack.isEmpty()) continue; // Skip Empty Slots
 
-            // Find cast
-            if (stack.is(ModItems.CLAY_TOOL_CAST.get()) || stack.is(ModItems.NETHER_TOOL_CAST.get())) {
+            // Find the cast
+            if (stack.getItem() instanceof ToolCastItem) {
                 cast = stack.copy();
                 castData = cast.get(ModComponents.CAST_DATA);
                 if (castData == null) return ItemStack.EMPTY;
 
-                toolType = castData.toolType();
-                maxAmount = ConfigHelper.getMaxMaterialAmount(toolType);
-                
-                // Copy existing materials
+                // Copy existing materials from cast
                 materialTotals.putAll(castData.materials());
             }
             // Process materials
-            else if (!stack.isEmpty()) {
+            if (ConfigHelper.isValidMaterial(stack)) {
                 String material = ConfigHelper.getMaterialForItem(stack);
-                if (!material.equals("none")) {
-                    int value = ConfigHelper.getMaterialValue(stack);
-                    materialTotals.put(material, materialTotals.getOrDefault(material, 0) + value);
-                    newAmount += value;
+                int value = ConfigHelper.getMaterialValue(stack);
 
-                    // Add the input item to cast data (for tracking)
-                    ItemStack singleItem = stack.copyWithCount(1);
-                    castData = castData.withAddedInput(singleItem);
-                }
+                // Add to material totals
+                materialTotals.put(material, materialTotals.getOrDefault(material, 0) + value);
+                addedAmount += value;
+
+                // Track input item (single item for display)
+                ItemStack singleItem = stack.copyWithCount(1);
+                addedInputs.add(singleItem);
             }
         }
 
         if (cast.isEmpty() || castData == null) return ItemStack.EMPTY;
 
+        // Calculate new total
         int existingAmount = castData.amount();
-        int totalAmount = existingAmount + newAmount;
+        int totalAmount = existingAmount + addedAmount;
+        int maxAmount = ConfigHelper.getMaxMaterialAmount(castData.toolType());
 
-        // ❌ Block if exceeds
-        if (maxAmount > 0 && totalAmount > maxAmount) return ItemStack.EMPTY;
+        // Block if exceeds max
+        if (maxAmount > 0 && totalAmount > maxAmount) {
+            return ItemStack.EMPTY;
+        }
 
-        // ✅ Create updated cast data with new materials and amount
+        List<ItemStack> allInputs = new ArrayList<>(castData.input());
+        for (ItemStack addedInput : addedInputs) {
+            // Try to merge with existing stacks
+            boolean merged = false;
+            for (int i = 0; i < allInputs.size(); i++) {
+                ItemStack existing = allInputs.get(i);
+                if (ItemStack.isSameItemSameComponents(existing, addedInput)) {
+                    ItemStack combined = existing.copy();
+                    combined.grow(1);
+                    allInputs.set(i, combined);
+                    merged = true;
+                    break;
+                }
+            }
+
+            // If not merged, add as new entry
+            if (!merged) {
+                allInputs.add(addedInput.copy());
+            }
+        }
+
+        // Create updated cast data
         CastData newCastData = new CastData(
                 castData.quality(),
                 castData.toolType(),
                 materialTotals,
                 totalAmount,
-                castData.maxAmount(),
-                castData.input(),
+                maxAmount > 0 ? maxAmount : castData.maxAmount(),
+                allInputs,
                 castData.output(),
                 castData.heated()
         );
@@ -149,26 +179,4 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         return ModRecipeSerializers.CRAFTING_DYNAMIC_TOOL_CAST.get();
     }
 
-    public static class Serializer implements RecipeSerializer<DynamicToolCastRecipe> {
-        private static final MapCodec<DynamicToolCastRecipe> CODEC = 
-            CraftingBookCategory.CODEC.fieldOf("category")
-                .xmap(DynamicToolCastRecipe::new, CustomRecipe::category);
-
-        private static final StreamCodec<RegistryFriendlyByteBuf, DynamicToolCastRecipe> STREAM_CODEC = 
-            StreamCodec.composite(
-                net.minecraft.network.codec.ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC),
-                CustomRecipe::category,
-                DynamicToolCastRecipe::new
-            );
-
-        @Override
-        public MapCodec<DynamicToolCastRecipe> codec() {
-            return CODEC;
-        }
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, DynamicToolCastRecipe> streamCodec() {
-            return STREAM_CODEC;
-        }
-    }
 }

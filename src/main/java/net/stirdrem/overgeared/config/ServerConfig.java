@@ -10,6 +10,7 @@ public class ServerConfig {
     public static final int DEFAULT_WOODEN_BUCKET_BREAK_TEMPERATURE = 1000;
     public static final ModConfigSpec SERVER_CONFIG;
     public static final ModConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
+    public static final ModConfigSpec.BooleanValue REQUIRE_CROUCH_FOR_FORGING_GRINDING;
 
 
     // --- Core Anvil Configs ---
@@ -20,7 +21,6 @@ public class ServerConfig {
 
     // --- Heated Items ---
     public static final ModConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
-    public static final ModConfigSpec.IntValue COOLING_CHECK_RATE;
     public static ModConfigSpec.ConfigValue<List<? extends String>> COOLING_BLOCK_ENTITY_BLACKLIST;
 
     // --- Arrow Settings ---
@@ -141,6 +141,7 @@ public class ServerConfig {
         final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("General Configs");
         ENABLE_MOD_TOOLTIPS = builder.comment("Toggle for the mod's custom tooltips").define("enableModTooltips", true);
+        REQUIRE_CROUCH_FOR_FORGING_GRINDING = builder.comment("Toggle the need to crouch to initiate/cancel the mining minigame for forging + weapon polishing").define("requireCrouchForForgingGrinding", true);
         builder.pop();
         // --- Anvil Conversion ---
         builder.push("Anvil Conversion");
@@ -155,22 +156,20 @@ public class ServerConfig {
 
         builder.push("Heated Items");
         HEATED_ITEM_COOLDOWN_TICKS = builder.comment("How many ticks before a heated item cools off in inventory (default: 1200 = 60s)").defineInRange("heatedItemCooldownTicks", 1200, 1, Integer.MAX_VALUE);
-        COOLING_CHECK_RATE = builder.comment("How often (in ticks) to check containers for heated items to cool. Lower = more responsive but more CPU. Minimum 20 ticks (1 second).").defineInRange("coolingCheckRate", 20, 20, 1200);
         COOLING_BLOCK_ENTITY_BLACKLIST = builder
                 .comment(
                         "Block entity types that should NOT be checked for item cooling.",
                         "Use the full registry name, e.g. 'minecraft:furnace', 'minecraft:blast_furnace'.",
                         "Useful for excluding containers you don't want affected by cooling."
                 )
-                .define(
+                .defineListAllowEmpty(
                         List.of("coolingBlockEntityBlacklist"),
                         List.of(
                                 "minecraft:furnace",
                                 "minecraft:blast_furnace"
                         ),
-                        o -> o instanceof List<?> list && list.stream().allMatch(e -> e instanceof String)
+                        o -> o instanceof String
                 );
-
         builder.pop();
 
         builder.push("Arrow Fletching Settings");

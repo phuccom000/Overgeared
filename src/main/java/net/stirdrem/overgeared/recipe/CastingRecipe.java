@@ -7,6 +7,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,7 @@ import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
+import net.stirdrem.overgeared.util.CodecUtils;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,34 +29,33 @@ import java.util.Map;
 
 public class CastingRecipe implements Recipe<RecipeInput> {
     private final String group;
-    private final CraftingBookCategory category;
+    private final CookingBookCategory category;
     private final Map<String, Integer> requiredMaterials;
+    private final String toolType;
     private final ItemStack result;
+    private final boolean needPolishing;
     private final float experience;
     private final int cookingTime;
-    private final String toolType;
-    private final boolean needPolishing;
 
-    // Constructor that matches Codec field order
-    public CastingRecipe(String group, CraftingBookCategory category, Map<String, Integer> requiredMaterials, ItemStack result,
-                         float experience, int cookingTime, String toolType, boolean needPolishing) {
+    public CastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials, String toolType,
+                         ItemStack result, boolean needPolishing, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.requiredMaterials = requiredMaterials;
+        this.toolType = toolType.toLowerCase();
         this.result = result;
+        this.needPolishing = needPolishing;
         this.experience = experience;
         this.cookingTime = cookingTime;
-        this.toolType = toolType.toLowerCase();
-        this.needPolishing = needPolishing;
     }
 
     @Override
     public boolean matches(RecipeInput input, Level level) {
         if (level.isClientSide) return false;
 
-        // Tool cast (slot 3)
+        // Tool cast (slot 1)
         ItemStack cast = input.getItem(1);
-        if (!(cast.getItem() instanceof ToolCastItem) || cast.is(ModItems.UNFIRED_TOOL_CAST)) return false;
+        if (!(cast.getItem() instanceof ToolCastItem)) return false;
 
         // Get cast data component
         CastData castData = cast.get(ModComponents.CAST_DATA.get());
@@ -63,6 +64,10 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         // Tool type check (FROM CAST)
         if (castData.toolType().isEmpty()) return false;
         if (!toolType.equals(castData.toolType().toLowerCase())) return false;
+
+        // Cast Data Check
+        if (castData.hasOutput()) return false;
+        if (!castData.materials().isEmpty()) return false;
 
         // Material input slot (slot 0)
         ItemStack materialStack = input.getItem(0);
@@ -74,16 +79,14 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         }
 
         // availableMaterials is derived ONLY from input slot
-        Map<String, Integer> availableMaterials =
-                ConfigHelper.getMaterialValuesForItem(materialStack);
+        Map<String, Integer> availableMaterials = ConfigHelper.getMaterialValuesForItem(materialStack);
         int count = materialStack.getCount();
+
         // Required material validation
         for (var entry : requiredMaterials.entrySet()) {
             String material = entry.getKey().toLowerCase();
-            double needed = entry.getValue();
-
-            double available = availableMaterials
-                    .getOrDefault(material, 0) * count;
+            int needed = entry.getValue();
+            int available = availableMaterials.getOrDefault(material, 0) * count;
 
             if (available < needed) {
                 return false;
@@ -94,7 +97,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
         ItemStack cast = input.getItem(1);
         if (cast.isEmpty()) return ItemStack.EMPTY;
 
@@ -120,13 +123,12 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         // Creator tooltip - check if cast has a custom name using Components API
         if (cast.has(DataComponents.CUSTOM_NAME) && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
             // Get the custom name component
-            var customName = cast.get(DataComponents.CUSTOM_NAME);
+            Component customName = cast.get(DataComponents.CUSTOM_NAME);
             if (customName != null) {
                 out.set(ModComponents.CREATOR.get(), customName.getString());
             }
         }
 
-        // IMPORTANT: return the RESULT item
         return out;
     }
 
@@ -154,28 +156,19 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return remaining;
     }
 
-    /* ============================================================= */
-    /* INGREDIENTS (JEI SUPPORT)                                     */
-    /* ============================================================= */
-
     @Override
     public @NotNull NonNullList<Ingredient> getIngredients() {
         NonNullList<Ingredient> list = NonNullList.create();
 
-        // Convert Map<String, Integer> to Map<String, Integer>
-        Map<String, Integer> materialsInt = new HashMap<>();
-        double total = 0;
-        for (var e : requiredMaterials.entrySet()) {
-            materialsInt.put(e.getKey(), e.getValue());
-            total += e.getValue();
-        }
+        // Calculate total material amount
+        int total = requiredMaterials.values().stream().mapToInt(Integer::intValue).sum();
 
         CastData castData = new CastData(
                 "", // quality
                 toolType,
-                materialsInt,
-                (int) total,
-                (int) total,
+                requiredMaterials,
+                total,
+                total,
                 List.of(), // input
                 ItemStack.EMPTY, // output
                 false // heated
@@ -188,12 +181,8 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return list;
     }
 
-    /* ============================================================= */
-    /* BASIC META                                                    */
-    /* ============================================================= */
-
     @Override
-    public ItemStack getResultItem(HolderLookup.Provider registries) {
+    public ItemStack getResultItem(HolderLookup.Provider provider) {
         return result.copy();
     }
 
@@ -242,33 +231,21 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return toolType;
     }
 
-    // Add these methods if your IAlloyRecipe interface requires them
-    // They should return appropriate values for your alloy recipe system
-    public List<Ingredient> getIngredientsList() {
-        // Return actual ingredients if needed, or an empty list
-        return List.of();
-    }
-
-    public CraftingBookCategory getCategory() {
+    public CookingBookCategory getCategory() {
         return category;
     }
 
-
     public static class Serializer implements RecipeSerializer<CastingRecipe> {
-
-        // Codec for Map<String, Integer>
-        private static final Codec<Map<String, Integer>> MATERIALS_CODEC =
-                Codec.unboundedMap(Codec.STRING, Codec.INT);
 
         private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
-                CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
-                MATERIALS_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime),
+                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
+                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
                 Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
-                Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing)
+                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
+                Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
+                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, CastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
@@ -277,40 +254,26 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
         private static CastingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
             String group = buffer.readUtf();
-            CraftingBookCategory craftingBookCategory = buffer.readEnum(CraftingBookCategory.class);
-
-            int size = buffer.readVarInt();
-            Map<String, Integer> reqMaterials = new HashMap<>();
-            for (int i = 0; i < size; i++) {
-                String key = buffer.readUtf();
-                int value = buffer.readVarInt();
-                reqMaterials.put(key, value);
-            }
-
+            CookingBookCategory category = buffer.readEnum(CookingBookCategory.class);
+            Map<String, Integer> reqMaterials = CodecUtils.decodeMaterialIntMap(buffer);
+            String toolType = buffer.readUtf();
             ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            boolean need_polishing = buffer.readBoolean();
             float experience = buffer.readFloat();
             int cookingTime = buffer.readVarInt();
-            String toolType = buffer.readUtf();
-            boolean need_polishing = buffer.readBoolean();
 
-            return new CastingRecipe(group, craftingBookCategory, reqMaterials, result, experience, cookingTime, toolType, need_polishing);
+            return new CastingRecipe(group, category, reqMaterials, toolType, result, need_polishing, experience, cookingTime);
         }
 
         private static void toNetwork(RegistryFriendlyByteBuf buffer, CastingRecipe recipe) {
             buffer.writeUtf(recipe.group);
             buffer.writeEnum(recipe.category);
-
-            buffer.writeVarInt(recipe.requiredMaterials.size());
-            recipe.requiredMaterials.forEach((k, v) -> {
-                ByteBufCodecs.STRING_UTF8.encode(buffer, k);
-                ByteBufCodecs.VAR_INT.encode(buffer, v);
-            });
-
+            CodecUtils.encodeMaterialIntMap(buffer, recipe.requiredMaterials);
+            buffer.writeUtf(recipe.toolType);
             ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            buffer.writeBoolean(recipe.needPolishing);
             buffer.writeFloat(recipe.experience);
             buffer.writeVarInt(recipe.cookingTime);
-            buffer.writeUtf(recipe.toolType);
-            buffer.writeBoolean(recipe.needPolishing);
         }
 
         @Override

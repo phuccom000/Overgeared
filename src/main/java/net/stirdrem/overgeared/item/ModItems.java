@@ -24,15 +24,13 @@ public class ModItems {
     public static final DeferredItem<Item> ROCK = registerSimpleItem("knappable_rock");
 
     public static final DeferredItem<Item> UNFIRED_TOOL_CAST = registerItem("unfired_tool_cast",
-            () -> new ToolCastItem(false, false, new Item.Properties()));
+            () -> new ClayToolCastItem(new Item.Properties()));
 
     public static final DeferredItem<Item> CLAY_TOOL_CAST = registerItem("clay_tool_cast",
-            () -> new ToolCastItem(true, true,
-                    new Item.Properties().stacksTo(1).durability(1)));
+            () -> new ToolCastItem(true, new Item.Properties().durability(1)));
 
     public static final DeferredItem<Item> NETHER_TOOL_CAST = registerItem("nether_tool_cast",
-            () -> new ToolCastItem(true, false,
-                    new Item.Properties().stacksTo(1)));
+            () -> new ToolCastItem(false, new Item.Properties()));
 
     public static final DeferredItem<Item> STEEL_NUGGET = registerSimpleItem("steel_nugget");
     public static final DeferredItem<Item> COPPER_NUGGET = registerSimpleItem("copper_nugget");

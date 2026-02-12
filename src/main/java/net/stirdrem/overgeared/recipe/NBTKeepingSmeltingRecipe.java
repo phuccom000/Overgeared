@@ -12,14 +12,13 @@ import net.minecraft.world.item.crafting.*;
 
 public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
 
-    public NBTKeepingSmeltingRecipe(String group, CookingBookCategory category,
-                                    Ingredient ingredient, ItemStack result,
-                                    float experience, int cookingTime) {
+    public NBTKeepingSmeltingRecipe(String group, CookingBookCategory category, Ingredient ingredient,
+                                    ItemStack result, float experience, int cookingTime) {
         super(group, category, ingredient, result, experience, cookingTime);
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider provider) {
         ItemStack inputStack = input.getItem(0);
         ItemStack output = this.result.copy();
 
@@ -36,41 +35,38 @@ public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
 
     public static class Serializer implements RecipeSerializer<NBTKeepingSmeltingRecipe> {
 
-        private static final MapCodec<NBTKeepingSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
-                instance.group(
-                        Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.getGroup()),
-                        CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
-                                .forGetter(r -> r.category()),
-                        Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
-                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                        Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.getExperience()),
-                        Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.getCookingTime())
-                ).apply(instance, NBTKeepingSmeltingRecipe::new)
+        private static final MapCodec<NBTKeepingSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
+                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
+                Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
+                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
+                Codec.INT.optionalFieldOf("cooking_time", 200).forGetter(r -> r.cookingTime)
+        ).apply(instance, NBTKeepingSmeltingRecipe::new));
+
+        private static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingSmeltingRecipe> STREAM_CODEC = StreamCodec.of(
+                Serializer::toNetwork, Serializer::fromNetwork
         );
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingSmeltingRecipe> STREAM_CODEC =
-                StreamCodec.of(
-                        (buf, recipe) -> {
-                            // Encode
-                            ByteBufCodecs.STRING_UTF8.encode(buf, recipe.getGroup());
-                            ByteBufCodecs.fromCodec(CookingBookCategory.CODEC).encode(buf, recipe.category());
-                            Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.ingredient);
-                            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
-                            buf.writeFloat(recipe.getExperience());
-                            ByteBufCodecs.VAR_INT.encode(buf, recipe.getCookingTime());
-                        },
-                        buf -> {
-                            // Decode
-                            String group = ByteBufCodecs.STRING_UTF8.decode(buf);
-                            CookingBookCategory category = ByteBufCodecs.fromCodec(CookingBookCategory.CODEC).decode(buf);
-                            Ingredient ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
-                            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
-                            float xp = buf.readFloat();
-                            int cookTime = ByteBufCodecs.VAR_INT.decode(buf);
+        private static NBTKeepingSmeltingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            String group = buffer.readUtf();
+            CookingBookCategory category = buffer.readEnum(CookingBookCategory.class);
+            Ingredient ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            float xp = buffer.readFloat();
+            int cookTime = buffer.readVarInt();
 
-                            return new NBTKeepingSmeltingRecipe(group, category, ingredient, result, xp, cookTime);
-                        }
-                );
+            return new NBTKeepingSmeltingRecipe(group, category, ingredient, result, xp, cookTime);
+        }
+
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, NBTKeepingSmeltingRecipe recipe) {
+            buffer.writeUtf(recipe.group);
+            buffer.writeEnum(recipe.category);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.ingredient);
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            buffer.writeFloat(recipe.experience);
+            buffer.writeVarInt(recipe.cookingTime);
+        }
 
         @Override
         public MapCodec<NBTKeepingSmeltingRecipe> codec() {

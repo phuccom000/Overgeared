@@ -53,10 +53,10 @@ public record ItemToToolTypeRecipe(Ingredient input, String toolType) implements
     // Serializer
     // ----------------------------------------------------
     public static class Serializer implements RecipeSerializer<ItemToToolTypeRecipe> {
-        public static final MapCodec<ItemToToolTypeRecipe> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+        public static final MapCodec<ItemToToolTypeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("item").forGetter(r -> r.input),
                 Codec.STRING.fieldOf("tooltype").forGetter(r -> r.toolType)
-        ).apply(i, ItemToToolTypeRecipe::new));
+        ).apply(instance, ItemToToolTypeRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ItemToToolTypeRecipe> STREAM_CODEC = StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, r -> r.input,

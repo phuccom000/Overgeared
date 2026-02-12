@@ -140,8 +140,8 @@
   "tooltip.overgeared.expert": "Expertly Forged",
   "tooltip.overgeared.well": "Well Forged",
   "tooltip.overgeared.poor": "Poorly Forged",
-  "tooltip.overgeared.smithing_hammer.advanced_tooltip.line1": "§7Crouch right click the §f§lSmithing Anvil§7 to start forging when you have a valid recipe.",
-  "tooltip.overgeared.smithing_hammer.advanced_tooltip.line2": "Crouch right click again to stop forging.",
+  "tooltip.overgeared.smithing_hammer.advanced_tooltip.line1": "§7Right click the §f§lSmithing Anvil§7 to start forging when you have a valid recipe.",
+  "tooltip.overgeared.smithing_hammer.advanced_tooltip.line2": "§7Right click off the §f§lSmithing Anvil§7 to stop forging.",
   "tooltip.overgeared.smithing_hammer.advanced_tooltip.line3": "§7Crouch right click on a stone block to convert to a §f§lStone Smithing Anvil§7.",
   "tooltip.overgeared.smithing_hammer.advanced_tooltip.line4": "§7Crouch right click on an Anvil block to convert to a §f§lSmithing Anvil§7.",
   "tooltip.overgeared.smithing_hammer.hold_shift": "§7Hold §f§lSHIFT§7 for more information",
@@ -282,6 +282,10 @@
   "overgeared.forging.miss": "MISS!",
   "block.overgeared.casting_furnace": "Casting Furnace",
   "container.overgeared.casting_furnace": "Casting Furnace",
-  "gui.overgeared.jei.category.casting": "Casting"
+  "gui.overgeared.jei.category.casting": "Casting",
+  "tooltip.overgeared.unfired_cast_hint": "Fire in a furnace before use",
+  "cast.overgeared.unfired_tool_cast": "Unfired %s Cast",
+  "cast.overgeared.clay_tool_cast": "Clay %s Cast",
+  "cast.overgeared.nether_tool_cast": "Nether %s Cast"
 }
 

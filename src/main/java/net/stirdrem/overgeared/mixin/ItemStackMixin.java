@@ -28,15 +28,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
-import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
-
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
-
-    // Per-player last-hit tick to prevent multiple tongs damage per tick
-    private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
-
     @Inject(
             method = "getDestroySpeed",
             at = @At("RETURN"),
@@ -89,107 +82,6 @@ public abstract class ItemStackMixin {
         }
 
         cir.setReturnValue(newBaseDurability);
-    }
-
-    @Inject(method = "inventoryTick", at = @At("HEAD"))
-    private void onInventoryTick(Level level, Entity entity, int slot, boolean selected, CallbackInfo ci) {
-        if (level.isClientSide) return;
-        if (!(entity instanceof Player player)) return;
-
-        long tick = level.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
-
-
-        // Process heated items in inventory - cool them down after time
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.isEmpty()) continue;
-
-            // Check heated state by tag OR component
-            boolean isHeated =
-                    stack.is(ModTags.Items.HEATED_METALS)
-                            || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
-
-            if (!isHeated) continue;
-
-            Long heatedSince = stack.get(ModComponents.HEATED_TIME);
-
-            // Start timer if missing
-            if (heatedSince == null) {
-                stack.set(ModComponents.HEATED_TIME, tick);
-                continue;
-            }
-
-            // Still cooling
-            if (tick - heatedSince < cooldownTicks) continue;
-
-            // Time to cool down
-            Item cooled = getCooledItem(stack.getItem(), level);
-            if (cooled == null) continue;
-
-            ItemStack newStack = new ItemStack(cooled, stack.getCount());
-            copyComponentsExceptHeated(stack, newStack);
-
-            boolean isMain = stack == player.getMainHandItem();
-            boolean isOff = stack == player.getOffhandItem();
-
-            stack.setCount(0); // Remove old heated item
-
-            if (isMain) {
-                player.setItemInHand(InteractionHand.MAIN_HAND, newStack);
-            } else if (isOff) {
-                player.setItemInHand(InteractionHand.OFF_HAND, newStack);
-            } else if (!player.getInventory().add(newStack)) {
-                player.drop(newStack, false);
-            }
-
-            level.playSound(null, player.blockPosition(),
-                    SoundEvents.FIRE_EXTINGUISH,
-                    SoundSource.PLAYERS,
-                    0.7f, 1.0f);
-
-            break; // Only cool one per tick (prevents lag spikes)
-        }
-
-        boolean hasHotItem = player.getInventory().items.stream()
-                .anyMatch(s -> !s.isEmpty() && (s.is(ModTags.Items.HEATED_METALS) || s.is(ModTags.Items.HOT_ITEMS))
-                        || Boolean.TRUE.equals(s.get(ModComponents.HEATED_COMPONENT)))
-                || player.getMainHandItem().is(ModTags.Items.HEATED_METALS) || player.getMainHandItem().is(ModTags.Items.HOT_ITEMS)
-                || player.getOffhandItem().is(ModTags.Items.HEATED_METALS) || player.getOffhandItem().is(ModTags.Items.HOT_ITEMS);
-
-        if (!hasHotItem) return;
-
-        UUID uuid = player.getUUID();
-        ItemStack main = player.getMainHandItem();
-        ItemStack off = player.getOffhandItem();
-
-        // Check for tongs in either hand
-        ItemStack tongsStack;
-        if (!main.isEmpty() && main.is(ModTags.Items.TONGS)) {
-            tongsStack = main;
-        } else if (!off.isEmpty() && off.is(ModTags.Items.TONGS)) {
-            tongsStack = off;
-        } else {
-            tongsStack = ItemStack.EMPTY;
-        }
-
-        if (!tongsStack.isEmpty()) {
-            // Player has tongs - damage them instead of the player
-            if (tick % 40 != 0) return; // Only damage every 2 seconds
-            long last = lastTongsHit.getOrDefault(uuid, -1L);
-            if (last != tick) {
-                // Determine correct hand for break animation
-                EquipmentSlot equipSlot = tongsStack == player.getMainHandItem()
-                        ? EquipmentSlot.MAINHAND
-                        : EquipmentSlot.OFFHAND;
-                tongsStack.hurtAndBreak(1, player, equipSlot);
-                lastTongsHit.put(uuid, tick);
-            }
-        } else {
-            // No tongs - damage the player
-            if (!player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                player.hurt(player.damageSources().hotFloor(), 1.0f);
-            }
-        }
     }
 
     @Inject(method = "getBarWidth", at = @At("HEAD"), cancellable = true)

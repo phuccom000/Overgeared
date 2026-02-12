@@ -38,14 +38,15 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
+import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 import net.stirdrem.overgeared.util.ModTags;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
+import net.minecraft.world.phys.AABB;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-
-import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
 
 public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider, WorldlyContainer {
     protected static final int INPUT_SLOT = 0;
@@ -56,6 +57,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             setChanged();
             if (level == null || level.isClientSide()) return;
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+
+            if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
+                hasHeatedItems = true;
+            }
         }
     };
     protected final ContainerData data;
@@ -72,8 +77,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
+    private long lastCraftTick = -1;
     protected AbstractSmithingAnvil anvilBlock;
     protected static final int BLUEPRINT_SLOT = 11;
+    protected boolean hasHeatedItems = false;
     // Define slot indices
     private static final int[] TOP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}; // input grid
     private static final int[] BOTTOM_SLOTS = new int[]{OUTPUT_SLOT};
@@ -251,6 +258,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         maxProgress = 0;
         lastRecipe = null;
         if (level != null && !level.isClientSide()) {
+            if (minigameOn) lastCraftTick = level.getGameTime();
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
         }
         player = null;
@@ -558,6 +566,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void tick(Level lvl, BlockPos pos, BlockState st) {
         if (!pos.equals(this.worldPosition)) return; // sanity check
+        tickHeatedIngredients(lvl, pos, st);
         try {
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
@@ -617,7 +626,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
             resetProgress(pos);
         }
-        tickHeatedIngredients(lvl);
     }
 
     public int getHitsRemaining() {
@@ -906,38 +914,41 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         setChanged(); // mark dirty for save
     }
 
-    /**
-     * Ticks heated ingredients in the anvil slots and cools them down after the configured time.
-     * Uses HEATED_TIME data component to track when items were heated.
-     */
-    public void tickHeatedIngredients(Level level) {
-        if (level.isClientSide) return;
-        long tick = level.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+    /** True if a minigame craft completed very recently (same tick). */
+    public boolean justCrafted(long currentTick) {
+        return lastCraftTick >= 0 && currentTick - lastCraftTick <= 2;
+    }
+
+    // Not the happiest with this due to constantly checking if it's open etc., maybe figure smth out :)
+    public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
+        if (!this.hasHeatedItems || level.isClientSide) return;
+        if (level.getGameTime() % 20 != 0) return;
+        if (getViewerCount(level, pos) > 0) return; 
+
+        boolean hasHeatedItems = false;
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
-            if (!stack.is(ModTags.Items.HEATED_METALS)) continue;
 
-            // Check if item has HEATED_TIME component
-            Long heatedSince = stack.get(ModComponents.HEATED_TIME);
-            if (heatedSince == null) {
-                // Item is heated but doesn't have a timestamp - set it now
-                stack.set(ModComponents.HEATED_TIME, tick);
-                continue;
-            }
+            if (HeatedItem.isHeated(stack)) {
+                hasHeatedItems = true;
 
-            // Check if enough time has passed to cool down
-            if (tick - heatedSince >= cooldownTicks) {
-                // Cool down the item - replace with cooled version
-                ItemStack cooledItem = getCooledItem(stack, level);
-                if (!cooledItem.isEmpty()) {
-                    itemHandler.setStackInSlot(slot, cooledItem);
-                    setChanged();
+                if(HeatedItem.handleCoolingContainer(this.itemHandler, slot, level)) {
+                    this.setChanged();
+                    level.sendBlockUpdated(pos, state, state, 3);
                 }
             }
         }
+
+        this.hasHeatedItems = hasHeatedItems;
+    }
+
+    private int getViewerCount(Level level, BlockPos pos) {
+        return level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(8.0))
+                    .stream()
+                    .filter(p -> p.containerMenu instanceof AbstractSmithingAnvilMenu menu && menu.blockEntity == this)
+                    .mapToInt(p -> 1).sum();
     }
 
     @Override
@@ -977,6 +988,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     @Override
     public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
+
+        if (!stack.isEmpty() && HeatedItem.isHeated(stack)) {
+            this.hasHeatedItems = true;
+        }
     }
 
     @Override
@@ -995,6 +1010,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             itemHandler.setStackInSlot(i, ItemStack.EMPTY);
         }
+
+        this.hasHeatedItems = false;
     }
 
 }

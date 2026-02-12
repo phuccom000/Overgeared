@@ -102,18 +102,18 @@ public class CastingRecipeBuilder implements RecipeBuilder {
     }
 
     private @NotNull CastingRecipe getCastingRecipe() {
-        CraftingBookCategory bookCategory = CraftingBookCategory.MISC;
+        CookingBookCategory bookCategory = CookingBookCategory.MISC;
         // Build recipe instance
         ItemStack resultStack = new ItemStack(this.result);
         return new CastingRecipe(
                 this.group == null ? "" : this.group,
                 bookCategory,
                 this.materialInput,
-                resultStack,
-                this.experience,
-                this.cookTime,
                 this.toolType,
-                Boolean.TRUE.equals(this.needPolishing)
+                resultStack,
+                Boolean.TRUE.equals(this.needPolishing),
+                this.experience,
+                this.cookTime
         );
     }
 
