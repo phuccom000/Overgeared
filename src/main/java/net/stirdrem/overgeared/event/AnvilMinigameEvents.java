@@ -23,6 +23,7 @@ public class AnvilMinigameEvents {
     public static UUID ownerUUID = null;
     private static boolean isVisible = false;
     public static boolean minigameStarted = false;
+    public static boolean crouchReleasedSinceStart = false;
     public static ItemStack resultItem = null;
     public static int hitsRemaining = 0;
     public static int maxHits = 0;
@@ -151,6 +152,10 @@ public class AnvilMinigameEvents {
         ensureInitialized();
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+        // Track crouch release so shift+click toggle requires a fresh shift press
+        if (minigameStarted && !crouchReleasedSinceStart && !mc.player.isCrouching()) {
+            crouchReleasedSinceStart = true;
+        }
         if (!mc.isPaused()) updatePopups();
         if (mc.isPaused() || !isVisible()) return;
 
@@ -216,6 +221,7 @@ public class AnvilMinigameEvents {
     public static void reset(String blueprintQuality) {
         isVisible = false;
         minigameStarted = false;
+        crouchReleasedSinceStart = false;
         hitsRemaining = 0;
         perfectHits = 0;
         goodHits = 0;
@@ -468,8 +474,11 @@ public class AnvilMinigameEvents {
     }
 
     public static void setMinigameStarted(BlockPos pos, boolean minigameStarted) {
+        // Only reset crouch flag on fresh start (not on redundant S2C confirmations)
+        if (minigameStarted && !AnvilMinigameEvents.minigameStarted) {
+            crouchReleasedSinceStart = false;
+        }
         AnvilMinigameEvents.minigameStarted = minigameStarted;
-
     }
 
     public static UUID getOccupiedAnvil(BlockPos pos) {

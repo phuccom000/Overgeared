@@ -162,7 +162,9 @@ public class ModItemInteractEvents {
 
         if (!level.isClientSide()) {
             if (!(be instanceof AbstractSmithingAnvilBlockEntity)) {
-                hideMinigame((ServerPlayer) player);
+                if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
+                    hideMinigame((ServerPlayer) player);
+                }
             }
         }
 
@@ -177,13 +179,33 @@ public class ModItemInteractEvents {
             return;
         }
 
+        boolean crouchRequired = ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get();
+
         // Let useItemOn handle: no recipe, non-quality direct hammering, minigame disabled
-        if (!anvilBE.hasRecipe()) return;
-        if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) return;
+        // Show error messages when player is crouching (intending to start minigame)
+        if (!anvilBE.hasRecipe()) {
+            if (crouchRequired && player.isCrouching() && !level.isClientSide) {
+                ((ServerPlayer) player).sendSystemMessage(
+                        Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED), true);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+            }
+            return;
+        }
+        if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
+            if (crouchRequired && player.isCrouching() && !level.isClientSide) {
+                ((ServerPlayer) player).sendSystemMessage(
+                        Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED), true);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+            }
+            return;
+        }
         if (!ServerConfig.ENABLE_MINIGAME.get()) return;
 
         // Minigame already running — cancel event so useItemOn doesn't also process a hit.
         // Server-side hits are handled by PacketSendCounterC2SPacket (sent per client minigame hit).
+        // Visibility toggling is handled client-side via setIsVisible (sends C2S to update server).
         if (!level.isClientSide) {
             if (anvilBE.isMinigameOn()) {
                 event.setCanceled(true);
@@ -192,16 +214,39 @@ public class ModItemInteractEvents {
             }
         } else {
             if (AnvilMinigameEvents.minigameStarted) {
-                // Re-show hidden minigame when clicking the anvil again
-                if (!AnvilMinigameEvents.isVisible()) {
-                    AnvilMinigameEvents.setIsVisible(pos, true);
-                    playerMinigameVisibility.put(playerUUID, true);
-                    event.setCanceled(true);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
+                if (crouchRequired) {
+                    if (player.isCrouching()) {
+                        // Always cancel so the server doesn't also process the click
+                        event.setCanceled(true);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
+                        // Only toggle if player released crouch since starting (prevents instant cancel)
+                        if (AnvilMinigameEvents.crouchReleasedSinceStart) {
+                            if (AnvilMinigameEvents.isVisible()) {
+                                AnvilMinigameEvents.setIsVisible(pos, false);
+                                playerMinigameVisibility.put(playerUUID, false);
+                            } else {
+                                AnvilMinigameEvents.setIsVisible(pos, true);
+                                playerMinigameVisibility.put(playerUUID, true);
+                            }
+                        }
+                    }
+                    // When not crouching: don't cancel → useItemOn processes hit
+                } else {
+                    // crouchRequired=false: re-show hidden minigame on click
+                    if (!AnvilMinigameEvents.isVisible()) {
+                        AnvilMinigameEvents.setIsVisible(pos, true);
+                        playerMinigameVisibility.put(playerUUID, true);
+                        event.setCanceled(true);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
+                    }
+                    // When visible: don't cancel → useItemOn processes hit
                 }
                 return;
             }
         }
+
+        // If crouch is required but player isn't crouching, let useItemOn open the GUI
+        if (crouchRequired && !player.isCrouching()) return;
 
         // --- First-click minigame initiation ---
         if (!level.isClientSide) {
@@ -295,6 +340,9 @@ public class ModItemInteractEvents {
     }
 
     private static void onUseGrindstone(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack stack, Level level, BlockPos pos) {
+        // If crouch required but not crouching, let vanilla grindstone GUI open
+        if (ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() && !player.isCrouching()) return;
+
         // Grinding recipe (e.g. diamond shard)
         if (hasGrindingRecipe(stack.getItem(), level)) {
             grindItem(player, stack);
@@ -555,7 +603,9 @@ public class ModItemInteractEvents {
         HitResult hit = player.pick(5.0D, 0.0F, false);
         BlockState hitState = world.getBlockState(((BlockHitResult) hit).getBlockPos());
         if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) || !hitState.is(ModTags.Blocks.SMITHING_ANVIL)) {
-            hideMinigame((ServerPlayer) player);
+            if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
+                hideMinigame((ServerPlayer) player);
+            }
         }
     }
 
