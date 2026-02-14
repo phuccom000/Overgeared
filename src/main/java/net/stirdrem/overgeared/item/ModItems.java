@@ -37,7 +37,7 @@ public class ModItems {
 
     public static final DeferredItem<Item> STEEL_INGOT = registerSimpleItem("steel_ingot");
 
-    public static final DeferredItem<Item> IRON_ARROW_HEAD =registerSimpleItem("iron_arrow_head");
+    public static final DeferredItem<Item> IRON_ARROW_HEAD = registerSimpleItem("iron_arrow_head");
     public static final DeferredItem<Item> STEEL_ARROW_HEAD = registerSimpleItem("steel_arrow_head");
 
     public static final DeferredItem<Item> DIAMOND_SHARD = registerSimpleItem("diamond_shard");
@@ -56,7 +56,7 @@ public class ModItems {
 
     public static final DeferredItem<Item> STEEL_TONG = registerSimpleItem("steel_tong");
     public static final DeferredItem<Item> IRON_TONG = registerSimpleItem("iron_tong");
-    
+
     public static final DeferredItem<Item> WOODEN_TONGS = registerItem("wooden_tongs",
             () -> new Tongs(Tiers.WOOD, -1, -2f,
                     new Item.Properties().durability(120)));
@@ -72,10 +72,10 @@ public class ModItems {
     public static final DeferredItem<Item> STEEL_HAMMER_HEAD = registerSimpleItem("steel_hammer_head");
 
     public static final DeferredItem<Item> SMITHING_HAMMER = registerItem("smithing_hammer",
-            () -> new SmithingHammer(ModToolTiers.STEEL, toolProperties(-1, -2.8f).durability(512)));
+            () -> new SmithingHammer(ModToolTiers.STEEL, toolProperties(-1, -2.8f)));
 
     public static final DeferredItem<Item> COPPER_SMITHING_HAMMER = registerItem("copper_smithing_hammer",
-            () -> new SmithingHammer(ModToolTiers.COPPER, toolProperties(-1, -2.8f).durability(120)));
+            () -> new SmithingHammer(ModToolTiers.COPPER, toolProperties(-1, -2.8f)));
 
     public static final DeferredItem<Item> DIAMOND_UPGRADE_SMITHING_TEMPLATE = registerItem("diamond_upgrade_smithing_template",
             DiamondUpgradeTemplateItem::createDiamondUpgradeTemplate);
@@ -90,13 +90,13 @@ public class ModItems {
     public static final DeferredItem<Item> GOLDEN_SWORD_BLADE = registerSimpleItem("golden_sword_blade");
     public static final DeferredItem<Item> STEEL_SWORD_BLADE = registerSimpleItem("steel_sword_blade");
     public static final DeferredItem<Item> COPPER_SWORD_BLADE = registerSimpleItem("copper_sword_blade");
-    
+
     public static final DeferredItem<Item> STONE_PICKAXE_HEAD = registerSimpleItem("stone_pickaxe_head");
     public static final DeferredItem<Item> IRON_PICKAXE_HEAD = registerSimpleItem("iron_pickaxe_head");
     public static final DeferredItem<Item> GOLDEN_PICKAXE_HEAD = registerSimpleItem("golden_pickaxe_head");
     public static final DeferredItem<Item> STEEL_PICKAXE_HEAD = registerSimpleItem("steel_pickaxe_head");
     public static final DeferredItem<Item> COPPER_PICKAXE_HEAD = registerSimpleItem("copper_pickaxe_head");
-    
+
     public static final DeferredItem<Item> STONE_AXE_HEAD = registerSimpleItem("stone_axe_head");
     public static final DeferredItem<Item> IRON_AXE_HEAD = registerSimpleItem("iron_axe_head");
     public static final DeferredItem<Item> GOLDEN_AXE_HEAD = registerSimpleItem("golden_axe_head");
@@ -114,7 +114,7 @@ public class ModItems {
     public static final DeferredItem<Item> GOLDEN_HOE_HEAD = registerSimpleItem("golden_hoe_head");
     public static final DeferredItem<Item> STEEL_HOE_HEAD = registerSimpleItem("steel_hoe_head");
     public static final DeferredItem<Item> COPPER_HOE_HEAD = registerSimpleItem("copper_hoe_head");
-    
+
     public static final DeferredItem<Item> STEEL_SWORD = registerItem("steel_sword",
             () -> new SwordItem(ModToolTiers.STEEL, toolProperties(6, -2.4f)));
     public static final DeferredItem<Item> STEEL_PICKAXE = registerItem("steel_pickaxe",
@@ -125,7 +125,7 @@ public class ModItems {
             () -> new HoeItem(ModToolTiers.STEEL, toolProperties(0, -0.5f)));
     public static final DeferredItem<Item> STEEL_SHOVEL = registerItem("steel_shovel",
             () -> new ShovelItem(ModToolTiers.STEEL, toolProperties(4, -3)));
-    
+
     public static final DeferredItem<Item> STEEL_HELMET = registerItem("steel_helmet",
             () -> new ArmorItem(ModArmorMaterials.STEEL, ArmorItem.Type.HELMET, armorProperties(ArmorItem.Type.HELMET, 26)));
     public static final DeferredItem<Item> STEEL_CHESTPLATE = registerItem("steel_chestplate",
