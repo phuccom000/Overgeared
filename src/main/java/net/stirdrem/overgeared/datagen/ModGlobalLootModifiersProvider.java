@@ -56,14 +56,14 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
             this.add("steel_ingot_from_" + namePrefix,
                     new AddItemModifier(new LootItemCondition[]{
                             new LootTableIdCondition.Builder(dungeon).build(),
-                            LootItemRandomChanceCondition.randomChance(0.75f).build()
+                            LootItemRandomChanceCondition.randomChance(0.50f).build()
                     }, ModItems.STEEL_INGOT.get()));
 
             // Diamond upgrade
             this.add("diamond_upgrade_from_" + namePrefix,
                     new AddItemModifier(new LootItemCondition[]{
                             new LootTableIdCondition.Builder(dungeon).build(),
-                            LootItemRandomChanceCondition.randomChance(0.50f).build()
+                            LootItemRandomChanceCondition.randomChance(0.25f).build()
                     }, ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE.get()));
         }
 
@@ -94,7 +94,7 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
             this.add("diamond_upgrade_from_" + namePrefix,
                     new AddItemModifier(new LootItemCondition[]{
                             new LootTableIdCondition.Builder(dungeon).build(),
-                            LootItemRandomChanceCondition.randomChance(0.35f).build()
+                            LootItemRandomChanceCondition.randomChance(0.15f).build()
                     }, ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE.get()));
         }
     }
