@@ -18,10 +18,13 @@ import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
+import net.stirdrem.overgeared.event.ModEvents;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import static net.stirdrem.overgeared.event.ModEvents.createModifiedAttribute;
 
 // Register to modify attributes dynamically
 public class AttributeModifierHandler implements AdjustAttributeModifierCallback {
@@ -40,7 +43,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
         for (QualityAttributeDefinition def :
                 QualityAttributeReloadListener.INSTANCE.getAll()) {
 
-            if (!matches(stack, def.targets())) continue;
+            if (!ModEvents.matches(stack, def.targets())) continue;
 
             QualityValue value = def.qualities().get(quality);
             if (value == null || value.amount() == 0) continue;
@@ -50,36 +53,6 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
             modifyAttribute(builder, attribute, value.amount(), value.operation());
         }
-    }
-
-    private static boolean matches(ItemStack stack, List<QualityTarget> targets) {
-        Item item = stack.getItem();
-
-        for (QualityTarget target : targets) {
-            switch (target.type()) {
-                case ITEM -> {
-                    ResourceLocation itemId =
-                            ForgeRegistries.ITEMS.getKey(item);
-                    if (itemId != null && itemId.equals(target.id())) {
-                        return true;
-                    }
-                }
-
-                case ITEM_TAG -> {
-                    if (target.id() == null) break;
-
-                    TagKey<Item> tag = TagKey.create(
-                            Registries.ITEM,
-                            target.id()
-                    );
-
-                    if (stack.is(tag)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
@@ -129,29 +102,6 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
                 }
             }
         }
-    }
-
-    // Create modified attribute - exactly like your method
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
-        return new AttributeModifier(
-                original.getId(),
-                "Overgeared",  // Your custom name
-                original.getAmount() + bonus,  // Add bonus instead of multiply
-                operation
-        );
-    }
-
-    // Create a unique ResourceLocation for the modifier
-    private ResourceLocation createModifiedResourceLocation(AttributeModifier modifier) {
-        // Create a deterministic ID based on the original modifier
-        String baseName = modifier.getName().toLowerCase()
-                .replaceAll("[^a-z0-9/._-]", "")
-                .replace(" ", "_");
-
-        return ResourceLocation.fromNamespaceAndPath(
-                OvergearedMod.MOD_ID,
-                "overgeared_" + baseName + "_" + Math.abs(modifier.getId().hashCode())
-        );
     }
 
 }

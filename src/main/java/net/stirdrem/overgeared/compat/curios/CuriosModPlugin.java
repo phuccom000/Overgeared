@@ -14,9 +14,12 @@ import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
+import net.stirdrem.overgeared.event.ModEvents;
 import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
 
 import java.util.List;
+
+import static net.stirdrem.overgeared.event.ModEvents.createModifiedAttribute;
 
 public class CuriosModPlugin {
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -30,7 +33,7 @@ public class CuriosModPlugin {
         for (QualityAttributeDefinition def :
                 QualityAttributeReloadListener.INSTANCE.getAll()) {
 
-            if (!matches(stack, def.targets())) continue;
+            if (!ModEvents.matches(stack, def.targets())) continue;
 
             QualityValue value = def.qualities().get(quality);
             if (value == null || value.amount() == 0) continue;
@@ -42,7 +45,6 @@ public class CuriosModPlugin {
         }
 
     }
-
 
     private static void addCurioModifier(CurioAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
         Multimap<Attribute, AttributeModifier> originalModifiers = event.getModifiers();
@@ -57,44 +59,5 @@ public class CuriosModPlugin {
             event.removeModifier(attribute, modifier);
             event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
         }
-    }
-
-    private static boolean matches(ItemStack stack, List<QualityTarget> targets) {
-        Item item = stack.getItem();
-
-        for (QualityTarget target : targets) {
-            switch (target.type()) {
-                case ITEM -> {
-                    ResourceLocation itemId =
-                            ForgeRegistries.ITEMS.getKey(item);
-                    if (itemId != null && itemId.equals(target.id())) {
-                        return true;
-                    }
-                }
-
-                case ITEM_TAG -> {
-                    if (target.id() == null) break;
-
-                    TagKey<Item> tag = TagKey.create(
-                            Registries.ITEM,
-                            target.id()
-                    );
-
-                    if (stack.is(tag)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
-        return new AttributeModifier(
-                original.getId(),
-                "Overgeared",
-                original.getAmount() + bonus,
-                operation
-        );
     }
 }

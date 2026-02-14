@@ -15,6 +15,7 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,11 +87,10 @@ public class QualityAttributeReloadListener
             String quality = entry.getKey();
             JsonObject value = entry.getValue().getAsJsonObject();
 
-            AttributeModifier.Operation operation =
-                    AttributeModifier.Operation.valueOf(
-                            GsonHelper.getAsString(value, "operation")
-                                    .toUpperCase()
-                    );
+            String opString = GsonHelper.getAsString(value, "operation")
+                    .toLowerCase();
+
+            AttributeModifier.Operation operation = getOperation(opString);
 
             double amount = GsonHelper.getAsDouble(value, "amount");
 
@@ -102,6 +102,21 @@ public class QualityAttributeReloadListener
                 targets,
                 qualities
         );
+    }
+
+    private static AttributeModifier.@NotNull Operation getOperation(String opString) {
+        AttributeModifier.Operation operation;
+
+        switch (opString) {
+            case "add" -> operation = AttributeModifier.Operation.ADDITION;
+            case "mult_base" -> operation = AttributeModifier.Operation.MULTIPLY_BASE;
+            case "mult_total" -> operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
+            default -> throw new JsonSyntaxException(
+                    "Unknown operation: " + opString +
+                            ". Valid values: add, mult_base, mult_total"
+            );
+        }
+        return operation;
     }
 
 }

@@ -82,7 +82,7 @@ public class ModEvents {
         if (event.side == LogicalSide.CLIENT) return;
 
         ServerPlayer player = (ServerPlayer) event.player; // Safe cast
-      
+
         if (serverTick % HEATED_ITEM_CHECK_INTERVAL != 0) return;
 
         Level level = player.level();
@@ -151,12 +151,11 @@ public class ModEvents {
         }
     }
 
-    private static boolean matches(ItemStack stack, List<QualityTarget> targets) {
+    public static boolean matches(ItemStack stack, List<QualityTarget> targets) {
         Item item = stack.getItem();
 
         for (QualityTarget target : targets) {
             switch (target.type()) {
-
                 case WEAPON -> {
                     if (item instanceof TieredItem ||
                             item instanceof ProjectileWeaponItem) {
@@ -190,6 +189,9 @@ public class ModEvents {
                         return true;
                     }
                 }
+                case ITEM_ALL -> {
+                    return true;
+                }
             }
         }
         return false;
@@ -211,7 +213,7 @@ public class ModEvents {
         }
     }
 
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
+    public static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
         return new AttributeModifier(
                 original.getId(),
                 "Overgeared",

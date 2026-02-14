@@ -7,23 +7,23 @@
   ],
   "qualities": {
     "poor": {
-      "operation": "addition",
+      "operation": "add",
       "amount": -1.0
     },
     "well": {
-      "operation": "addition",
+      "operation": "add",
       "amount": 0.0
     },
     "expert": {
-      "operation": "addition",
+      "operation": "add",
       "amount": 1.5
     },
     "perfect": {
-      "operation": "addition",
+      "operation": "add",
       "amount": 2.0
     },
     "master": {
-      "operation": "addition",
+      "operation": "add",
       "amount": 3.0
     }
   }

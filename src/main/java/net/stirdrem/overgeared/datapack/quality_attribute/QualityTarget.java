@@ -7,6 +7,6 @@ public record QualityTarget(
         ResourceLocation id // nullable for weapon/armor
 ) {
     public enum TargetType {
-        WEAPON, ARMOR, ITEM, ITEM_TAG
+        WEAPON, ARMOR, ITEM, ITEM_TAG, ITEM_ALL
     }
 }
