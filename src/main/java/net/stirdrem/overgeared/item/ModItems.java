@@ -109,20 +109,10 @@ public class ModItems {
             () -> new Item(new Item.Properties()));
 
     public static final RegistryObject<Item> SMITHING_HAMMER = ITEMS.register("smithing_hammer",
-            () -> new SmithingHammer(ModToolTiers.STEEL, -1, -2.8f, new Item.Properties().durability(512)));
+            () -> new SmithingHammer(ModToolTiers.STEEL, -1, -2.8f, new Item.Properties()));
 
     public static final RegistryObject<Item> COPPER_SMITHING_HAMMER = ITEMS.register("copper_smithing_hammer",
-            () -> new SmithingHammer(ModToolTiers.COPPER, -1, -2.8f, new Item.Properties().durability(120)));
-
-    /*public static final RegistryObject<Item> WOODEN_BUCKET = ITEMS.register("wooden_bucket",
-            () -> new UniversalBucketItem(new UniversalBucketItem.Properties().durability(100)
-                    .upperCrackingTemperature(ServerConfig.WOODEN_BUCKET_BREAK_TEMPERATURE)
-                    //.crackingFluids(ModTags.Fluids.WOODEN_CRACKING)
-                    .milking(ServerConfig.MILKING_ENABLED)
-                    .entityObtaining(ServerConfig.FISH_OBTAINING_ENABLED)
-                    //.dyeable(14975336)
-                    .durability(ServerConfig.WOODEN_BUCKET_DURABILITY)
-            ));*/
+            () -> new SmithingHammer(ModToolTiers.COPPER, -1, -2.8f, new Item.Properties()));
 
     public static final RegistryObject<Item> DIAMOND_UPGRADE_SMITHING_TEMPLATE = ITEMS.register("diamond_upgrade_smithing_template",
             DiamondUpgradeTemplateItem::createDiamondUpgradeTemplate);
