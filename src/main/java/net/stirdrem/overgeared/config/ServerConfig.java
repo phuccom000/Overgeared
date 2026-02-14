@@ -58,23 +58,7 @@ public class ServerConfig {
     public static final ModConfigSpec.IntValue EXPERT_MAX_USE;
     public static final ModConfigSpec.IntValue WELL_MAX_USE;
     public static final ModConfigSpec.IntValue POOR_MAX_USE;
-    // --- Weapon Bonuses ---
-    public static final ModConfigSpec.DoubleValue MASTER_WEAPON_DAMAGE;
-    public static final ModConfigSpec.DoubleValue PERFECT_WEAPON_DAMAGE;
-    public static final ModConfigSpec.DoubleValue EXPERT_WEAPON_DAMAGE;
-    public static final ModConfigSpec.DoubleValue WELL_WEAPON_DAMAGE;
-    public static final ModConfigSpec.DoubleValue POOR_WEAPON_DAMAGE;
-    public static final ModConfigSpec.DoubleValue MASTER_WEAPON_SPEED;
-    public static final ModConfigSpec.DoubleValue PERFECT_WEAPON_SPEED;
-    public static final ModConfigSpec.DoubleValue EXPERT_WEAPON_SPEED;
-    public static final ModConfigSpec.DoubleValue WELL_WEAPON_SPEED;
-    public static final ModConfigSpec.DoubleValue POOR_WEAPON_SPEED;
-    // --- Armor Bonuses ---
-    public static final ModConfigSpec.DoubleValue MASTER_ARMOR_BONUS;
-    public static final ModConfigSpec.DoubleValue PERFECT_ARMOR_BONUS;
-    public static final ModConfigSpec.DoubleValue EXPERT_ARMOR_BONUS;
-    public static final ModConfigSpec.DoubleValue WELL_ARMOR_BONUS;
-    public static final ModConfigSpec.DoubleValue POOR_ARMOR_BONUS;
+
     // --- Durability Bonuses ---
     public static final ModConfigSpec.DoubleValue MASTER_DURABILITY_BONUS;
     public static final ModConfigSpec.DoubleValue PERFECT_DURABILITY_BONUS;
@@ -299,27 +283,6 @@ public class ServerConfig {
         EXPERT_MAX_USE = builder.comment("Uses required to reach the next quality after Expert").defineInRange("expertMaxUse", 20, 0, 1000);
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);
-        builder.pop();
-
-        builder.push("Weapon Bonuses");
-        MASTER_WEAPON_DAMAGE = builder.defineInRange("masterWeaponDamage", 3.0, -10.0, 10.0);
-        PERFECT_WEAPON_DAMAGE = builder.defineInRange("perfectWeaponDamage", 2.0, -10.0, 10.0);
-        EXPERT_WEAPON_DAMAGE = builder.defineInRange("expertWeaponDamage", 1.5, -10.0, 10.0);
-        WELL_WEAPON_DAMAGE = builder.defineInRange("wellWeaponDamage", 0.0, -10.0, 10.0);
-        POOR_WEAPON_DAMAGE = builder.defineInRange("poorWeaponDamage", -1.0, -10.0, 10.0);
-        MASTER_WEAPON_SPEED = builder.defineInRange("masterWeaponSpeed", 1, -2.0, 2.0);
-        PERFECT_WEAPON_SPEED = builder.defineInRange("perfectWeaponSpeed", 0.5, -2.0, 2.0);
-        EXPERT_WEAPON_SPEED = builder.defineInRange("expertWeaponSpeed", 0.25, -2.0, 2.0);
-        WELL_WEAPON_SPEED = builder.defineInRange("wellWeaponSpeed", 0.0, -2.0, 2.0);
-        POOR_WEAPON_SPEED = builder.defineInRange("poorWeaponSpeed", -0.5, -2.0, 2.0);
-        builder.pop();
-
-        builder.push("Armor Bonuses");
-        MASTER_ARMOR_BONUS = builder.defineInRange("masterArmorBonus", 2, -5.0, 5.0);
-        PERFECT_ARMOR_BONUS = builder.defineInRange("perfectArmorBonus", 1.5, -5.0, 5.0);
-        EXPERT_ARMOR_BONUS = builder.defineInRange("expertArmorBonus", 1.0, -5.0, 5.0);
-        WELL_ARMOR_BONUS = builder.defineInRange("wellArmorBonus", 0.0, -5.0, 5.0);
-        POOR_ARMOR_BONUS = builder.defineInRange("poorArmorBonus", -1.0, -5.0, 5.0);
         builder.pop();
 
         builder.push("Durability Bonuses");

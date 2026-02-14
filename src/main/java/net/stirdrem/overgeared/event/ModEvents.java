@@ -3,21 +3,19 @@ package net.stirdrem.overgeared.event;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -28,7 +26,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerDestroyItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -42,6 +39,10 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.networking.packet.OnlyResetMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
@@ -89,32 +90,69 @@ public class ModEvents {
         ItemStack stack = event.getItemStack();
 
         ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
-        if (quality != null && quality != ForgingQuality.NONE) {
-            Item item = stack.getItem();
+        if (quality != null && quality != ForgingQuality.NONE)
+            for (QualityAttributeDefinition def :
+                    QualityAttributeReloadListener.INSTANCE.getAll()) {
 
-            if (isWeapon(item)) {
-                applyWeaponAttributes(event, quality);
+                if (!matches(stack, def.targets())) continue;
+
+                QualityValue value = def.qualities().get(quality.getDisplayName());
+                if (value == null || value.amount() == 0) continue;
+                Attribute attribute = BuiltInRegistries.ATTRIBUTE
+                        .get(def.attribute());
+                if (attribute == null) continue;
+
+                modifyAttribute(event, attribute, value.amount(), value.operation());
             }
-            if (isArmor(item)) {
-                applyArmorAttributes(event, quality);
+    }
+
+    public static boolean matches(ItemStack stack, List<QualityTarget> targets) {
+        Item item = stack.getItem();
+
+        for (QualityTarget target : targets) {
+            switch (target.type()) {
+                case WEAPON -> {
+                    if (item instanceof TieredItem ||
+                            item instanceof ProjectileWeaponItem) {
+                        return true;
+                    }
+                }
+
+                case ARMOR -> {
+                    if (item instanceof ArmorItem) {
+                        return true;
+                    }
+                }
+
+                case ITEM -> {
+                    ResourceLocation itemId =
+                            BuiltInRegistries.ITEM.getKey(item);
+                    if (itemId != null && itemId.equals(target.id())) {
+                        return true;
+                    }
+                }
+
+                case ITEM_TAG -> {
+                    if (target.id() == null) break;
+
+                    TagKey<Item> tag = TagKey.create(
+                            Registries.ITEM,
+                            target.id()
+                    );
+
+                    if (stack.is(tag)) {
+                        return true;
+                    }
+                }
+                case ITEM_ALL -> {
+                    return true;
+                }
             }
         }
+        return false;
     }
 
-    private static void applyWeaponAttributes(ItemAttributeModifierEvent event, ForgingQuality quality) {
-        double damageBonus = getDamageBonusForQuality(quality);
-        double speedBonus = getSpeedBonusForQuality(quality);
-        modifyAttribute(event, Attributes.ATTACK_DAMAGE.value(), damageBonus);
-        modifyAttribute(event, Attributes.ATTACK_SPEED.value(), speedBonus);
-    }
-
-    private static void applyArmorAttributes(ItemAttributeModifierEvent event, ForgingQuality quality) {
-        double armorBonus = getArmorBonusForQuality(quality);
-        modifyAttribute(event, Attributes.ARMOR.value(), armorBonus);
-        modifyAttribute(event, Attributes.ARMOR_TOUGHNESS.value(), armorBonus);
-    }
-
-    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus) {
+    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
         // Get all modifiers currently on the item
         var modifiers = event.getModifiers();
 
@@ -137,60 +175,18 @@ public class ModEvents {
             // Add modified version
             event.addModifier(
                     entry.attribute(),
-                    createModifiedAttribute(originalModifier, bonus),
+                    createModifiedAttribute(originalModifier, bonus, operation),
                     entry.slot()
             );
         }
     }
 
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus) {
+    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
         return new AttributeModifier(
                 original.id(),
                 original.amount() + bonus,
-                original.operation()
+                operation
         );
-    }
-
-    private static boolean isWeapon(Item item) {
-        return item instanceof TieredItem ||
-                item instanceof ProjectileWeaponItem;
-    }
-
-    private static boolean isArmor(Item item) {
-        return item instanceof ArmorItem;
-    }
-
-    private static double getDamageBonusForQuality(ForgingQuality quality) {
-        return switch (quality) {
-            case MASTER -> ServerConfig.MASTER_WEAPON_DAMAGE.get();
-            case PERFECT -> ServerConfig.PERFECT_WEAPON_DAMAGE.get();
-            case EXPERT -> ServerConfig.EXPERT_WEAPON_DAMAGE.get();
-            case WELL -> ServerConfig.WELL_WEAPON_DAMAGE.get();
-            case POOR -> ServerConfig.POOR_WEAPON_DAMAGE.get();
-            case NONE -> 0.0;
-        };
-    }
-
-    private static double getSpeedBonusForQuality(ForgingQuality quality) {
-        return switch (quality) {
-            case MASTER -> ServerConfig.MASTER_WEAPON_SPEED.get();
-            case PERFECT -> ServerConfig.PERFECT_WEAPON_SPEED.get();
-            case EXPERT -> ServerConfig.EXPERT_WEAPON_SPEED.get();
-            case WELL -> ServerConfig.WELL_WEAPON_SPEED.get();
-            case POOR -> ServerConfig.POOR_WEAPON_SPEED.get();
-            case NONE -> 0.0;
-        };
-    }
-
-    private static double getArmorBonusForQuality(ForgingQuality quality) {
-        return switch (quality) {
-            case MASTER -> ServerConfig.MASTER_ARMOR_BONUS.get();
-            case PERFECT -> ServerConfig.PERFECT_ARMOR_BONUS.get();
-            case EXPERT -> ServerConfig.EXPERT_ARMOR_BONUS.get();
-            case WELL -> ServerConfig.WELL_ARMOR_BONUS.get();
-            case POOR -> ServerConfig.POOR_ARMOR_BONUS.get();
-            case NONE -> 0.0;
-        };
     }
 
     @SubscribeEvent

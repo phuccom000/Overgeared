@@ -37,12 +37,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -54,8 +54,8 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
 import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSetStartedC2SPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
@@ -68,13 +68,10 @@ import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
-import net.stirdrem.overgeared.heateditem.HeatedItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-
-import static net.stirdrem.overgeared.components.ModComponents.HEATED_COMPONENT;
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
 
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID)
@@ -98,7 +95,7 @@ public class ModItemInteractEvents {
 
         if (level.isClientSide) return;
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        
+
         // Fletching
         if (state.is(Blocks.FLETCHING_TABLE) && event.getHand() == InteractionHand.MAIN_HAND) {
             onUseFletching(event, serverPlayer, level);
