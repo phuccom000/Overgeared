@@ -6,17 +6,22 @@ import io.wispforest.accessories.api.attributes.AttributeModificationData;
 import io.wispforest.accessories.api.events.AdjustAttributeModifierCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.utils.AttributeUtils;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraftforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
+import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 // Register to modify attributes dynamically
 public class AttributeModifierHandler implements AdjustAttributeModifierCallback {
@@ -27,40 +32,57 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
     @Override
     public void adjustAttributes(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
-        Item item = stack.getItem();
-        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-            String quality = stack.getTag().getString("ForgingQuality");
+        if (!stack.hasTag()) return;
 
-            //if (isWeapon(item)) {
-            applyWeaponAttributes(builder, quality);
+        String quality = stack.getTag().getString("ForgingQuality");
+        if (quality.isEmpty()) return;
 
-            //if (isArmor(item))
-            applyArmorAttributes(builder, quality);
+        for (QualityAttributeDefinition def :
+                QualityAttributeReloadListener.INSTANCE.getAll()) {
 
+            if (!matches(stack, def.targets())) continue;
+
+            QualityValue value = def.qualities().get(quality);
+            if (value == null || value.amount() == 0) continue;
+
+            Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(def.attribute());
+            if (attribute == null) continue;
+
+            modifyAttribute(builder, attribute, value.amount(), value.operation());
         }
     }
 
-    // Apply weapon-type attribute modifications
-    private void applyWeaponAttributes(AccessoryAttributeBuilder builder, String quality) {
-        double damageBonus = getDamageBonusForQuality(quality);
-        double speedBonus = getSpeedBonusForQuality(quality);
+    private static boolean matches(ItemStack stack, List<QualityTarget> targets) {
+        Item item = stack.getItem();
 
-        modifyAttribute(builder, Attributes.ATTACK_DAMAGE, damageBonus);
-        modifyAttribute(builder, Attributes.ATTACK_SPEED, speedBonus);
+        for (QualityTarget target : targets) {
+            switch (target.type()) {
+                case ITEM -> {
+                    ResourceLocation itemId =
+                            ForgeRegistries.ITEMS.getKey(item);
+                    if (itemId != null && itemId.equals(target.id())) {
+                        return true;
+                    }
+                }
+
+                case ITEM_TAG -> {
+                    if (target.id() == null) break;
+
+                    TagKey<Item> tag = TagKey.create(
+                            Registries.ITEM,
+                            target.id()
+                    );
+
+                    if (stack.is(tag)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-    // Apply armor-type attribute modifications
-    private void applyArmorAttributes(AccessoryAttributeBuilder builder, String quality) {
-        double armorBonus = getArmorBonusForQuality(quality);
-
-        modifyAttribute(builder, Attributes.ARMOR, armorBonus);
-        modifyAttribute(builder, Attributes.ARMOR_TOUGHNESS, armorBonus);
-        modifyAttribute(builder, Attributes.ARMOR_TOUGHNESS, armorBonus);
-    }
-
-
-    // Main modifier method - exactly like your pattern
-    private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus) {
+    private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
         if (bonus == 0) return;
 
         // Get all existing modifiers for this attribute
@@ -84,7 +106,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
                 builder.removeExclusive(attribute, location);
 
                 // Create modified attribute
-                AttributeModifier modified = createModifiedAttribute(modifier, bonus);
+                AttributeModifier modified = createModifiedAttribute(modifier, bonus, operation);
 
                 // Add it back as exclusive
                 builder.addExclusive(attribute, modified);
@@ -99,7 +121,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
                     // Add modified versions
                     for (AttributeModificationData data : stackableData) {
                         AttributeModifier originalStackMod = data.modifier();
-                        AttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus);
+                        AttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus, operation);
 
                         // Add as stackable with same location
                         builder.addStackable(attribute, location, modifiedStack.getAmount(), modifiedStack.getOperation());
@@ -110,12 +132,12 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
     }
 
     // Create modified attribute - exactly like your method
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus) {
+    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
         return new AttributeModifier(
                 original.getId(),
                 "Overgeared",  // Your custom name
                 original.getAmount() + bonus,  // Add bonus instead of multiply
-                original.getOperation()
+                operation
         );
     }
 
@@ -132,47 +154,4 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
         );
     }
 
-    // Check if item is a weapon - exactly like your method
-    private static boolean isWeapon(Item item) {
-        return item instanceof TieredItem ||
-                item instanceof ProjectileWeaponItem;
-    }
-
-    // Check if item is armor - exactly like your method
-    private static boolean isArmor(Item item) {
-        return item instanceof ArmorItem;
-    }
-
-    private static double getDamageBonusForQuality(String quality) {
-        return switch (quality.toLowerCase()) {
-            case "master" -> ServerConfig.MASTER_WEAPON_DAMAGE.get();
-            case "perfect" -> ServerConfig.PERFECT_WEAPON_DAMAGE.get();
-            case "expert" -> ServerConfig.EXPERT_WEAPON_DAMAGE.get();
-            case "well" -> ServerConfig.WELL_WEAPON_DAMAGE.get();
-            case "poor" -> ServerConfig.POOR_WEAPON_DAMAGE.get();
-            default -> 0.0;
-        };
-    }
-
-    private static double getSpeedBonusForQuality(String quality) {
-        return switch (quality.toLowerCase()) {
-            case "master" -> ServerConfig.MASTER_WEAPON_SPEED.get();
-            case "perfect" -> ServerConfig.PERFECT_WEAPON_SPEED.get();
-            case "expert" -> ServerConfig.EXPERT_WEAPON_SPEED.get();
-            case "well" -> ServerConfig.WELL_WEAPON_SPEED.get();
-            case "poor" -> ServerConfig.POOR_WEAPON_SPEED.get();
-            default -> 0.0;
-        };
-    }
-
-    private static double getArmorBonusForQuality(String quality) {
-        return switch (quality.toLowerCase()) {
-            case "master" -> ServerConfig.MASTER_ARMOR_BONUS.get();
-            case "perfect" -> ServerConfig.PERFECT_ARMOR_BONUS.get();
-            case "expert" -> ServerConfig.EXPERT_ARMOR_BONUS.get();
-            case "well" -> ServerConfig.WELL_ARMOR_BONUS.get();
-            case "poor" -> ServerConfig.POOR_ARMOR_BONUS.get();
-            default -> 0.0;
-        };
-    }
 }

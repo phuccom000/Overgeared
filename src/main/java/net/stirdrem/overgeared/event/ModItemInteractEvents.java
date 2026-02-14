@@ -735,7 +735,6 @@ public class ModItemInteractEvents {
         }
 
         entity.setItem(cooledStack);
-        entity.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
     }
 
 
@@ -937,7 +936,10 @@ public class ModItemInteractEvents {
                 if (cooled) {
                     // Cool entire stack
                     coolItemEntity(entity);
-
+                    level.sendParticles(ParticleTypes.SMOKE,
+                            entity.getX(), entity.getY() + 0.25, entity.getZ(),
+                            6, 0.15, 0.15, 0.15, 0.02);
+                    level.playSound(null, entity.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.0f);
                     // Clear timestamp
                     trackedSinceMs.remove(entity);
 

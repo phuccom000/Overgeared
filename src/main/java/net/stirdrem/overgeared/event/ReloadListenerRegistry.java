@@ -17,5 +17,6 @@ public class ReloadListenerRegistry {
         event.addListener(new MaterialSettingsReloadListener());
         event.addListener(new KnappingResourceReloadListener());
         event.addListener(new RockInteractionReloadListener());
+        event.addListener(QualityAttributeReloadListener.INSTANCE);
     }
 }

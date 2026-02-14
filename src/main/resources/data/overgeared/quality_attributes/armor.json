@@ -1,0 +1,30 @@
+{
+  "attribute": "minecraft:generic.armor",
+  "targets": [
+    {
+      "type": "armor"
+    }
+  ],
+  "qualities": {
+    "poor": {
+      "operation": "addition",
+      "amount": -1.0
+    },
+    "well": {
+      "operation": "addition",
+      "amount": 0.0
+    },
+    "expert": {
+      "operation": "addition",
+      "amount": 1.0
+    },
+    "perfect": {
+      "operation": "addition",
+      "amount": 1.5
+    },
+    "master": {
+      "operation": "addition",
+      "amount": 2.0
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "attribute": "minecraft:generic.attack_damage",
+  "targets": [
+    {
+      "type": "weapon"
+    }
+  ],
+  "qualities": {
+    "poor": {
+      "operation": "addition",
+      "amount": -1.0
+    },
+    "well": {
+      "operation": "addition",
+      "amount": 0.0
+    },
+    "expert": {
+      "operation": "addition",
+      "amount": 1.5
+    },
+    "perfect": {
+      "operation": "addition",
+      "amount": 2.0
+    },
+    "master": {
+      "operation": "addition",
+      "amount": 3.0
+    }
+  }
+}

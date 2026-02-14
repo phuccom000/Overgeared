@@ -1,0 +1,30 @@
+{
+  "attribute": "minecraft:generic.attack_speed",
+  "targets": [
+    {
+      "type": "weapon"
+    }
+  ],
+  "qualities": {
+    "poor": {
+      "operation": "addition",
+      "amount": -0.5
+    },
+    "well": {
+      "operation": "addition",
+      "amount": 0.0
+    },
+    "expert": {
+      "operation": "addition",
+      "amount": 0.25
+    },
+    "perfect": {
+      "operation": "addition",
+      "amount": 0.5
+    },
+    "master": {
+      "operation": "addition",
+      "amount": 1.0
+    }
+  }
+}
