@@ -53,7 +53,7 @@ public final class ItemUtils {
      */
     @NotNull
     public static ItemStack getCooledItem(@NotNull ItemStack stack, @NotNull Level level) {
-        if (stack.isEmpty() || level == null) return ItemStack.EMPTY;
+        if (stack.isEmpty() || level == null) return stack;
 
         // Create SingleRecipeInput for recipe matching (1.21 API)
         SingleRecipeInput input = new SingleRecipeInput(stack.copy());
@@ -66,13 +66,13 @@ public final class ItemUtils {
                 .findFirst();
 
         if (recipeOpt.isEmpty()) {
-            return ItemStack.EMPTY; // no cooling recipe found
+            return stack; // no cooling recipe found
         }
 
         // Return the result item from the recipe
         CoolingRecipe recipe = recipeOpt.get().value();
         ItemStack result = recipe.getResultItem(level.registryAccess());
-        return result.isEmpty() ? ItemStack.EMPTY : result.copy();
+        return result.isEmpty() ? stack : result.copy();
     }
 
     /**
