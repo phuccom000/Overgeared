@@ -2,15 +2,12 @@ package net.stirdrem.overgeared.datagen;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.*;
@@ -18,9 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.core.NonNullList;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.ForgingBookCategory;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.item.ToolTypeRegistry;
+import net.stirdrem.overgeared.client.ForgingBookCategory;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -31,8 +27,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ShapedForgingRecipeBuilder implements RecipeBuilder {
-    private final RecipeCategory category;
-    private final ForgingBookCategory bookCategory;
+    private ForgingBookCategory category;
     private final Item result;
 
     private final int count;
@@ -70,9 +65,8 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     private boolean showNotification = true;
 
 
-    public ShapedForgingRecipeBuilder(RecipeCategory category, ForgingBookCategory bookCategory, ItemLike result, int count, int hammering) {
+    public ShapedForgingRecipeBuilder(ForgingBookCategory category, ItemLike result, int count, int hammering) {
         this.category = category;
-        this.bookCategory = bookCategory;
         this.result = result.asItem();
         this.count = count;
         this.hammering = hammering;
@@ -101,12 +95,12 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
 
-    public static ShapedForgingRecipeBuilder shaped(RecipeCategory category, ItemLike result, int hammering) {
-        return new ShapedForgingRecipeBuilder(category, determineWeaponRecipeCategory(result), result, 1, hammering);
+    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int hammering) {
+        return new ShapedForgingRecipeBuilder(category, result, 1, hammering);
     }
 
-    public static ShapedForgingRecipeBuilder shaped(RecipeCategory category, ItemLike result, int count, int hammering) {
-        return new ShapedForgingRecipeBuilder(category, determineWeaponRecipeCategory(result), result, count, hammering);
+    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int count, int hammering) {
+        return new ShapedForgingRecipeBuilder(category, result, count, hammering);
     }
 
     public ShapedForgingRecipeBuilder define(Character pSymbol, TagKey<Item> pTag) {
@@ -244,7 +238,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 pRecipeId,
                 this.failedResult != null ? new ItemStack(this.failedResult, this.failedResultCount) : ItemStack.EMPTY,
                 this.group == null ? "" : this.group,
-                this.bookCategory,
+                this.category,
                 this.rows,
                 this.key,
                 this.advancement,
@@ -340,9 +334,9 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 }
                 json.add("blueprint", blueprintArray);
             }
-
-            json.addProperty("category", this.category.getSerializedName());
-
+            if (this.category != null) {
+                json.addProperty("category", this.category.getSerializedName());
+            }
             JsonArray patternArray = new JsonArray();
             for (String s : this.pattern) {
                 patternArray.add(s);

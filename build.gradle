@@ -246,7 +246,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:lionfish-api-1001614:5922047")
 
     runtimeOnly fg.deobf("curse.maven:lendercataclysm-551586:6906993")
-    runtimeOnly fg.deobf("curse.maven:item-nbt-viewer-514135:4578522")
+    //runtimeOnly fg.deobf("curse.maven:item-nbt-viewer-514135:4578522")
     //compileOnly fg.deobf("curse.maven:no-tree-punching-289043:4599926")
     runtimeOnly fg.deobf("curse.maven:ytech-917366:6616815")
     //compileOnly fg.deobf("curse.maven:max-health-fix-492246:5378283")
@@ -317,7 +317,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:selene-499980:6983934")
     //implementation("io.wispforest:accessories-neoforge:${accessories_version}")
     runtimeOnly fg.deobf("curse.maven:owo-lib-532610:4749199")
-    implementation fg.deobf("curse.maven:accessories-938917:7164863")
+    compileOnly fg.deobf("curse.maven:accessories-938917:7164863")
 
     /*runtimeOnly fg.deobf("curse.maven:amendments-896746:6913537")
     runtimeOnly fg.deobf("curse.maven:playeranimator-658587:4587214")
@@ -355,10 +355,11 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:jade-324717:6855440")
     //compileOnly fg.deobf("curse.maven:savage-and-ravage-381736:6040963")
     //compileOnly fg.deobf("curse.maven:hold-my-items-reforged-1246920:6608415")
-    runtimeOnly fg.deobf("curse.maven:biomancy-492939:5886758")
-    runtimeOnly fg.deobf("curse.maven:epic-knights-armor-and-weapons-509041:6373737")
-    runtimeOnly fg.deobf("curse.maven:epic-knights-addon-925866:6036869")
-    runtimeOnly fg.deobf("curse.maven:epic-knights-slavic-armory-942000:5458480")
+    //runtimeOnly fg.deobf("curse.maven:biomancy-492939:5886758")
+    
+    /* runtimeOnly fg.deobf("curse.maven:epic-knights-armor-and-weapons-509041:6373737")
+     runtimeOnly fg.deobf("curse.maven:epic-knights-addon-925866:6036869")
+     runtimeOnly fg.deobf("curse.maven:epic-knights-slavic-armory-942000:5458480")*/
     runtimeOnly fg.deobf("curse.maven:cloth-config-348521:5729105")
     runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
 

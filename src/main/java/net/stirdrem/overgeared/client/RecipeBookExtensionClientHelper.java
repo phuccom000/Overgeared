@@ -35,7 +35,7 @@ public class RecipeBookExtensionClientHelper {
         // Register how to determine category per recipe
         event.registerRecipeCategoryFinder(ModRecipeTypes.FORGING.get(), recipe -> {
             if (recipe instanceof ForgingRecipe forgingRecipe) {
-                ForgingBookRecipeBookTab tab = forgingRecipe.getRecipeBookTab();
+                ForgingBookCategory tab = forgingRecipe.getRecipeBookTab();
                 if (tab != null) {
                     return switch (tab) {
                         case TOOLS -> FORGING_TOOLS.get();

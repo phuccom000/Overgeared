@@ -12,7 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.stirdrem.overgeared.client.ForgingBookRecipeBookTab;
+import net.stirdrem.overgeared.client.ForgingBookCategory;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -30,15 +30,15 @@ public class ModRecipeBookTypes {
     private static final Supplier<RecipeBookCategories> SEARCH_CATEGORY = Suppliers.memoize(
             () -> RecipeBookCategories.create("FORGING_SEARCH", new ItemStack(Items.COMPASS)));
 
-    private static final Map<ForgingBookRecipeBookTab, Supplier<RecipeBookCategories>> CATEGORY_MAP = new EnumMap<>(
-            ForgingBookRecipeBookTab.class);
+    private static final Map<ForgingBookCategory, Supplier<RecipeBookCategories>> CATEGORY_MAP = new EnumMap<>(
+            ForgingBookCategory.class);
 
     static {
-        CATEGORY_MAP.put(ForgingBookRecipeBookTab.TOOLS, Suppliers
+        CATEGORY_MAP.put(ForgingBookCategory.TOOLS, Suppliers
                 .memoize(() -> RecipeBookCategories.create("FORGING_TOOLS", new ItemStack(Items.IRON_PICKAXE))));
-        CATEGORY_MAP.put(ForgingBookRecipeBookTab.ARMORS, Suppliers
+        CATEGORY_MAP.put(ForgingBookCategory.ARMORS, Suppliers
                 .memoize(() -> RecipeBookCategories.create("FORGING_ARMORS", new ItemStack(Items.IRON_CHESTPLATE))));
-        CATEGORY_MAP.put(ForgingBookRecipeBookTab.MISC,
+        CATEGORY_MAP.put(ForgingBookCategory.MISC,
                 Suppliers.memoize(() -> RecipeBookCategories.create("FORGING_MISC", new ItemStack(Items.ANVIL))));
     }
 
@@ -48,9 +48,9 @@ public class ModRecipeBookTypes {
 
         ImmutableList<RecipeBookCategories> categories = ImmutableList.of(
                 SEARCH_CATEGORY.get(),
-                CATEGORY_MAP.get(ForgingBookRecipeBookTab.TOOLS).get(),
-                CATEGORY_MAP.get(ForgingBookRecipeBookTab.ARMORS).get(),
-                CATEGORY_MAP.get(ForgingBookRecipeBookTab.MISC).get());
+                CATEGORY_MAP.get(ForgingBookCategory.TOOLS).get(),
+                CATEGORY_MAP.get(ForgingBookCategory.ARMORS).get(),
+                CATEGORY_MAP.get(ForgingBookCategory.MISC).get());
 
         event.registerBookCategories(ModRecipeBookTypes.FORGING, categories);
 
@@ -60,14 +60,11 @@ public class ModRecipeBookTypes {
 
         // Register how to determine category per recipe
         event.registerRecipeCategoryFinder(ModRecipeTypes.FORGING.get(), recipe -> {
-            ItemStack result = recipe.getResultItem(Minecraft.getInstance().level.registryAccess());
-            if (result.getItem() == Items.IRON_SWORD) {
-                return CATEGORY_MAP.get(ForgingBookRecipeBookTab.TOOLS).get();
-            } else if (result.getItem() == Items.IRON_HELMET) {
-                return CATEGORY_MAP.get(ForgingBookRecipeBookTab.ARMORS).get();
-            } else {
-                return CATEGORY_MAP.get(ForgingBookRecipeBookTab.MISC).get();
+            if (recipe instanceof ForgingRecipe forgingRecipe) {
+                return CATEGORY_MAP.get(forgingRecipe.getRecipeBookTab()).get();
             }
+            return CATEGORY_MAP.get(ForgingBookCategory.MISC).get();
         });
+
     }
 }

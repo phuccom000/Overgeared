@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.client.ForgingBookRecipeBookTab;
+import net.stirdrem.overgeared.client.ForgingBookCategory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,10 +43,10 @@ public class ForgingRecipe implements Recipe<Container> {
     private final boolean showNotification;
     private final ForgingQuality minimumQuality;
     private final ForgingQuality qualityDifficulty;
-    private final ForgingBookRecipeBookTab tab;
+    private final ForgingBookCategory tab;
 
     public ForgingRecipe(ResourceLocation id, String group, boolean requireBlueprint, Set<String> blueprintTypes, String tier, NonNullList<ForgingIngredient> ingredients,
-                         ItemStack result, ItemStack failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookRecipeBookTab tab) {
+                         ItemStack result, ItemStack failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookCategory tab) {
         this.id = id;
         this.group = group;
         this.blueprintTypes = blueprintTypes;
@@ -306,7 +306,7 @@ public class ForgingRecipe implements Recipe<Container> {
         return width * height;
     }
 
-    public ForgingBookRecipeBookTab getRecipeBookTab() {
+    public ForgingBookCategory getRecipeBookTab() {
         return tab;
     }
 
@@ -433,10 +433,10 @@ public class ForgingRecipe implements Recipe<Container> {
                     parseKey(GsonHelper.getAsJsonObject(json, "key"));
 
             JsonArray pattern = GsonHelper.getAsJsonArray(json, "pattern");
-            final String tabKeyIn = GsonHelper.getAsString(json, "recipe_book_tab", ForgingBookRecipeBookTab.MISC.toString());
-            final ForgingBookRecipeBookTab tabIn = ForgingBookRecipeBookTab.findByName(tabKeyIn);
+            final String tabKeyIn = GsonHelper.getAsString(json, "category", ForgingBookCategory.MISC.toString());
+            final ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKeyIn);
             if (tabKeyIn != null && tabIn == null) {
-                OvergearedMod.LOGGER.warn("Optional field 'recipe_book_tab' does not match any valid tab. If defined, must be one of the following: " + EnumSet.allOf(ForgingBookRecipeBookTab.class));
+                OvergearedMod.LOGGER.warn("Optional field 'category' does not match any valid tab. If defined, must be one of the following: " + EnumSet.allOf(ForgingBookCategory.class));
             }
             int width = pattern.get(0).getAsString().length();
             int height = pattern.size();
@@ -523,7 +523,7 @@ public class ForgingRecipe implements Recipe<Container> {
             ItemStack result = buffer.readItem();
             ItemStack failedResult = buffer.readItem();
 
-            ForgingBookRecipeBookTab tabIn = ForgingBookRecipeBookTab.findByName(buffer.readUtf());
+            ForgingBookCategory tabIn = ForgingBookCategory.findByName(buffer.readUtf());
 
             return new ForgingRecipe(recipeId, group, requiresBlueprint, blueprintTypes, tier, ingredients, result, failedResult, hammering, hasQuality, needsMinigame, hasPolishing, needQuenching, showNotification, minimumQuality, qualityDifficulty, width, height, tabIn);
         }
