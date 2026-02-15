@@ -7,13 +7,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
 
 public class StoneSmithingAnvilScreen extends AbstractSmithingAnvilScreen<StoneSmithingAnvilMenu> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/stone_smithing_anvil.png");
 
     public StoneSmithingAnvilScreen(StoneSmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
-        super(pMenu, pPlayerInventory, pTitle);
+        super(pMenu, pPlayerInventory, pTitle, new ForgingRecipeBookComponent());
     }
 
     @Override

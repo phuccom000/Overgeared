@@ -32,7 +32,11 @@ public enum AnvilTier {
     }
 
     public boolean isEqualOrLowerThan(AnvilTier other) {
-        return this.ordinal() <= other.ordinal();
+        return this.ordinal() > other.ordinal();
+    }
+
+    public boolean isAtLeast(AnvilTier other) {
+        return this.ordinal() >= other.ordinal();
     }
 }
 

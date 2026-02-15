@@ -15,6 +15,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
@@ -98,7 +99,7 @@ public class OvergearedMod {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static final AnvilMinigameHandler SERVER_HANDLER = new AnvilMinigameHandler();
-
+    public static final RecipeBookType RECIPE_TYPE_FORGING = RecipeBookType.create("FORGING");
     public static boolean polymorph;
 
     public OvergearedMod() {

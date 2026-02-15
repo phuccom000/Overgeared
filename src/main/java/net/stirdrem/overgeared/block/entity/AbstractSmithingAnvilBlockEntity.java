@@ -572,7 +572,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         AnvilTier requiredTier = AnvilTier.fromDisplayName(recipe.getAnvilTier());
 
         // Safely skip if tier is invalid
-        if (requiredTier == null || !requiredTier.isEqualOrLowerThan(this.anvilTier)) {
+        if (requiredTier == null || requiredTier.isEqualOrLowerThan(this.anvilTier)) {
             return false;
         }
 
@@ -589,7 +589,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         // Tier check
         AnvilTier requiredTier = AnvilTier.fromDisplayName(recipe.getAnvilTier());
-        if (requiredTier == null || !requiredTier.isEqualOrLowerThan(this.anvilTier)) {
+        if (requiredTier == null || requiredTier.isEqualOrLowerThan(this.anvilTier)) {
             return false;
         }
 
@@ -1091,5 +1091,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 }
             }
         }
+    }
+
+    public AnvilTier getAnvilTier() {
+        return anvilTier;
     }
 }
