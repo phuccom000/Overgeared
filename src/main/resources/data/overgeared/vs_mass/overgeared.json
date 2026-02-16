@@ -26,5 +26,33 @@
     "friction": 0.2,
     "elasticity": 1.0,
     "priority": 101
+  },
+  {
+    "block": "overgeared:drafting_table",
+    "mass": 800.0,
+    "friction": 0.6,
+    "elasticity": 1.0,
+    "priority": 101
+  },
+  {
+    "block": "overgeared:alloy_furnace",
+    "mass": 2500.0,
+    "friction": 0.6,
+    "elasticity": 1.0,
+    "priority": 101
+  },
+  {
+    "block": "overgeared:nether_alloy_furnace",
+    "mass": 1000.0,
+    "friction": 0.5,
+    "elasticity": 1.0,
+    "priority": 101
+  },
+  {
+    "block": "overgeared:casting_furnace",
+    "mass": 1000.0,
+    "friction": 0.5,
+    "elasticity": 1.0,
+    "priority": 101
   }
 ]
