@@ -20,6 +20,7 @@ public class ServerConfig {
     public static final ForgeConfigSpec.IntValue STONE_ANVIL_MAX_USES;
     public static final ForgeConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
 
     // --- Heated Items ---
     public static final ForgeConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
@@ -131,6 +132,7 @@ public class ServerConfig {
         builder.push("Anvil Conversion");
         ENABLE_STONE_TO_ANVIL = builder.comment("Allow shift-right-clicking stone to convert into Stone Smithing Anvil").define("enableStoneToAnvil", true);
         ENABLE_ANVIL_TO_SMITHING = builder.comment("Allow shift-right-clicking vanilla anvil to convert into Smithing Anvil").define("enableAnvilToSmithing", true);
+        ENABLE_BLUEPRINT_FORGING = builder.comment("Requires blueprint to obtain higher quality items").define("enableBlueprintForging", true);
         builder.pop();
 
         builder.push("Stone Smithing Anvil");

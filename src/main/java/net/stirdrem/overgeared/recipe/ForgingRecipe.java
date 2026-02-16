@@ -192,7 +192,13 @@ public class ForgingRecipe implements Recipe<Container> {
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
+        //return true;
         return width >= this.width && height >= this.height;
+    }
+
+    @Override
+    public boolean isIncomplete() {
+        return false;
     }
 
     @Override
@@ -207,9 +213,9 @@ public class ForgingRecipe implements Recipe<Container> {
     @Override
     public NonNullList<Ingredient> getIngredients() {
         NonNullList<Ingredient> list =
-                NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
+                NonNullList.withSize(this.width * this.height, Ingredient.EMPTY);
 
-        for (int i = 0; i < ingredients.size(); i++) {
+        for (int i = 0; i < this.width * this.height; i++) {
             list.set(i, ingredients.get(i).ingredient);
         }
 

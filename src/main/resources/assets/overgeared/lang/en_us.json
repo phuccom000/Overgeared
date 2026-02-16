@@ -276,6 +276,7 @@
   "overgeared.forging.miss": "MISS!",
   "block.overgeared.casting_furnace": "Casting Furnace",
   "container.overgeared.casting_furnace": "Casting Furnace",
-  "gui.overgeared.jei.category.casting": "Casting"
+  "gui.overgeared.jei.category.casting": "Casting",
+  "overgeared.container.recipe_book.forgeable": "Forgeable"
 }
 

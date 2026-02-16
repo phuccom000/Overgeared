@@ -18,7 +18,7 @@ import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
 import net.stirdrem.overgeared.util.TooltipButton;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-    private static final ResourceLocation TEXTURE =
+    protected static ResourceLocation TEXTURE =
             ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil.png");
     private static final ResourceLocation RECIPE_BUTTON_LOCATION = ResourceLocation.tryParse("textures/gui/recipe_button.png");
     private final ForgingRecipeBookComponent recipeBookComponent;
@@ -75,25 +75,18 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
             this.renderBg(guiGraphics, delta, mouseX, mouseY);
-            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
         } else {
-            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
             super.render(guiGraphics, mouseX, mouseY, delta);
             this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, delta);
             renderHitsRemaining(guiGraphics);
         }
+
+        this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
         renderGhostResult(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
+
         this.renderTooltip(guiGraphics, mouseX, mouseY);
-        this.recipeBookComponent.renderTooltip(
-                guiGraphics,
-                this.leftPos,
-                this.topPos,
-                mouseX,
-                mouseY
-        );
-
+        this.recipeBookComponent.renderTooltip(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
     }
-
 
     private void renderHitsRemaining(GuiGraphics guiGraphics) {
         int remainingHits = menu.getRemainingHits();

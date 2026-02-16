@@ -8,6 +8,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -45,19 +46,19 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
         // Get quality from anvil or use default if null
         String quality = anvilBlock.getQuality();
         if (quality == null) {
-            return "poor"; // Default quality
+            return ForgingQuality.POOR.getDisplayName(); // Default quality
         }
 
         // Use switch expression for better null safety
         return switch (quality.toLowerCase()) {
             case "poor" -> ForgingQuality.POOR.getDisplayName();
-            default -> "well";// Fallback
+            default -> ForgingQuality.WELL.getDisplayName();// Fallback
         };
     }
 
     @Override
     public String blueprintQuality() {
-        return "well";
+        return BlueprintQuality.WELL.getDisplayName();
     }
 
     @Override

@@ -337,6 +337,9 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
             if (this.category != null) {
                 json.addProperty("category", this.category.getSerializedName());
             }
+
+            json.addProperty("group", this.group);
+            
             JsonArray patternArray = new JsonArray();
             for (String s : this.pattern) {
                 patternArray.add(s);

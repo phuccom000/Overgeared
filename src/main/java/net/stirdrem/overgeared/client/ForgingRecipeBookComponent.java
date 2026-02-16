@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 
@@ -19,11 +20,11 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
-    protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.tryParse("textures/gui/recipe_book_buttons.png");
+    protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "textures/gui/recipe_book_buttons.png");
 
     @Override
     protected void initFilterButtonTextures() {
-        this.filterButton.initTextureValues(152, 182, 28, 18, RECIPE_BOOK_LOCATION);
+        this.filterButton.initTextureValues(152, 182, 28, 18, RECIPE_BOOK_BUTTONS);
     }
 
     public void hide() {

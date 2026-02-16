@@ -41,6 +41,55 @@ public class TierBSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
         } else return null;
     }
 
+    @Override
+    protected String determineForgingQuality() {
+        // Get quality from anvil or use default if null
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+            String quality = anvilBlock.getQuality();
+            if (quality == null) {
+                return ForgingQuality.POOR.getDisplayName(); // Default quality
+            }
+            if (quality.equals(ForgingQuality.PERFECT.getDisplayName())) {
+                Random random = new Random();
+
+                // 🔹 Check if any crafting slot contains a Master-quality ingredient
+                boolean hasMasterIngredient = false;
+                for (int i = 0; i < this.itemHandler.getSlots(); i++) {
+                    if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
+                    ItemStack stack = this.itemHandler.getStackInSlot(i);
+                    if (!stack.isEmpty() && stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
+                        String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase();
+                        if ("master".equals(ingQuality)) {
+                            hasMasterIngredient = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Normal Master roll from config
+                boolean masterRoll = ServerConfig.MASTER_QUALITY_CHANCE.get() != 0
+                        && random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get();
+
+                // Ingredient-based boost
+                boolean ingredientMasterRoll = hasMasterIngredient
+                        && random.nextFloat() < ServerConfig.MASTER_FROM_INGREDIENT_CHANCE.get();
+
+                if (masterRoll || ingredientMasterRoll) {
+                    return ForgingQuality.MASTER.getDisplayName();
+                } else {
+                    return ForgingQuality.PERFECT.getDisplayName();
+                }
+            } else
+                return quality;
+        } else return super.determineForgingQuality();
+    }
+
+    @Override
+    public String blueprintQuality() {
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+            return BlueprintQuality.PERFECT.getDisplayName();
+        else return super.blueprintQuality();
+    }
 
     @Override
     protected void craftItem() {
