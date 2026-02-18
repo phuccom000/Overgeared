@@ -939,7 +939,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_AXE
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_axe_to_diamond_axe"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_axe"));
 
         // Steel Pickaxe to Diamond Pickaxe
         SmithingTransformRecipeBuilder.smithing(
@@ -949,7 +949,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.TOOLS,
                         Items.DIAMOND_PICKAXE
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_pickaxe_to_diamond_pickaxe"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_pickaxe"));
 
         // Steel Shovel to Diamond Shovel
         SmithingTransformRecipeBuilder.smithing(
@@ -959,7 +959,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.TOOLS,
                         Items.DIAMOND_SHOVEL
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_shovel_to_diamond_shovel"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_shovel"));
 
         // Steel Hoe to Diamond Hoe
         SmithingTransformRecipeBuilder.smithing(
@@ -969,7 +969,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.TOOLS,
                         Items.DIAMOND_HOE
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_hoe_to_diamond_hoe"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_hoe"));
 
         // Steel Sword to Diamond Sword
         SmithingTransformRecipeBuilder.smithing(
@@ -979,7 +979,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_SWORD
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_sword_to_diamond_sword"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_sword"));
 
         // Steel Helmet to Diamond Helmet
         SmithingTransformRecipeBuilder.smithing(
@@ -989,7 +989,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_HELMET
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_helmet_to_diamond_helmet"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_helmet"));
 
 // Steel Chestplate to Diamond Chestplate
         SmithingTransformRecipeBuilder.smithing(
@@ -999,7 +999,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_CHESTPLATE
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_chestplate_to_diamond_chestplate"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_chestplate"));
 
 // Steel Leggings to Diamond Leggings
         SmithingTransformRecipeBuilder.smithing(
@@ -1009,7 +1009,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_LEGGINGS
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_leggings_to_diamond_leggings"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_leggings"));
 
         // Steel Boots to Diamond Boots
         SmithingTransformRecipeBuilder.smithing(
@@ -1019,7 +1019,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                         RecipeCategory.COMBAT,
                         Items.DIAMOND_BOOTS
                 ).unlocks("has_diamond", has(Items.DIAMOND))
-                .save(pWriter, ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_boots_to_diamond_boots"));
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath("minecraft", "diamond_boots"));
 
         /*FletchingRecipeBuilder.fletching(
                         Ingredient.of(Items.FLINT),

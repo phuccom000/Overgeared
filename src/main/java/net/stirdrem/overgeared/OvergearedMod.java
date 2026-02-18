@@ -99,7 +99,7 @@ public class OvergearedMod {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static final AnvilMinigameHandler SERVER_HANDLER = new AnvilMinigameHandler();
-    public static final RecipeBookType RECIPE_TYPE_FORGING = RecipeBookType.create("FORGING");
+    public static final RecipeBookType FORGING = RecipeBookType.create("FORGING");
     public static boolean polymorph;
 
     public OvergearedMod() {

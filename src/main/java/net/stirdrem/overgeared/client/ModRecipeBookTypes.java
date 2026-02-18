@@ -1,10 +1,8 @@
-package net.stirdrem.overgeared.recipe;
+package net.stirdrem.overgeared.client;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
-import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,15 +10,16 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.stirdrem.overgeared.client.ForgingBookCategory;
+import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.recipe.ForgingRecipe;
+import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModRecipeBookTypes {
-    public static final RecipeBookType FORGING = RecipeBookType.create("FORGING");
 
     @OnlyIn(Dist.CLIENT)
     public static RecipeBookCategories FORGING_SEARCH;
@@ -52,7 +51,7 @@ public class ModRecipeBookTypes {
                 CATEGORY_MAP.get(ForgingBookCategory.ARMORS).get(),
                 CATEGORY_MAP.get(ForgingBookCategory.MISC).get());
 
-        event.registerBookCategories(ModRecipeBookTypes.FORGING, categories);
+        event.registerBookCategories(OvergearedMod.FORGING, categories);
 
         // Register aggregate category (for search tab)
         event.registerAggregateCategory(SEARCH_CATEGORY.get(),
