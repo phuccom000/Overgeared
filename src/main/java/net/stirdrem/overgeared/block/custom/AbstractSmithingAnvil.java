@@ -154,6 +154,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     String hitQuality = AnvilMinigameEvents.handleHit();
                     // Send the quality result to server
                     PacketDistributor.sendToServer(new PacketSendCounterC2SPacket(hitQuality, pos));
+                    AnvilMinigameEvents.speedUp();
                     return ItemInteractionResult.SUCCESS;
                 } else if (!anvil.hasQuality() && !anvil.needsMinigame()) {
                     // Non-quality recipe without minigame - allow direct hammering

@@ -24,26 +24,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.event.ModEvents;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 import net.stirdrem.overgeared.util.ModTags;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
-import net.minecraft.world.phys.AABB;
-import net.stirdrem.overgeared.heateditem.HeatedItem;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -795,7 +794,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                     : ForgingQuality.NONE.getDisplayName();
             BlueprintData blueprintData = blueprint.get(ModComponents.BLUEPRINT_DATA);
             if (blueprint.isEmpty() || blueprintData == null) {
-                return ForgingQuality.POOR;
+                return ForgingQuality.fromString(poor);
             }
 
             String bpQuality = blueprintData.quality().toLowerCase();
@@ -914,7 +913,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         setChanged(); // mark dirty for save
     }
 
-    /** True if a minigame craft completed very recently (same tick). */
+    /**
+     * True if a minigame craft completed very recently (same tick).
+     */
     public boolean justCrafted(long currentTick) {
         return lastCraftTick >= 0 && currentTick - lastCraftTick <= 2;
     }
@@ -923,7 +924,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
         if (!this.hasHeatedItems || level.isClientSide) return;
         if (level.getGameTime() % 20 != 0) return;
-        if (getViewerCount(level, pos) > 0) return; 
+        if (getViewerCount(level, pos) > 0) return;
 
         boolean hasHeatedItems = false;
 
@@ -934,7 +935,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (HeatedItem.isHeated(stack)) {
                 hasHeatedItems = true;
 
-                if(HeatedItem.handleCoolingContainer(this.itemHandler, slot, level)) {
+                if (HeatedItem.handleCoolingContainer(this.itemHandler, slot, level)) {
                     this.setChanged();
                     level.sendBlockUpdated(pos, state, state, 3);
                 }
@@ -946,9 +947,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     private int getViewerCount(Level level, BlockPos pos) {
         return level.getEntitiesOfClass(Player.class, new AABB(pos).inflate(8.0))
-                    .stream()
-                    .filter(p -> p.containerMenu instanceof AbstractSmithingAnvilMenu menu && menu.blockEntity == this)
-                    .mapToInt(p -> 1).sum();
+                .stream()
+                .filter(p -> p.containerMenu instanceof AbstractSmithingAnvilMenu menu && menu.blockEntity == this)
+                .mapToInt(p -> 1).sum();
     }
 
     @Override

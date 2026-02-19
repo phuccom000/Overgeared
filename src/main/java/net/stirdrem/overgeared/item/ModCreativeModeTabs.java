@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.item;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -8,12 +9,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
+import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 
@@ -21,7 +24,7 @@ public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, OvergearedMod.MOD_ID);
 
-    public static final net.neoforged.neoforge.registries.DeferredHolder<CreativeModeTab, CreativeModeTab> OVERGEARED_TAB =
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> OVERGEARED_TAB =
             CREATIVE_MODE_TABS.register("overgeared_tab",
                     () -> CreativeModeTab.builder()
                             .icon(() -> new ItemStack(ModItems.IRON_TONGS.get()))
@@ -134,7 +137,7 @@ public class ModCreativeModeTabs {
                             })
                             .build());
 
-    public static final net.neoforged.neoforge.registries.DeferredHolder<CreativeModeTab, CreativeModeTab> LINGERING_ARROWS_TAB =
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> LINGERING_ARROWS_TAB =
             CREATIVE_MODE_TABS.register("lingering_arrows_tab",
                     () -> CreativeModeTab.builder()
                             .icon(() -> new ItemStack(Blocks.FLETCHING_TABLE))
@@ -195,6 +198,27 @@ public class ModCreativeModeTabs {
                                 }
                             })
                             .build());
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> BLUEPRINT_TAB = CREATIVE_MODE_TABS.register("blueprint_tab",
+            () -> CreativeModeTab.builder()
+                    .icon(() -> new ItemStack(ModItems.BLUEPRINT.get()))
+                    .title(Component.translatable("creativetab.overgeared.blueprint_tab"))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ModItems.EMPTY_BLUEPRINT.get());
+                        // === Blueprint Variants ===
+                        for (ToolType toolType : ToolTypeRegistry.getRegisteredTypesAll()) {
+                            for (BlueprintQuality quality : BlueprintQuality.values()) {
+                                ItemStack blueprint = new ItemStack(ModItems.BLUEPRINT.get());
+
+                                blueprint.set(ModComponents.BLUEPRINT_DATA, new BlueprintData(
+                                        quality.name(),
+                                        toolType.getId(),
+                                        0,
+                                        quality.getUse()));
+                                output.accept(blueprint);
+                            }
+                        }
+                    })
+                    .build());
 
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

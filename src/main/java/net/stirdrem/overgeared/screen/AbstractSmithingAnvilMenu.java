@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -8,19 +7,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
-import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
-import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.ArrayList;
@@ -50,7 +45,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
         this.hasBlueprint = hasBlueprint;
 
         IItemHandler iItemHandler = this.blockEntity.getItemHandler();
-        
+
         this.addSlot(new SlotItemHandler(iItemHandler, 9, 152, 61) {
             @Override
             public boolean mayPlace(ItemStack stack) {
@@ -122,41 +117,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
             @Override
             public void onTake(Player player, ItemStack stack) {
                 this.checkTakeAchievements(stack);
-                
-                // Create a RecipeInput wrapper for the block entity's item handler
-                IItemHandler handler = AbstractSmithingAnvilMenu.this.blockEntity.getItemHandler();
-                ItemStackHandler tempHandler = new ItemStackHandler(handler.getSlots());
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    tempHandler.setStackInSlot(i, handler.getStackInSlot(i));
-                }
-                RecipeInput recipeInput = new RecipeWrapper(tempHandler);
-                
-                NonNullList<ItemStack> remainders = player.level()
-                        .getRecipeManager().getRemainingItemsFor(ModRecipeTypes.FORGING.get(), recipeInput, player.level());
-                
-                // Only process remainders if there are items to process
-                // Use the handler slots 0-8 for crafting (not the empty container)
-                for (int i = 0; i < Math.min(remainders.size(), 9); ++i) {
-                    ItemStack toRemove = handler.getStackInSlot(i);
-                    ItemStack toReplace = remainders.get(i);
-                    
-                    if (!toRemove.isEmpty()) {
-                        handler.extractItem(i, 1, false);
-                        toRemove = handler.getStackInSlot(i);
-                    }
-
-                    if (!toReplace.isEmpty()) {
-                        if (toRemove.isEmpty()) {
-                            // Insert the replacement into the slot
-                            ((ItemStackHandler) handler).setStackInSlot(i, toReplace);
-                        } else if (ItemStack.isSameItemSameComponents(toRemove, toReplace)) {
-                            toReplace.grow(toRemove.getCount());
-                            ((ItemStackHandler) handler).setStackInSlot(i, toReplace);
-                        } else if (!player.getInventory().add(toReplace)) {
-                            player.drop(toReplace, false);
-                        }
-                    }
-                }
+                super.onTake(player, stack);
             }
 
             @Override
@@ -183,7 +144,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
                     stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(), AbstractSmithingAnvilMenu.this.player, this.removeCount);
                 // Award recipe to player for recipe book integration
                 AbstractSmithingAnvilMenu.this.blockEntity.getCurrentRecipeHolder().ifPresent(holder ->
-                    AbstractSmithingAnvilMenu.this.player.awardRecipes(List.of(holder))
+                        AbstractSmithingAnvilMenu.this.player.awardRecipes(List.of(holder))
                 );
                 this.removeCount = 0;
             }
@@ -196,7 +157,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
     public List<Integer> getInputSlots() {
         return new ArrayList<>(craftingSlotIndices);
     }
-    
+
     /**
      * Gets the result slot directly.
      * This is preferred over using slot index which varies based on blueprint presence.
@@ -323,7 +284,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
             try {
                 if (Polymorph.LOADED) {
                     Optional<ItemStack> polymorphOutput =
-                        Polymorph.getSelectedOutput();
+                            Polymorph.getSelectedOutput();
                     if (polymorphOutput.isPresent()) {
                         return polymorphOutput.get();
                     }
@@ -332,7 +293,7 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
                 // Polymorph not available - fall through to default behavior
             }
         }
-        
+
         // Default behavior: return the expected result based on current inputs
         Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipe();
         if (recipeOptional.isPresent()) {
