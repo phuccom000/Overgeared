@@ -63,5 +63,28 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         this.tag(ModTags.Blocks.ANVIL_BASES)
                 .add(Blocks.STONE
                 );
+                
+        this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
+                .addTag(BlockTags.NEEDS_IRON_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+
+        this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+
+        this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+
+        this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+
+        this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+                
+        this.tag(BlockTags.INCORRECT_FOR_IRON_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
     }
 }

@@ -11,6 +11,8 @@ public class ModTags {
     public static class Blocks {
         public static final TagKey<Block> NEEDS_STEEL_TOOL = tag("needs_steel_tool");
         public static final TagKey<Block> NEEDS_COPPER_TOOL = tag("needs_copper_tool");
+        public static final TagKey<Block> INCORRECT_FOR_COPPER_TOOL = tag("incorrect_for_copper_tool");
+        public static final TagKey<Block> INCORRECT_FOR_STEEL_TOOL = tag("incorrect_for_steel_tool");
         public static final TagKey<Block> SMITHING = tag("smithing");
         public static final TagKey<Block> SMITHING_ANVIL = tag("smithing_anvil");
         public static final TagKey<Block> ANVIL_BASES = tag("stone_anvil_bases");

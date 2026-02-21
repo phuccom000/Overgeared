@@ -14,7 +14,7 @@ public enum ModToolTiers implements Tier {
             5.0f,
             1.0f,
             12,
-            ModTags.Blocks.NEEDS_COPPER_TOOL,
+            ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL,
             Ingredient.of(Items.COPPER_INGOT)
     ),
     STEEL(
@@ -22,7 +22,7 @@ public enum ModToolTiers implements Tier {
             7.0f,
             3.0f,
             12,
-            ModTags.Blocks.NEEDS_STEEL_TOOL,
+            ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL,
             Ingredient.of(ModItems.STEEL_INGOT.get())
     );
 
