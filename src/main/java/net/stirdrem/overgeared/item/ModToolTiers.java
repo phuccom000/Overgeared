@@ -49,11 +49,30 @@ public enum ModToolTiers implements Tier {
         this.repairIngredient = repairIngredient;
     }
 
-    @Override public int getUses() { return uses; }
-    @Override public float getSpeed() { return speed; }
-    @Override public float getAttackDamageBonus() { return damage; }
-    @Override public int getEnchantmentValue() { return enchantmentValue; }
-    @Override public Ingredient getRepairIngredient() { return repairIngredient; }
+    @Override
+    public int getUses() {
+        return uses;
+    }
+
+    @Override
+    public float getSpeed() {
+        return speed;
+    }
+
+    @Override
+    public float getAttackDamageBonus() {
+        return damage;
+    }
+
+    @Override
+    public int getEnchantmentValue() {
+        return enchantmentValue;
+    }
+
+    @Override
+    public Ingredient getRepairIngredient() {
+        return repairIngredient;
+    }
 
     @Override
     public TagKey<Block> getIncorrectBlocksForDrops() {

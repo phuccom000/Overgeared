@@ -52,25 +52,32 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         Blocks.DEEPSLATE_IRON_ORE,
                         Blocks.IRON_BLOCK
                 );
-        this.tag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .add(Blocks.NETHERITE_BLOCK,
-                        Blocks.RESPAWN_ANCHOR,
-                        Blocks.ANCIENT_DEBRIS)
-                .replace(true);
+
+        this.tag(BlockTags.NEEDS_STONE_TOOL)
+                .remove(Blocks.IRON_ORE)
+                .remove(Blocks.DEEPSLATE_IRON_ORE)
+                .remove(Blocks.RAW_IRON_BLOCK)
+                .remove(Blocks.IRON_BLOCK);
 
         this.tag(BlockTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
+        
         this.tag(ModTags.Blocks.ANVIL_BASES)
                 .add(Blocks.STONE
                 );
-                
+
+        this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL);
+
         this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
                 .addTag(BlockTags.NEEDS_IRON_TOOL)
                 .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .remove(ModTags.Blocks.NEEDS_COPPER_TOOL);
 
         this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
-                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
+                .remove(ModTags.Blocks.NEEDS_STEEL_TOOL);
 
         this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
@@ -83,7 +90,7 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
-                
+
         this.tag(BlockTags.INCORRECT_FOR_IRON_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
     }
