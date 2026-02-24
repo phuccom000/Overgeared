@@ -192,27 +192,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<Container> {
                 @Override
                 public void onTake(Player player, ItemStack stack) {
                     this.checkTakeAchievements(stack);
-                    Container craftingContainer = AbstractSmithingAnvilMenu.this.craftingContainer;
-                    NonNullList<ItemStack> remainders = player.level()
-                            .getRecipeManager().getRemainingItemsFor(ModRecipeTypes.FORGING.get(), AbstractSmithingAnvilMenu.this.craftingContainer, player.level());
-                    for (int i = 0; i < remainders.size(); ++i) {
-                        ItemStack toRemove = craftingContainer.getItem(i);
-                        ItemStack toReplace = remainders.get(i);
-                        if (!toRemove.isEmpty()) {
-                            craftingContainer.removeItem(i, 1);
-                            toRemove = craftingContainer.getItem(i);
-                        }
-
-                        if (!toReplace.isEmpty()) {
-                            if (toRemove.isEmpty())
-                                craftingContainer.setItem(i, toRemove);
-                            else if (ItemStack.isSameItemSameTags(toRemove, toReplace)) {
-                                toReplace.grow(toRemove.getCount());
-                                craftingContainer.setItem(i, toReplace);
-                            } else if (!player.getInventory().add(toReplace))
-                                player.drop(toReplace, false);
-                        }
-                    }
+                    super.onTake(player, stack);
                 }
 
                 @Override

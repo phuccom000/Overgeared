@@ -58,7 +58,7 @@ public class QualityAttributeReloadListener
     private static QualityAttributeDefinition parse(JsonObject json) {
 
         // ---- attribute ----
-        ResourceLocation attributeId = ResourceLocation.parse(
+        ResourceLocation attributeId = ResourceLocation.tryParse(
                 GsonHelper.getAsString(json, "attribute")
         );
 
@@ -73,7 +73,7 @@ public class QualityAttributeReloadListener
                     .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase());
 
             ResourceLocation id = obj.has("id")
-                    ? ResourceLocation.parse(GsonHelper.getAsString(obj, "id"))
+                    ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "id"))
                     : null;
 
             targets.add(new QualityTarget(type, id));

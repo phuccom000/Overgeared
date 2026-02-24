@@ -60,6 +60,7 @@ import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class ModEvents {
@@ -180,12 +181,15 @@ public class ModEvents {
                 case ITEM_TAG -> {
                     if (target.id() == null) break;
 
-                    TagKey<Item> tag = TagKey.create(
+                    TagKey<Item> itemtag = TagKey.create(
                             Registries.ITEM,
                             target.id()
                     );
+                    String stackTags = stack.getTags()
+                            .map(tag -> tag.location().toString())
+                            .collect(Collectors.joining(", "));
 
-                    if (stack.is(tag)) {
+                    if (stack.is(itemtag)) {
                         return true;
                     }
                 }

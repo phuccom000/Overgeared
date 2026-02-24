@@ -228,30 +228,14 @@ public class AnvilMinigameEvents {
         lastPerfect = 0;
         lastGood = 0;
         lastMiss = 0;
-        //POPUPS.clear();
 
-        setupForQuality(blueprintQuality); // 🔥 initialize from blueprint
+        setupForQuality(blueprintQuality == null ? "none" : blueprintQuality); // 🔥 initialize from blueprint
 
         randomizeCenter();
     }
 
     public static void reset() {
-        isVisible = false;
-        minigameStarted = false;
-        hitsRemaining = 0;
-        perfectHits = 0;
-        goodHits = 0;
-        missedHits = 0;
-        arrowPosition = 50;
-        movingDown = false;
-        lastPerfect = 0;
-        lastGood = 0;
-        lastMiss = 0;
-        //POPUPS.clear();
-
-        setupForQuality("none"); // 🔥 initialize from blueprint
-
-        randomizeCenter();
+        reset(null);
     }
 
     // Utility clamp

@@ -78,12 +78,12 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
 
     private void parseAndAddRockInteraction(ResourceLocation id, JsonObject obj) {
         // ---------- BLOCKS ----------
-        ResourceLocation inputId = ResourceLocation.parse(GsonHelper.getAsString(obj, "input_block"));
+        ResourceLocation inputId = ResourceLocation.tryParse(GsonHelper.getAsString(obj, "input_block"));
         Block inputBlock = ForgeRegistries.BLOCKS.getValue(inputId);
         if (inputBlock == null || inputBlock == Blocks.AIR)
             throw new JsonParseException("Unknown input_block '" + inputId + "'");
 
-        ResourceLocation resultId = ResourceLocation.parse(GsonHelper.getAsString(obj, "result_block"));
+        ResourceLocation resultId = ResourceLocation.tryParse(GsonHelper.getAsString(obj, "result_block"));
         Block resultBlock = ForgeRegistries.BLOCKS.getValue(resultId);
         if (resultBlock == null || resultBlock == Blocks.AIR)
             throw new JsonParseException("Unknown result_block '" + resultId + "'");
@@ -112,7 +112,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
                 return; // unreachable but required
             }
 
-            ResourceLocation dropId = ResourceLocation.parse(GsonHelper.getAsString(toolObj, "drop_item"));
+            ResourceLocation dropId = ResourceLocation.tryParse(GsonHelper.getAsString(toolObj, "drop_item"));
             Item dropItem = ForgeRegistries.ITEMS.getValue(dropId);
             if (dropItem == null || dropItem == Items.AIR)
                 throw new JsonParseException("Unknown drop_item '" + dropId + "'");
