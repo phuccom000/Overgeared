@@ -67,7 +67,4 @@ public class ModRecipeBookTypes {
         });
 
     }
-
-    public static void register(IEventBus modEventBus) {
-    }
 }

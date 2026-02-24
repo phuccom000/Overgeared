@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
@@ -40,7 +41,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<Container> {
     private final ResultContainer resultContainer = new ResultContainer();
     private Slot resultSlot;
     private final Player player;
-    private final boolean hasBlueprint;
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
 
     public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
@@ -48,7 +48,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<Container> {
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
-        craftingContainer = new Container() {
+        craftingContainer = new SimpleContainer() {
             @Override
             public int getContainerSize() {
                 return 9;
@@ -106,8 +106,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<Container> {
         this.level = inv.player.level();
         this.data = data;
         this.player = inv.player;
-
-        this.hasBlueprint = hasBlueprint;
 
         this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
             this.addSlot(new SlotItemHandler(iItemHandler, 9, 152, 61) {

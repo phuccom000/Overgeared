@@ -130,8 +130,6 @@ public class OvergearedMod {
 
         ModAttributes.register(modEventBus);
 
-        ModRecipeBookTypes.register(modEventBus);
-
         MinecraftForge.EVENT_BUS.register(TickScheduler.class);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::sendImc);
