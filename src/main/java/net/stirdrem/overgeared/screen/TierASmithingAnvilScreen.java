@@ -10,8 +10,7 @@ import net.stirdrem.overgeared.config.ServerConfig;
 public class TierASmithingAnvilScreen extends AbstractSmithingAnvilScreen<TierASmithingAnvilMenu> {
 
     public TierASmithingAnvilScreen(TierASmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
-        super(pMenu, pPlayerInventory, pTitle, new ForgingRecipeBookComponent());
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
-            TEXTURE = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/stone_smithing_anvil.png");
+        super(pMenu, pPlayerInventory, pTitle, new ForgingRecipeBookComponent(), ServerConfig.ENABLE_BLUEPRINT_FORGING.get());
+
     }
 }

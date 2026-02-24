@@ -48,6 +48,7 @@ import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
 import net.stirdrem.overgeared.client.AnvilMinigameOverlay;
 import net.stirdrem.overgeared.client.ClientInit;
+import net.stirdrem.overgeared.client.ModRecipeBookTypes;
 import net.stirdrem.overgeared.client.PopupOverlay;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
@@ -99,7 +100,7 @@ public class OvergearedMod {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static final AnvilMinigameHandler SERVER_HANDLER = new AnvilMinigameHandler();
-    public static final RecipeBookType FORGING = RecipeBookType.create("FORGING");
+    public static final RecipeBookType FORGING = RecipeBookType.create("overgeared:forging");
     public static boolean polymorph;
 
     public OvergearedMod() {
@@ -129,6 +130,7 @@ public class OvergearedMod {
 
         ModAttributes.register(modEventBus);
 
+        ModRecipeBookTypes.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(TickScheduler.class);
         modEventBus.addListener(this::commonSetup);

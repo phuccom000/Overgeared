@@ -8,6 +8,7 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -65,5 +66,8 @@ public class ModRecipeBookTypes {
             return CATEGORY_MAP.get(ForgingBookCategory.MISC).get();
         });
 
+    }
+
+    public static void register(IEventBus modEventBus) {
     }
 }

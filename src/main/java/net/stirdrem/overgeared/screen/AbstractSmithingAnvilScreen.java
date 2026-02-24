@@ -15,21 +15,20 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
-import net.stirdrem.overgeared.util.TooltipButton;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-    protected static ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil.png");
+    protected final ResourceLocation TEXTURE;
     private static final ResourceLocation RECIPE_BUTTON_LOCATION = ResourceLocation.tryParse("textures/gui/recipe_button.png");
     private final ForgingRecipeBookComponent recipeBookComponent;
     private boolean widthTooNarrow;
 
-    public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title, ForgingRecipeBookComponent recipeBookComponent) {
+    public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title, ForgingRecipeBookComponent recipeBookComponent, boolean enableBlueprintSlot) {
         super(menu, playerInv, title);
         this.recipeBookComponent = recipeBookComponent;
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = this.imageHeight - 94;
+        TEXTURE = enableBlueprintSlot ? ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil.png") : ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/stone_smithing_anvil.png");
     }
 
     @Override
