@@ -115,11 +115,11 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         NonNullList<ForgingRecipe.ForgingIngredient> forgingIngredients =
                 recipe.getForgingIngredients();
 
-        // Create ALL 9 slots of the 3x3 grid
+        int offsetX = (gridWidth - recipeWidth) / 2;
+        int offsetY = getOffsetY(gridHeight, gridWidth, recipeHeight, recipeWidth);
+
         for (int gridY = 0; gridY < gridHeight; gridY++) {
             for (int gridX = 0; gridX < gridWidth; gridX++) {
-
-                int recipeIndex = gridY * recipeWidth + gridX;
 
                 var slotBuilder = builder.addSlot(
                         RecipeIngredientRole.INPUT,
@@ -127,43 +127,50 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                         1 + gridY * 18
                 );
 
-                if (gridX < recipeWidth
-                        && gridY < recipeHeight
-                        && recipeIndex < forgingIngredients.size()) {
+                int recipeX = gridX - offsetX;
+                int recipeY = gridY - offsetY;
 
-                    ForgingRecipe.ForgingIngredient forgingIngredient =
-                            forgingIngredients.get(recipeIndex);
+                boolean insideRecipe =
+                        recipeX >= 0 && recipeY >= 0 &&
+                                recipeX < recipeWidth &&
+                                recipeY < recipeHeight;
 
-                    Ingredient ingredient = forgingIngredient.ingredient();
+                if (insideRecipe) {
 
-                    // Expand ingredient into item stacks
-                    ItemStack[] stacks = ingredient.getItems();
+                    int recipeIndex = recipeY * recipeWidth + recipeX;
 
-                    if (stacks.length > 0) {
-                        List<ItemStack> displayStacks = new ArrayList<>();
+                    if (recipeIndex < forgingIngredients.size()) {
 
-                        for (ItemStack stack : stacks) {
-                            ItemStack copy = stack.copy();
+                        ForgingRecipe.ForgingIngredient forgingIngredient =
+                                forgingIngredients.get(recipeIndex);
 
-                            if (forgingIngredient.requiresHeated()) {
-                                copy.getOrCreateTag().putBoolean("Heated", true);
+                        Ingredient ingredient = forgingIngredient.ingredient();
+                        ItemStack[] stacks = ingredient.getItems();
+
+                        if (stacks.length > 0) {
+                            List<ItemStack> displayStacks = new ArrayList<>();
+
+                            for (ItemStack stack : stacks) {
+                                ItemStack copy = stack.copy();
+
+                                if (forgingIngredient.requiresHeated()) {
+                                    copy.getOrCreateTag().putBoolean("Heated", true);
+                                }
+
+                                displayStacks.add(copy);
                             }
 
-                            displayStacks.add(copy);
+                            slotBuilder.addItemStacks(displayStacks);
+                        } else {
+                            slotBuilder.addItemStack(ItemStack.EMPTY);
                         }
-
-                        slotBuilder.addItemStacks(displayStacks);
-                    } else {
-                        slotBuilder.addItemStack(ItemStack.EMPTY);
                     }
 
                 } else {
-                    // Empty grid slot
                     slotBuilder.addItemStack(ItemStack.EMPTY);
                 }
             }
         }
-
 
         // Rest of your code (blueprint and output slots) remains the same...
         //BLUEPRINT SLOT
@@ -184,6 +191,22 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
             builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 28)
                     .addItemStack(failedStack);
         }
+    }
+
+    private static int getOffsetY(int gridHeight, int gridWidth, int recipeHeight, int recipeWidth) {
+        int offsetY = (gridHeight - recipeHeight) / 2;
+
+        if (recipeHeight == 1) {
+            if (recipeWidth == 2)
+                offsetY = 0;
+            else if (recipeWidth == 3)
+                offsetY = gridHeight - recipeHeight;
+        } else if (recipeHeight == 2 && recipeWidth == 3) {
+            // Anchor to bottom
+            offsetY = gridHeight - recipeHeight;
+        }
+
+        return offsetY;
     }
 
     private List<ItemStack> createBlueprintStacksForRecipe(ForgingRecipe recipe) {

@@ -15,9 +15,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
+import net.stirdrem.overgeared.config.ClientConfig;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-    protected final ResourceLocation TEXTURE;
+    protected ResourceLocation TEXTURE;
     private static final ResourceLocation RECIPE_BUTTON_LOCATION = ResourceLocation.tryParse("textures/gui/recipe_button.png");
     private final ForgingRecipeBookComponent recipeBookComponent;
     private boolean widthTooNarrow;
@@ -34,16 +36,21 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
     @Override
     protected void init() {
         super.init();
-        this.titleLabelX = 29;
+        this.titleLabelX = 28;
         this.widthTooNarrow = this.width < 379;
         this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
         this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-        this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, (button) ->
-        {
-            this.recipeBookComponent.toggleVisibility();
+        if (ClientConfig.ENABLE_ANVIL_RECIPE_BOOK.get()) {
+            this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, (button) ->
+            {
+                this.recipeBookComponent.toggleVisibility();
+                this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+                button.setPosition(this.leftPos + 5, this.height / 2 - 49);
+            }));
+        } else {
+            this.recipeBookComponent.hide();
             this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-            ((ImageButton) button).setPosition(this.leftPos + 5, this.height / 2 - 49);
-        }));
+        }
         this.addWidget(this.recipeBookComponent);
         this.setInitialFocus(this.recipeBookComponent);
     }
@@ -74,13 +81,14 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
             this.renderBg(guiGraphics, delta, mouseX, mouseY);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
         } else {
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
             super.render(guiGraphics, mouseX, mouseY, delta);
             this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, delta);
-            renderHitsRemaining(guiGraphics);
         }
 
-        this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
+        renderHitsRemaining(guiGraphics);
         renderGhostResult(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
 
         this.renderTooltip(guiGraphics, mouseX, mouseY);
@@ -161,7 +169,7 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
     }
 
     @Override
-    public RecipeBookComponent getRecipeBookComponent() {
+    public @NotNull RecipeBookComponent getRecipeBookComponent() {
         return this.recipeBookComponent;
     }
 }

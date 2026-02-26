@@ -4,16 +4,20 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.RequirementsStrategy;
+import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.core.NonNullList;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.client.ForgingBookCategory;
@@ -88,7 +92,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
 
     private static ForgingBookCategory determineWeaponRecipeCategory(ItemLike pResult) {
         if (isTools(pResult.asItem()) || isToolPart(pResult.asItem())) {
-            return ForgingBookCategory.TOOLS;
+            return ForgingBookCategory.TOOL_HEADS;
         } else {
             return pResult.asItem() instanceof ArmorItem ? ForgingBookCategory.ARMORS : ForgingBookCategory.MISC;
         }
@@ -231,6 +235,11 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
             }
         }
 
+        this.advancement.parent(ROOT_RECIPE_ADVANCEMENT)
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(pRecipeId))
+                .rewards(AdvancementRewards.Builder.recipe(pRecipeId))
+                .requirements(RequirementsStrategy.OR);
+
         pRecipeOutput.accept(new Result(
                 ingredients,
                 this.hammering,
@@ -335,11 +344,11 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 json.add("blueprint", blueprintArray);
             }
             if (this.category != null) {
-                json.addProperty("category", this.category.getSerializedName());
+                json.addProperty("category", this.category.name().toLowerCase());
             }
 
             json.addProperty("group", this.group);
-            
+
             JsonArray patternArray = new JsonArray();
             for (String s : this.pattern) {
                 patternArray.add(s);

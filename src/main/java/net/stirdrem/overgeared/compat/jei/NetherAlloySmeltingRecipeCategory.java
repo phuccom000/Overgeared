@@ -112,64 +112,88 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
         boolean isShaped = recipe.isShaped();
 
         if (isShaped) {
-            // Get the dimensions of the shaped recipe
+
             int width = recipe.getWidth();
             int height = recipe.getHeight();
 
-            // Calculate starting position to center the pattern in the 3x3 grid
-            int startX = (3 - width) * 18 / 2 + 1;
-            int startY = (3 - height) * 18 / 2 + 1;
+            int gridWidth = 3;
+            int gridHeight = 3;
 
-            // Fill the 3x3 grid
+            // --- Horizontal offset (always centered) ---
+            int offsetX = (gridWidth - width) / 2;
+
+            // --- Vertical offset (bottom anchor if height == 2) ---
+            int offsetY = getOffsetY(gridHeight, gridWidth, height, width);
+
+            // Fill 3x3 grid
             for (int gridRow = 0; gridRow < 3; gridRow++) {
                 for (int gridCol = 0; gridCol < 3; gridCol++) {
 
-                    // Calculate position relative to the centered pattern
-                    int patternRow = gridRow - ((3 - height) / 2);
-                    int patternCol = gridCol - ((3 - width) / 2);
-
-                    // Check if this grid position is within the recipe pattern
-                    boolean isInPattern = patternRow >= 0 && patternRow < height &&
-                            patternCol >= 0 && patternCol < width;
-
-                    var slot = builder.addSlot(RecipeIngredientRole.INPUT,
+                    var slot = builder.addSlot(
+                            RecipeIngredientRole.INPUT,
                             1 + gridCol * 18,
-                            1 + gridRow * 18);
+                            1 + gridRow * 18
+                    );
+
+                    int patternRow = gridRow - offsetY;
+                    int patternCol = gridCol - offsetX;
+
+                    boolean isInPattern =
+                            patternRow >= 0 && patternRow < height &&
+                                    patternCol >= 0 && patternCol < width;
 
                     if (isInPattern) {
-                        // Get the ingredient from the pattern
                         int index = patternRow * width + patternCol;
+
                         if (index < ingredients.size()) {
                             Ingredient ingredient = ingredients.get(index);
                             if (!ingredient.isEmpty()) {
                                 slot.addIngredients(ingredient);
                             }
-                            // If ingredient is empty, slot stays empty (shows pattern hole)
                         }
                     }
-                    // If not in pattern, slot stays empty
                 }
             }
-        } else
-            // Always draw a full 3x3 grid
+
+        } else {
             for (int row = 0; row < 3; row++) {
                 for (int col = 0; col < 3; col++) {
+
                     int index = row * 3 + col;
                     Ingredient ingredient = index < ingredients.size()
                             ? ingredients.get(index)
                             : Ingredient.EMPTY;
 
-                    var slot = builder.addSlot(RecipeIngredientRole.INPUT,
+                    var slot = builder.addSlot(
+                            RecipeIngredientRole.INPUT,
                             1 + col * 18,
-                            1 + row * 18);
+                            1 + row * 18
+                    );
+
                     if (!ingredient.isEmpty()) {
                         slot.addIngredients(ingredient);
                     }
                 }
             }
-
+        }
         // Output slot
         builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20)
                 .addItemStack(recipe.getResultItem(null));
+    }
+
+    private static int getOffsetY(int gridHeight, int gridWidth, int recipeHeight, int recipeWidth) {
+        int offsetY = (gridHeight - recipeHeight) / 2;
+
+        if (recipeHeight == 1) {
+            if (recipeWidth == 2)
+                offsetY = 0;
+            else if (recipeWidth == 3)
+                offsetY = gridHeight - recipeHeight;
+        } else if (recipeHeight == 2 && recipeWidth == 3) {
+            // Anchor to bottom
+            offsetY = gridHeight - recipeHeight;
+        }
+
+        return offsetY;
     }
 }

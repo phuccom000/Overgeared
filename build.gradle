@@ -155,7 +155,9 @@ repositories {
         name 'Jitpack'
         url 'https://jitpack.io'
     }
-
+    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+    maven { url = "https://maven.ithundxr.dev/mirror" } // Registrate
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven {
         // Shedaniel's maven (Architectury API)
         url = "https://maven.architectury.dev"
@@ -248,7 +250,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:lendercataclysm-551586:6906993")
     //runtimeOnly fg.deobf("curse.maven:item-nbt-viewer-514135:4578522")
     //compileOnly fg.deobf("curse.maven:no-tree-punching-289043:4599926")
-    runtimeOnly fg.deobf("curse.maven:ytech-917366:6616815")
+    //runtimeOnly fg.deobf("curse.maven:ytech-917366:6616815")
     //compileOnly fg.deobf("curse.maven:max-health-fix-492246:5378283")
     //compileOnly fg.deobf("curse.maven:insanelib-465109:6927148")
     //compileOnly fg.deobf("curse.maven:iguanatweaks-reborn-285690:6988962")
@@ -356,12 +358,20 @@ dependencies {
     //compileOnly fg.deobf("curse.maven:savage-and-ravage-381736:6040963")
     //compileOnly fg.deobf("curse.maven:hold-my-items-reforged-1246920:6608415")
     //runtimeOnly fg.deobf("curse.maven:biomancy-492939:5886758")
-    
+
     /* runtimeOnly fg.deobf("curse.maven:epic-knights-armor-and-weapons-509041:6373737")
      runtimeOnly fg.deobf("curse.maven:epic-knights-addon-925866:6036869")
      runtimeOnly fg.deobf("curse.maven:epic-knights-slavic-armory-942000:5458480")*/
     runtimeOnly fg.deobf("curse.maven:cloth-config-348521:5729105")
     runtimeOnly fg.deobf("curse.maven:architectury-api-419699:5137938")
+
+    implementation(fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false })
+    implementation(fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}"))
+    compileOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}"))
+    runtimeOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}"))
+    implementation(fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}"))
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     //runtimeOnly fg.deobf("curse.maven:archery-expansion-1164945:6424928")
     //runtimeOnly fg.deobf("curse.maven:archery-expansion-squared-1217171:6425344")

@@ -20,7 +20,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
-    protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "textures/gui/recipe_book_buttons.png");
+    protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.tryBuild(OvergearedMod.MOD_ID,
+            "textures/gui/recipe_book_buttons.png");
 
     @Override
     protected void initFilterButtonTextures() {
@@ -44,10 +45,10 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
 
     @Override
     public void setupGhostRecipe(Recipe<?> recipe, List<Slot> slots) {
-
-        if (this.minecraft == null || this.minecraft.level == null) return;
-        if (!(recipe instanceof ForgingRecipe forgingRecipe)) return;
-        if (!(this.menu instanceof AbstractSmithingAnvilMenu forgingMenu)) return;
+        if (!(recipe instanceof ForgingRecipe forgingRecipe))
+            return;
+        if (!(this.menu instanceof AbstractSmithingAnvilMenu forgingMenu))
+            return;
         AnvilTier anvilTier = forgingMenu.getBlockEntity().getAnvilTier();
         AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase());
 
@@ -68,14 +69,12 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
         if (resultIndex >= 0 && resultIndex < slots.size()) {
 
             Slot resultSlot = slots.get(resultIndex);
-            ItemStack result =
-                    forgingRecipe.getResultItem(this.minecraft.level.registryAccess());
+            ItemStack result = forgingRecipe.getResultItem(this.minecraft.level.registryAccess());
 
             this.ghostRecipe.addIngredient(
                     Ingredient.of(result),
                     resultSlot.x,
-                    resultSlot.y
-            );
+                    resultSlot.y);
         }
 
         List<Integer> inputSlots = forgingMenu.getInputSlots();
@@ -89,27 +88,29 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
             for (int col = 0; col < recipeWidth; col++) {
 
                 int recipeIndex = col + row * recipeWidth;
-                if (recipeIndex >= ingredients.size()) continue;
+                if (recipeIndex >= ingredients.size())
+                    continue;
 
                 Ingredient ingredient = ingredients.get(recipeIndex);
-                if (ingredient.isEmpty()) continue;
+                if (ingredient.isEmpty())
+                    continue;
 
                 int gridIndex = col + row * 3; // 3x3 layout
-                if (gridIndex >= inputSlots.size()) continue;
+                if (gridIndex >= inputSlots.size())
+                    continue;
 
                 int slotIndex = inputSlots.get(gridIndex);
-                if (slotIndex >= slots.size()) continue;
+                if (slotIndex >= slots.size())
+                    continue;
 
                 Slot slot = slots.get(slotIndex);
 
                 this.ghostRecipe.addIngredient(
                         ingredient,
                         slot.x,
-                        slot.y
-                );
+                        slot.y);
             }
         }
     }
-
 
 }

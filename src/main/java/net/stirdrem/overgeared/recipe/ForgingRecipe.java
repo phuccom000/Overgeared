@@ -24,6 +24,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ForgingRecipe implements Recipe<Container> {
+    private static final ForgingIngredient EMPTY_ING =
+            new ForgingIngredient(Ingredient.EMPTY, false, false);
+
     private static int BLUEPRINT_SLOT = 11;
     public final int width;
     public final int height;
@@ -44,6 +47,7 @@ public class ForgingRecipe implements Recipe<Container> {
     private final ForgingQuality minimumQuality;
     private final ForgingQuality qualityDifficulty;
     private final ForgingBookCategory tab;
+
 
     public ForgingRecipe(ResourceLocation id, String group, boolean requireBlueprint, Set<String> blueprintTypes, String tier, NonNullList<ForgingIngredient> ingredients,
                          ItemStack result, ItemStack failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookCategory tab) {
@@ -189,16 +193,10 @@ public class ForgingRecipe implements Recipe<Container> {
         return out;
     }
 
-
     @Override
     public boolean canCraftInDimensions(int width, int height) {
         //return true;
         return width >= this.width && height >= this.height;
-    }
-
-    @Override
-    public boolean isIncomplete() {
-        return false;
     }
 
     @Override
@@ -222,6 +220,11 @@ public class ForgingRecipe implements Recipe<Container> {
         return list;
     }
 
+    @Override
+    public boolean isIncomplete() {
+        return false;
+    }
+
     public NonNullList<ForgingIngredient> getForgingIngredients() {
         return ingredients;
     }
@@ -242,16 +245,15 @@ public class ForgingRecipe implements Recipe<Container> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ForgingRecipe that = (ForgingRecipe) obj;
-        return this.getId().equals(that.getId());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ForgingRecipe that)) return false;
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId());
+        return id.hashCode();
     }
 
     public int getHammeringRequired() {
@@ -270,8 +272,9 @@ public class ForgingRecipe implements Recipe<Container> {
         return needsMinigame;
     }
 
+    @Override
     public String getGroup() {
-        return group;
+        return this.group;
     }
 
     public ForgingQuality getMinimumQuality() {
@@ -440,9 +443,9 @@ public class ForgingRecipe implements Recipe<Container> {
 
             JsonArray pattern = GsonHelper.getAsJsonArray(json, "pattern");
             final String tabKeyIn = GsonHelper.getAsString(json, "category", ForgingBookCategory.MISC.toString());
-            final ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKeyIn);
-            if (tabKeyIn != null && tabIn == null) {
-                OvergearedMod.LOGGER.warn("Optional field 'category' does not match any valid tab. If defined, must be one of the following: " + EnumSet.allOf(ForgingBookCategory.class));
+            ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKeyIn);
+            if (tabIn == null) {
+                tabIn = ForgingBookCategory.MISC; // safe fallback
             }
             int width = pattern.get(0).getAsString().length();
             int height = pattern.size();
@@ -529,7 +532,11 @@ public class ForgingRecipe implements Recipe<Container> {
             ItemStack result = buffer.readItem();
             ItemStack failedResult = buffer.readItem();
 
-            ForgingBookCategory tabIn = ForgingBookCategory.findByName(buffer.readUtf());
+            String tabKey = buffer.readUtf();
+            ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKey);
+            if (tabIn == null) {
+                tabIn = ForgingBookCategory.MISC;
+            }
 
             return new ForgingRecipe(recipeId, group, requiresBlueprint, blueprintTypes, tier, ingredients, result, failedResult, hammering, hasQuality, needsMinigame, hasPolishing, needQuenching, showNotification, minimumQuality, qualityDifficulty, width, height, tabIn);
         }
@@ -563,7 +570,7 @@ public class ForgingRecipe implements Recipe<Container> {
 
             buffer.writeItem(recipe.result);
             buffer.writeItem(recipe.failedResult);
-            buffer.writeUtf(recipe.tab != null ? recipe.tab.toString() : "");
+            buffer.writeUtf(recipe.tab.getFolderName());
         }
     }
 

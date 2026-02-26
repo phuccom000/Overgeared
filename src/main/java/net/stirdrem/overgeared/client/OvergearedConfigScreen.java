@@ -198,6 +198,11 @@ public class OvergearedConfigScreen extends Screen {
                 v -> setBoolean("Anvil Conversion.enableAnvilToSmithing", v)
         ));
         configList.addConfigEntry(new BooleanEntry(
+                "Enable quality forging using blueprint",
+                () -> getBoolean("Anvil Conversion.enableBlueprintForging"),
+                v -> setBoolean("Anvil Conversion.enableBlueprintForging", v)
+        ));
+        configList.addConfigEntry(new BooleanEntry(
                 "Enable Fletching",
                 () -> getBoolean("Arrow Fletching Settings.enableFletchingRecipes"),
                 v -> setBoolean("Arrow Fletching Settings.enableFletchingRecipes", v)

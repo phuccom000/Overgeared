@@ -38,7 +38,6 @@ import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvilNew;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
-
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
@@ -628,9 +627,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         inventory.setItem(11, itemHandler.getStackInSlot(11));
 
         return ForgingRecipe.findBestMatch(level, inventory)
-                .filter(this::matchesRecipeExactly)
-                //.filter(this::hasEnoughIngredients)
-                ;
+                .filter(this::matchesRecipeExactly);
     }
 
     protected boolean canInsertItemIntoOutputSlot(ItemStack stackToInsert) {

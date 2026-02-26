@@ -2,9 +2,7 @@ package net.stirdrem.overgeared;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import io.wispforest.accessories.api.events.AdjustAttributeModifierCallback;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
@@ -26,6 +24,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -45,7 +44,10 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
+import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
+import net.stirdrem.overgeared.block.entity.ModBlockEntities;
+import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
 import net.stirdrem.overgeared.client.AnvilMinigameOverlay;
 import net.stirdrem.overgeared.client.ClientInit;
 import net.stirdrem.overgeared.client.ModRecipeBookTypes;
@@ -53,24 +55,18 @@ import net.stirdrem.overgeared.client.PopupOverlay;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.compat.curios.CuriosModPlugin;
-import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
-import net.stirdrem.overgeared.entity.ModEntities;
-
-import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
-import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
-import net.stirdrem.overgeared.heatedtem.CapabilityRegistry;
-import net.stirdrem.overgeared.item.armor.model.CustomCopperHelmet;
-import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.entity.ModBlockEntities;
-import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
-//import net.stirdrem.overgeared.core.waterbarrel.BarrelInteraction;
+import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
+import net.stirdrem.overgeared.entity.ModEntities;
+import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
+import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
 import net.stirdrem.overgeared.event.ModAttributes;
+import net.stirdrem.overgeared.heatedtem.CapabilityRegistry;
 import net.stirdrem.overgeared.item.ModCreativeModeTabs;
 import net.stirdrem.overgeared.item.ModItems;
-
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
+import net.stirdrem.overgeared.item.armor.model.CustomCopperHelmet;
 import net.stirdrem.overgeared.item.armor.model.CustomCopperLeggings;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -100,7 +96,7 @@ public class OvergearedMod {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static final AnvilMinigameHandler SERVER_HANDLER = new AnvilMinigameHandler();
-    public static final RecipeBookType FORGING = RecipeBookType.create("overgeared:forging");
+    public static final RecipeBookType FORGING = RecipeBookType.create("FORGING");
     public static boolean polymorph;
 
     public OvergearedMod() {
@@ -561,6 +557,11 @@ public class OvergearedMod {
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
+
+        @SubscribeEvent
+        public static void onRegisterRecipeBookCategories(RegisterRecipeBookCategoriesEvent event) {
+            ModRecipeBookTypes.init(event);
+        }
 
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {

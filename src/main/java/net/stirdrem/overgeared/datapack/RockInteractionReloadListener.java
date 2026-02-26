@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
                         }
 
                         // Create a synthetic ID for each array entry
-                        ResourceLocation entryId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(),
+                        ResourceLocation entryId = ResourceLocation.tryBuild(id.getNamespace(),
                                 id.getPath() + "_" + i);
 
                         parseAndAddRockInteraction(entryId, element.getAsJsonObject());
@@ -69,7 +70,8 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
         }
 
         if (DATA.isEmpty()) {
-            OvergearedMod.LOGGER.warn("No valid rock interactions found in datapacks. Using default config interaction.");
+            OvergearedMod.LOGGER
+                    .warn("No valid rock interactions found in datapacks. Using default config interaction.");
             addDefaultInteraction();
         } else {
             OvergearedMod.LOGGER.info("Loaded {} rock interactions from datapacks", DATA.size());
@@ -136,6 +138,8 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
     }
 
     private void addDefaultInteraction() {
+        if (!ServerConfig.GET_ROCK_USING_FLINT.get())
+            return;
         Block inputBlock = Blocks.STONE;
         Block resultBlock = Blocks.COBBLESTONE;
 
@@ -147,16 +151,14 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
         float breakChance = net.stirdrem.overgeared.config.ServerConfig.FLINT_BREAKING_CHANCE.get().floatValue();
 
         List<RockInteractionData.ToolEntry> tools = List.of(
-                new RockInteractionData.ToolEntry(flint, drop, dropChance, breakChance)
-        );
+                new RockInteractionData.ToolEntry(flint, drop, dropChance, breakChance));
 
         RockInteractionData data = new RockInteractionData(inputBlock, tools, resultBlock);
 
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "default_flint_on_stone");
+        ResourceLocation id = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "default_flint_on_stone");
         DATA.put(id, data);
 
         OvergearedMod.LOGGER.info("Loaded default rock interaction (flint → stone)");
     }
 
 }
-

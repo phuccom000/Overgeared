@@ -13,6 +13,7 @@ public class ClientConfig {
 
     public static final ForgeConfigSpec.IntValue MINIGAME_OVERLAY_HEIGHT;
     public static final ForgeConfigSpec.BooleanValue POP_UP_TOGGLE;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_ANVIL_RECIPE_BOOK;
 
 
     static {
@@ -26,6 +27,9 @@ public class ClientConfig {
                 .comment("If minigame's pop up appear during minigame.")
                 .define("PopupVisible", true);
 
+        builder.pop();
+        builder.push("Anvil Config");
+        ENABLE_ANVIL_RECIPE_BOOK = builder.comment("Toggle Recipe Book for Smithing Anvils").define("enableRecipeBookAnvils", true);
         builder.pop();
 
 

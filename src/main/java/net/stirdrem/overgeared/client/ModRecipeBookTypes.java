@@ -5,66 +5,41 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ModRecipeBookTypes {
-
-    @OnlyIn(Dist.CLIENT)
-    public static RecipeBookCategories FORGING_SEARCH;
-    @OnlyIn(Dist.CLIENT)
-    public static RecipeBookCategories FORGING_MAIN;
 
     private static final Supplier<RecipeBookCategories> SEARCH_CATEGORY = Suppliers.memoize(
             () -> RecipeBookCategories.create("FORGING_SEARCH", new ItemStack(Items.COMPASS)));
+    private static final Supplier<RecipeBookCategories> FORGING_TOOLS = Suppliers.memoize(
+            () -> RecipeBookCategories.create("FORGING_TOOLS", new ItemStack(ModItems.IRON_PICKAXE_HEAD.get())));
+    private static final Supplier<RecipeBookCategories> FORGING_ARMORS = Suppliers.memoize(
+            () -> RecipeBookCategories.create("FORGING_ARMORS", new ItemStack(Items.IRON_CHESTPLATE)));
+    private static final Supplier<RecipeBookCategories> FORGING_MISC = Suppliers.memoize(
+            () -> RecipeBookCategories.create("FORGING_MISC", new ItemStack(Items.ANVIL)));
 
-    private static final Map<ForgingBookCategory, Supplier<RecipeBookCategories>> CATEGORY_MAP = new EnumMap<>(
-            ForgingBookCategory.class);
-
-    static {
-        CATEGORY_MAP.put(ForgingBookCategory.TOOLS, Suppliers
-                .memoize(() -> RecipeBookCategories.create("FORGING_TOOLS", new ItemStack(Items.IRON_PICKAXE))));
-        CATEGORY_MAP.put(ForgingBookCategory.ARMORS, Suppliers
-                .memoize(() -> RecipeBookCategories.create("FORGING_ARMORS", new ItemStack(Items.IRON_CHESTPLATE))));
-        CATEGORY_MAP.put(ForgingBookCategory.MISC,
-                Suppliers.memoize(() -> RecipeBookCategories.create("FORGING_MISC", new ItemStack(Items.ANVIL))));
-    }
-
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public static void registerRecipeBookCategories(RegisterRecipeBookCategoriesEvent event) {
-
-        ImmutableList<RecipeBookCategories> categories = ImmutableList.of(
-                SEARCH_CATEGORY.get(),
-                CATEGORY_MAP.get(ForgingBookCategory.TOOLS).get(),
-                CATEGORY_MAP.get(ForgingBookCategory.ARMORS).get(),
-                CATEGORY_MAP.get(ForgingBookCategory.MISC).get());
-
-        event.registerBookCategories(OvergearedMod.FORGING, categories);
-
-        // Register aggregate category (for search tab)
-        event.registerAggregateCategory(SEARCH_CATEGORY.get(),
-                ImmutableList.copyOf(CATEGORY_MAP.values().stream().map(Supplier::get).toList()));
-
-        // Register how to determine category per recipe
-        event.registerRecipeCategoryFinder(ModRecipeTypes.FORGING.get(), recipe -> {
-            if (recipe instanceof ForgingRecipe forgingRecipe) {
-                return CATEGORY_MAP.get(forgingRecipe.getRecipeBookTab()).get();
+    public static void init(RegisterRecipeBookCategoriesEvent event) {
+        event.registerBookCategories(OvergearedMod.FORGING, ImmutableList.of(SEARCH_CATEGORY.get(), FORGING_TOOLS.get(), FORGING_ARMORS.get(), FORGING_MISC.get()));
+        event.registerAggregateCategory(SEARCH_CATEGORY.get(), ImmutableList.of(FORGING_TOOLS.get(), FORGING_ARMORS.get(), FORGING_MISC.get()));
+        event.registerRecipeCategoryFinder(ModRecipeTypes.FORGING.get(), recipe ->
+        {
+            if (recipe instanceof ForgingRecipe cookingRecipe) {
+                ForgingBookCategory tab = cookingRecipe.getRecipeBookTab();
+                if (tab != null) {
+                    return switch (tab) {
+                        case TOOL_HEADS -> FORGING_TOOLS.get();
+                        case ARMORS -> FORGING_ARMORS.get();
+                        case MISC -> FORGING_MISC.get();
+                    };
+                }
             }
-            return CATEGORY_MAP.get(ForgingBookCategory.MISC).get();
+            return FORGING_MISC.get();
         });
-
     }
 }

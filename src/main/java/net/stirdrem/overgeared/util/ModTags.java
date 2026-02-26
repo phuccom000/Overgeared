@@ -32,6 +32,8 @@ public class ModTags {
         public static final TagKey<Item> SMITHING_HAMMERS = tag("smithing_hammers");
         public static final TagKey<Item> TOOL_CAST = tag("tool_casts");
         public static final TagKey<Item> KNAPPABLE = tag("knappable");
+        public static final TagKey<Item> IRON_PLATES = tag("iron_plates");
+        public static final TagKey<Item> COPPER_PLATES = tag("copper_plates");
 
 
         private static TagKey<Item> tag(String name) {
