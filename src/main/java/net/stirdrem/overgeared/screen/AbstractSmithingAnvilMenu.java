@@ -20,6 +20,7 @@ import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,10 +124,8 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     public final AbstractSmithingAnvilBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
-    private final ResultContainer resultContainer = new ResultContainer();
     private Slot resultSlot;
     private final Player player;
-    private final boolean hasBlueprint;
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
 
     public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
@@ -138,7 +137,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         this.player = inv.player;
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
-        this.hasBlueprint = hasBlueprint;
 
         IItemHandler iItemHandler = this.blockEntity.getItemHandler();
 
@@ -433,9 +431,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
 
     @Override
     public boolean recipeMatches(RecipeHolder<ForgingRecipe> recipe) {
-        if (!(recipe.value() instanceof ForgingRecipe forgingRecipe)) {
-            return false;
-        }
+        ForgingRecipe forgingRecipe = recipe.value();
 
         CraftingInput input = CraftingInput.of(
                 this.craftingContainer.getWidth(),
@@ -467,7 +463,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     }
 
     @Override
-    public RecipeBookType getRecipeBookType() {
+    public @NotNull RecipeBookType getRecipeBookType() {
         return OvergearedMod.FORGING;
     }
 

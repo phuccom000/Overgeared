@@ -8,7 +8,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -17,6 +16,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.client.ForgingBookCategory;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class ShapedForgingRecipeBuilder implements RecipeBuilder {
-    private final RecipeCategory category;
+    private final ForgingBookCategory category;
     private final Item result;
 
     private final int count;
@@ -62,8 +62,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
 
     private boolean showNotification = true;
 
-
-    public ShapedForgingRecipeBuilder(RecipeCategory category, ItemLike result, int count, int hammering) {
+    public ShapedForgingRecipeBuilder(ForgingBookCategory category, ItemLike result, int count, int hammering) {
         this.category = category;
         this.result = result.asItem();
         this.count = count;
@@ -85,11 +84,11 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
 
-    public static ShapedForgingRecipeBuilder shaped(RecipeCategory category, ItemLike result, int hammering) {
+    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int hammering) {
         return new ShapedForgingRecipeBuilder(category, result, 1, hammering);
     }
 
-    public static ShapedForgingRecipeBuilder shaped(RecipeCategory category, ItemLike result, int count, int hammering) {
+    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int count, int hammering) {
         return new ShapedForgingRecipeBuilder(category, result, count, hammering);
     }
 
@@ -284,7 +283,8 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 actualMinQuality,
                 actualQualityDiff,
                 width,
-                height
+                height,
+                category
         );
 
         output.accept(id, recipe,

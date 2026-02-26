@@ -209,6 +209,11 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
+    public boolean isIncomplete() {
+        return false;
+    }
+
+    @Override
     public NonNullList<Ingredient> getIngredients() {
         NonNullList<Ingredient> list =
                 NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
@@ -329,7 +334,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     public ForgingBookCategory getRecipeBookTab() {
-        return tab;
+        return tab != null ? tab : ForgingBookCategory.MISC;
     }
 
     public static class Serializer implements RecipeSerializer<ForgingRecipe> {
@@ -355,6 +360,36 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 ),
                 set -> com.mojang.datafixers.util.Either.right(new ArrayList<>(set))
         );
+
+
+        public record ForgingFlags(
+                boolean hasQuality,
+                boolean needsMinigame,
+                boolean hasPolishing,
+                boolean needQuenching,
+                boolean showNotification
+        ) {
+
+            public static final Codec<ForgingFlags> BOOLEAN_CODEC =
+                    RecordCodecBuilder.create(instance ->
+                            instance.group(
+                                    Codec.BOOL.optionalFieldOf("has_quality", true)
+                                            .forGetter(ForgingFlags::hasQuality),
+
+                                    Codec.BOOL.optionalFieldOf("needs_minigame", false)
+                                            .forGetter(ForgingFlags::needsMinigame),
+
+                                    Codec.BOOL.optionalFieldOf("has_polishing", true)
+                                            .forGetter(ForgingFlags::hasPolishing),
+
+                                    Codec.BOOL.optionalFieldOf("need_quenching", true)
+                                            .forGetter(ForgingFlags::needQuenching),
+
+                                    Codec.BOOL.optionalFieldOf("show_notification", true)
+                                            .forGetter(ForgingFlags::showNotification)
+                            ).apply(instance, ForgingFlags::new)
+                    );
+        }
 
         private static final Codec<ForgingBookCategory> TAB_CODEC =
                 Codec.STRING.xmap(
@@ -430,7 +465,6 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         @Override
         public MapCodec<ForgingRecipe> codec() {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                    Codec.STRING.optionalFieldOf("group", "").forGetter(ForgingRecipe::getGroup),
                     Codec.BOOL.optionalFieldOf("requires_blueprint", false).forGetter(ForgingRecipe::requiresBlueprint),
                     BLUEPRINT_TYPES_CODEC.optionalFieldOf("blueprint", Set.of()).forGetter(ForgingRecipe::getBlueprintTypes),
                     Codec.STRING.optionalFieldOf("tier", AnvilTier.IRON.getDisplayName()).forGetter(ForgingRecipe::getAnvilTier),
@@ -447,7 +481,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     FORGING_QUALITY_CODEC.optionalFieldOf("minimumQuality", ForgingQuality.POOR).forGetter(ForgingRecipe::getMinimumQuality),
                     FORGING_QUALITY_CODEC.optionalFieldOf("quality_difficulty", ForgingQuality.NONE).forGetter(ForgingRecipe::getQualityDifficulty),
                     TAB_CODEC.optionalFieldOf("category", ForgingBookCategory.MISC).forGetter(ForgingRecipe::getRecipeBookTab)
-            ).apply(instance, (group, requiresBlueprint, blueprintTypes, tier, pattern, key, result, failedResult,
+            ).apply(instance, (requiresBlueprint, blueprintTypes, tier, pattern, key, result, failedResult,
                                hammering, hasQuality, needsMinigame, hasPolishing, needQuenching, showNotification,
                                minimumQuality, qualityDifficulty, tab) -> {
                 // Parse the pattern using the key map
@@ -486,7 +520,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
                 ItemStack actualFailedResult = failedResult.isEmpty() ? result.copy() : failedResult;
 
-                return new ForgingRecipe(group, requiresBlueprint, new LinkedHashSet<>(blueprintTypes), tier,
+                return new ForgingRecipe("", requiresBlueprint, new LinkedHashSet<>(blueprintTypes), tier,
                         new ArrayList<>(pattern), new LinkedHashMap<>(key), ingredients,
                         result, actualFailedResult, hammering, hasQuality, needsMinigame, hasPolishing, actualNeedQuenching,
                         showNotification, minimumQuality, qualityDifficulty, width, height, tab);
@@ -546,6 +580,16 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 }
             };
         }
+    }
+
+    private Serializer.ForgingFlags getFlags() {
+        return new Serializer.ForgingFlags(
+                this.hasQuality,
+                this.needsMinigame,
+                this.hasPolishing,
+                this.needQuenching,
+                this.showNotification
+        );
     }
 
 

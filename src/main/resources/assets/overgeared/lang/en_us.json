@@ -286,6 +286,7 @@
   "tooltip.overgeared.unfired_cast_hint": "Fire in a furnace before use",
   "cast.overgeared.unfired_tool_cast": "Unfired %s Cast",
   "cast.overgeared.clay_tool_cast": "Clay %s Cast",
-  "cast.overgeared.nether_tool_cast": "Nether %s Cast"
+  "cast.overgeared.nether_tool_cast": "Nether %s Cast",
+  "overgeared.container.recipe_book.forgeable": "Forgeable"
 }
 

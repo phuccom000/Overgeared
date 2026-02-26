@@ -7,9 +7,11 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
+import net.stirdrem.overgeared.client.ClientModEvents;
 import net.stirdrem.overgeared.compat.ModCompat;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ClientConfig;
@@ -31,6 +33,9 @@ public final class OvergearedMod {
     public static final RecipeBookType FORGING = RecipeBookType.valueOf("OVERGEARED_FORGING");
 
     public OvergearedMod(IEventBus modEventBus, ModContainer modContainer) {
+        if (FMLEnvironment.dist.isClient()) {
+            modEventBus.addListener(ClientModEvents::init);
+        }
         ModAdvancementTriggers.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModBlocks.register(modEventBus);

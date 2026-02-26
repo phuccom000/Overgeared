@@ -2,6 +2,7 @@ package net.stirdrem.overgeared.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -12,12 +13,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.util.TooltipButton;
+import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
+import net.stirdrem.overgeared.config.ClientConfig;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
     private static final WidgetSprites RECIPE_BUTTON = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/button"), ResourceLocation.withDefaultNamespace("recipe_book/button"));
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil.png");
-    
+    private final ForgingRecipeBookComponent recipeBookComponent = new ForgingRecipeBookComponent();
     private boolean widthTooNarrow;
 
     public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title) {
@@ -30,7 +32,23 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
     @Override
     protected void init() {
         super.init();
-        this.titleLabelX = 29;
+        this.titleLabelX = 28;
+        this.widthTooNarrow = this.width < 379;
+        this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
+        this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+        if (ClientConfig.ENABLE_ANVIL_RECIPE_BOOK.get()) {
+            this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RECIPE_BUTTON, (button) ->
+            {
+                this.recipeBookComponent.toggleVisibility();
+                this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+                button.setPosition(this.leftPos + 5, this.height / 2 - 49);
+            }));
+        } else {
+            this.recipeBookComponent.hide();
+            this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+        }
+        this.addWidget(this.recipeBookComponent);
+        this.setInitialFocus(this.recipeBookComponent);
     }
 
     @Override
@@ -54,14 +72,22 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.render(guiGraphics, mouseX, mouseY, delta);
-        for (var widget : this.renderables) {
-            if (widget instanceof TooltipButton button && button.isHovered()) {
-                guiGraphics.renderTooltip(this.font, button.getTooltipComponent(), mouseX, mouseY);
-            }
+        this.renderBackground(guiGraphics, mouseX, mouseY, delta);
+
+        if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
+            this.renderBg(guiGraphics, delta, mouseX, mouseY);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
+        } else {
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
+            super.render(guiGraphics, mouseX, mouseY, delta);
+            this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, delta);
         }
-        renderGhostResult(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY); // Add ghost result rendering
-        renderTooltip(guiGraphics, mouseX, mouseY);
+
+        renderHitsRemaining(guiGraphics);
+        renderGhostResult(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
+
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        this.recipeBookComponent.renderTooltip(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
     }
 
     private void renderHitsRemaining(GuiGraphics guiGraphics) {
@@ -109,11 +135,11 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
     @Override
     public void recipesUpdated() {
-
+        this.recipeBookComponent.recipesUpdated();
     }
 
     @Override
     public RecipeBookComponent getRecipeBookComponent() {
-        return null;
+        return this.recipeBookComponent;
     }
 }

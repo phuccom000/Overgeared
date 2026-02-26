@@ -20,5 +20,6 @@
   "result": {
     "id": "overgeared:steel_arrow",
     "count": 4
-  }
+  },
+  "show_notification": true
 }

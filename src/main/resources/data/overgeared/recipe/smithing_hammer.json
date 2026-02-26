@@ -11,5 +11,6 @@
   ],
   "result": {
     "id": "overgeared:smithing_hammer"
-  }
+  },
+  "show_notification": true
 }

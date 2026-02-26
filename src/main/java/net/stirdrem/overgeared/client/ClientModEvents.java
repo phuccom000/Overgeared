@@ -10,8 +10,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,6 +19,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -26,6 +27,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
+import net.stirdrem.overgeared.compat.ModCompat;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
@@ -37,18 +39,16 @@ import net.stirdrem.overgeared.item.armor.model.CopperLeggings;
 import net.stirdrem.overgeared.item.custom.LingeringArrowItem;
 import net.stirdrem.overgeared.item.custom.UpgradeArrowItem;
 import net.stirdrem.overgeared.screen.*;
-import net.stirdrem.overgeared.compat.ModCompat;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@EventBusSubscriber(modid = OvergearedMod.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
 
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
+    public static void init(final FMLClientSetupEvent event) {
         ModList.get().getModContainerById(OvergearedMod.MOD_ID).orElseThrow()
                 .registerExtensionPoint(
                         IConfigScreenFactory.class,
@@ -82,6 +82,11 @@ public class ClientModEvents {
                     ModItems.STEEL_UPGRADE_ARROW.get(),
                     ModItems.DIAMOND_UPGRADE_ARROW.get());
         });
+    }
+
+    @SubscribeEvent
+    public static void registerRecipeBookCategories(RegisterRecipeBookCategoriesEvent event) {
+        RecipeCategories.init(event);
     }
 
     private static void registerArrowProperties(Item item) {
