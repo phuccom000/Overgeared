@@ -2,6 +2,7 @@ package net.stirdrem.overgeared;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.RecipeBookType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 public final class OvergearedMod {
     public static final String MOD_ID = "overgeared";
     public static final Logger LOGGER = LogUtils.getLogger();
+    public static final RecipeBookType FORGING = RecipeBookType.valueOf("OVERGEARED_FORGING");
 
     public OvergearedMod(IEventBus modEventBus, ModContainer modContainer) {
         ModAdvancementTriggers.register(modEventBus);

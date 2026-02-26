@@ -1,17 +1,20 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
+import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.item.ModItems;
@@ -22,8 +25,101 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
-    private final Container container = new SimpleContainer();
+public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, ForgingRecipe> {
+    private final CraftingContainer craftingContainer = new CraftingContainer() {
+        @Override
+        public void fillStackedContents(StackedContents contents) {
+            for (int i = 0; i < this.getContainerSize(); i++) {
+                contents.accountSimpleStack(this.getItem(i));
+            }
+        }
+
+        @Override
+        public int getWidth() {
+            return 3;
+        }
+
+        @Override
+        public int getHeight() {
+            return 3;
+        }
+
+        @Override
+        public List<ItemStack> getItems() {
+            List<ItemStack> stacks = new ArrayList<>(9);
+
+            for (int i = 0; i < 9; i++) {
+                stacks.add(blockEntity.getItemHandler().getStackInSlot(i));
+            }
+
+            return stacks;
+        }
+
+        @Override
+        public int getContainerSize() {
+            return 9;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            for (int i = 0; i < 9; i++) {
+                if (!blockEntity.getItemHandler().getStackInSlot(i).isEmpty()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public ItemStack getItem(int slot) {
+            return blockEntity.getItemHandler().getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack removeItem(int slot, int amount) {
+            ItemStack stack = blockEntity.getItemHandler().getStackInSlot(slot).copy();
+            if (!stack.isEmpty()) {
+                if (stack.getCount() <= amount) {
+                    blockEntity.getItemHandler().setStackInSlot(slot, ItemStack.EMPTY);
+                    return stack;
+                } else {
+                    ItemStack split = stack.split(amount);
+                    blockEntity.getItemHandler().setStackInSlot(slot, stack);
+                    return split;
+                }
+            }
+            return ItemStack.EMPTY;
+        }
+
+        @Override
+        public ItemStack removeItemNoUpdate(int slot) {
+            ItemStack stack = blockEntity.getItemHandler().getStackInSlot(slot).copy();
+            blockEntity.getItemHandler().setStackInSlot(slot, ItemStack.EMPTY);
+            return stack;
+        }
+
+        @Override
+        public void setItem(int slot, ItemStack stack) {
+            blockEntity.getItemHandler().setStackInSlot(slot, stack);
+        }
+
+        @Override
+        public void setChanged() {
+            blockEntity.setChanged();
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return true;
+        }
+
+        @Override
+        public void clearContent() {
+            for (int i = 0; i < 9; i++) {
+                blockEntity.getItemHandler().setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
+    };
     public final AbstractSmithingAnvilBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
@@ -303,5 +399,84 @@ public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
             }
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void fillCraftSlotsStackedContents(StackedContents contents) {
+        for (int i = 0; i < this.craftingContainer.getContainerSize(); ++i) {
+            contents.accountSimpleStack(this.craftingContainer.getItem(i));
+        }
+    }
+
+    @Override
+    public void clearCraftingContent() {
+        if (this.player.level().isClientSide) return;
+
+        for (int i = 0; i < this.craftingContainer.getContainerSize(); i++) {
+            ItemStack stack = this.craftingContainer.getItem(i);
+
+            if (!stack.isEmpty()) {
+                // Try to move back to player inventory
+                if (!this.moveItemStackTo(stack,
+                        VANILLA_FIRST_SLOT_INDEX,
+                        VANILLA_SLOT_COUNT,
+                        false)) {
+
+                    // If inventory full → drop to player
+                    this.player.drop(stack, false);
+                }
+
+                this.craftingContainer.setItem(i, ItemStack.EMPTY);
+            }
+        }
+    }
+
+    @Override
+    public boolean recipeMatches(RecipeHolder<ForgingRecipe> recipe) {
+        if (!(recipe.value() instanceof ForgingRecipe forgingRecipe)) {
+            return false;
+        }
+
+        CraftingInput input = CraftingInput.of(
+                this.craftingContainer.getWidth(),
+                this.craftingContainer.getHeight(),
+                this.craftingContainer.getItems()
+        );
+
+        return forgingRecipe.matches(input, this.level);
+    }
+
+    @Override
+    public int getResultSlotIndex() {
+        return this.resultSlot.index;
+    }
+
+    @Override
+    public int getGridWidth() {
+        return 3;
+    }
+
+    @Override
+    public int getGridHeight() {
+        return 3;
+    }
+
+    @Override
+    public int getSize() {
+        return 9;
+    }
+
+    @Override
+    public RecipeBookType getRecipeBookType() {
+        return OvergearedMod.FORGING;
+    }
+
+    @Override
+    public boolean shouldMoveToInventory(int slot) {
+        return slot < (getGridWidth() * getGridHeight());
+    }
+
+    public AbstractSmithingAnvilBlockEntity getBlockEntity() {
+        return blockEntity;
     }
 }

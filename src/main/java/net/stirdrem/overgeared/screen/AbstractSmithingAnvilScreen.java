@@ -2,7 +2,10 @@ package net.stirdrem.overgeared.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -11,8 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.util.TooltipButton;
 
-public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> {
+public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
+    private static final WidgetSprites RECIPE_BUTTON = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/button"), ResourceLocation.withDefaultNamespace("recipe_book/button"));
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil.png");
+    
+    private boolean widthTooNarrow;
 
     public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title) {
         super(menu, playerInv, title);
@@ -99,5 +105,15 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
                 guiGraphics.renderTooltip(this.font, ghostResult, mouseX, mouseY);
             }
         }
+    }
+
+    @Override
+    public void recipesUpdated() {
+
+    }
+
+    @Override
+    public RecipeBookComponent getRecipeBookComponent() {
+        return null;
     }
 }
