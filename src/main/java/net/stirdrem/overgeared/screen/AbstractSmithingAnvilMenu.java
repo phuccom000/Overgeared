@@ -17,6 +17,7 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
+import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -152,8 +153,8 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
             }
         }); //hammer
 
-        if (hasBlueprint)
-            this.addSlot(new SlotItemHandler(iItemHandler, 11, 111, 53) {
+        if (hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+            this.addSlot(new SlotItemHandler(iItemHandler, 11, 95, 53) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.is(ModItems.BLUEPRINT.get()) || stack.getItem() instanceof SmithingTemplateItem;

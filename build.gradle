@@ -80,10 +80,10 @@ dependencies {
     // compile against the JEI API but do not include it at runtime
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     // at runtime, use the full JEI jar for NeoForge
-    //runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     compileOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}:api"
-    //runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
 
     modImplementation "maven.modrinth:polymorph:${polymorph_version}"
 }

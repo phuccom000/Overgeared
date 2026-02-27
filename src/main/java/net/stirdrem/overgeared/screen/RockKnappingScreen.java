@@ -20,7 +20,7 @@ import static net.minecraft.sounds.SoundEvents.STONE_BREAK;
 public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu> {
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/rock_knapping_gui.png");
     private static final ResourceLocation CHIPPED_TEXTURE = OvergearedMod.loc("textures/gui/blank.png");
-    private static final ResourceLocation DEFAULT_UNCHIPPED = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/stone.png");
+    private static final ResourceLocation DEFAULT_UNCHIPPED = ResourceLocation.withDefaultNamespace("textures/block/stone.png");
 
     private static final int GRID_ORIGIN_X = 32;
     private static final int GRID_ORIGIN_Y = 19;

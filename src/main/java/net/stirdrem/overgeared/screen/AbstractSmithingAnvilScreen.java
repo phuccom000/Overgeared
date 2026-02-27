@@ -15,15 +15,16 @@ import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
 import net.stirdrem.overgeared.config.ClientConfig;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-    private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil.png");
+    private ResourceLocation TEXTURE;
     private final ForgingRecipeBookComponent recipeBookComponent = new ForgingRecipeBookComponent();
     private boolean widthTooNarrow;
 
-    public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title) {
+    public AbstractSmithingAnvilScreen(T menu, Inventory playerInv, Component title, boolean enableBlueprintSlot) {
         super(menu, playerInv, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = this.imageHeight - 94;
+        TEXTURE = enableBlueprintSlot ? OvergearedMod.loc("textures/gui/smithing_anvil.png") : OvergearedMod.loc("textures/gui/stone_smithing_anvil.png");
     }
 
     @Override
@@ -50,9 +51,7 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
-        //RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        //RenderSystem.setShaderTexture(0, TEXTURE);
         int x = this.leftPos;
         int y = this.topPos;
 

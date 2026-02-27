@@ -754,6 +754,44 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return quality;
     }
 
+    protected ForgingQuality determineForgingQualityNoBlueprint() {
+        // Get quality from anvil or use default if null
+        ForgingQuality quality = anvilBlock.getQuality();
+        if (quality == null) {
+            return ForgingQuality.POOR; // Default quality
+        }
+        if (quality.equals(ForgingQuality.PERFECT)) {
+            Random random = new Random();
+
+            // 🔹 Check if any crafting slot contains a Master-quality ingredient
+            boolean hasMasterIngredient = false;
+            for (int i = 0; i < this.itemHandler.getSlots(); i++) {
+                if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
+                ItemStack stack = this.itemHandler.getStackInSlot(i);
+                ForgingQuality ingQuality = stack.get(ModComponents.FORGING_QUALITY);
+                if (!stack.isEmpty() && ingQuality == ForgingQuality.MASTER) {
+                    hasMasterIngredient = true;
+                    break;
+                }
+            }
+
+            // Normal Master roll from config
+            boolean masterRoll = ServerConfig.MASTER_QUALITY_CHANCE.get() != 0
+                    && random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get();
+
+            // Ingredient-based boost
+            boolean ingredientMasterRoll = hasMasterIngredient
+                    && random.nextFloat() < ServerConfig.MASTER_FROM_INGREDIENT_CHANCE.get();
+
+            if (masterRoll || ingredientMasterRoll) {
+                return ForgingQuality.MASTER;
+            } else {
+                return ForgingQuality.PERFECT;
+            }
+        } else
+            return quality;
+    }
+
     public ForgingQuality minigameQuality() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty()) {

@@ -7,7 +7,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.TierBSmithingAnvil;
+import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.TierBSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,5 +42,12 @@ public class TierBSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     @Override
     public boolean hasRecipe() {
         return super.hasRecipeWithBlueprint();
+    }
+
+    @Override
+    protected ForgingQuality determineForgingQuality() {
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+            return super.determineForgingQualityNoBlueprint();
+        } else return super.determineForgingQuality();
     }
 }

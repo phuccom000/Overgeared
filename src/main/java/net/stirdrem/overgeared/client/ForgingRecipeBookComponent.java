@@ -20,11 +20,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
-    protected static final WidgetSprites RECIPE_BOOK_BUTTONS = new WidgetSprites(
-            ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_enabled"),
-            ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_disabled"),
-            ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_enabled_highlighted"),
-            ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_disabled_highlighted"));
+
+    protected static final WidgetSprites RECIPE_BOOK_BUTTONS =
+            new WidgetSprites(
+                    ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_enabled"),
+                    ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_disabled"),
+                    ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_enabled_highlighted"),
+                    ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "recipe_book/anvil_disabled_highlighted")
+            );
 
     @Override
     protected void initFilterButtonTextures() {

@@ -191,6 +191,11 @@ public class OvergearedConfigScreen extends Screen {
                 v -> setBoolean("Anvil Conversion.enableAnvilToSmithing", v)
         ));
         configList.addConfigEntry(new BooleanEntry(
+                "Enable quality forging using blueprint",
+                () -> getBoolean("Anvil Conversion.enableBlueprintForging"),
+                v -> setBoolean("Anvil Conversion.enableBlueprintForging", v)
+        ));
+        configList.addConfigEntry(new BooleanEntry(
                 "Enable Fletching",
                 () -> getBoolean("Arrow Fletching Settings.enableFletchingRecipes"),
                 v -> setBoolean("Arrow Fletching Settings.enableFletchingRecipes", v)
@@ -534,7 +539,7 @@ public class OvergearedConfigScreen extends Screen {
             configFile.save();
             configSpec.correct(configFile);
         } catch (Exception e) {
-          OvergearedMod.LOGGER.error("Failed to save config", e);
+            OvergearedMod.LOGGER.error("Failed to save config", e);
         }
     }
 
@@ -599,13 +604,13 @@ public class OvergearedConfigScreen extends Screen {
 
     private static class ConfigList extends ObjectSelectionList<ConfigList.ConfigEntry> {
 
-      public ConfigList(Minecraft mc, int width, int height, int y, int itemHeight) {
+        public ConfigList(Minecraft mc, int width, int height, int y, int itemHeight) {
             super(mc, width, height, y, itemHeight);
         }
 
         @Override
         public int getRowWidth() {
-          return this.width - 60;
+            return this.width - 60;
         }
 
         public void addConfigEntry(ConfigEntry entry) {
@@ -650,12 +655,12 @@ public class OvergearedConfigScreen extends Screen {
     }
 
     private class BooleanEntry extends ConfigList.ConfigEntry {
-      private final Button toggle;
+        private final Button toggle;
         private final String label;
 
         public BooleanEntry(String label, Supplier<Boolean> getter, Consumer<Boolean> setter) {
             this.label = label;
-          this.toggle = Button.builder(Component.literal(getter.get().toString()), btn -> {
+            this.toggle = Button.builder(Component.literal(getter.get().toString()), btn -> {
                 boolean newVal = !getter.get();
                 setter.accept(newVal);
                 btn.setMessage(Component.literal(Boolean.toString(newVal)));
@@ -687,13 +692,13 @@ public class OvergearedConfigScreen extends Screen {
     }
 
     private class IntEntry extends ConfigList.ConfigEntry {
-      private final AbstractSliderButton slider;
+        private final AbstractSliderButton slider;
         private final String label;
 
-      public IntEntry(String label, Supplier<Integer> getter, Consumer<Integer> setter, int min, int max) {
+        public IntEntry(String label, Supplier<Integer> getter, Consumer<Integer> setter, int min, int max) {
             this.label = label;
 
-        double normalized = (getter.get() - min) / (double) (max - min);
+            double normalized = (getter.get() - min) / (double) (max - min);
             this.slider = new AbstractSliderButton(0, 0, 80, 20,
                     Component.literal(getter.get().toString()), normalized) {
                 @Override
@@ -738,13 +743,13 @@ public class OvergearedConfigScreen extends Screen {
     }
 
     private class DoubleEntry extends ConfigList.ConfigEntry {
-      private final AbstractSliderButton slider;
+        private final AbstractSliderButton slider;
         private final String label;
 
-      public DoubleEntry(String label, Supplier<Double> getter, Consumer<Double> setter, double min, double max) {
+        public DoubleEntry(String label, Supplier<Double> getter, Consumer<Double> setter, double min, double max) {
             this.label = label;
 
-        double cur = getter.get();
+            double cur = getter.get();
             double normalized = (cur - min) / (max - min);
             this.slider = new AbstractSliderButton(0, 0, 80, 20,
                     Component.literal(String.format("%.2f", cur)), normalized) {
@@ -793,11 +798,11 @@ public class OvergearedConfigScreen extends Screen {
     }
 
     private class ManualInputEntry extends ConfigList.ConfigEntry {
-      private final String label;
-      private final Supplier<Double> getter;
-      private final EditBox editBox;
+        private final String label;
+        private final Supplier<Double> getter;
+        private final EditBox editBox;
 
-      public ManualInputEntry(String label, Supplier<Double> getter, Consumer<Double> setter) {
+        public ManualInputEntry(String label, Supplier<Double> getter, Consumer<Double> setter) {
             this(label, getter, setter, false);
         }
 
@@ -805,7 +810,7 @@ public class OvergearedConfigScreen extends Screen {
             this.label = label;
             this.getter = getter;
 
-          // width 80 should be enough, adjust if needed
+            // width 80 should be enough, adjust if needed
             this.editBox = new EditBox(font, 0, 0, 80, 20, Component.literal(""));
             double cur = getter.get();
             if (acceptIntegers) {
