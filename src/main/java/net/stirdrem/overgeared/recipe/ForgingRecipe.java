@@ -236,11 +236,6 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public boolean isSpecial() {
-        return true;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
@@ -270,6 +265,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return needsMinigame;
     }
 
+    @Override
     public String getGroup() {
         return group;
     }

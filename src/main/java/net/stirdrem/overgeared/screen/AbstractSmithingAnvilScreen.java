@@ -3,11 +3,9 @@ package net.stirdrem.overgeared.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,7 +15,6 @@ import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
 import net.stirdrem.overgeared.config.ClientConfig;
 
 public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-    private static final WidgetSprites RECIPE_BUTTON = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/button"), ResourceLocation.withDefaultNamespace("recipe_book/button"));
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil.png");
     private final ForgingRecipeBookComponent recipeBookComponent = new ForgingRecipeBookComponent();
     private boolean widthTooNarrow;
@@ -37,7 +34,7 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
         this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
         this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
         if (ClientConfig.ENABLE_ANVIL_RECIPE_BOOK.get()) {
-            this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RECIPE_BUTTON, (button) ->
+            this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, (button) ->
             {
                 this.recipeBookComponent.toggleVisibility();
                 this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
@@ -53,9 +50,9 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        //RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, TEXTURE);
+        //RenderSystem.setShaderTexture(0, TEXTURE);
         int x = this.leftPos;
         int y = this.topPos;
 
@@ -72,20 +69,17 @@ public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvi
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, delta);
-
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-            this.renderBg(guiGraphics, delta, mouseX, mouseY);
+            this.renderBackground(guiGraphics, mouseX, mouseY, delta);
             this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
         } else {
-            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
             super.render(guiGraphics, mouseX, mouseY, delta);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, delta);
             this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, delta);
         }
 
         renderHitsRemaining(guiGraphics);
         renderGhostResult(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
-
         this.renderTooltip(guiGraphics, mouseX, mouseY);
         this.recipeBookComponent.renderTooltip(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
     }

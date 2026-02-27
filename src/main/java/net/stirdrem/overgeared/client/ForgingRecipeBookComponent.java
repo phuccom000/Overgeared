@@ -16,6 +16,7 @@ import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
@@ -38,6 +39,14 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
     @Nonnull
     protected Component getRecipeFilterName() {
         return Component.translatable("overgeared.container.recipe_book.forgeable");
+    }
+
+    @Override
+    public void slotClicked(@Nullable Slot slot) {
+        super.slotClicked(slot);
+        if (slot != null && slot.index < this.menu.getSize()) {
+            this.ghostRecipe.clear();
+        }
     }
 
     @Override
