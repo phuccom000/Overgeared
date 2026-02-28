@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -96,7 +97,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
             }
         }
     };
-
     public final AbstractSmithingAnvilBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
@@ -112,237 +112,239 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         this.data = data;
         this.player = inv.player;
 
-        // Add TE slots first (indices 0-11)
-        this.blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(iItemHandler -> {
+        IItemHandler iItemHandler = this.blockEntity.getItemHandler();
 
-            // Crafting slots (0-8)
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    int slotIndex = this.addSlot(new SlotItemHandler(iItemHandler, j + i * 3, 30 + j * 18, 17 + i * 18) {
-                        @Override
-                        public boolean mayPickup(Player player) {
-                            return true; // This is crucial for JEI transfers
-                        }
-                    }).index;
-                    craftingSlotIndices.add(slotIndex);
-                }
+        this.addSlot(new SlotItemHandler(iItemHandler, 9, 152, 61) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.is(ModTags.Items.SMITHING_HAMMERS);
             }
 
-            // Hammer slot (index 9)
-            this.addSlot(new SlotItemHandler(iItemHandler, 9, 152, 61) {
+            @Override
+            public boolean mayPickup(Player player) {
+                return true; // This is crucial for JEI transfers
+            }
+        }); //hammer
+
+        if (hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+            this.addSlot(new SlotItemHandler(iItemHandler, 11, 95, 53) {
                 @Override
-                public boolean mayPlace(@NotNull ItemStack stack) {
-                    return stack.is(ModTags.Items.SMITHING_HAMMERS);
+                public boolean mayPlace(ItemStack stack) {
+                    return stack.is(ModItems.BLUEPRINT.get()) || stack.getItem() instanceof SmithingTemplateItem;
                 }
 
                 @Override
                 public boolean mayPickup(Player player) {
-                    return true;
+                    return true; // This is crucial for JEI transfers
+                }
+
+                @Override
+                public int getMaxStackSize() {
+                    return 1;
+                }
+
+                @Override
+                public int getMaxStackSize(ItemStack stack) {
+                    return 1;
+                }
+
+                @Override
+                public void set(ItemStack stack) {
+                    // Always limit to a single item
+                    super.set(stack.copyWithCount(1));
                 }
             });
 
-            // Output slot (index 10)
-            this.resultSlot = new SlotItemHandler(iItemHandler, 10, 124, 35) {
-                private int removeCount;
-
-                @Override
-                public boolean mayPlace(ItemStack stack) {
-                    return false;
-                }
-
-                @Override
-                public boolean mayPickup(Player player) {
-                    return true;
-                }
-
-                @Override
-                public void onTake(Player player, ItemStack stack) {
-                    this.checkTakeAchievements(stack);
-                    super.onTake(player, stack);
-                }
-
-                @Override
-                public ItemStack remove(int amount) {
-                    if (this.hasItem())
-                        this.removeCount += Math.min(amount, this.getItem().getCount());
-                    return super.remove(amount);
-                }
-
-                @Override
-                public void onQuickCraft(ItemStack output, int amount) {
-                    this.removeCount += amount;
-                    this.checkTakeAchievements(output);
-                }
-
-                @Override
-                protected void onSwapCraft(int amount) {
-                    this.removeCount = amount;
-                }
-
-                @Override
-                protected void checkTakeAchievements(ItemStack stack) {
-                    if (this.removeCount > 0)
-                        stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(),
-                                AbstractSmithingAnvilMenu.this.player, this.removeCount);
-                    if (this.container instanceof RecipeHolder recipeHolder)
-                        recipeHolder.awardUsedRecipes(AbstractSmithingAnvilMenu.this.player, List.of());
-                    this.removeCount = 0;
-                }
-            };
-            this.addSlot(this.resultSlot);
-
-            // Blueprint slot (index 11) - optional
-            if (hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
-                this.addSlot(new SlotItemHandler(iItemHandler, 11, 95, 53) {
-                    @Override
-                    public boolean mayPlace(@NotNull ItemStack stack) {
-                        return stack.is(ModItems.BLUEPRINT.get()) || stack.getItem() instanceof SmithingTemplateItem;
-                    }
-
+        //crafting slot
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                Slot slotIndex = this.addSlot(new SlotItemHandler(iItemHandler, j + i * 3, 30 + j * 18, 17 + i * 18) {
                     @Override
                     public boolean mayPickup(Player player) {
-                        return true;
-                    }
-
-                    @Override
-                    public int getMaxStackSize() {
-                        return 1;
-                    }
-
-                    @Override
-                    public int getMaxStackSize(@NotNull ItemStack stack) {
-                        return 1;
-                    }
-
-                    @Override
-                    public void set(@NotNull ItemStack stack) {
-                        super.set(stack.copyWithCount(1));
+                        return true; // This is crucial for JEI transfers
                     }
                 });
+                craftingSlotIndices.add(slotIndex.index); // Store the index, not the Slot object
             }
-        });
+        }
 
-        // Add player inventory slots AFTER TE slots (starting at index 12)
+        //output slot
+        this.resultSlot = new SlotItemHandler(iItemHandler, 10, 124, 35) {
+            private int removeCount;
+
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return false;
+            }
+
+            @Override
+            public boolean mayPickup(Player player) {
+                return true; // This is crucial for JEI transfers
+            }
+
+            @Override
+            public void onTake(Player player, ItemStack stack) {
+                this.checkTakeAchievements(stack);
+                super.onTake(player, stack);
+            }
+
+            @Override
+            public ItemStack remove(int amount) {
+                if (this.hasItem())
+                    this.removeCount += Math.min(amount, this.getItem().getCount());
+                return super.remove(amount);
+            }
+
+            @Override
+            public void onQuickCraft(ItemStack output, int amount) {
+                this.removeCount += amount;
+                this.checkTakeAchievements(output);
+            }
+
+            @Override
+            protected void onSwapCraft(int amount) {
+                this.removeCount = amount;
+            }
+
+            @Override
+            protected void checkTakeAchievements(ItemStack stack) {
+                if (this.removeCount > 0)
+                    stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(),
+                            AbstractSmithingAnvilMenu.this.player, this.removeCount);
+                if (this.container instanceof RecipeHolder recipeHolder)
+                    recipeHolder.awardUsedRecipes(AbstractSmithingAnvilMenu.this.player, List.of());
+                this.removeCount = 0;
+            }
+        };
+        this.addSlot(this.resultSlot);
+
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
         addDataSlots(data);
     }
 
-    private void addPlayerInventory(Inventory playerInventory) {
-        // Player inventory slots (indices 12-38)
-        for (int i = 0; i < 3; ++i) {
-            for (int l = 0; l < 9; ++l) {
-                int slotIndex = l + i * 9 + 9; // Player inventory slots start at index 9 in Inventory
-                this.addSlot(new Slot(playerInventory, slotIndex, 8 + l * 18, 84 + i * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInventory) {
-        // Hotbar slots (indices 39-47)
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
-        }
-    }
-
     public List<Integer> getInputSlots() {
         return new ArrayList<>(craftingSlotIndices);
     }
 
+    /**
+     * Gets the result slot directly.
+     * This is preferred over using slot index which varies based on blueprint presence.
+     */
+    public Slot getResultSlot() {
+        return this.resultSlot;
+    }
+
+
+    // CREDIT GOES TO: diesieben07 | https://github.com/diesieben07/SevenCommons
+    // must assign a slot number to each of the slots used by the GUI.
+    // For this container, we can see both the tile inventory's slots as well as the player inventory slots and the hotbar.
+    // Each time we add a Slot to the container, it automatically increases the slotIndex, which means
+    //  0 - 8 = hotbar slots (which will map to the InventoryPlayer slot numbers 0 - 8)
+    //  9 - 35 = player inventory slots (which map to the InventoryPlayer slot numbers 9 - 35)
+    //  36 - 44 = TileInventory slots, which map to our TileEntity slot numbers 0 - 8)
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
-    private static final int VANILLA_FIRST_SLOT_INDEX = 12;
+    private static int blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get() ? 1 : 0;
+    private static int VANILLA_FIRST_SLOT_INDEX = 11 + blueprintEnabled;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
     private static final int TE_INVENTORY_SLOT_COUNT = 12;  // must be the number of slots you have!
 
     @Override
-    public ItemStack quickMoveStack(Player playerIn, int pIndex) {
-        Slot sourceSlot = slots.get(pIndex);
-        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
-        ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack copyOfSourceStack = sourceStack.copy();
-
-        // Calculate slot ranges
-        int totalSlots = slots.size();
-
-        // TE slots ranges
-        int teSlotsStart = 0;
-        int teSlotsEnd = 11; // inclusive
-
-        // Specific TE slot indices
-        int HAMMER_SLOT = 9;
-        int OUTPUT_SLOT = 10;
-        int BLUEPRINT_SLOT = 11;
-
-        // Player inventory slots
-        int playerInvStart = 12;
-        int playerInvEnd = totalSlots - 1;
-
-        // If clicking on player inventory slot
-        if (pIndex >= playerInvStart && pIndex <= playerInvEnd) {
-
-            // Check if it's a hammer
-            if (sourceStack.is(ModTags.Items.SMITHING_HAMMERS)) {
-                // Try to move to hammer slot first
-                if (!moveItemStackTo(sourceStack, HAMMER_SLOT, HAMMER_SLOT + 1, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // Check if it's a blueprint
-            else if (ServerConfig.ENABLE_BLUEPRINT_FORGING.get() &&
-                    (sourceStack.is(ModItems.BLUEPRINT.get()) || sourceStack.getItem() instanceof SmithingTemplateItem)) {
-                // Try to move to blueprint slot
-                if (!moveItemStackTo(sourceStack, BLUEPRINT_SLOT, BLUEPRINT_SLOT + 1, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // Regular item - try to move to crafting grid (slots 0-8)
-            else {
-                // First try to move to empty crafting slots
-                if (!moveItemStackTo(sourceStack, teSlotsStart, HAMMER_SLOT, false)) {
-                    // If no space in crafting grid, try other TE slots (excluding output)
-                    if (!moveItemStackTo(sourceStack, HAMMER_SLOT, OUTPUT_SLOT, false)) {
-                        // If still no space, try remaining TE slots
-                        if (!moveItemStackTo(sourceStack, BLUEPRINT_SLOT, BLUEPRINT_SLOT + 1, false)) {
-                            return ItemStack.EMPTY;
-                        }
-                    }
-                }
-            }
-        }
-        // If clicking on TE slot
-        else if (pIndex >= teSlotsStart && pIndex <= teSlotsEnd) {
-
-            // Don't allow moving items from output slot back to inventory via quick move
-            // (prevents duping/exploits)
-            if (pIndex == OUTPUT_SLOT) {
-                return ItemStack.EMPTY;
-            }
-
-            // Move from TE to player inventory
-            if (!moveItemStackTo(sourceStack, playerInvStart, playerInvEnd + 1, false)) {
-                return ItemStack.EMPTY;
-            }
-        }
-        // Invalid slot
-        else {
+    public ItemStack quickMoveStack(Player player, int index) {
+        Slot clickedSlot = this.slots.get(index);
+        if (clickedSlot == null || !clickedSlot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        if (sourceStack.isEmpty()) {
-            sourceSlot.set(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
+        ItemStack stack = clickedSlot.getItem();
+        ItemStack copy = stack.copy();
+
+        int totalSlots = this.slots.size();
+
+        // Determine boundaries dynamically
+        int firstPlayerSlot = -1;
+
+        // Player inventory always starts after result slot
+        firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
+
+        // =========================
+        // If clicking TE slot
+        // =========================
+        if (index < firstPlayerSlot) {
+
+            // Prevent shift-clicking output
+            if (clickedSlot == this.resultSlot) {
+                return ItemStack.EMPTY;
+            }
+
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, true)) {
+                return ItemStack.EMPTY;
+            }
+        }
+        // =========================
+        // If clicking Player inventory
+        // =========================
+        else {
+
+            // Hammer slot detection
+            Slot hammerSlot = this.slots.get(0); // first slot added
+            boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+            Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
+
+            // Move hammer
+            if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
+                if (!moveItemStackTo(stack,
+                        hammerSlot.index,
+                        hammerSlot.index + 1,
+                        false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // Move blueprint
+            else if (blueprintEnabled &&
+                    (stack.is(ModItems.BLUEPRINT.get())
+                            || stack.getItem() instanceof SmithingTemplateItem)) {
+
+                if (!moveItemStackTo(stack,
+                        blueprintSlot.index,
+                        blueprintSlot.index + 1,
+                        false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // Move to crafting grid
+            else {
+                boolean moved = false;
+
+                for (int gridIndex : craftingSlotIndices) {
+                    if (moveItemStackTo(stack, gridIndex, gridIndex + 1, false)) {
+                        moved = true;
+                        break;
+                    }
+                }
+
+                if (!moved) {
+                    return ItemStack.EMPTY;
+                }
+            }
         }
 
-        sourceSlot.onTake(playerIn, sourceStack);
-        return copyOfSourceStack;
+        if (stack.isEmpty()) {
+            clickedSlot.set(ItemStack.EMPTY);
+        } else {
+            clickedSlot.setChanged();
+        }
+
+        clickedSlot.onTake(player, stack);
+
+        return copy;
     }
 
     public boolean isCrafting() {
@@ -351,24 +353,40 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
 
     public int getScaledProgress() {
         int progress = this.data.get(0);
-        int maxProgress = this.data.get(1);
-        int progressArrowSize = 24;
+        int maxProgress = this.data.get(1);  // Max Progress
+        int progressArrowSize = 24; // This is the height in pixels of your arrow
 
         return maxProgress != 0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
     }
 
     @Override
     public boolean stillValid(Player player) {
+        // get block at the container’s position
         BlockState state = player.level().getBlockState(blockEntity.getBlockPos());
         Block block = state.getBlock();
 
-        boolean isValid = block.defaultBlockState().is(ModTags.Blocks.SMITHING_ANVIL);
+        // check if the block at that position is in your tag
+        boolean isValid = state.is(ModTags.Blocks.SMITHING_ANVIL);
 
         return AbstractContainerMenu.stillValid(
                 ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
                 player,
-                block
+                block  // only passed here for distance check
         ) && isValid;
+    }
+
+    private void addPlayerInventory(Inventory playerInventory) {
+        for (int i = 0; i < 3; ++i) {
+            for (int l = 0; l < 9; ++l) {
+                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
+            }
+        }
+    }
+
+    private void addPlayerHotbar(Inventory playerInventory) {
+        for (int i = 0; i < 9; ++i) {
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
+        }
     }
 
     public int getRemainingHits() {
@@ -407,24 +425,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
     @Override
     public void clearCraftingContent() {
         if (this.player.level().isClientSide) return;
-
-        for (int i = 0; i < this.craftingContainer.getContainerSize(); i++) {
-            ItemStack stack = this.craftingContainer.getItem(i);
-
-            if (!stack.isEmpty()) {
-                // Try to move back to player inventory
-                if (!this.moveItemStackTo(stack,
-                        VANILLA_FIRST_SLOT_INDEX,
-                        VANILLA_SLOT_COUNT,
-                        false)) {
-
-                    // If inventory full → drop to player
-                    this.player.drop(stack, false);
-                }
-
-                this.craftingContainer.setItem(i, ItemStack.EMPTY);
-            }
-        }
+        this.craftingContainer.clearContent();
     }
 
     @Override
@@ -455,13 +456,17 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
     }
 
     @Override
-    public RecipeBookType getRecipeBookType() {
+    public @NotNull RecipeBookType getRecipeBookType() {
         return OvergearedMod.FORGING;
     }
 
     @Override
     public boolean shouldMoveToInventory(int slot) {
         return slot < (getGridWidth() * getGridHeight());
+    }
+
+    public AbstractSmithingAnvilBlockEntity getBlockEntity() {
+        return blockEntity;
     }
 
     @Override
@@ -478,13 +483,15 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
 
         // If different recipe → clear first
         if (!gridMatches) {
-            this.clearCraftingContent();
+            this.clearContainer(this.player, this.craftingContainer);
         }
 
+        // Build stacked contents from player inventory
         StackedContents stacked = new StackedContents();
         player.getInventory().fillStackedContents(stacked);
 
         if (!stacked.canCraft(recipe, null)) {
+            super.handlePlacement(placeAll, recipe, player);
             return;
         }
 
@@ -492,6 +499,10 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
 
         int recipeWidth = forgingRecipe.getWidth();
         int recipeHeight = forgingRecipe.getHeight();
+
+        // Determine where player inventory starts dynamically
+        int firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
+        int totalSlots = this.slots.size();
 
         for (int row = 0; row < recipeHeight; row++) {
             for (int col = 0; col < recipeWidth; col++) {
@@ -503,25 +514,24 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
                 if (ingredient.isEmpty()) continue;
 
                 int gridIndex = col + row * 3;
+                if (gridIndex >= craftingSlotIndices.size()) continue;
+
                 int slotIndex = craftingSlotIndices.get(gridIndex);
                 Slot targetSlot = this.slots.get(slotIndex);
 
-                // If already matching stack exists → grow it
+                // If matching stack already exists → grow it
                 if (targetSlot.hasItem() && ingredient.test(targetSlot.getItem())) {
 
-                    for (int invIndex = VANILLA_FIRST_SLOT_INDEX;
-                         invIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-                         invIndex++) {
-
+                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
                         Slot invSlot = this.slots.get(invIndex);
-                        ItemStack stack = invSlot.getItem();
+                        ItemStack invStack = invSlot.getItem();
 
-                        if (!stack.isEmpty() && ingredient.test(stack)) {
+                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
 
-                            stack.shrink(1);
+                            invStack.shrink(1);
                             targetSlot.getItem().grow(1);
 
-                            if (stack.isEmpty()) {
+                            if (invStack.isEmpty()) {
                                 invSlot.set(ItemStack.EMPTY);
                             } else {
                                 invSlot.setChanged();
@@ -531,22 +541,19 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
                         }
                     }
                 }
-                // Empty slot → place fresh
+                // Empty grid slot → place new stack
                 else if (!targetSlot.hasItem()) {
 
-                    for (int invIndex = VANILLA_FIRST_SLOT_INDEX;
-                         invIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-                         invIndex++) {
-
+                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
                         Slot invSlot = this.slots.get(invIndex);
-                        ItemStack stack = invSlot.getItem();
+                        ItemStack invStack = invSlot.getItem();
 
-                        if (!stack.isEmpty() && ingredient.test(stack)) {
+                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
 
-                            ItemStack moved = stack.split(1);
+                            ItemStack moved = invStack.split(1);
                             targetSlot.set(moved);
 
-                            if (stack.isEmpty()) {
+                            if (invStack.isEmpty()) {
                                 invSlot.set(ItemStack.EMPTY);
                             } else {
                                 invSlot.setChanged();
@@ -562,7 +569,4 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         this.broadcastChanges();
     }
 
-    public AbstractSmithingAnvilBlockEntity getBlockEntity() {
-        return blockEntity;
-    }
 }

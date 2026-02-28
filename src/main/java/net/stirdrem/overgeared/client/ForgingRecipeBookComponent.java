@@ -51,6 +51,8 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
             return;
         AnvilTier anvilTier = forgingMenu.getBlockEntity().getAnvilTier();
         AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase());
+        int gridWidth = 3;
+        int gridHeight = 3;
 
         if (!anvilTier.isAtLeast(requiredTier)) {
             // Show red message in action bar
@@ -84,6 +86,9 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
 
         NonNullList<Ingredient> ingredients = forgingRecipe.getIngredients();
 
+        int offsetX = (gridWidth - recipeWidth) / 2;
+        int offsetY = (gridHeight - recipeHeight) / 2;
+
         for (int row = 0; row < recipeHeight; row++) {
             for (int col = 0; col < recipeWidth; col++) {
 
@@ -95,7 +100,11 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
                 if (ingredient.isEmpty())
                     continue;
 
-                int gridIndex = col + row * 3; // 3x3 layout
+                // Apply centering offset into 3x3 grid
+                int gridX = col + offsetX;
+                int gridY = row + offsetY;
+
+                int gridIndex = gridX + gridY * gridWidth; // 3 if 3x3
                 if (gridIndex >= inputSlots.size())
                     continue;
 
@@ -108,7 +117,8 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
                 this.ghostRecipe.addIngredient(
                         ingredient,
                         slot.x,
-                        slot.y);
+                        slot.y
+                );
             }
         }
     }
