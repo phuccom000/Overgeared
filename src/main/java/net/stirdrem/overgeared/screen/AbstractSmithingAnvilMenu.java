@@ -1,12 +1,16 @@
 package net.stirdrem.overgeared.screen;
 
+import net.minecraft.core.NonNullList;
+import net.minecraft.recipebook.ServerPlaceRecipe;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
-import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
@@ -14,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
@@ -28,35 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, ForgingRecipe> {
-    private final CraftingContainer craftingContainer = new CraftingContainer() {
-        @Override
-        public void fillStackedContents(StackedContents contents) {
-            for (int i = 0; i < this.getContainerSize(); i++) {
-                contents.accountSimpleStack(this.getItem(i));
-            }
-        }
-
-        @Override
-        public int getWidth() {
-            return 3;
-        }
-
-        @Override
-        public int getHeight() {
-            return 3;
-        }
-
-        @Override
-        public List<ItemStack> getItems() {
-            List<ItemStack> stacks = new ArrayList<>(9);
-
-            for (int i = 0; i < 9; i++) {
-                stacks.add(blockEntity.getItemHandler().getStackInSlot(i));
-            }
-
-            return stacks;
-        }
-
+    private final Container craftingContainer = new Container() {
         @Override
         public int getContainerSize() {
             return 9;
@@ -136,8 +113,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         this.level = inv.player.level();
         this.data = data;
         this.player = inv.player;
-        addPlayerInventory(inv);
-        addPlayerHotbar(inv);
 
         IItemHandler iItemHandler = this.blockEntity.getItemHandler();
 
@@ -246,6 +221,9 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         };
         this.addSlot(this.resultSlot);
 
+        addPlayerInventory(inv);
+        addPlayerHotbar(inv);
+
         addDataSlots(data);
     }
 
@@ -274,43 +252,102 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
-    private static final int VANILLA_FIRST_SLOT_INDEX = 0;
+    private static int blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get() ? 1 : 0;
+    private static int VANILLA_FIRST_SLOT_INDEX = 11 + blueprintEnabled;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
     private static final int TE_INVENTORY_SLOT_COUNT = 12;  // must be the number of slots you have!
 
     @Override
-    public ItemStack quickMoveStack(Player playerIn, int pIndex) {
-        Slot sourceSlot = slots.get(pIndex);
-        if (!sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
-        ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack copyOfSourceStack = sourceStack.copy();
-
-        // Check if the slot clicked is one of the vanilla container slots
-        if (pIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
-            // This is a vanilla container slot so merge the stack into the tile inventory
-            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX
-                    + TE_INVENTORY_SLOT_COUNT - 1, false)) {
-                return ItemStack.EMPTY;  // EMPTY_ITEM
-            }
-        } else if (pIndex < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
-            // This is a TE slot so merge the stack into the players inventory
-            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
-                return ItemStack.EMPTY;
-            }
-        } else {
-            System.out.println("Invalid slotIndex:" + pIndex);
+    public ItemStack quickMoveStack(Player player, int index) {
+        Slot clickedSlot = this.slots.get(index);
+        if (clickedSlot == null || !clickedSlot.hasItem()) {
             return ItemStack.EMPTY;
         }
-        // If stack size == 0 (the entire stack was moved) set slot contents to null
-        if (sourceStack.getCount() == 0) {
-            sourceSlot.set(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
+
+        ItemStack stack = clickedSlot.getItem();
+        ItemStack copy = stack.copy();
+
+        int totalSlots = this.slots.size();
+
+        // Determine boundaries dynamically
+        int firstPlayerSlot = -1;
+
+        // Player inventory always starts after result slot
+        firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
+
+        // =========================
+        // If clicking TE slot
+        // =========================
+        if (index < firstPlayerSlot) {
+
+            // Prevent shift-clicking output
+            if (clickedSlot == this.resultSlot) {
+                return ItemStack.EMPTY;
+            }
+
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, true)) {
+                return ItemStack.EMPTY;
+            }
         }
-        sourceSlot.onTake(playerIn, sourceStack);
-        return copyOfSourceStack;
+        // =========================
+        // If clicking Player inventory
+        // =========================
+        else {
+
+            // Hammer slot detection
+            Slot hammerSlot = this.slots.get(0); // first slot added
+            boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+            Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
+
+            // Move hammer
+            if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
+                if (!moveItemStackTo(stack,
+                        hammerSlot.index,
+                        hammerSlot.index + 1,
+                        false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // Move blueprint
+            else if (blueprintEnabled &&
+                    (stack.is(ModItems.BLUEPRINT.get())
+                            || stack.getItem() instanceof SmithingTemplateItem)) {
+
+                if (!moveItemStackTo(stack,
+                        blueprintSlot.index,
+                        blueprintSlot.index + 1,
+                        false)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // Move to crafting grid
+            else {
+                boolean moved = false;
+
+                for (int gridIndex : craftingSlotIndices) {
+                    if (moveItemStackTo(stack, gridIndex, gridIndex + 1, false)) {
+                        moved = true;
+                        break;
+                    }
+                }
+
+                if (!moved) {
+                    return ItemStack.EMPTY;
+                }
+            }
+        }
+
+        if (stack.isEmpty()) {
+            clickedSlot.set(ItemStack.EMPTY);
+        } else {
+            clickedSlot.setChanged();
+        }
+
+        clickedSlot.onTake(player, stack);
+
+        return copy;
     }
 
     public boolean isCrafting() {
@@ -410,37 +447,12 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     @Override
     public void clearCraftingContent() {
         if (this.player.level().isClientSide) return;
-
-        for (int i = 0; i < this.craftingContainer.getContainerSize(); i++) {
-            ItemStack stack = this.craftingContainer.getItem(i);
-
-            if (!stack.isEmpty()) {
-                // Try to move back to player inventory
-                if (!this.moveItemStackTo(stack,
-                        VANILLA_FIRST_SLOT_INDEX,
-                        VANILLA_SLOT_COUNT,
-                        false)) {
-
-                    // If inventory full → drop to player
-                    this.player.drop(stack, false);
-                }
-
-                this.craftingContainer.setItem(i, ItemStack.EMPTY);
-            }
-        }
+        this.craftingContainer.clearContent();
     }
 
     @Override
     public boolean recipeMatches(RecipeHolder<ForgingRecipe> recipe) {
-        ForgingRecipe forgingRecipe = recipe.value();
-
-        CraftingInput input = CraftingInput.of(
-                this.craftingContainer.getWidth(),
-                this.craftingContainer.getHeight(),
-                this.craftingContainer.getItems()
-        );
-
-        return forgingRecipe.matches(input, this.level);
+        return recipe.value().matches(new RecipeWrapper(blockEntity.getItemHandler()), level);
     }
 
     @Override
@@ -476,4 +488,108 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     public AbstractSmithingAnvilBlockEntity getBlockEntity() {
         return blockEntity;
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void handlePlacement(boolean placeAll, RecipeHolder<?> recipeHolder, ServerPlayer player) {
+
+        if (!(recipeHolder.value() instanceof ForgingRecipe forgingRecipe)) {
+            super.handlePlacement(placeAll, recipeHolder, player);
+            return;
+        }
+
+        if (player.level().isClientSide) return;
+
+        RecipeHolder<ForgingRecipe> recipe =
+                (RecipeHolder<ForgingRecipe>) recipeHolder;
+
+        // If different recipe → clear grid first
+        if (!this.recipeMatches(recipe)) {
+            this.clearContainer(this.player, this.craftingContainer);
+        }
+
+        // Build stacked contents from player inventory
+        StackedContents stacked = new StackedContents();
+        player.getInventory().fillStackedContents(stacked);
+
+        if (!stacked.canCraft(recipe.value(), null)) {
+            new ServerPlaceRecipe<>(this)
+                    .recipeClicked(player, recipe, placeAll);
+            return;
+        }
+
+        NonNullList<Ingredient> ingredients = recipe.value().getIngredients();
+
+        int recipeWidth = forgingRecipe.getWidth();
+        int recipeHeight = forgingRecipe.getHeight();
+
+        // Determine where player inventory starts dynamically
+        int firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
+        int totalSlots = this.slots.size();
+
+        for (int row = 0; row < recipeHeight; row++) {
+            for (int col = 0; col < recipeWidth; col++) {
+
+                int recipeIndex = col + row * recipeWidth;
+                if (recipeIndex >= ingredients.size()) continue;
+
+                Ingredient ingredient = ingredients.get(recipeIndex);
+                if (ingredient.isEmpty()) continue;
+
+                int gridIndex = col + row * 3;
+                if (gridIndex >= craftingSlotIndices.size()) continue;
+
+                int slotIndex = craftingSlotIndices.get(gridIndex);
+                Slot targetSlot = this.slots.get(slotIndex);
+
+                // If matching stack already exists → grow it
+                if (targetSlot.hasItem() && ingredient.test(targetSlot.getItem())) {
+
+                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
+                        Slot invSlot = this.slots.get(invIndex);
+                        ItemStack invStack = invSlot.getItem();
+
+                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
+
+                            invStack.shrink(1);
+                            targetSlot.getItem().grow(1);
+
+                            if (invStack.isEmpty()) {
+                                invSlot.set(ItemStack.EMPTY);
+                            } else {
+                                invSlot.setChanged();
+                            }
+
+                            break;
+                        }
+                    }
+                }
+                // Empty grid slot → place new stack
+                else if (!targetSlot.hasItem()) {
+
+                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
+                        Slot invSlot = this.slots.get(invIndex);
+                        ItemStack invStack = invSlot.getItem();
+
+                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
+
+                            ItemStack moved = invStack.split(1);
+                            targetSlot.set(moved);
+
+                            if (invStack.isEmpty()) {
+                                invSlot.set(ItemStack.EMPTY);
+                            } else {
+                                invSlot.setChanged();
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        this.broadcastChanges();
+    }
+
 }

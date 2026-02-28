@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.client.ForgingBookCategory;
-import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 
 import java.util.*;
@@ -73,35 +72,15 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         this.tab = tab;
     }
 
-    public static Optional<ForgingRecipe> findBestMatch(Level world, RecipeInput recipeInput) {
-        return findBestMatchHolder(world, recipeInput).map(RecipeHolder::value);
+    public static Optional<ForgingRecipe> findBestMatch(Level world, RecipeInput RecipeInput) {
+        return findBestMatchHolder(world, RecipeInput).map(RecipeHolder::value);
     }
 
-    public static Optional<RecipeHolder<ForgingRecipe>> findBestMatchHolder(Level world, RecipeInput recipeInput) {
+    public static Optional<RecipeHolder<ForgingRecipe>> findBestMatchHolder(Level world, RecipeInput RecipeInput) {
         return world.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FORGING.get())
                 .stream()
-                .filter(holder -> holder.value().matches(recipeInput, world))
+                .filter(holder -> holder.value().matches(RecipeInput, world))
                 .max(Comparator.comparingInt(holder -> holder.value().getRecipeSize()));
-    }
-
-    private boolean checkBlueprint(RecipeInput recipeInput) {
-        ItemStack blueprintStack = recipeInput.getItem(BLUEPRINT_SLOT);
-
-        // If no blueprints required
-        if (blueprintTypes.isEmpty()) {
-            return blueprintStack.isEmpty();
-        }
-
-        // Blueprint required, but slot empty
-        if (blueprintStack.isEmpty()) return false;
-
-        BlueprintData data = blueprintStack.get(ModComponents.BLUEPRINT_DATA);
-        if (data == null) return false;
-
-        String toolType = data.toolType();
-        if (toolType.isEmpty()) return false;
-
-        return blueprintTypes.contains(toolType);
     }
 
     @Override
@@ -109,7 +88,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         ForgingRecipe bestMatch = null;
         int bestPriority = -1;
 
-        // Check all possible positions for all possible recipes
+        // Check all possible positions within the 3x3 grid
         for (int y = 0; y <= 3 - height; y++) {
             for (int x = 0; x <= 3 - width; x++) {
                 if (matchesPattern(recipeInput, x, y) && checkSurroundingBlanks(recipeInput, x, y)) {
@@ -125,7 +104,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return bestMatch == this;
     }
 
-    private boolean checkSurroundingBlanks(RecipeInput recipeInput, int xOffset, int yOffset) {
+    private boolean checkSurroundingBlanks(RecipeInput RecipeInput, int xOffset, int yOffset) {
         // Check if slots outside the recipe pattern are empty
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
@@ -137,7 +116,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
                 // Check if non-recipe slots are empty
                 int invSlot = y * 3 + x;
-                if (!recipeInput.getItem(invSlot).isEmpty()) {
+                if (!RecipeInput.getItem(invSlot).isEmpty()) {
                     return false;
                 }
             }
@@ -157,16 +136,16 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return width * height * 100 + itemCount; // Multiplier ensures size dominates
     }
 
-    private boolean matchesPattern(RecipeInput recipeInput, int xOffset, int yOffset) {
+    private boolean matchesPattern(RecipeInput RecipeInput, int xOffset, int yOffset) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int invSlot = (y + yOffset) * 3 + (x + xOffset);
                 ForgingIngredient ingredient = ingredients.get(y * width + x);
 
                 if (ingredient.ingredient().isEmpty()) {
-                    if (!recipeInput.getItem(invSlot).isEmpty()) return false;
+                    if (!RecipeInput.getItem(invSlot).isEmpty()) return false;
                 } else {
-                    if (!ingredient.test(recipeInput.getItem(invSlot))) return false;
+                    if (!ingredient.test(RecipeInput.getItem(invSlot))) return false;
                 }
             }
         }
@@ -174,7 +153,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput recipeInput, HolderLookup.Provider registries) {
+    public ItemStack assemble(RecipeInput RecipeInput, HolderLookup.Provider registries) {
         ItemStack output = result.copy();
 
         for (int i = 0; i < ingredients.size(); i++) {
@@ -183,7 +162,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
             if (!ingredient.transferNBT()) continue;
 
-            ItemStack input = recipeInput.getItem(i);
+            ItemStack input = RecipeInput.getItem(i);
             if (input.isEmpty()) continue;
 
             // Merge data components instead of NBT
