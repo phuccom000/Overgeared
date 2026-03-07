@@ -149,7 +149,7 @@ public class AnvilMinigameEvents {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        ensureInitialized();
+        //ensureInitialized();
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         // Track crouch release so shift+click toggle requires a fresh shift press

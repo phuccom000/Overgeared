@@ -25,7 +25,6 @@ public class QualityAttributeReloadListener
             new QualityAttributeReloadListener();
 
     private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
-    private static final Gson GSON = new Gson();
 
     public QualityAttributeReloadListener() {
         super(new Gson(), "quality_attributes");

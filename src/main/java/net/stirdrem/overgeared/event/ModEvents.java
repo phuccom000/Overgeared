@@ -170,7 +170,8 @@ public class ModEvents {
             }
 
             // Remove original
-            event.removeModifier(entry.attribute(), originalModifier.id());
+            if (operation == AttributeModifier.Operation.ADD_VALUE)
+                event.removeModifier(entry.attribute(), originalModifier.id());
 
             // Add modified version
             event.addModifier(
@@ -181,12 +182,23 @@ public class ModEvents {
         }
     }
 
-    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
-        return new AttributeModifier(
-                original.id(),
-                original.amount() + bonus,
-                operation
-        );
+    private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus,
+                                                             AttributeModifier.Operation operation) {
+        ResourceLocation id;
+        double amount;
+
+        if (operation == AttributeModifier.Operation.ADD_VALUE) {
+            id = original.id();
+            amount = original.amount() + bonus;
+        } else {
+            String uniqueId = String.valueOf(System.nanoTime());
+
+            id = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID,
+                    "quality_modifier/" + uniqueId.hashCode());
+            amount = bonus;
+        }
+
+        return new AttributeModifier(id, amount, operation);
     }
 
     @SubscribeEvent
