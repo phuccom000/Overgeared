@@ -6,23 +6,18 @@ import io.wispforest.accessories.api.attributes.AttributeModificationData;
 import io.wispforest.accessories.api.events.AdjustAttributeModifierCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.utils.AttributeUtils;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
-import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import net.stirdrem.overgeared.event.ModEvents;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static net.stirdrem.overgeared.event.ModEvents.createModifiedAttribute;
 
@@ -76,7 +71,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
             if (exclusiveData != null) {
                 // It's an exclusive modifier - remove and replace
-                builder.removeExclusive(attribute, location);
+                if (operation == AttributeModifier.Operation.ADDITION) builder.removeExclusive(attribute, location);
 
                 // Create modified attribute
                 AttributeModifier modified = createModifiedAttribute(modifier, bonus, operation);
@@ -89,7 +84,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
                 if (!stackableData.isEmpty()) {
                     // Remove all stackable modifiers with this location
-                    builder.removeStacks(attribute, location);
+                    if (operation == AttributeModifier.Operation.ADDITION) builder.removeStacks(attribute, location);
 
                     // Add modified versions
                     for (AttributeModificationData data : stackableData) {

@@ -9,12 +9,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -26,7 +24,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.TickEvent;
@@ -47,12 +44,12 @@ import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
+import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.OnlyResetMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
@@ -212,16 +209,26 @@ public class ModEvents {
         for (AttributeModifier modifier : modifiers) {
             if (modifier.getAmount() == 0) continue;
 
-            event.removeModifier(attribute, modifier);
+            if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
             event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
         }
     }
 
     public static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
+        UUID id;
+        double amount;
+        if (operation == AttributeModifier.Operation.ADDITION) {
+            id = original.getId();
+            amount = original.getAmount() + bonus;
+        } else {
+            id = UUID.randomUUID();
+            amount = bonus;
+        }
+        
         return new AttributeModifier(
-                original.getId(),
+                id,
                 "Overgeared",
-                original.getAmount() + bonus,
+                amount,
                 operation);
     }
 

@@ -1,18 +1,14 @@
 package net.stirdrem.overgeared.compat.curios;
 
 import com.google.common.collect.Multimap;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
-import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import net.stirdrem.overgeared.event.ModEvents;
 import top.theillusivec4.curios.api.event.CurioAttributeModifierEvent;
@@ -56,7 +52,7 @@ public class CuriosModPlugin {
         for (AttributeModifier modifier : modifiers) {
             if (modifier.getAmount() == 0) continue;
 
-            event.removeModifier(attribute, modifier);
+            if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
             event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
         }
     }

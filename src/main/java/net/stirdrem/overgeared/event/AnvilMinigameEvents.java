@@ -149,7 +149,7 @@ public class AnvilMinigameEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        ensureInitialized();
+        //ensureInitialized();
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         if (!mc.isPaused()) updatePopups();
