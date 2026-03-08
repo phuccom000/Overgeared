@@ -8,7 +8,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
@@ -17,13 +16,11 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.util.CodecUtils;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -240,7 +237,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                 CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
-                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
+                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("material").codec().fieldOf("input").forGetter(r -> r.requiredMaterials),
                 Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),

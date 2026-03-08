@@ -28,8 +28,12 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
     private static final ResourceLocation STRONGHOLD_LIBRARY = ResourceLocation.withDefaultNamespace("chests/stronghold_library");
     private static final ResourceLocation DESERT_PYRAMID = ResourceLocation.withDefaultNamespace("chests/desert_pyramid");
     private static final ResourceLocation JUNGLE_TEMPLE = ResourceLocation.withDefaultNamespace("chests/jungle_temple");
+    private static final ResourceLocation JUNGLE_TEMPLE_DISPENSER = ResourceLocation.tryBuild("minecraft", "chests/jungle_temple_dispenser");
     private static final ResourceLocation SHIPWRECK_TREASURE = ResourceLocation.withDefaultNamespace("chests/shipwreck_treasure");
     private static final ResourceLocation WOODLAND_MANSION = ResourceLocation.withDefaultNamespace("chests/woodland_mansion");
+    private static final ResourceLocation ANCIENT_CITY = ResourceLocation.tryBuild("minecraft", "chests/ancient_city");
+    private static final ResourceLocation PILLAGER_OUTPOST = ResourceLocation.tryBuild("minecraft", "chests/pillager_outpost");
+    private static final ResourceLocation BURIED_TREASURE = ResourceLocation.tryBuild("minecraft", "chests/buried_treasure");
 
     @Override
     protected void start() {
@@ -46,7 +50,10 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
                 DESERT_PYRAMID,
                 SHIPWRECK_TREASURE,
                 WOODLAND_MANSION,
-                JUNGLE_TEMPLE
+                JUNGLE_TEMPLE,
+                ANCIENT_CITY,
+                PILLAGER_OUTPOST,
+                BURIED_TREASURE
         };
 
         for (ResourceLocation dungeon : rareDungeons) {
@@ -56,16 +63,21 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
             this.add("steel_ingot_from_" + namePrefix,
                     new AddItemModifier(new LootItemCondition[]{
                             new LootTableIdCondition.Builder(dungeon).build(),
-                            LootItemRandomChanceCondition.randomChance(0.50f).build()
+                            LootItemRandomChanceCondition.randomChance(0.75f).build()
                     }, ModItems.STEEL_INGOT.get()));
 
             // Diamond upgrade
             this.add("diamond_upgrade_from_" + namePrefix,
                     new AddItemModifier(new LootItemCondition[]{
                             new LootTableIdCondition.Builder(dungeon).build(),
-                            LootItemRandomChanceCondition.randomChance(0.25f).build()
+                            LootItemRandomChanceCondition.randomChance(0.50f).build()
                     }, ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE.get()));
         }
+
+        add("iron_arrow_from_jungle_temple_dispenser", new AddItemModifier(new LootItemCondition[]{
+                new LootTableIdCondition.Builder(JUNGLE_TEMPLE_DISPENSER).build(),
+                LootItemRandomChanceCondition.randomChance(0.50f).build()
+        }, ModItems.IRON_UPGRADE_ARROW.get()));
 
         // Less rare dungeons
         ResourceLocation[] commonDungeons = new ResourceLocation[]{
