@@ -61,7 +61,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
         List<AttributeModifier> modifiers = List.copyOf(originalModifiers.get(attribute));
 
         for (AttributeModifier modifier : modifiers) {
-            if (modifier.getAmount() == 0) continue;
+            //if (modifier.getAmount() == 0) continue;
 
             // Get the ResourceLocation for this modifier
             ResourceLocation location = AttributeUtils.getLocation(modifier.getName());

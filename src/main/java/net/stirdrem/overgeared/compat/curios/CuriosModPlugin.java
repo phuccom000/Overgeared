@@ -50,7 +50,7 @@ public class CuriosModPlugin {
         List<AttributeModifier> modifiers = List.copyOf(originalModifiers.get(attribute));
 
         for (AttributeModifier modifier : modifiers) {
-            if (modifier.getAmount() == 0) continue;
+            //if (modifier.getAmount() == 0) continue;
 
             if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
             event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
