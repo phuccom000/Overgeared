@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.client.ForgingBookCategory;
+import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 
 import java.util.*;
@@ -83,25 +84,43 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 .max(Comparator.comparingInt(holder -> holder.value().getRecipeSize()));
     }
 
+    private boolean checkBlueprint(RecipeInput recipeInput) {
+        ItemStack blueprintStack = recipeInput.getItem(BLUEPRINT_SLOT);
+
+        // Case 1: Blueprint not required and no types defined -> slot must be empty
+        if (!requiresBlueprint && blueprintTypes.isEmpty()) {
+            return blueprintStack.isEmpty();
+        }
+
+        // If slot empty
+        if (blueprintStack.isEmpty()) {
+            return !requiresBlueprint;
+        }
+
+        BlueprintData data = blueprintStack.get(ModComponents.BLUEPRINT_DATA);
+        if (data == null) return false;
+
+        String toolType = data.toolType();
+        if (toolType.isEmpty()) return false;
+
+        return blueprintTypes.contains(toolType);
+    }
+
+
     @Override
     public boolean matches(RecipeInput recipeInput, Level world) {
-        ForgingRecipe bestMatch = null;
-        int bestPriority = -1;
+        if (!checkBlueprint(recipeInput)) return false;
 
         // Check all possible positions within the 3x3 grid
         for (int y = 0; y <= 3 - height; y++) {
             for (int x = 0; x <= 3 - width; x++) {
                 if (matchesPattern(recipeInput, x, y) && checkSurroundingBlanks(recipeInput, x, y)) {
-                    int currentPriority = calculatePriority();
-                    if (currentPriority > bestPriority) {
-                        bestPriority = currentPriority;
-                        bestMatch = this;
-                    }
+                    return true;
                 }
             }
         }
 
-        return bestMatch == this;
+        return false;
     }
 
     private boolean checkSurroundingBlanks(RecipeInput RecipeInput, int xOffset, int yOffset) {
@@ -122,18 +141,6 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
             }
         }
         return true;
-    }
-
-    private int calculatePriority() {
-        // Calculate priority based on recipe size (bigger recipes have higher priority)
-        // Add a small bonus for recipes that use more items to break ties
-        int itemCount = 0;
-        for (ForgingIngredient ingredient : ingredients) {
-            if (!ingredient.ingredient.isEmpty()) {
-                itemCount++;
-            }
-        }
-        return width * height * 100 + itemCount; // Multiplier ensures size dominates
     }
 
     private boolean matchesPattern(RecipeInput RecipeInput, int xOffset, int yOffset) {
