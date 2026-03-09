@@ -82,13 +82,15 @@ public class ForgingRecipe implements Recipe<Container> {
     private boolean checkBlueprint(Container inv) {
         ItemStack blueprintStack = inv.getItem(BLUEPRINT_SLOT);
 
-        // If no blueprints required
-        if (blueprintTypes.isEmpty()) {
+        // If blueprint not required and no types defined -> slot must be empty
+        if (!requiresBlueprint && blueprintTypes.isEmpty()) {
             return blueprintStack.isEmpty();
         }
 
-        // Blueprint required, but slot empty
-        if (blueprintStack.isEmpty()) return false;
+        // If slot empty
+        if (blueprintStack.isEmpty()) {
+            return !requiresBlueprint;
+        }
 
         CompoundTag nbt = blueprintStack.getTag();
         if (nbt == null || !nbt.contains("ToolType")) return false;
@@ -99,23 +101,17 @@ public class ForgingRecipe implements Recipe<Container> {
 
     @Override
     public boolean matches(Container inv, Level world) {
-        ForgingRecipe bestMatch = null;
-        int bestPriority = -1;
+        if (!checkBlueprint(inv)) return false;
 
-        // Check all possible positions for all possible recipes
         for (int y = 0; y <= 3 - height; y++) {
             for (int x = 0; x <= 3 - width; x++) {
                 if (matchesPattern(inv, x, y) && checkSurroundingBlanks(inv, x, y)) {
-                    int currentPriority = calculatePriority();
-                    if (currentPriority > bestPriority) {
-                        bestPriority = currentPriority;
-                        bestMatch = this;
-                    }
+                    return true;
                 }
             }
         }
 
-        return bestMatch == this;
+        return false;
     }
 
     private boolean checkSurroundingBlanks(Container inv, int xOffset, int yOffset) {
@@ -136,18 +132,6 @@ public class ForgingRecipe implements Recipe<Container> {
             }
         }
         return true;
-    }
-
-    private int calculatePriority() {
-        // Calculate priority based on recipe size (bigger recipes have higher priority)
-        // Add a small bonus for recipes that use more items to break ties
-        int itemCount = 0;
-        for (ForgingIngredient ingredient : ingredients) {
-            if (!ingredient.ingredient.isEmpty()) {
-                itemCount++;
-            }
-        }
-        return width * height * 100 + itemCount; // Multiplier ensures size dominates
     }
 
     private boolean matchesPattern(Container inv, int xOffset, int yOffset) {
