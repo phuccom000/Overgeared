@@ -37,12 +37,12 @@ public class CuriosModPlugin {
                     .getValue(def.attribute());
             if (attribute == null) continue;
 
-            addCurioModifier(event, attribute, value.amount(), value.operation());
+            addCurioModifier(event, attribute, value.amount(), value.operation(), quality);
         }
 
     }
 
-    private static void addCurioModifier(CurioAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
+    private static void addCurioModifier(CurioAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation, String quality) {
         Multimap<Attribute, AttributeModifier> originalModifiers = event.getModifiers();
 
         if (!originalModifiers.containsKey(attribute)) return;
@@ -53,7 +53,7 @@ public class CuriosModPlugin {
             //if (modifier.getAmount() == 0) continue;
 
             if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
-            event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
+            event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation, quality));
         }
     }
 }

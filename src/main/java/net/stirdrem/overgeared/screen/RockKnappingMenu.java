@@ -8,7 +8,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -52,11 +53,8 @@ public class RockKnappingMenu extends AbstractContainerMenu {
         ItemStack offHandItem = player.getOffhandItem();
         boolean valid = false;
 
-        if (mainHandItem.is(ModTags.Items.KNAPPABLE)) {
+        if (mainHandItem.is(ModTags.Items.KNAPPABLE) && offHandItem.is(ModTags.Items.KNAPPABLE)) {
             this.inputRock = mainHandItem.copy();
-            valid = true;
-        } else if (offHandItem.is(ModTags.Items.KNAPPABLE)) {
-            this.inputRock = offHandItem.copy();
             valid = true;
         }
 
@@ -151,12 +149,12 @@ public class RockKnappingMenu extends AbstractContainerMenu {
     }
 
     private boolean hasInputRock(Player player) {
-        // Check if player still has the rock in either hand
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
 
-        boolean hasRock = (ItemStack.isSameItemSameTags(mainHand, inputRock) && mainHand.getCount() > 0) ||
-                (ItemStack.isSameItemSameTags(offHand, inputRock) && offHand.getCount() > 0);
+        boolean hasRock =
+                mainHand.is(ModTags.Items.KNAPPABLE) &&
+                        offHand.is(ModTags.Items.KNAPPABLE);
 
         if (!hasRock && !player.level().isClientSide) {
             player.closeContainer();
@@ -176,7 +174,7 @@ public class RockKnappingMenu extends AbstractContainerMenu {
 
             // Result slot (slot 45)
             if (index == RESULT_SLOT_INDEX) {
-                if (!this.moveItemStackTo(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_LAST_SLOT_INDEX + 1, true)) {
+                if (!this.moveItemStackTo(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_LAST_SLOT_INDEX + 1, false)) {
                     return ItemStack.EMPTY;
                 }
 
@@ -258,16 +256,10 @@ public class RockKnappingMenu extends AbstractContainerMenu {
 
         // Check both hands and consume from whichever has the rock
         ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
 
         if (ItemStack.isSameItemSameTags(mainHand, inputRock) && mainHand.getCount() > 0) {
             mainHand.shrink(1);
             player.getInventory().setChanged();
-        } else if (ItemStack.isSameItemSameTags(offHand, inputRock) && offHand.getCount() > 0) {
-            offHand.shrink(1);
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.inventoryMenu.broadcastChanges();
-            }
         }
     }
 

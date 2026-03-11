@@ -12,10 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 import java.nio.file.Path;
@@ -121,8 +118,6 @@ public class OvergearedConfigScreen extends Screen {
         buildAnvilForging();
         buildQualitySettings();
         buildForgingZones();
-        buildWeaponBonuses();
-        buildArmorBonuses();
         buildDurabilityBonuses();
         buildHeatedItems();
         buildGrindingDurability();
@@ -331,60 +326,6 @@ public class OvergearedConfigScreen extends Screen {
                 () -> getDouble(configPath + ".maxArrowSpeed"),
                 v -> setDouble(configPath + ".maxArrowSpeed", v),
                 0.0, 10.0
-        ));
-    }
-
-    private void buildWeaponBonuses() {
-        configList.addConfigEntry(new HeaderEntry("Weapon Bonuses"));
-
-        // Damage Bonuses - sorted from Poor to Master
-        buildWeaponBonus("Poor", "Weapon Bonuses.poorWeaponDamage", -10.0, 10.0);
-        buildWeaponBonus("Well", "Weapon Bonuses.wellWeaponDamage", -10.0, 10.0);
-        buildWeaponBonus("Expert", "Weapon Bonuses.expertWeaponDamage", -10.0, 10.0);
-        buildWeaponBonus("Perfect", "Weapon Bonuses.perfectWeaponDamage", -10.0, 10.0);
-        buildWeaponBonus("Master", "Weapon Bonuses.masterWeaponDamage", -10.0, 10.0);
-        configList.addConfigEntry(new HeaderEntry(""));
-        // Speed Bonuses - sorted from Poor to Master
-        buildWeaponSpeedBonus("Poor", "Weapon Bonuses.poorWeaponSpeed", -2.0, 2.0);
-        buildWeaponSpeedBonus("Well", "Weapon Bonuses.wellWeaponSpeed", -2.0, 2.0);
-        buildWeaponSpeedBonus("Expert", "Weapon Bonuses.expertWeaponSpeed", -2.0, 2.0);
-        buildWeaponSpeedBonus("Perfect", "Weapon Bonuses.perfectWeaponSpeed", -2.0, 2.0);
-        buildWeaponSpeedBonus("Master", "Weapon Bonuses.masterWeaponSpeed", -2.0, 2.0);
-    }
-
-    private void buildWeaponBonus(String quality, String path, double min, double max) {
-        configList.addConfigEntry(new DoubleEntry(
-                quality + " Weapon Damage Addition",
-                () -> getDouble(path),
-                v -> setDouble(path, v),
-                min, max
-        ));
-    }
-
-    private void buildWeaponSpeedBonus(String quality, String path, double min, double max) {
-        configList.addConfigEntry(new DoubleEntry(
-                quality + " Weapon Speed Addition",
-                () -> getDouble(path),
-                v -> setDouble(path, v),
-                min, max
-        ));
-    }
-
-    private void buildArmorBonuses() {
-        configList.addConfigEntry(new HeaderEntry("Armor Bonuses"));
-        buildArmorBonus("Poor", "Armor Bonuses.poorArmorBonus", -5.0, 5.0);
-        buildArmorBonus("Well", "Armor Bonuses.wellArmorBonus", -5.0, 5.0);
-        buildArmorBonus("Expert", "Armor Bonuses.expertArmorBonus", -5.0, 5.0);
-        buildArmorBonus("Perfect", "Armor Bonuses.perfectArmorBonus", -5.0, 5.0);
-        buildArmorBonus("Master", "Armor Bonuses.masterArmorBonus", -5.0, 5.0);
-    }
-
-    private void buildArmorBonus(String quality, String path, double min, double max) {
-        configList.addConfigEntry(new DoubleEntry(
-                quality + " Armor Bonus Addition",
-                () -> getDouble(path),
-                v -> setDouble(path, v),
-                min, max
         ));
     }
 

@@ -3,7 +3,6 @@ package net.stirdrem.overgeared.event;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -43,12 +42,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.server.ServerLifecycleHooks;
-
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -63,7 +62,10 @@ import net.stirdrem.overgeared.heatedtem.HeatedItemProvider;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.networking.ModMessages;
-import net.stirdrem.overgeared.networking.packet.*;
+import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
+import net.stirdrem.overgeared.networking.packet.MinigameSetStartedC2SPacket;
+import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
+import net.stirdrem.overgeared.networking.packet.SetMinigameVisibleC2SPacket;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
@@ -72,7 +74,6 @@ import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -174,7 +175,6 @@ public class ModItemInteractEvents {
         if (!level.isClientSide()) {
             if (!(be instanceof AbstractSmithingAnvilBlockEntity)) {
                 hideMinigame((ServerPlayer) player);
-                ;
             }
         }
 
@@ -209,6 +209,8 @@ public class ModItemInteractEvents {
 
             if (currentOwner == null && !playerAnvilPositions.containsKey(player.getUUID())) {
                 anvilBE.setOwner(playerUUID);
+                anvilBE.setPlayer(player);
+                anvilBE.setMinigameOn(true);
 
                 // ADD SERVER-SIDE TRACKING
                 playerAnvilPositions.put(playerUUID, pos);
@@ -217,7 +219,7 @@ public class ModItemInteractEvents {
                 CompoundTag sync = new CompoundTag();
                 sync.putUUID("anvilOwner", playerUUID);
                 sync.putLong("anvilPos", pos.asLong());
-                ModMessages.sendToAll(new MinigameSyncS2CPacket(sync));
+                ModMessages.sendToAll(new MinigameSyncS2CPacket(pos, playerUUID));
                 return;
             }
 
@@ -250,8 +252,7 @@ public class ModItemInteractEvents {
             if (player.getUUID().equals(currentOwner)
                     || currentOwner == null
                     && ClientAnvilMinigameData.getPendingMinigamePos() == null) {
-                BlockPos pos1 = pos;
-                BlockPos anvilPos = playerAnvilPositions.get(player.getUUID());
+
                 if (playerAnvilPositions.get(player.getUUID()) != null && !pos.equals(playerAnvilPositions.get(player.getUUID()))) {
                     //player.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED));
                     event.setCanceled(true);
@@ -263,9 +264,6 @@ public class ModItemInteractEvents {
                     AtomicReference<String> quality = new AtomicReference<>("perfect");
                     Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                     recipeOpt.ifPresent(recipe -> {
-                        //ItemStack result = recipe.getResultItem(Minecraft.getInstance().level.registryAccess());
-                        //int progress = anvilBE.getRequiredProgress();
-                        //ModMessages.sendToServer(new StartMinigameC2SPacket(result, progress, pos));
                         if (AnvilMinigameEvents.minigameStarted) {
                             boolean isVisible = AnvilMinigameEvents.isIsVisible();
                             AnvilMinigameEvents.setIsVisible(pos, !isVisible);
@@ -277,9 +275,7 @@ public class ModItemInteractEvents {
                             playerAnvilPositions.put(player.getUUID(), pos);
                             playerMinigameVisibility.put(player.getUUID(), true);
                             AnvilMinigameEvents.setMinigameStarted(pos, true);
-                            //AnvilMinigameEvents.setIsVisible(pos, true);
                             ModMessages.sendToServer(new MinigameSetStartedC2SPacket(pos));
-                            //AnvilMinigameEvents.setMinigameStarted(pos, true);
                             ModMessages.sendToServer(new SetMinigameVisibleC2SPacket(pos, true));
                             AnvilMinigameEvents.setHitsRemaining(anvilBE.getRequiredProgress());
                         }
@@ -333,7 +329,6 @@ public class ModItemInteractEvents {
         ) {
             playerAnvilPositions.remove(playerId);
 
-
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
@@ -341,16 +336,14 @@ public class ModItemInteractEvents {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
-            // 3. Clear client-side state
+
+            // 2. Clear client-side state
             ClientAnvilMinigameData.putOccupiedAnvil(pos, null);
             AnvilMinigameEvents.reset(quality);
-            // 4. Sync null ownership to all clients
-            CompoundTag syncData = new CompoundTag();
-            syncData.putLong("anvilPos", pos.asLong());
-            syncData.putUUID("anvilOwner", new UUID(0, 0)); // special "no owner" UUID
-            ModMessages.sendToAll(new MinigameSyncS2CPacket(syncData));
-        }
 
+            // 3. Sync null ownership to all clients using the new constructor
+            ModMessages.sendToAll(new MinigameSyncS2CPacket(pos, null)); // null owner = clear ownership
+        }
     }
 
     public static ServerPlayer getUsingPlayer(BlockPos pos) {
@@ -585,10 +578,7 @@ public class ModItemInteractEvents {
         if (!(mainHand.is(ModTags.Items.KNAPPABLE) && offHand.is(ModTags.Items.KNAPPABLE))) {
             return;
         }
-        // Both items must be the SAME item
-        if (mainHand.getItem() != offHand.getItem()) {
-            return;
-        }
+
         // Prevent vanilla handling
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);

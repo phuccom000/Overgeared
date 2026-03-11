@@ -22,7 +22,10 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Fallable;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -37,9 +40,7 @@ import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.ModMessages;
-import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.PacketSendCounterC2SPacket;
-import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
@@ -121,6 +122,7 @@ public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implement
             } else
                 AnvilMinigameEvents.setIsVisible(pos, false);
             return InteractionResult.SUCCESS;
+
         }
 
         long now = level.getGameTime();
@@ -192,7 +194,6 @@ public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implement
             ModItemInteractEvents.releaseAnvil((ServerPlayer) player, pos);
             NetworkHooks.openScreen((ServerPlayer) player, anvil, pos);
         }
-
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 

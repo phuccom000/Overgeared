@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -31,7 +30,7 @@ public class ModTags {
         public static final TagKey<Item> HOT_ITEMS = tag("hot_items");
         public static final TagKey<Item> SMITHING_HAMMERS = tag("smithing_hammers");
         public static final TagKey<Item> TOOL_CAST = tag("tool_casts");
-        public static final TagKey<Item> KNAPPABLE = tag("knappable");
+        public static final TagKey<Item> KNAPPABLE = tag("knappables");
         public static final TagKey<Item> IRON_PLATES = tag("iron_plates");
         public static final TagKey<Item> COPPER_PLATES = tag("copper_plates");
 

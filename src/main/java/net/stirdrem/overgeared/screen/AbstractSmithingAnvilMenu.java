@@ -273,18 +273,39 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
 
         // Player inventory always starts after result slot
         firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
+        Slot hammerSlot = this.slots.get(0); // first slot added
+        boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+        Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
 
+        if (clickedSlot == hammerSlot || (blueprintEnabled && clickedSlot == blueprintSlot)) {
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, true)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (stack.isEmpty()) {
+                clickedSlot.set(ItemStack.EMPTY);
+            } else {
+                clickedSlot.setChanged();
+            }
+
+            clickedSlot.onTake(player, stack);
+            return copy;
+        }
+        
         // =========================
         // If clicking TE slot
         // =========================
         if (index < firstPlayerSlot) {
 
-            // Prevent shift-clicking output
             if (clickedSlot == this.resultSlot) {
-                return ItemStack.EMPTY;
+                if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, false)) {
+                    return ItemStack.EMPTY;
+                }
+                clickedSlot.onTake(player, stack);
+                return copy;
             }
 
-            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, true)) {
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, false)) {
                 return ItemStack.EMPTY;
             }
         }
@@ -294,16 +315,14 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         else {
 
             // Hammer slot detection
-            Slot hammerSlot = this.slots.get(0); // first slot added
-            boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
-            Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
+
 
             // Move hammer
             if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
                 if (!moveItemStackTo(stack,
                         hammerSlot.index,
                         hammerSlot.index + 1,
-                        false)) {
+                        true)) {
                     return ItemStack.EMPTY;
                 }
             }
@@ -315,7 +334,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
                 if (!moveItemStackTo(stack,
                         blueprintSlot.index,
                         blueprintSlot.index + 1,
-                        false)) {
+                        true)) {
                     return ItemStack.EMPTY;
                 }
             }

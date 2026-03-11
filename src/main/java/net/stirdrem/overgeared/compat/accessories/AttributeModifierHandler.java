@@ -46,11 +46,11 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
             Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(def.attribute());
             if (attribute == null) continue;
 
-            modifyAttribute(builder, attribute, value.amount(), value.operation());
+            modifyAttribute(builder, attribute, value.amount(), value.operation(), quality);
         }
     }
 
-    private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
+    private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus, AttributeModifier.Operation operation, String quality) {
         if (bonus == 0) return;
 
         // Get all existing modifiers for this attribute
@@ -74,7 +74,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
                 if (operation == AttributeModifier.Operation.ADDITION) builder.removeExclusive(attribute, location);
 
                 // Create modified attribute
-                AttributeModifier modified = createModifiedAttribute(modifier, bonus, operation);
+                AttributeModifier modified = createModifiedAttribute(modifier, bonus, operation, quality);
 
                 // Add it back as exclusive
                 builder.addExclusive(attribute, modified);
@@ -89,7 +89,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
                     // Add modified versions
                     for (AttributeModificationData data : stackableData) {
                         AttributeModifier originalStackMod = data.modifier();
-                        AttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus, operation);
+                        AttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus, operation, quality);
 
                         // Add as stackable with same location
                         builder.addStackable(attribute, location, modifiedStack.getAmount(), modifiedStack.getOperation());

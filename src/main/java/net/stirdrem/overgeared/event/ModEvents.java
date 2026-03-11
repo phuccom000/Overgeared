@@ -55,6 +55,7 @@ import net.stirdrem.overgeared.networking.packet.OnlyResetMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
 import net.stirdrem.overgeared.util.ModTags;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -145,7 +146,7 @@ public class ModEvents {
                     .getValue(def.attribute());
             if (attribute == null) continue;
 
-            modifyAttribute(event, attribute, value.amount(), value.operation());
+            modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
         }
     }
 
@@ -198,7 +199,7 @@ public class ModEvents {
         return false;
     }
 
-    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
+    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation, String quality) {
         Multimap<Attribute, AttributeModifier> originalModifiers = event.getModifiers();
 
         if (!originalModifiers.containsKey(attribute)) return;
@@ -210,18 +211,24 @@ public class ModEvents {
             //if (modifier.getAmount() == 0) continue;
 
             if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
-            event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation));
+            event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation, quality));
         }
     }
 
-    public static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus, AttributeModifier.Operation operation) {
+    public static AttributeModifier createModifiedAttribute(AttributeModifier original,
+                                                            double bonus,
+                                                            AttributeModifier.Operation operation,
+                                                            String quality) {
+
         UUID id;
         double amount;
+
         if (operation == AttributeModifier.Operation.ADDITION) {
             id = original.getId();
             amount = original.getAmount() + bonus;
         } else {
-            id = UUID.randomUUID();
+            String key = original.getId() + "_overgeared_" + quality + "_" + operation + bonus;
+            id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
             amount = bonus;
         }
 
@@ -229,7 +236,8 @@ public class ModEvents {
                 id,
                 "Overgeared",
                 amount,
-                operation);
+                operation
+        );
     }
 
     @SubscribeEvent
