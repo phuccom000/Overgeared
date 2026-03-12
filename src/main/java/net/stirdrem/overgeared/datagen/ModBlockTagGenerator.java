@@ -1,18 +1,14 @@
 package net.stirdrem.overgeared.datagen;
 
-import com.mojang.patchy.BlockedServers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,21 +64,12 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         this.tag(BlockTags.create(ResourceLocation.tryBuild("forge", "storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
-        this.tag(ModTags.Blocks.ANVIL_BASES)
+        this.tag(ModTags.Blocks.STONE_ANVIL_BASES)
                 .add(Blocks.STONE
                 );
-        /*this.tag(ModTags.Blocks.GRINDSTONES)
-                .add(
-                        Blocks.GRINDSTONE
-                );*/
-       /* this.tag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .add(ModBlocks.RAW_SAPPHIRE_BLOCK.get());
-
-        this.tag(BlockTags.NEEDS_STONE_TOOL)
-                .add(ModBlocks.NETHER_SAPPHIRE_ORE.get());
-
-        this.tag(Tags.Blocks.NEEDS_NETHERITE_TOOL)
-                .add(ModBlocks.END_STONE_SAPPHIRE_ORE.get());*/
+        this.tag(ModTags.Blocks.IRON_ANVIL_BASES)
+                .add(Blocks.ANVIL
+                );
 
 
     }

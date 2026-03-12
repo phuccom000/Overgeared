@@ -28,6 +28,8 @@ import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -49,14 +51,14 @@ import org.joml.Vector3f;
 
 import java.util.UUID;
 
-public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implements Fallable {
-
+public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements Fallable {
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     protected static String quality = null;
     protected static AnvilTier tier;
 
-    public AbstractSmithingAnvilNew(AnvilTier anvilTier, Properties properties) {
+    public AbstractSmithingAnvil(AnvilTier anvilTier, Properties properties) {
         super(properties);
         tier = anvilTier;
     }
@@ -68,7 +70,7 @@ public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implement
     }
 
     public static void setQuality(String quality) {
-        AbstractSmithingAnvilNew.quality = quality;
+        AbstractSmithingAnvil.quality = quality;
     }
 
     @Override
@@ -109,10 +111,10 @@ public abstract class AbstractSmithingAnvilNew extends BaseEntityBlock implement
             if (anvil.hasRecipe() && isHammer) {
                 AnvilMinigameEvents.resetPopUps();
                 if (!pos.equals(AnvilMinigameEvents.getAnvilPos(player.getUUID()))) {
-                    //player.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED));
                     return InteractionResult.SUCCESS;
                 }
-                if (!AnvilMinigameEvents.isIsVisible()) return InteractionResult.SUCCESS;
+                if (!AnvilMinigameEvents.isIsVisible())
+                    return InteractionResult.SUCCESS;
                 // Read the current counter at the moment of right-click:
                 String quality = AnvilMinigameEvents.handleHit();
                 ModMessages.sendToServer(new PacketSendCounterC2SPacket(pos, quality));

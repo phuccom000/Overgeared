@@ -3,7 +3,6 @@ package net.stirdrem.overgeared.block.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -35,7 +34,7 @@ import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvilNew;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
@@ -103,7 +102,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected int hitRemains;
     protected long busyUntilGameTime = 0L;
     protected UUID ownerUUID = null;
-    protected Map<BlockPos, UUID> occupiedAnvils = Collections.synchronizedMap(new HashMap<>());
     protected AnvilTier anvilTier;
     protected long sessionStartTime = 0L; // optional, for timeout logic
     protected ItemStack failedResult;
@@ -111,10 +109,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
-    protected AbstractSmithingAnvilNew anvilBlock;
+    protected AbstractSmithingAnvil anvilBlock;
     protected static final int BLUEPRINT_SLOT = 11;
 
-    public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvilNew anvilBlock, AnvilTier tier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
+    public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
         super(type, pPos, pBlockState);
         this.anvilTier = tier;
         this.anvilBlock = anvilBlock;
@@ -203,19 +201,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             tag.putUUID("ownerUUID", ownerUUID);
             tag.putLong("sessionStartTime", sessionStartTime);
         }
-
-        // Save occupiedAnvils
-        ListTag occupiedList = new ListTag();
-        for (Map.Entry<BlockPos, UUID> entry : occupiedAnvils.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
-            BlockPos pos = entry.getKey();
-            entryTag.putInt("x", pos.getX());
-            entryTag.putInt("y", pos.getY());
-            entryTag.putInt("z", pos.getZ());
-            entryTag.putUUID("uuid", entry.getValue());
-            occupiedList.add(entryTag);
-        }
-        tag.put("occupiedAnvils", occupiedList);
     }
 
     @Override
@@ -238,20 +223,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             sessionStartTime = tag.getLong("sessionStartTime");
         } else {
             ownerUUID = null;
-        }
-
-        // Load occupiedAnvils
-        occupiedAnvils.clear();
-        if (tag.contains("occupiedAnvils", CompoundTag.TAG_LIST)) {
-            ListTag occupiedList = tag.getList("occupiedAnvils", CompoundTag.TAG_COMPOUND);
-            for (int i = 0; i < occupiedList.size(); i++) {
-                CompoundTag entryTag = occupiedList.getCompound(i);
-                int x = entryTag.getInt("x");
-                int y = entryTag.getInt("y");
-                int z = entryTag.getInt("z");
-                UUID uuid = entryTag.getUUID("uuid");
-                occupiedAnvils.put(new BlockPos(x, y, z), uuid);
-            }
         }
     }
 
@@ -1018,16 +989,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return ownerUUID != null && ownerUUID.equals(player.getUUID());
     }
 
-    public boolean isOwned() {
-        return ownerUUID != null;
-    }
-
-    public UUID getOccupiedAnvil(BlockPos pos) {
-        return occupiedAnvils.get(pos);
-    }
-
-    public void putOccupiedAnvil(BlockPos pos, UUID me) {
-        occupiedAnvils.put(pos, me);
+    public boolean isOwnedByOther(Player player) {
+        return ownerUUID != null && !ownerUUID.equals(player.getUUID());
     }
 
     public boolean hasQuality() {
@@ -1052,16 +1015,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public IItemHandlerModifiable getItemHandler() {
         return itemHandler;
-    }
-
-    public BlockPos getPos(ServerPlayer serverPlayer) {
-        UUID playerUUID = serverPlayer.getUUID();
-        for (Map.Entry<BlockPos, UUID> entry : occupiedAnvils.entrySet()) {
-            if (entry.getValue().equals(playerUUID)) {
-                return entry.getKey();
-            }
-        }
-        return null; // Not found
     }
 
     public UUID getOwnerUUID() {
@@ -1131,5 +1084,23 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public AnvilTier getAnvilTier() {
         return anvilTier;
+    }
+
+    public boolean tryStartMinigame(ServerPlayer player) {
+
+        if (minigameOn) return false;
+
+        if (ownerUUID != null && !ownerUUID.equals(player.getUUID())) {
+            return false;
+        }
+
+        ownerUUID = player.getUUID();
+        minigameOn = true;
+        sessionStartTime = level.getGameTime();
+
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+
+        return true;
     }
 }

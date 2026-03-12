@@ -4,9 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvilNew;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 import java.util.function.Supplier;

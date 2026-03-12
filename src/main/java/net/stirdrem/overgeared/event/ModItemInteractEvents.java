@@ -51,7 +51,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -63,9 +63,9 @@ import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
-import net.stirdrem.overgeared.networking.packet.MinigameSetStartedC2SPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
-import net.stirdrem.overgeared.networking.packet.SetMinigameVisibleC2SPacket;
+import net.stirdrem.overgeared.networking.packet.StartMinigameS2CPacket;
+import net.stirdrem.overgeared.networking.packet.ToggleMinigameS2CPacket;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
@@ -80,7 +80,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
 
@@ -92,11 +91,8 @@ public class ModItemInteractEvents {
     private static final Set<ItemEntity> trackedEntities = ConcurrentHashMap.newKeySet();
 
     private static final ConcurrentMap<ItemEntity, Long> trackedSinceMs = new ConcurrentHashMap<>();
-    // timeout for pruning tracked entities that never went to water (milliseconds).
-// 2 minutes chosen as safe default (adjust as needed).
-    private static final long TRACKED_PRUNE_MS = 2 * 60 * 1000L;
-    private static final Random RANDOM = new Random();
 
+    // timeout for pruning tracked entities that never went to water (milliseconds).
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         ItemStack heldStack = event.getItemStack();
@@ -138,156 +134,166 @@ public class ModItemInteractEvents {
         BlockEntity be = level.getBlockEntity(pos);
         BlockState clickedState = level.getBlockState(pos);
 
-        // Shift-right-click to convert stone into smithing anvil
-        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.ANVIL_BASES)
+        // =========================
+        // Convert blocks to anvils
+        // =========================
+
+        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
                 && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
+
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(StoneSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
+
             if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL
-                        .trigger(serverPlayer, "stone");
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "stone");
             }
 
-            event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && clickedState.is(Blocks.ANVIL)
+        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
                 && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
+
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(StoneSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+
+            level.setBlock(pos, newState, 3);
+            level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "iron");
+            }
+
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+
+        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL
-                        .trigger(serverPlayer, "iron");
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_a");
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
             return;
         }
 
-        if (!level.isClientSide()) {
-            if (!(be instanceof AbstractSmithingAnvilBlockEntity)) {
-                hideMinigame((ServerPlayer) player);
+        if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
+            BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            level.setBlock(pos, newState, 3);
+            level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_b");
             }
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
         }
 
-        if (!(be instanceof
-                AbstractSmithingAnvilBlockEntity anvilBE)) return;
-        UUID playerUUID = player.getUUID();
+        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+                hideMinigame(serverPlayer);
+            }
+            return;
+        }
 
         if (!player.isCrouching()) return;
 
-        if (!level.isClientSide) {
-            if (!(player instanceof ServerPlayer serverPlayer)) return;
-            // Server-side ownership logic
-            if (anvilBE.hasRecipe() && !ServerConfig.ENABLE_MINIGAME.get()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.no_minigame").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-            if (!anvilBE.hasRecipe()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED), true);
-                return;
-            }
+        // =========================
+        // SERVER LOGIC ONLY
+        // =========================
 
-            if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED), true);
-                return;
-            }
+        if (level.isClientSide) return;
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
 
-            UUID currentOwner = anvilBE.getOwnerUUID();
-            if (currentOwner != null && !currentOwner.equals(playerUUID)) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED), true);
-                return;
-            }
+        UUID playerUUID = player.getUUID();
 
-            if (currentOwner == null && !playerAnvilPositions.containsKey(player.getUUID())) {
-                anvilBE.setOwner(playerUUID);
-                anvilBE.setPlayer(player);
-                anvilBE.setMinigameOn(true);
-
-                // ADD SERVER-SIDE TRACKING
-                playerAnvilPositions.put(playerUUID, pos);
-                playerMinigameVisibility.put(playerUUID, true);
-
-                CompoundTag sync = new CompoundTag();
-                sync.putUUID("anvilOwner", playerUUID);
-                sync.putLong("anvilPos", pos.asLong());
-                ModMessages.sendToAll(new MinigameSyncS2CPacket(pos, playerUUID));
-                return;
-            }
-
-            if (playerAnvilPositions.get(player.getUUID()) != null && !pos.equals(playerAnvilPositions.get(player.getUUID()))) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-        } else {
-            if (anvilBE.hasRecipe() && !ServerConfig.ENABLE_MINIGAME.get()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.no_minigame").withStyle(ChatFormatting.RED), true);
-                return;
-            }
-            if (!anvilBE.hasRecipe()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            // Client should trust the server's sync data in ClientAnvilMinigameData
-            UUID currentOwner = ClientAnvilMinigameData.getOccupiedAnvil(pos);
-            if (currentOwner != null && !currentOwner.equals(player.getUUID())) {
-                //player.sendSystemMessage(Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED));
-                return;
-            }
-
-            if (player.getUUID().equals(currentOwner)
-                    || currentOwner == null
-                    && ClientAnvilMinigameData.getPendingMinigamePos() == null) {
-
-                if (playerAnvilPositions.get(player.getUUID()) != null && !pos.equals(playerAnvilPositions.get(player.getUUID()))) {
-                    //player.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED));
-                    event.setCanceled(true);
-                    event.setCancellationResult(InteractionResult.PASS);
-                    return;
-                }
-                if (anvilBE.hasRecipe() || anvilBE.needsMinigame()) {
-                    anvilBE.setOwner(playerUUID);
-                    AtomicReference<String> quality = new AtomicReference<>("perfect");
-                    Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
-                    recipeOpt.ifPresent(recipe -> {
-                        if (AnvilMinigameEvents.minigameStarted) {
-                            boolean isVisible = AnvilMinigameEvents.isIsVisible();
-                            AnvilMinigameEvents.setIsVisible(pos, !isVisible);
-                            ModMessages.sendToServer(new SetMinigameVisibleC2SPacket(pos, !isVisible));
-                            playerMinigameVisibility.put(player.getUUID(), !isVisible);
-                        } else {
-                            quality.set(anvilBE.minigameQuality());
-                            AnvilMinigameEvents.reset(quality.get());
-                            playerAnvilPositions.put(player.getUUID(), pos);
-                            playerMinigameVisibility.put(player.getUUID(), true);
-                            AnvilMinigameEvents.setMinigameStarted(pos, true);
-                            ModMessages.sendToServer(new MinigameSetStartedC2SPacket(pos));
-                            ModMessages.sendToServer(new SetMinigameVisibleC2SPacket(pos, true));
-                            AnvilMinigameEvents.setHitsRemaining(anvilBE.getRequiredProgress());
-                        }
-                    });
-                }
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.PASS);
-                return;
-            }
-
-            ClientAnvilMinigameData.setPendingMinigame(pos);
+        // No recipe
+        if (!anvilBE.hasRecipe()) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.no_recipe")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
             return;
+        }
+
+        // Quality check
+        if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.item_has_no_quality")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
+
+        UUID currentOwner = anvilBE.getOwnerUUID();
+
+        // Already used
+        if (currentOwner != null && !currentOwner.equals(playerUUID)) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.anvil_in_use_by_another")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
+
+        // Player already using another anvil
+        if (playerAnvilPositions.containsKey(playerUUID)
+                && !pos.equals(playerAnvilPositions.get(playerUUID))) {
+
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.another_anvil_in_use")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
+
+        // =========================
+        // START MINIGAME (SERVER)
+        // =========================
+
+        if (currentOwner == null) {
+
+            anvilBE.setOwner(playerUUID);
+            anvilBE.setPlayer(player);
+            anvilBE.setMinigameOn(true);
+
+            playerAnvilPositions.put(playerUUID, pos);
+            playerMinigameVisibility.put(playerUUID, true);
+
+            int hitsRequired = anvilBE.getRequiredProgress();
+            String quality = anvilBE.minigameQuality();
+
+
+            // Sync ownership
+            CompoundTag sync = new CompoundTag();
+            sync.putUUID("anvilOwner", playerUUID);
+            sync.putLong("anvilPos", pos.asLong());
+            ModMessages.sendToAll(new MinigameSyncS2CPacket(sync));
+
+            // Tell client to start minigame UI
+            ModMessages.sendToPlayer(new StartMinigameS2CPacket(pos, hitsRequired, quality), serverPlayer);
+        } else if (currentOwner.equals(playerUUID)) {
+            boolean visible = playerMinigameVisibility.get(playerUUID);
+            playerMinigameVisibility.put(playerUUID, !visible);
+            ModMessages.sendToPlayer(new ToggleMinigameS2CPacket(pos, !visible), serverPlayer);
+
         }
 
         event.setCanceled(true);
@@ -329,6 +335,7 @@ public class ModItemInteractEvents {
         ) {
             playerAnvilPositions.remove(playerId);
 
+
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
@@ -336,14 +343,16 @@ public class ModItemInteractEvents {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
-
-            // 2. Clear client-side state
+            // 3. Clear client-side state
             ClientAnvilMinigameData.putOccupiedAnvil(pos, null);
             AnvilMinigameEvents.reset(quality);
-
-            // 3. Sync null ownership to all clients using the new constructor
-            ModMessages.sendToAll(new MinigameSyncS2CPacket(pos, null)); // null owner = clear ownership
+            // 4. Sync null ownership to all clients
+            CompoundTag syncData = new CompoundTag();
+            syncData.putLong("anvilPos", pos.asLong());
+            syncData.putUUID("anvilOwner", new UUID(0, 0)); // special "no owner" UUID
+            ModMessages.sendToAll(new MinigameSyncS2CPacket(syncData));
         }
+
     }
 
     public static ServerPlayer getUsingPlayer(BlockPos pos) {
@@ -578,7 +587,10 @@ public class ModItemInteractEvents {
         if (!(mainHand.is(ModTags.Items.KNAPPABLE) && offHand.is(ModTags.Items.KNAPPABLE))) {
             return;
         }
-
+        // Both items must be the SAME item
+        if (mainHand.getItem() != offHand.getItem()) {
+            return;
+        }
         // Prevent vanilla handling
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);

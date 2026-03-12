@@ -3,10 +3,8 @@ package net.stirdrem.overgeared.networking.packet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvilNew;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -38,7 +36,6 @@ public class MinigameSetStartedC2SPacket {
             if (sender != null) {
                 BlockEntity be = sender.level().getBlockEntity(msg.pos);
                 if (be instanceof AbstractSmithingAnvilBlockEntity anvilEntity) {
-                    //anvilEntity.resetProgress(); // or resetProgress(), whichever you want
                     AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
                     ModMessages.sendToPlayer(new MinigameSetStartedS2CPacket(msg.pos), sender);
                     playerAnvilPositions.put(sender.getUUID(), msg.pos);

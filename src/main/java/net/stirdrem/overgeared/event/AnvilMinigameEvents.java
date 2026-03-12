@@ -202,7 +202,7 @@ public class AnvilMinigameEvents {
     }
 
     public static boolean isIsVisible() {
-        return isVisible;
+        return AnvilMinigameEvents.isVisible;
     }
 
     public static void setIsVisible(BlockPos pos, boolean isVisible) {

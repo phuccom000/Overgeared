@@ -71,6 +71,18 @@ public class ModMessages {
                 .consumerMainThread(MinigameSetStartedS2CPacket::handle)
                 .add();
 
+        net.messageBuilder(StartMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(StartMinigameS2CPacket::new)
+                .encoder(StartMinigameS2CPacket::toBytes)
+                .consumerMainThread(StartMinigameS2CPacket::handle)
+                .add();
+
+        net.messageBuilder(ToggleMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(ToggleMinigameS2CPacket::new)
+                .encoder(ToggleMinigameS2CPacket::toBytes)
+                .consumerMainThread(ToggleMinigameS2CPacket::handle)
+                .add();
+
         net.messageBuilder(HideMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(HideMinigameS2CPacket::new)
                 .encoder(HideMinigameS2CPacket::toBytes)
