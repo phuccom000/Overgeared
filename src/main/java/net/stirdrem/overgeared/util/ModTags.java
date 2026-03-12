@@ -16,6 +16,9 @@ public class ModTags {
         public static final TagKey<Block> SMITHING = tag("smithing");
         public static final TagKey<Block> SMITHING_ANVIL = tag("smithing_anvil");
         public static final TagKey<Block> ANVIL_BASES = tag("stone_anvil_bases");
+        public static final TagKey<Block> IRON_ANVIL_BASES = tag("iron_anvil_bases");
+        public static final TagKey<Block> TIER_A_ANVIL_BASES = tag("tier_a_anvil_bases");
+        public static final TagKey<Block> TIER_B_ANVIL_BASES = tag("tier_b_anvil_bases");
         public static final TagKey<Block> GRINDSTONES = tag("grindstones");
 
         private static TagKey<Block> tag(String name) {

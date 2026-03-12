@@ -29,6 +29,8 @@ import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -50,7 +52,7 @@ import org.joml.Vector3f;
 import java.util.UUID;
 
 public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements Fallable {
-
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     protected static ForgingQuality quality = null;

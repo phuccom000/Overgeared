@@ -61,9 +61,12 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         this.tag(BlockTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
-        
+
         this.tag(ModTags.Blocks.ANVIL_BASES)
                 .add(Blocks.STONE
+                );
+        this.tag(ModTags.Blocks.IRON_ANVIL_BASES)
+                .add(Blocks.ANVIL
                 );
 
         this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)

@@ -102,7 +102,7 @@ public class ModEvents {
                         .get(def.attribute());
                 if (attribute == null) continue;
 
-                modifyAttribute(event, attribute, value.amount(), value.operation());
+                modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
             }
     }
 
@@ -152,7 +152,7 @@ public class ModEvents {
         return false;
     }
 
-    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation) {
+    private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus, AttributeModifier.Operation operation, ForgingQuality quality) {
         // Get all modifiers currently on the item
         var modifiers = event.getModifiers();
 
@@ -176,28 +176,23 @@ public class ModEvents {
             // Add modified version
             event.addModifier(
                     entry.attribute(),
-                    createModifiedAttribute(originalModifier, bonus, operation),
+                    createModifiedAttribute(originalModifier, bonus, operation, quality),
                     entry.slot()
             );
         }
     }
 
     private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus,
-                                                             AttributeModifier.Operation operation) {
+                                                             AttributeModifier.Operation operation, ForgingQuality quality) {
         ResourceLocation id;
         double amount;
-
         if (operation == AttributeModifier.Operation.ADD_VALUE) {
             id = original.id();
             amount = original.amount() + bonus;
         } else {
-            String uniqueId = String.valueOf(System.nanoTime());
-
-            id = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID,
-                    "quality_modifier/" + uniqueId.hashCode());
+            id = ResourceLocation.parse(original.id() + "_overgeared_" + quality.getDisplayName() + "_" + operation.name().toLowerCase() + (int) bonus * 10);
             amount = bonus;
         }
-
         return new AttributeModifier(id, amount, operation);
     }
 

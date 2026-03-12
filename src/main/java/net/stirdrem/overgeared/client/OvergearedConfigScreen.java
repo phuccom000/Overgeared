@@ -109,8 +109,6 @@ public class OvergearedConfigScreen extends Screen {
         buildAnvilForging();
         buildQualitySettings();
         buildForgingZones();
-        buildWeaponBonuses();
-        buildArmorBonuses();
         buildDurabilityBonuses();
         buildHeatedItems();
         buildGrindingDurability();

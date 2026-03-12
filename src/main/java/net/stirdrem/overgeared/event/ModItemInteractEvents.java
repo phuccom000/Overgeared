@@ -46,7 +46,7 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.components.ModComponents;
@@ -128,7 +128,7 @@ public class ModItemInteractEvents {
                 && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(StoneSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -141,16 +141,46 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && state.is(Blocks.ANVIL)
+        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.IRON_ANVIL_BASES)
                 && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(StoneSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancementTriggers.MAKE_SMITHING_ANVIL.get()
                         .trigger(serverPlayer, "iron");
+            }
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
+        }
+
+        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get()
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            level.setBlock(pos, newState, 3);
+            level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.get()
+                        .trigger(serverPlayer, "tier_a");
+            }
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return;
+        }
+
+        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
+            BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            level.setBlock(pos, newState, 3);
+            level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.get()
+                        .trigger(serverPlayer, "tier_b");
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);

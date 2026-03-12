@@ -6,8 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,8 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -26,8 +24,7 @@ import net.stirdrem.overgeared.block.entity.TierASmithingAnvilBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class TierASmithingAnvil extends AbstractSmithingAnvil {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    
+
     private static final VoxelShape Z1 = Block.box(3, 9, 0, 13, 16, 16);
     private static final VoxelShape Z2 = Block.box(3, 0, 1, 13, 3, 15);
     private static final VoxelShape Z3 = Block.box(4, 0, 4, 12, 3, 12);
