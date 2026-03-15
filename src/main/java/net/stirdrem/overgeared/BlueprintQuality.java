@@ -80,7 +80,7 @@ public enum BlueprintQuality {
     }
 
     public String getTranslationKey() {
-        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase();
+        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase(java.util.Locale.ROOT);
     }
 
     public String getId() {

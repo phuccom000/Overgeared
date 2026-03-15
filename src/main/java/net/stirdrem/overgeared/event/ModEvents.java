@@ -430,7 +430,7 @@ public class ModEvents {
         }
 
         // 🔽 Add Potion Uses Left Tooltip
-        if (stack.is(Items.POTION)) {
+        if (stack.is(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
             CompoundTag tag = stack.getTag();
             int maxUses = ServerConfig.MAX_POTION_TIPPING_USE.get();
             int used = 0;

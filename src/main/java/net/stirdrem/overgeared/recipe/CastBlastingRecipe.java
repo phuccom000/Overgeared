@@ -94,14 +94,14 @@ public class CastBlastingRecipe extends BlastingRecipe {
         if (!(input.getItem() instanceof ToolCastItem)) return false;
         CompoundTag tag = input.getTag();
         if (tag == null || !tag.contains("Materials")) return false;
-        if (!toolType.equals(tag.getString("ToolType").toLowerCase())) return false;
+        if (!toolType.equals(tag.getString("ToolType").toLowerCase(java.util.Locale.ROOT))) return false;
         if (tag.contains("Amount") && tag.getFloat("Amount") <= 0) return false;
         if (!tag.contains("Amount")) return false;
 
         Map<String, Double> materials = readMaterials(tag.getCompound("Materials"));
 
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             double needed = entry.getValue();
             double available = materials.getOrDefault(material, 0.0);
             if (available < needed) return false;
@@ -199,7 +199,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
 
             // Reduce materials based on recipe JSON
             for (var entry : requiredMaterials.entrySet()) {
-                String mat = entry.getKey().toLowerCase();
+                String mat = entry.getKey().toLowerCase(java.util.Locale.ROOT);
                 double cost = entry.getValue();
 
                 if (mats.contains(mat)) {
@@ -268,7 +268,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
             float xp = GsonHelper.getAsFloat(json, "experience", 0f);
             int time = GsonHelper.getAsInt(json, "cookingtime", 200);
 
-            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase();
+            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase(java.util.Locale.ROOT);
 
             // ✅ New polishing flag from JSON (default = false)
             boolean needPolishing = GsonHelper.getAsBoolean(json, "need_polishing", false);

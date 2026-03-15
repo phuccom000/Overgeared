@@ -271,7 +271,7 @@ public class ToolCastItem extends Item {
                         Component.translatable("tooltip.overgeared.tool_cast.quality")
                                 .append(" ")
                                 .append(
-                                        Component.translatable("quality.overgeared." + quality.toLowerCase())
+                                        Component.translatable("quality.overgeared." + quality.toLowerCase(java.util.Locale.ROOT))
                                                 .withStyle(color)
                                 )
                                 .withStyle(ChatFormatting.GRAY)
@@ -283,7 +283,7 @@ public class ToolCastItem extends Item {
             tooltip.add(
                     Component.translatable("tooltip.overgeared.tool_cast.type")
                             .append(" ")
-                            .append(Component.translatable("tooltype.overgeared." + toolType.toLowerCase()).withStyle(ChatFormatting.BLUE)
+                            .append(Component.translatable("tooltype.overgeared." + toolType.toLowerCase(java.util.Locale.ROOT)).withStyle(ChatFormatting.BLUE)
                             )
                             .withStyle(ChatFormatting.GRAY)
             );
@@ -300,8 +300,8 @@ public class ToolCastItem extends Item {
                 for (String key : materials.getAllKeys()) {
                     int amount = materials.getInt(key);
 
-                    Component display = Component.translatable("material.overgeared." + key.toLowerCase());
-                    if (display.getString().equals("material.overgeared." + key.toLowerCase())) {
+                    Component display = Component.translatable("material.overgeared." + key.toLowerCase(java.util.Locale.ROOT));
+                    if (display.getString().equals("material.overgeared." + key.toLowerCase(java.util.Locale.ROOT))) {
                         display = Component.literal(key);
                     }
 

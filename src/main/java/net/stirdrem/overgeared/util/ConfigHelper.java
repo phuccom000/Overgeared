@@ -27,7 +27,7 @@ public class ConfigHelper {
      * Example: "SWORD" -> "tooltype.overgeared.sword"
      */
     public static String getToolTypeDisplayName(String toolType) {
-        return "tooltype.overgeared." + toolType.toLowerCase();
+        return "tooltype.overgeared." + toolType.toLowerCase(java.util.Locale.ROOT);
     }
 
     /**
@@ -53,7 +53,7 @@ public class ConfigHelper {
      * Example: "IRON" -> "material.overgeared.iron"
      */
     public static String getMaterialDisplayName(String materialId) {
-        return "material.overgeared." + materialId.toLowerCase();
+        return "material.overgeared." + materialId.toLowerCase(java.util.Locale.ROOT);
     }
 
     // -----------------------

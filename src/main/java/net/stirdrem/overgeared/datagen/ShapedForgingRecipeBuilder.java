@@ -179,7 +179,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
 
     public ShapedForgingRecipeBuilder setBlueprint(String blueprintType) {
         if (blueprintType != null && !blueprintType.isBlank()) {
-            this.blueprintTypes.add(blueprintType.toLowerCase());
+            this.blueprintTypes.add(blueprintType.toLowerCase(java.util.Locale.ROOT));
         }
         return this;
     }
@@ -344,7 +344,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 json.add("blueprint", blueprintArray);
             }
             if (this.category != null) {
-                json.addProperty("category", this.category.name().toLowerCase());
+                json.addProperty("category", this.category.name().toLowerCase(java.util.Locale.ROOT));
             }
 
             json.addProperty("group", this.group);

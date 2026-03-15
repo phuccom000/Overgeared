@@ -1,15 +1,12 @@
 package net.stirdrem.overgeared.recipe;
 
-import com.google.gson.JsonObject;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ModItems;
@@ -32,16 +29,6 @@ public class BlueprintCloningRecipe extends CustomRecipe {
                         return false; // Only 1 empty blueprint allowed
                     }
                     emptyBlueprint = stack;
-                /*} else if (stack.is(ModItems.BLUEPRINT.get())) {
-                    // Reject if it contains master quality
-                    CompoundTag tag = stack.getTag();
-                    if (tag != null && "master".equalsIgnoreCase(tag.getString("Quality"))) {
-                        return false;
-                    }
-                    blueprintCount++;
-                } else {
-                    return false; // Invalid item in recipe
-                }*/
                 } else {
                     if (!stack.is(ModItems.BLUEPRINT.get())) {
                         return false;
@@ -69,7 +56,7 @@ public class BlueprintCloningRecipe extends CustomRecipe {
         }
 
         if (source.isEmpty()) return ItemStack.EMPTY;
-        
+
         ItemStack result = source.copyWithCount(2);
 
         // Reduce quality

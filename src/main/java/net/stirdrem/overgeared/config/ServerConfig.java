@@ -27,6 +27,7 @@ public class ServerConfig {
 
     // --- Arrow Settings ---
     public static final ForgeConfigSpec.BooleanValue ENABLE_DRAGON_BREATH_RECIPE;
+    public static final ForgeConfigSpec.BooleanValue TIPPING_TOGGLE;
     public static final ForgeConfigSpec.BooleanValue UPGRADE_ARROW_POTION_TOGGLE;
     public static final ForgeConfigSpec.IntValue MAX_POTION_TIPPING_USE;
 
@@ -151,6 +152,9 @@ public class ServerConfig {
         ENABLE_DRAGON_BREATH_RECIPE = builder
                 .comment("Enable or disable Dragon Breath's brewing recipe")
                 .define("enableDragonBreathRecipe", true);
+        TIPPING_TOGGLE = builder
+                .comment("Enable or disable arrow tipping into potion arrow")
+                .define("enableTipping", true);
         UPGRADE_ARROW_POTION_TOGGLE = builder.comment("Toggle for the ability to tip iron, steel, diamond arrows.").define("enableUpgradeArrowTipping", true);
         MAX_POTION_TIPPING_USE = builder.comment("How many arrows can a bottle of potion tip before it's depleted").defineInRange("maxPotionTipping", 8, 0, Integer.MAX_VALUE);
         builder.pop();

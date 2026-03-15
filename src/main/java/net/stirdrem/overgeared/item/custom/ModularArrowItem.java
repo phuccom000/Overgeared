@@ -72,7 +72,7 @@ public class ModularArrowItem extends ArrowItem {
     }
 
     private Component getComponentEffectDescription(String componentType, String material) {
-        String translationKey = "tooltip.modular_arrow." + componentType.toLowerCase() + "." + material;
+        String translationKey = "tooltip.modular_arrow." + componentType.toLowerCase(java.util.Locale.ROOT) + "." + material;
         return Component.literal(" ").append(Component.translatable(translationKey).withStyle(ChatFormatting.BLUE));
     }
 

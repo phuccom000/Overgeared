@@ -29,7 +29,7 @@ public class ModCommands {
                                 })
                                 .executes(ctx -> {
                                     ServerPlayer player = ctx.getSource().getPlayer();
-                                    String quality = StringArgumentType.getString(ctx, "quality").toLowerCase();
+                                    String quality = StringArgumentType.getString(ctx, "quality").toLowerCase(java.util.Locale.ROOT);
 
                                     ItemStack inHand = player.getMainHandItem();
                                     if (inHand.isEmpty()) {
@@ -97,13 +97,13 @@ public class ModCommands {
                 new ItemStack(ModItems.CLAY_TOOL_CAST.get());
 
         CompoundTag tag = stack.getOrCreateTag();
-        tag.putString("ToolType", toolType.toLowerCase());
+        tag.putString("ToolType", toolType.toLowerCase(java.util.Locale.ROOT));
         tag.putInt("Amount", 0);
         tag.putInt("MaxAmount", ConfigHelper.getMaxMaterialAmount(toolType));
         tag.put("Materials", new CompoundTag()); // Empty compound instead of remove
 
         if (!quality.equalsIgnoreCase("none"))
-            tag.putString("Quality", quality.toLowerCase());
+            tag.putString("Quality", quality.toLowerCase(java.util.Locale.ROOT));
 
         player.addItem(stack);
 

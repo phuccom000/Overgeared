@@ -204,6 +204,11 @@ public class OvergearedConfigScreen extends Screen {
         ));
         configList.addConfigEntry(new BooleanEntry(
                 "Enable Arrow Tipping",
+                () -> getBoolean("Arrow Fletching Settings.enableTipping"),
+                v -> setBoolean("Arrow Fletching Settings.enableTipping", v)
+        ));
+        configList.addConfigEntry(new BooleanEntry(
+                "Enable Upgrade Arrow Tipping",
                 () -> getBoolean("Arrow Fletching Settings.enableUpgradeArrowTipping"),
                 v -> setBoolean("Arrow Fletching Settings.enableUpgradeArrowTipping", v)
         ));
@@ -960,147 +965,5 @@ public class OvergearedConfigScreen extends Screen {
         public Component getNarration() {
             return Component.literal(label);
         }
-    }
-
-    private void resetAllToDefaults() {
-        // Reset all boolean values
-        setBoolean("General Configs.enableModTooltips", true);
-        setBoolean("Loot Quality.enableLootQuality", true);
-        setBoolean("Minigame Common Settings.enableMinigame", true);
-        setBoolean("Anvil Conversion.enableStoneToAnvil", true);
-        setBoolean("Anvil Conversion.enableAnvilToSmithing", true);
-        setBoolean("Arrow Fletching Settings.enableFletchingRecipes", true);
-        setBoolean("Arrow Fletching Settings.enableUpgradeArrowTipping", true);
-        setBoolean("Arrow Fletching Settings.enableDragonBreathRecipe", true);
-        setBoolean("Minigame Common Settings.ingredientsDefineQuality", true);
-        setBoolean("Durability & Grinding.grindingToggle", true);
-        setBoolean("Blueprint & Tool Types.expertAboveIncreaseBlueprintToggle", true);
-        setBoolean("Knapping Settings.useFlintGetRock", true);
-        setBoolean("Casting.castingToggle", true);
-
-        // Reset all integer values
-        setInt("Loot Quality.weightPoorQuality", 50);
-        setInt("Loot Quality.weightWellQuality", 30);
-        setInt("Loot Quality.weightExpertQuality", 10);
-        setInt("Loot Quality.weightPerfectQuality", 5);
-        setInt("Loot Quality.weightMasterQuality", 1);
-        setInt("Arrow Fletching Settings.maxPotionTipping", 8);
-        setInt("Minigame Common Settings.maxAnvilDistance", 100);
-        setInt("Stone Smithing Anvil.max_uses", 64);
-        setInt("Heated Items.heatedItemCooldownTicks", 1200);
-        setInt("Blueprint & Tool Types.poorMaxUse", 5);
-        setInt("Blueprint & Tool Types.wellMaxUse", 10);
-        setInt("Blueprint & Tool Types.expertMaxUse", 20);
-        setInt("Blueprint & Tool Types.perfectMaxUse", 50);
-        setInt("Blueprint & Tool Types.masterMaxUse", 0);
-        setInt("Casting.firedCastDurability", 5);
-
-        // Reset forging zone defaults
-        resetForgingZoneDefaults();
-
-        // Reset double values
-        setDouble("Minigame Common Settings.masterQualityChance", 0.05);
-        setDouble("Minigame Common Settings.masterFromIngredientChance", 0.5);
-        setDouble("Minigame Common Settings.perfectQualityScore", 0.9);
-        setDouble("Minigame Common Settings.expertQualityScore", 0.6);
-        setDouble("Minigame Common Settings.wellQualityScore", 0.3);
-        setDouble("Durability & Grinding.durability", 1.0);
-        setDouble("Durability & Grinding.durabilityReduce", 0.05);
-        setDouble("Durability & Grinding.damageRestore", 0.1);
-        setDouble("Quality Failure Chances.failOnWellQualityChance", 0.1);
-        setDouble("Quality Failure Chances.failOnExpertQualityChance", 0.05);
-        setDouble("Knapping Settings.rockDroppingChance", 0.1);
-        setDouble("Knapping Settings.flintBreakingChance", 0.1);
-
-        // Reset weapon bonuses
-        resetWeaponBonuses();
-        resetArmorBonuses();
-        resetDurabilityBonuses();
-
-        // Refresh the config list to show updated values
-        this.configList.children().clear();
-        buildEntries();
-    }
-
-    private void resetForgingZoneDefaults() {
-        // Default
-        setInt("Default (No Blueprint).zoneStartingSize", 20);
-        setDouble("Default (No Blueprint).zoneShrinkFactor", 0.9);
-        setInt("Default (No Blueprint).minPerfectZone", 8);
-        setDouble("Default (No Blueprint).arrowSpeed", 2.0);
-        setDouble("Default (No Blueprint).arrowSpeedIncrease", 0.6);
-        setDouble("Default (No Blueprint).maxArrowSpeed", 8.0);
-
-        // Poor
-        setInt("Poorly Forged.zoneStartingSize", 30);
-        setDouble("Poorly Forged.zoneShrinkFactor", 0.9);
-        setInt("Poorly Forged.minPerfectZone", 15);
-        setDouble("Poorly Forged.arrowSpeed", 1.5);
-        setDouble("Poorly Forged.arrowSpeedIncrease", 0.5);
-        setDouble("Poorly Forged.maxArrowSpeed", 4.0);
-
-        // Well
-        setInt("Well Forged.zoneStartingSize", 20);
-        setDouble("Well Forged.zoneShrinkFactor", 0.8);
-        setInt("Well Forged.minPerfectZone", 12);
-        setDouble("Well Forged.arrowSpeed", 2.0);
-        setDouble("Well Forged.arrowSpeedIncrease", 0.7);
-        setDouble("Well Forged.maxArrowSpeed", 5.0);
-
-        // Expert
-        setInt("Expertly Forged.zoneStartingSize", 18);
-        setDouble("Expertly Forged.zoneShrinkFactor", 0.8);
-        setInt("Expertly Forged.minPerfectZone", 10);
-        setDouble("Expertly Forged.arrowSpeed", 2.5);
-        setDouble("Expertly Forged.arrowSpeedIncrease", 0.85);
-        setDouble("Expertly Forged.maxArrowSpeed", 6.0);
-
-        // Perfect
-        setInt("Perfectly Forged.zoneStartingSize", 15);
-        setDouble("Perfectly Forged.zoneShrinkFactor", 0.8);
-        setInt("Perfectly Forged.minPerfectZone", 10);
-        setDouble("Perfectly Forged.arrowSpeed", 3.0);
-        setDouble("Perfectly Forged.arrowSpeedIncrease", 1.0);
-        setDouble("Perfectly Forged.maxArrowSpeed", 7.0);
-
-        // Master
-        setInt("Masterwork.zoneStartingSize", 12);
-        setDouble("Masterwork.zoneShrinkFactor", 0.7);
-        setInt("Masterwork.minPerfectZone", 8);
-        setDouble("Masterwork.arrowSpeed", 3.5);
-        setDouble("Masterwork.arrowSpeedIncrease", 1.2);
-        setDouble("Masterwork.maxArrowSpeed", 8.0);
-    }
-
-    private void resetWeaponBonuses() {
-        // Damage bonuses
-        setDouble("Weapon Bonuses.masterWeaponDamage", 3.0);
-        setDouble("Weapon Bonuses.perfectWeaponDamage", 2.0);
-        setDouble("Weapon Bonuses.expertWeaponDamage", 1.5);
-        setDouble("Weapon Bonuses.wellWeaponDamage", 0.0);
-        setDouble("Weapon Bonuses.poorWeaponDamage", -1.0);
-
-        // Speed bonuses
-        setDouble("Weapon Bonuses.masterWeaponSpeed", 1.0);
-        setDouble("Weapon Bonuses.perfectWeaponSpeed", 0.5);
-        setDouble("Weapon Bonuses.expertWeaponSpeed", 0.25);
-        setDouble("Weapon Bonuses.wellWeaponSpeed", 0.0);
-        setDouble("Weapon Bonuses.poorWeaponSpeed", -0.5);
-    }
-
-    private void resetArmorBonuses() {
-        setDouble("Armor Bonuses.masterArmorBonus", 2.0);
-        setDouble("Armor Bonuses.perfectArmorBonus", 1.5);
-        setDouble("Armor Bonuses.expertArmorBonus", 1.0);
-        setDouble("Armor Bonuses.wellArmorBonus", 0.0);
-        setDouble("Armor Bonuses.poorArmorBonus", -1.0);
-    }
-
-    private void resetDurabilityBonuses() {
-        setDouble("Durability Bonuses.masterDurabilityBonus", 1.6);
-        setDouble("Durability Bonuses.perfectDurabilityBonus", 1.5);
-        setDouble("Durability Bonuses.expertDurabilityBonus", 1.3);
-        setDouble("Durability Bonuses.wellDurabilityBonus", 1.0);
-        setDouble("Durability Bonuses.poorDurabilityBonus", 0.7);
     }
 }

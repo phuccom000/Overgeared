@@ -762,7 +762,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             // If blueprint is missing or invalid, fallback logic
             if (blueprint.isEmpty() || !blueprint.hasTag()) {
-                return switch (quality.toLowerCase()) {
+                return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
                     case "poor" -> ForgingQuality.POOR.getDisplayName();
                     default -> "well"; // Cap quality at 'well' without blueprint
                 };
@@ -770,16 +770,16 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             CompoundTag nbt = blueprint.getTag();
             if (nbt == null || !nbt.contains("Quality")) {
-                return switch (quality.toLowerCase()) {
+                return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
                     case "poor" -> ForgingQuality.POOR.getDisplayName();
                     default -> "well"; // Cap quality at 'well' without ToolType
                 };
             }
 
-            String blueprintToolType = nbt.getString("Quality").toLowerCase();
+            String blueprintToolType = nbt.getString("Quality").toLowerCase(java.util.Locale.ROOT);
 
             // Determine capped quality
-            int anvilTierIndex = qualityTiers.indexOf(quality.toLowerCase());
+            int anvilTierIndex = qualityTiers.indexOf(quality.toLowerCase(java.util.Locale.ROOT));
             int blueprintTierIndex = qualityTiers.indexOf(blueprintToolType);
 
             // Default to lowest if any tier is missing
@@ -803,7 +803,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                         if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
                         ItemStack stack = this.itemHandler.getStackInSlot(i);
                         if (!stack.isEmpty() && stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-                            String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase();
+                            String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase(java.util.Locale.ROOT);
                             if ("master".equals(ingQuality)) {
                                 hasMasterIngredient = true;
                                 break;
@@ -848,7 +848,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
                 ItemStack stack = this.itemHandler.getStackInSlot(i);
                 if (!stack.isEmpty() && stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-                    String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase();
+                    String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase(java.util.Locale.ROOT);
                     if ("master".equals(ingQuality)) {
                         hasMasterIngredient = true;
                         break;
@@ -920,7 +920,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 return poor;
             }
 
-            String bpQuality = nbt.getString("Quality").toLowerCase();
+            String bpQuality = nbt.getString("Quality").toLowerCase(java.util.Locale.ROOT);
             // ensure it’s in our tier list, otherwise default
             return qualityTiers.contains(bpQuality) ? bpQuality : ForgingQuality.NONE.getDisplayName();
         }

@@ -50,7 +50,7 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
         }
 
         // Use switch expression for better null safety
-        return switch (quality.toLowerCase()) {
+        return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
             case "poor" -> ForgingQuality.POOR.getDisplayName();
             default -> ForgingQuality.WELL.getDisplayName();// Fallback
         };

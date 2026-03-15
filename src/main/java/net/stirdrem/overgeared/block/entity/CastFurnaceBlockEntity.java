@@ -260,7 +260,7 @@ public class CastFurnaceBlockEntity extends BaseContainerBlockEntity implements 
         Map<String, Double> requiredMaterials = recipe.getRequiredMaterials();
         int itemconsumeamount = 1;
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             double needed = entry.getValue();
             double available = availableMaterials
                     .getOrDefault(material, (int) needed);

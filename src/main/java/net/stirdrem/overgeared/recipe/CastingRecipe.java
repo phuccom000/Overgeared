@@ -52,7 +52,7 @@ public class CastingRecipe implements Recipe<Container> {
         this.experience = experience;
         this.cookingTime = cookingTime;
         this.requiredMaterials = requiredMaterials;
-        this.toolType = toolType.toLowerCase();
+        this.toolType = toolType.toLowerCase(java.util.Locale.ROOT);
         this.needPolishing = needPolishing;
     }
 
@@ -69,7 +69,7 @@ public class CastingRecipe implements Recipe<Container> {
 
         // Tool type check (FROM CAST)
         if (!castTag.contains("ToolType")) return false;
-        if (!toolType.equals(castTag.getString("ToolType").toLowerCase())) return false;
+        if (!toolType.equals(castTag.getString("ToolType").toLowerCase(java.util.Locale.ROOT))) return false;
 
         // Material input slot (slot 0)
         ItemStack materialStack = inv.getItem(0);
@@ -86,7 +86,7 @@ public class CastingRecipe implements Recipe<Container> {
         int count = materialStack.getCount();
         // Required material validation
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             double needed = entry.getValue();
 
             double available = availableMaterials
@@ -265,7 +265,7 @@ public class CastingRecipe implements Recipe<Container> {
                     .getAsJsonObject("material");
 
             Map<String, Double> mats = new HashMap<>();
-            input.entrySet().forEach(e -> mats.put(e.getKey().toLowerCase(), e.getValue().getAsDouble()));
+            input.entrySet().forEach(e -> mats.put(e.getKey().toLowerCase(java.util.Locale.ROOT), e.getValue().getAsDouble()));
 
             ItemStack result = ShapedRecipe.itemStackFromJson(
                     GsonHelper.getAsJsonObject(json, "result")
@@ -273,7 +273,7 @@ public class CastingRecipe implements Recipe<Container> {
 
             float xp = GsonHelper.getAsFloat(json, "experience", 0f);
             int time = GsonHelper.getAsInt(json, "cookingtime", 200);
-            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase();
+            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase(java.util.Locale.ROOT);
             boolean polish = GsonHelper.getAsBoolean(json, "need_polishing", false);
 
             return new CastingRecipe(

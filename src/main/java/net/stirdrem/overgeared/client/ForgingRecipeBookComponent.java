@@ -18,6 +18,7 @@ import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Locale;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
     protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.tryBuild(OvergearedMod.MOD_ID,
@@ -50,7 +51,7 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
         if (!(this.menu instanceof AbstractSmithingAnvilMenu forgingMenu))
             return;
         AnvilTier anvilTier = forgingMenu.getBlockEntity().getAnvilTier();
-        AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase());
+        AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase(Locale.ROOT));
         int gridWidth = 3;
         int gridHeight = 3;
 

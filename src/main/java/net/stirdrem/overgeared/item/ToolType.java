@@ -38,7 +38,7 @@ public class ToolType {
     }
 
     public String getId() {
-        return id.toLowerCase();
+        return id.toLowerCase(java.util.Locale.ROOT);
     }
 
     public MutableComponent getDisplayName() {

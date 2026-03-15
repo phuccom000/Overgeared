@@ -69,7 +69,7 @@ public class AnvilMinigameEvents {
     }
 
     public static void setupForQuality(String quality) {
-        switch (quality.toLowerCase()) {
+        switch (quality.toLowerCase(java.util.Locale.ROOT)) {
             case "none" -> {
                 arrowSpeed = ServerConfig.DEFAULT_ARROW_SPEED.get().floatValue();
                 speedIncreasePerHit = ServerConfig.DEFAULT_ARROW_SPEED_INCREASE.get().floatValue();

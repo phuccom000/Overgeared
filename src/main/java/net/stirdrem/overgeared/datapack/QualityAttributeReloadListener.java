@@ -13,10 +13,7 @@ import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class QualityAttributeReloadListener
         extends SimpleJsonResourceReloadListener {
@@ -65,7 +62,7 @@ public class QualityAttributeReloadListener
             JsonObject obj = elem.getAsJsonObject();
 
             QualityTarget.TargetType type = QualityTarget.TargetType
-                    .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase());
+                    .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase(Locale.ROOT));
 
             ResourceLocation id = obj.has("id")
                     ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "id"))
@@ -83,7 +80,7 @@ public class QualityAttributeReloadListener
             JsonObject value = entry.getValue().getAsJsonObject();
 
             String opString = GsonHelper.getAsString(value, "operation")
-                    .toLowerCase();
+                    .toLowerCase(java.util.Locale.ROOT);
 
             AttributeModifier.Operation operation = getOperation(opString);
 
