@@ -21,8 +21,7 @@ import java.util.Map;
 public class QualityAttributeReloadListener
         extends SimpleJsonResourceReloadListener {
 
-    public static final QualityAttributeReloadListener INSTANCE =
-            new QualityAttributeReloadListener();
+    public static final QualityAttributeReloadListener INSTANCE = new QualityAttributeReloadListener();
 
     private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
 
@@ -34,16 +33,14 @@ public class QualityAttributeReloadListener
     protected void apply(
             Map<ResourceLocation, JsonElement> jsons,
             ResourceManager manager,
-            ProfilerFiller profiler
-    ) {
+            ProfilerFiller profiler) {
         definitions.clear();
 
         for (JsonElement element : jsons.values()) {
             definitions.add(parse(element.getAsJsonObject()));
         }
         OvergearedMod.LOGGER.info(
-                "Loaded {} quality attribute files", jsons.size()
-        );
+                "Loaded {} quality attribute files", jsons.size());
     }
 
     public List<QualityAttributeDefinition> getAll() {
@@ -54,8 +51,7 @@ public class QualityAttributeReloadListener
 
         // ---- attribute ----
         ResourceLocation attributeId = ResourceLocation.parse(
-                GsonHelper.getAsString(json, "attribute")
-        );
+                GsonHelper.getAsString(json, "attribute"));
 
         // ---- targets ----
         List<QualityTarget> targets = new ArrayList<>();
@@ -83,7 +79,7 @@ public class QualityAttributeReloadListener
             JsonObject value = entry.getValue().getAsJsonObject();
 
             String opString = GsonHelper.getAsString(value, "operation")
-                    .toLowerCase();
+                    .toLowerCase(java.util.Locale.ROOT);
 
             AttributeModifier.Operation operation = getOperation(opString);
 
@@ -95,8 +91,7 @@ public class QualityAttributeReloadListener
         return new QualityAttributeDefinition(
                 attributeId,
                 targets,
-                qualities
-        );
+                qualities);
     }
 
     private static AttributeModifier.@NotNull Operation getOperation(String opString) {
@@ -108,8 +103,7 @@ public class QualityAttributeReloadListener
             case "mult_total" -> operation = AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             default -> throw new JsonSyntaxException(
                     "Unknown operation: " + opString +
-                            ". Valid values: add, mult_base, mult_total"
-            );
+                            ". Valid values: add, mult_base, mult_total");
         }
         return operation;
     }

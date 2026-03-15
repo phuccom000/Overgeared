@@ -85,6 +85,9 @@ dependencies {
     modImplementation "maven.modrinth:polymorph:${polymorph_version}"
     modImplementation "curse.maven:selene-499980:7708176"
     runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7206981"
+
+    modImplementation "curse.maven:puzzles-lib-495476:7140307"
+    runtimeOnly "curse.maven:easy-anvils-682567:5733955"
 }
 
 processResources {

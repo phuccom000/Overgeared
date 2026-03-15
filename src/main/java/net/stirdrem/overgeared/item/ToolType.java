@@ -31,7 +31,7 @@ public class ToolType {
   }
 
   public String getId() {
-    return id.toLowerCase();
+    return id.toLowerCase(java.util.Locale.ROOT);
   }
 
   public MutableComponent getDisplayName() {
@@ -41,8 +41,10 @@ public class ToolType {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof ToolType)) return false;
+    if (this == o)
+      return true;
+    if (!(o instanceof ToolType))
+      return false;
     return id.equals(((ToolType) o).id);
   }
 

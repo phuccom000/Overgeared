@@ -32,7 +32,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     private final boolean needPolishing;
 
     public CastSmeltingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
-                                    String toolType, ItemStack result, boolean needPolishing, float experience, int cookingTime) {
+            String toolType, ItemStack result, boolean needPolishing, float experience, int cookingTime) {
         super(group, category, Ingredient.of(ModTags.Items.USABLE_TOOL_CAST), result, experience, cookingTime);
 
         this.requiredMaterials = requiredMaterials;
@@ -55,8 +55,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
                 total,
                 java.util.List.of(),
                 ItemStack.EMPTY,
-                false
-        );
+                false);
 
         ItemStack cast = this.ingredient.getItems()[0];
         cast.set(ModComponents.CAST_DATA, displayData);
@@ -68,25 +67,32 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     @Override
     public boolean matches(SingleRecipeInput input, Level level) {
         ItemStack stack = input.getItem(0);
-        if (!(stack.getItem() instanceof ToolCastItem)) return false;
-        if (!(stack.is(ModTags.Items.USABLE_TOOL_CAST))) return false;
+        if (!(stack.getItem() instanceof ToolCastItem))
+            return false;
+        if (!(stack.is(ModTags.Items.USABLE_TOOL_CAST)))
+            return false;
 
         CastData castData = stack.get(ModComponents.CAST_DATA);
-        if (castData == null) return false;
+        if (castData == null)
+            return false;
 
-        if (castData.hasOutput()) return false;
+        if (castData.hasOutput())
+            return false;
 
-        if (!toolType.equals(castData.toolType().toLowerCase())) return false;
-        if (castData.amount() <= 0) return false;
+        if (!toolType.equals(castData.toolType().toLowerCase(java.util.Locale.ROOT)))
+            return false;
+        if (castData.amount() <= 0)
+            return false;
 
         Map<String, Integer> materials = castData.materials();
 
         // Check if cast has enough of each required material
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             double needed = entry.getValue();
             int available = materials.getOrDefault(material, 0);
-            if (available < needed) return false;
+            if (available < needed)
+                return false;
         }
 
         return true;
@@ -99,12 +105,14 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
         // Copy the cast itself
         ItemStack cast = inputStack.copy();
         CastData castData = cast.get(ModComponents.CAST_DATA);
-        if (castData == null) return ItemStack.EMPTY;
+        if (castData == null)
+            return ItemStack.EMPTY;
 
         // Build the real result item
         ItemStack result = this.result.copy();
 
-        // Transfer quality from cast to result (convert BlueprintQuality string to ForgingQuality)
+        // Transfer quality from cast to result (convert BlueprintQuality string to
+        // ForgingQuality)
         if (!castData.quality().isEmpty() && !castData.quality().equals("none")) {
             ForgingQuality forgingQuality = ForgingQuality.fromString(castData.quality());
             result.set(ModComponents.FORGING_QUALITY, forgingQuality);
@@ -132,8 +140,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
                 castData.maxAmount(),
                 java.util.List.of(),
                 result,
-                true
-        );
+                true);
         cast.set(ModComponents.CAST_DATA, updatedData);
 
         cast.set(ModComponents.HEATED_COMPONENT, true);
@@ -170,20 +177,21 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<CastSmeltingRecipe> {
-        private static final MapCodec<CastSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
-                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
-                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
-                Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
-                Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime)
-        ).apply(instance, CastSmeltingRecipe::new));
+        private static final MapCodec<CastSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
+                .group(
+                        Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
+                        CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
+                                .forGetter(r -> r.category),
+                        CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
+                        Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
+                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                        Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
+                        Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
+                        Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime))
+                .apply(instance, CastSmeltingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastSmeltingRecipe> STREAM_CODEC = StreamCodec.of(
-                Serializer::toNetwork, Serializer::fromNetwork
-        );
+                Serializer::toNetwork, Serializer::fromNetwork);
 
         private static CastSmeltingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
             String group = buffer.readUtf();
@@ -195,7 +203,8 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
             float experience = buffer.readFloat();
             int cookingTime = buffer.readVarInt();
 
-            return new CastSmeltingRecipe(group, category, reqMaterials, toolType, result, needPolishing, experience, cookingTime);
+            return new CastSmeltingRecipe(group, category, reqMaterials, toolType, result, needPolishing, experience,
+                    cookingTime);
         }
 
         private static void toNetwork(RegistryFriendlyByteBuf buffer, CastSmeltingRecipe recipe) {

@@ -756,6 +756,7 @@ public class ModItemInteractEvents {
         InteractionHand hand = event.getHand();
 
         if (level.isClientSide()) return;
+        if (!ServerConfig.TIPPING_TOGGLE.get()) return;
 
         // Get items in both hands
         ItemStack usedHand = player.getItemInHand(hand);

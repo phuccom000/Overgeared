@@ -52,9 +52,9 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     public static final int SLOT_FUEL = 1;
     public static final int SLOT_OUTPUT = 2;
     public static final int SLOT_CAST = 3;
-    private static final int[] SLOTS_UP = new int[]{SLOT_INPUT};
-    private static final int[] SLOTS_SIDE = new int[]{SLOT_FUEL};
-    private static final int[] SLOTS_DOWN = new int[]{SLOT_OUTPUT};
+    private static final int[] SLOTS_UP = new int[] { SLOT_INPUT };
+    private static final int[] SLOTS_SIDE = new int[] { SLOT_FUEL };
+    private static final int[] SLOTS_DOWN = new int[] { SLOT_OUTPUT };
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(items) {
         @Override
@@ -63,7 +63,6 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         }
     };
     private final ContainerData data;
-
 
     private int burnTime;
     private int maxBurnTime;
@@ -108,7 +107,8 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         boolean wasLit = be.isLit();
         boolean dirty = false;
 
-        if (be.burnTime > 0) be.burnTime--;
+        if (be.burnTime > 0)
+            be.burnTime--;
 
         ItemStack fuel = be.itemHandler.getStackInSlot(SLOT_FUEL);
 
@@ -139,7 +139,8 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
             dirty = true;
         }
 
-        if (dirty) be.setChanged();
+        if (dirty)
+            be.setChanged();
     }
 
     private boolean isLit() {
@@ -148,7 +149,8 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
     // ================= RECIPE =================
     public Optional<RecipeHolder<CastingRecipe>> getCurrentRecipe() {
-        if (level == null) return Optional.empty();
+        if (level == null)
+            return Optional.empty();
 
         // Build recipe input layout expected by CastingRecipe
         ItemStackHandler recipeInput = new ItemStackHandler(2);
@@ -161,29 +163,31 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         return level.getRecipeManager().getRecipeFor(
                 ModRecipeTypes.CASTING.get(),
                 wrapper,
-                level
-        );
+                level);
     }
 
     private boolean canSmelt() {
         Optional<RecipeHolder<CastingRecipe>> recipeOpt = getCurrentRecipe();
-        if (recipeOpt.isEmpty()) return false;
+        if (recipeOpt.isEmpty())
+            return false;
 
         CastingRecipe recipe = recipeOpt.get().value();
         ItemStack previewOutput = buildResultStack(recipe);
-        if (previewOutput.isEmpty()) return false;
+        if (previewOutput.isEmpty())
+            return false;
 
         ItemStack outputSlot = itemHandler.getStackInSlot(SLOT_OUTPUT);
 
         cookTimeTotal = recipe.getCookingTime();
 
-        if (outputSlot.isEmpty()) return true;
+        if (outputSlot.isEmpty())
+            return true;
 
-        if (!ItemStack.isSameItemSameComponents(outputSlot, previewOutput)) return false;
+        if (!ItemStack.isSameItemSameComponents(outputSlot, previewOutput))
+            return false;
 
         return outputSlot.getCount() + previewOutput.getCount() <= outputSlot.getMaxStackSize();
     }
-
 
     private ItemStack buildResultStack(CastingRecipe recipe) {
         ItemStack output = recipe.getResultItem(level.registryAccess()).copy();
@@ -195,8 +199,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         if (castData != null && !castData.quality().isEmpty() && !castData.quality().equals("none")) {
             output.set(
                     ModComponents.FORGING_QUALITY.get(),
-                    net.stirdrem.overgeared.ForgingQuality.fromString(castData.quality())
-            );
+                    net.stirdrem.overgeared.ForgingQuality.fromString(castData.quality()));
         }
 
         // Polishing flag
@@ -212,7 +215,8 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
     private void smelt() {
         Optional<RecipeHolder<CastingRecipe>> recipeOpt = getCurrentRecipe();
-        if (recipeOpt.isEmpty()) return;
+        if (recipeOpt.isEmpty())
+            return;
 
         CastingRecipe recipe = recipeOpt.get().value();
         ItemStack output = buildResultStack(recipe);
@@ -224,13 +228,13 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         }
 
         // Consume materials
-        Map<String, Integer> availableMaterials =
-                ConfigHelper.getMaterialValuesForItem(itemHandler.getStackInSlot(SLOT_INPUT));
+        Map<String, Integer> availableMaterials = ConfigHelper
+                .getMaterialValuesForItem(itemHandler.getStackInSlot(SLOT_INPUT));
         Map<String, Integer> requiredMaterials = recipe.getRequiredMaterials();
 
         int itemConsumeAmount = 1;
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             double needed = entry.getValue();
             double available = availableMaterials.getOrDefault(material, 1);
             itemConsumeAmount = (int) Math.max(1, Math.ceil(needed / available));
@@ -253,15 +257,16 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         }
     }
 
-
     // ================= XP =================
 
     private void spawnExperience(float xp) {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide)
+            return;
 
         int i = Mth.floor(xp);
         float f = xp - i;
-        if (f > 0 && Math.random() < f) i++;
+        if (f > 0 && Math.random() < f)
+            i++;
 
         while (i > 0) {
             int split = ExperienceOrb.getExperienceValue(i);
@@ -275,11 +280,13 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     public void awardStoredExperience(Player player) {
-        if (this.level == null || this.level.isClientSide) return;
+        if (this.level == null || this.level.isClientSide)
+            return;
         if (storedExperience > 0 && player != null) {
             int total = (int) storedExperience;
             float fractional = storedExperience - total;
-            if (fractional > 0.0F && Math.random() < fractional) total++;
+            if (fractional > 0.0F && Math.random() < fractional)
+                total++;
 
             player.giveExperiencePoints(total);
 
@@ -289,8 +296,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
                     SoundEvents.EXPERIENCE_ORB_PICKUP,
                     SoundSource.PLAYERS,
                     0.5F,
-                    this.level.random.nextFloat() * 0.1F + 0.9F
-            );
+                    this.level.random.nextFloat() * 0.1F + 0.9F);
 
             storedExperience = 0;
             setChanged();
@@ -307,7 +313,8 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     @Override
     public boolean isEmpty() {
         for (int i = 0; i < itemHandler.getSlots(); i++) {
-            if (!itemHandler.getStackInSlot(i).isEmpty()) return false;
+            if (!itemHandler.getStackInSlot(i).isEmpty())
+                return false;
         }
         return true;
     }
@@ -320,10 +327,12 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     @Override
     public ItemStack removeItem(int slot, int amount) {
         ItemStack stack = itemHandler.getStackInSlot(slot);
-        if (stack.isEmpty()) return ItemStack.EMPTY;
+        if (stack.isEmpty())
+            return ItemStack.EMPTY;
 
         ItemStack result = stack.split(amount);
-        if (!result.isEmpty()) setChanged();
+        if (!result.isEmpty())
+            setChanged();
         return result;
     }
 
@@ -342,14 +351,15 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
     @Override
     public boolean stillValid(Player player) {
-        if (level == null) return false;
-        if (level.getBlockEntity(worldPosition) != this) return false;
+        if (level == null)
+            return false;
+        if (level.getBlockEntity(worldPosition) != this)
+            return false;
 
         return player.distanceToSqr(
                 worldPosition.getX() + 0.5D,
                 worldPosition.getY() + 0.5D,
-                worldPosition.getZ() + 0.5D
-        ) <= 64.0D;
+                worldPosition.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
@@ -378,13 +388,13 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
     @Override
     protected void setItems(NonNullList<ItemStack> items) {
-        if (items.size() != itemHandler.getSlots()) return;
+        if (items.size() != itemHandler.getSlots())
+            return;
 
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             itemHandler.setStackInSlot(i, items.get(i));
         }
     }
-
 
     @Nullable
     @Override
@@ -413,10 +423,12 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
-        if (direction == null) return false;
+        if (direction == null)
+            return false;
 
         // Prevent inserting into output or cast slot
-        if (slot == SLOT_OUTPUT || slot == SLOT_CAST) return false;
+        if (slot == SLOT_OUTPUT || slot == SLOT_CAST)
+            return false;
 
         // Fuel slot
         if (slot == SLOT_FUEL) {
@@ -436,7 +448,6 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         // Only extract from output slot (bottom)
         return direction == Direction.DOWN && slot == SLOT_OUTPUT;
     }
-
 
     public void drops() {
         SimpleContainer simpleContainer = new SimpleContainer(itemHandler.getSlots());

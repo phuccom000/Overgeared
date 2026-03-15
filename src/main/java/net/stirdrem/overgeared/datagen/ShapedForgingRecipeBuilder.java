@@ -83,12 +83,12 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         return new ItemStack(item).is(ModTags.Items.TOOL_PARTS);
     }
 
-
     public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int hammering) {
         return new ShapedForgingRecipeBuilder(category, result, 1, hammering);
     }
 
-    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int count, int hammering) {
+    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int count,
+            int hammering) {
         return new ShapedForgingRecipeBuilder(category, result, count, hammering);
     }
 
@@ -105,8 +105,8 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
     public ShapedForgingRecipeBuilder define(Character symbol, Ingredient ingredient,
-                                             boolean requiresHeated,
-                                             boolean transferNBT) {
+            boolean requiresHeated,
+            boolean transferNBT) {
         if (this.key.containsKey(symbol)) {
             throw new IllegalArgumentException("Symbol '" + symbol + "' is already defined!");
         } else if (symbol == ' ') {
@@ -116,7 +116,6 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
             return this;
         }
     }
-
 
     public ShapedForgingRecipeBuilder pattern(String pPattern) {
         if (!this.rows.isEmpty() && pPattern.length() != this.rows.get(0).length()) {
@@ -173,7 +172,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
 
     public ShapedForgingRecipeBuilder setBlueprint(String blueprintType) {
         if (blueprintType != null && !blueprintType.isBlank()) {
-            this.blueprintTypes.add(blueprintType.toLowerCase());
+            this.blueprintTypes.add(blueprintType.toLowerCase(java.util.Locale.ROOT));
         }
         return this;
     }
@@ -226,14 +225,15 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         int width = this.rows.getFirst().length();
         int height = this.rows.size();
 
-        NonNullList<ForgingRecipe.ForgingIngredient> ingredients =
-                NonNullList.withSize(width * height, ForgingRecipe.ForgingIngredient.EMPTY);
+        NonNullList<ForgingRecipe.ForgingIngredient> ingredients = NonNullList.withSize(width * height,
+                ForgingRecipe.ForgingIngredient.EMPTY);
 
         for (int y = 0; y < height; ++y) {
             String row = this.rows.get(y);
             for (int x = 0; x < width; ++x) {
                 char symbol = row.charAt(x);
-                ForgingRecipe.ForgingIngredient ingredient = this.key.getOrDefault(symbol, ForgingRecipe.ForgingIngredient.EMPTY);
+                ForgingRecipe.ForgingIngredient ingredient = this.key.getOrDefault(symbol,
+                        ForgingRecipe.ForgingIngredient.EMPTY);
                 ingredients.set(y * width + x, ingredient);
             }
         }
@@ -250,7 +250,8 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         Set<String> actualBlueprintTypes = new LinkedHashSet<>(this.blueprintTypes);
 
         ForgingQuality actualMinQuality = this.minimumQuality != null ? this.minimumQuality : ForgingQuality.POOR;
-        ForgingQuality actualQualityDiff = this.qualityDifficulty != null ? this.qualityDifficulty : ForgingQuality.NONE;
+        ForgingQuality actualQualityDiff = this.qualityDifficulty != null ? this.qualityDifficulty
+                : ForgingQuality.NONE;
         String actualTier = this.tier == null ? AnvilTier.IRON.getDisplayName() : this.tier;
 
         ItemStack actualFailedResult = this.failedResult != null
@@ -284,13 +285,11 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 actualQualityDiff,
                 width,
                 height,
-                category
-        );
+                category);
 
         output.accept(id, recipe,
                 advBuilder.build(id.withPrefix("recipes/" + this.category.getFolderName() + "/")));
     }
-
 
     private void ensureValid(ResourceLocation pRecipeId) {
         if (this.rows.isEmpty()) {

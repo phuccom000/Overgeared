@@ -54,7 +54,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level == null || level.isClientSide()) return;
+            if (level == null || level.isClientSide())
+                return;
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 
             if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
@@ -81,11 +82,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected static final int BLUEPRINT_SLOT = 11;
     protected boolean hasHeatedItems = false;
     // Define slot indices
-    private static final int[] TOP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}; // input grid
-    private static final int[] BOTTOM_SLOTS = new int[]{OUTPUT_SLOT};
+    private static final int[] TOP_SLOTS = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }; // input grid
+    private static final int[] BOTTOM_SLOTS = new int[] { OUTPUT_SLOT };
     private static final int[] SIDE_SLOTS = new int[0]; // nothing on sides
 
-    public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
+    public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
+            BlockPos pPos, BlockState pBlockState) {
         super(type, pPos, pBlockState);
         this.anvilTier = tier;
         this.anvilBlock = anvilBlock;
@@ -136,7 +138,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return Component.translatable("gui.overgeared.smithing_anvil");
     }
 
-
     @Override
     public int[] getSlotsForFace(Direction side) {
         return switch (side) {
@@ -161,7 +162,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         // Only allow extraction from bottom from the output slot
         return side == Direction.DOWN && index == OUTPUT_SLOT;
     }
-
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -257,7 +257,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         maxProgress = 0;
         lastRecipe = null;
         if (level != null && !level.isClientSide()) {
-            if (minigameOn) lastCraftTick = level.getGameTime();
+            if (minigameOn)
+                lastCraftTick = level.getGameTime();
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
         }
         player = null;
@@ -265,7 +266,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     protected void craftItem() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
-        if (recipeOptional.isEmpty()) return;
+        if (recipeOptional.isEmpty())
+            return;
 
         ForgingRecipe recipe = recipeOptional.get();
         ItemStack result = recipe.getResultItem(getLevel().registryAccess());
@@ -277,7 +279,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         for (int i = 0; i < 9; i++) {
             ItemStack ingredient = itemHandler.getStackInSlot(i);
             ForgingQuality quality = ingredient.get(ModComponents.FORGING_QUALITY);
-            if (quality != null && (maxIngredientQuality == null || quality.ordinal() > maxIngredientQuality.ordinal())) {
+            if (quality != null
+                    && (maxIngredientQuality == null || quality.ordinal() > maxIngredientQuality.ordinal())) {
                 maxIngredientQuality = quality;
             }
         }
@@ -296,7 +299,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                             quality = minimumQuality;
                         }
                         // Clamp to maximum quality
-                        if (maxIngredientQuality != null && quality.ordinal() > maxIngredientQuality.ordinal() && ServerConfig.INGREDIENTS_DEFINE_MAX_QUALITY.get()) {
+                        if (maxIngredientQuality != null && quality.ordinal() > maxIngredientQuality.ordinal()
+                                && ServerConfig.INGREDIENTS_DEFINE_MAX_QUALITY.get()) {
                             quality = maxIngredientQuality;
                         }
 
@@ -317,7 +321,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                                 recipe.hasPolishing()) {
                             result.set(ModComponents.POLISHED, false);
                         }
-                        if (recipe.needQuenching() && (!result.is(ModTags.Items.HEATED_METALS) || !result.is(ModTags.Items.HOT_ITEMS))) {
+                        if (recipe.needQuenching()
+                                && (!result.is(ModTags.Items.HEATED_METALS) || !result.is(ModTags.Items.HOT_ITEMS))) {
                             result.set(ModComponents.HEATED_COMPONENT, true);
                         }
                     }
@@ -375,7 +380,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 ItemStack overflow = result.copy();
                 overflow.setCount(remainder);
                 // Example: drop the overflow into the world
-                Containers.dropItemStack(getLevel(), getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), overflow);
+                Containers.dropItemStack(getLevel(), getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(),
+                        overflow);
             }
         }
     }
@@ -386,12 +392,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         ItemStack result = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
 
         // Skip blueprint progression if crafting failed
-        if (result.isEmpty()) return;
+        if (result.isEmpty())
+            return;
 
         // Handle blueprint progression (slot 11)
         ItemStack blueprint = this.itemHandler.getStackInSlot(BLUEPRINT_SLOT);
         BlueprintData blueprintData = blueprint.get(ModComponents.BLUEPRINT_DATA);
-        if (blueprint.isEmpty() || blueprintData == null) return;
+        if (blueprint.isEmpty() || blueprintData == null)
+            return;
         String currentQualityStr = blueprintData.quality();
         int uses = blueprintData.uses();
         int usesToLevel = blueprintData.usesToLevel();
@@ -403,8 +411,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         if (currentQuality == null
                 || currentQuality == BlueprintQuality.PERFECT
-                || currentQuality == BlueprintQuality.MASTER) return;
-        if (!ServerConfig.EXPERT_ABOVE_INCREASE_BLUEPRINT.get() || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
+                || currentQuality == BlueprintQuality.MASTER)
+            return;
+        if (!ServerConfig.EXPERT_ABOVE_INCREASE_BLUEPRINT.get()
+                || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
             uses += switch (resultQuality) {
                 case PERFECT -> 2;
                 case MASTER -> 3;
@@ -444,7 +454,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public boolean hasRecipe() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
-        if (recipeOptional.isEmpty()) return false;
+        if (recipeOptional.isEmpty())
+            return false;
 
         ForgingRecipe recipe = recipeOptional.get();
         AnvilTier requiredTier = AnvilTier.fromDisplayName(recipe.getAnvilTier());
@@ -461,7 +472,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public boolean hasRecipeWithBlueprint() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
-        if (recipeOptional.isEmpty()) return false;
+        if (recipeOptional.isEmpty())
+            return false;
 
         ForgingRecipe recipe = recipeOptional.get();
 
@@ -524,14 +536,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 .filter(holder -> matchesRecipeExactly(holder.value()));
     }
 
-
     protected boolean canInsertItemIntoOutputSlot(ItemStack stackToInsert) {
         ItemStack existing = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
         return (existing.isEmpty() || ItemStack.isSameItemSameComponents(existing, stackToInsert));
     }
 
     protected boolean canInsertAmountIntoOutputSlot(int count) {
-        return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
+        return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler
+                .getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
     }
 
     public boolean hasProgressFinished() {
@@ -564,7 +576,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     public void tick(Level lvl, BlockPos pos, BlockState st) {
-        if (!pos.equals(this.worldPosition)) return; // sanity check
+        if (!pos.equals(this.worldPosition))
+            return; // sanity check
         tickHeatedIngredients(lvl, pos, st);
         try {
             // Check if blueprint changed mid-forging
@@ -590,8 +603,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             boolean recipeChanged = false;
             if (lastRecipe != null) {
-                // Compare recipes by their result items since Recipe.getId() is not available in 1.21+
-                // Recipes are wrapped in RecipeHolder, but we're working with the raw recipe here
+                // Compare recipes by their result items since Recipe.getId() is not available
+                // in 1.21+
+                // Recipes are wrapped in RecipeHolder, but we're working with the raw recipe
+                // here
                 ItemStack currentResult = currentRecipe.getResultItem(level.registryAccess());
                 ItemStack lastResult = lastRecipe.getResultItem(level.registryAccess());
                 recipeChanged = !ItemStack.isSameItemSameComponents(currentResult, lastResult);
@@ -679,7 +694,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     protected ForgingQuality determineForgingQuality() {
         ForgingQuality quality = anvilBlock.getQuality();
-        if (quality == null) return ForgingQuality.WELL;
+        if (quality == null)
+            return ForgingQuality.WELL;
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         ForgingRecipe recipe = recipeOptional.get();
         if (!recipe.getBlueprintTypes().isEmpty()) {
@@ -698,10 +714,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 };
             }
 
-            String blueprintQualityStr = blueprintData.quality().toLowerCase();
+            String blueprintQualityStr = blueprintData.quality().toLowerCase(java.util.Locale.ROOT);
 
             // Determine capped quality
-            int anvilTierIndex = qualityTiers.indexOf(quality.getDisplayName().toLowerCase());
+            int anvilTierIndex = qualityTiers.indexOf(quality.getDisplayName().toLowerCase(java.util.Locale.ROOT));
             int blueprintTierIndex = qualityTiers.indexOf(blueprintQualityStr);
 
             // Default to lowest if any tier is missing
@@ -722,7 +738,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                     // Check if any crafting slot contains a Master-quality ingredient
                     boolean hasMasterIngredient = false;
                     for (int i = 0; i < this.itemHandler.getSlots(); i++) {
-                        if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
+                        if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT)
+                            continue; // skip output + blueprint
                         ItemStack stack = this.itemHandler.getStackInSlot(i);
                         ForgingQuality ingQuality = stack.get(ModComponents.FORGING_QUALITY);
                         if (!stack.isEmpty() && ingQuality == ForgingQuality.MASTER) {
@@ -766,7 +783,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             // 🔹 Check if any crafting slot contains a Master-quality ingredient
             boolean hasMasterIngredient = false;
             for (int i = 0; i < this.itemHandler.getSlots(); i++) {
-                if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
+                if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT)
+                    continue; // skip output + blueprint
                 ItemStack stack = this.itemHandler.getStackInSlot(i);
                 ForgingQuality ingQuality = stack.get(ModComponents.FORGING_QUALITY);
                 if (!stack.isEmpty() && ingQuality == ForgingQuality.MASTER) {
@@ -802,8 +820,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (!recipe.getBlueprintTypes().isEmpty()) {
             if (!recipe.getQualityDifficulty().equals(ForgingQuality.NONE))
                 return recipe.getQualityDifficulty();
-            else return qualityFromBlueprint();
-        } else return recipe.getQualityDifficulty();
+            else
+                return qualityFromBlueprint();
+        } else
+            return recipe.getQualityDifficulty();
     }
 
     public ForgingQuality qualityFromBlueprint() {
@@ -824,7 +844,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             ItemStack blueprint = this.itemHandler.getStackInSlot(BLUEPRINT_SLOT);
 
             // Quality tiers in order
-            List<ForgingQuality> qualityTiers = List.of(ForgingQuality.POOR, ForgingQuality.WELL, ForgingQuality.EXPERT, ForgingQuality.PERFECT, ForgingQuality.MASTER);
+            List<ForgingQuality> qualityTiers = List.of(ForgingQuality.POOR, ForgingQuality.WELL, ForgingQuality.EXPERT,
+                    ForgingQuality.PERFECT, ForgingQuality.MASTER);
 
             // Missing or invalid blueprint → cap quality
             String poor = quality.equals(ForgingQuality.POOR)
@@ -835,9 +856,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 return ForgingQuality.fromString(poor);
             }
 
-            String bpQuality = blueprintData.quality().toLowerCase();
+            String bpQuality = blueprintData.quality().toLowerCase(java.util.Locale.ROOT);
             // ensure it’s in our tier list, otherwise default
-            return qualityTiers.contains(ForgingQuality.fromString(bpQuality)) ? ForgingQuality.fromString(bpQuality) : ForgingQuality.NONE;
+            return qualityTiers.contains(ForgingQuality.fromString(bpQuality)) ? ForgingQuality.fromString(bpQuality)
+                    : ForgingQuality.NONE;
         }
 
         return ForgingQuality.NONE; // fallback if no blueprint types
@@ -906,7 +928,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public boolean hasQuality() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
-        if (recipeOptional.isEmpty()) return false;
+        if (recipeOptional.isEmpty())
+            return false;
 
         ForgingRecipe recipe = recipeOptional.get();
 
@@ -916,7 +939,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public boolean needsMinigame() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
-        if (recipeOptional.isEmpty()) return false;
+        if (recipeOptional.isEmpty())
+            return false;
 
         ForgingRecipe recipe = recipeOptional.get();
 
@@ -958,17 +982,22 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return lastCraftTick >= 0 && currentTick - lastCraftTick <= 2;
     }
 
-    // Not the happiest with this due to constantly checking if it's open etc., maybe figure smth out :)
+    // Not the happiest with this due to constantly checking if it's open etc.,
+    // maybe figure smth out :)
     public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
-        if (!this.hasHeatedItems || level.isClientSide) return;
-        if (level.getGameTime() % 20 != 0) return;
-        if (getViewerCount(level, pos) > 0) return;
+        if (!this.hasHeatedItems || level.isClientSide)
+            return;
+        if (level.getGameTime() % 20 != 0)
+            return;
+        if (getViewerCount(level, pos) > 0)
+            return;
 
         boolean hasHeatedItems = false;
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);
-            if (stack.isEmpty()) continue;
+            if (stack.isEmpty())
+                continue;
 
             if (HeatedItem.isHeated(stack)) {
                 hasHeatedItems = true;
@@ -1036,12 +1065,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     @Override
     public boolean stillValid(Player player) {
         // Standard check: player must be no farther than 8 blocks
-        if (this.level == null) return false;
+        if (this.level == null)
+            return false;
         return player.distanceToSqr(
                 this.worldPosition.getX() + 0.5,
                 this.worldPosition.getY() + 0.5,
-                this.worldPosition.getZ() + 0.5
-        ) <= 64.0;
+                this.worldPosition.getZ() + 0.5) <= 64.0;
     }
 
     @Override

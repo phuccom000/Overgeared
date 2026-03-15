@@ -70,7 +70,7 @@ public class AnvilMinigameEvents {
     }
 
     public static void setupForQuality(String quality) {
-        switch (quality.toLowerCase()) {
+        switch (quality.toLowerCase(java.util.Locale.ROOT)) {
             case "none" -> {
                 arrowSpeed = ServerConfig.DEFAULT_ARROW_SPEED.get().floatValue();
                 speedIncreasePerHit = ServerConfig.DEFAULT_ARROW_SPEED_INCREASE.get().floatValue();
@@ -146,21 +146,24 @@ public class AnvilMinigameEvents {
         }
     }
 
-
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        //ensureInitialized();
+        // ensureInitialized();
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
+        if (mc.player == null)
+            return;
         // Track crouch release so shift+click toggle requires a fresh shift press
         if (minigameStarted && !crouchReleasedSinceStart && !mc.player.isCrouching()) {
             crouchReleasedSinceStart = true;
         }
-        if (!mc.isPaused()) updatePopups();
-        if (mc.isPaused() || !isVisible()) return;
+        if (!mc.isPaused())
+            updatePopups();
+        if (mc.isPaused() || !isVisible())
+            return;
 
         tickAccumulator++;
-        if (tickAccumulator < TICKS_PER_PRINT) return;
+        if (tickAccumulator < TICKS_PER_PRINT)
+            return;
         tickAccumulator = 0;
 
         // Update arrow movement
@@ -328,7 +331,6 @@ public class AnvilMinigameEvents {
         return "poor";
     }
 
-
     public static void setHitsRemaining(int hitsRemaining) {
         AnvilMinigameEvents.hitsRemaining = hitsRemaining;
         AnvilMinigameEvents.maxHits = hitsRemaining;
@@ -341,9 +343,12 @@ public class AnvilMinigameEvents {
         float qualityScore = 0;
         if (totalHits > 0)
             qualityScore = (perfectHits * 1.0f + goodHits * 0.6f) / totalHits;
-        if (qualityScore > ServerConfig.PERFECT_QUALITY_SCORE.get()) return "perfect";
-        if (qualityScore > ServerConfig.EXPERT_QUALITY_SCORE.get()) return "expert";
-        if (qualityScore > ServerConfig.WELL_QUALITY_SCORE.get()) return "well";
+        if (qualityScore > ServerConfig.PERFECT_QUALITY_SCORE.get())
+            return "perfect";
+        if (qualityScore > ServerConfig.EXPERT_QUALITY_SCORE.get())
+            return "expert";
+        if (qualityScore > ServerConfig.WELL_QUALITY_SCORE.get())
+            return "well";
         return "poor";
     }
 
@@ -398,21 +403,20 @@ public class AnvilMinigameEvents {
 
             // --- Step 4: Check separation conditions ---
             // Tolerances (in percent of bar width)
-            float minCenterDiff = 5f;   // must move at least this much from previous center
-            float minEdgeDiff = 3f;   // must move edges by at least this much
+            float minCenterDiff = 5f; // must move at least this much from previous center
+            float minEdgeDiff = 3f; // must move edges by at least this much
 
-            boolean perfectTooClose =
-                    Math.abs(newPerfectCenter - oldPerfectCenter) < minCenterDiff ||
-                            Math.abs(pStart - oldPerfectStart) < minEdgeDiff ||
-                            Math.abs(pEnd - oldPerfectEnd) < minEdgeDiff;
+            boolean perfectTooClose = Math.abs(newPerfectCenter - oldPerfectCenter) < minCenterDiff ||
+                    Math.abs(pStart - oldPerfectStart) < minEdgeDiff ||
+                    Math.abs(pEnd - oldPerfectEnd) < minEdgeDiff;
 
-            boolean goodTooClose =
-                    Math.abs(newGoodCenter - oldGoodCenter) < minCenterDiff ||
-                            Math.abs(gStart - oldGoodStart) < minEdgeDiff ||
-                            Math.abs(gEnd - oldGoodEnd) < minEdgeDiff;
+            boolean goodTooClose = Math.abs(newGoodCenter - oldGoodCenter) < minCenterDiff ||
+                    Math.abs(gStart - oldGoodStart) < minEdgeDiff ||
+                    Math.abs(gEnd - oldGoodEnd) < minEdgeDiff;
 
             // Regenerate if *either* zone is too close
-            if (perfectTooClose || goodTooClose) continue;
+            if (perfectTooClose || goodTooClose)
+                continue;
 
             // --- Step 5: Accept the new zones ---
             newPerfectStart = pStart;
@@ -429,11 +433,9 @@ public class AnvilMinigameEvents {
         goodZoneEnd = newGoodEnd;
     }
 
-
     private static boolean edgesTooCloseOrOverlapping(
             int newStart, int newEnd, int oldStart, int oldEnd, float overlapRatio,
-            boolean clampedLeft, boolean clampedRight
-    ) {
+            boolean clampedLeft, boolean clampedRight) {
         int newSize = Math.max(1, newEnd - newStart);
         int tolerance = 1;
         boolean startClose = Math.abs(newStart - oldStart) <= tolerance;
@@ -452,7 +454,6 @@ public class AnvilMinigameEvents {
 
         return (startClose && endClose) || overlapFraction > overlapRatio;
     }
-
 
     private static float getWeightedRandomCenter(float bias) {
         // bias toward middle but allow full 0–100 range
@@ -501,7 +502,7 @@ public class AnvilMinigameEvents {
         if (pos != null && !pos.equals(BlockPos.ZERO)) {
             PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(false, pos));
         }
-        //clearAnvilPos(playerId);
+        // clearAnvilPos(playerId);
     }
 
     // ===============================

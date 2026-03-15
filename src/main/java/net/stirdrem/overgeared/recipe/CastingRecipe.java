@@ -34,12 +34,13 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     private final float experience;
     private final int cookingTime;
 
-    public CastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials, String toolType,
-                         ItemStack result, boolean needPolishing, float experience, int cookingTime) {
+    public CastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
+            String toolType,
+            ItemStack result, boolean needPolishing, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.requiredMaterials = requiredMaterials;
-        this.toolType = toolType.toLowerCase();
+        this.toolType = toolType.toLowerCase(java.util.Locale.ROOT);
         this.result = result;
         this.needPolishing = needPolishing;
         this.experience = experience;
@@ -48,27 +49,35 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
     @Override
     public boolean matches(RecipeInput input, Level level) {
-        if (level.isClientSide) return false;
+        if (level.isClientSide)
+            return false;
 
         // Tool cast (slot 1)
         ItemStack cast = input.getItem(1);
-        if (!(cast.getItem() instanceof ToolCastItem)) return false;
+        if (!(cast.getItem() instanceof ToolCastItem))
+            return false;
 
         // Get cast data component
         CastData castData = cast.get(ModComponents.CAST_DATA.get());
-        if (castData == null) return false;
+        if (castData == null)
+            return false;
 
         // Tool type check (FROM CAST)
-        if (castData.toolType().isEmpty()) return false;
-        if (!toolType.equals(castData.toolType().toLowerCase())) return false;
+        if (castData.toolType().isEmpty())
+            return false;
+        if (!toolType.equals(castData.toolType().toLowerCase(java.util.Locale.ROOT)))
+            return false;
 
         // Cast Data Check
-        if (castData.hasOutput()) return false;
-        if (!castData.materials().isEmpty()) return false;
+        if (castData.hasOutput())
+            return false;
+        if (!castData.materials().isEmpty())
+            return false;
 
         // Material input slot (slot 0)
         ItemStack materialStack = input.getItem(0);
-        if (materialStack.isEmpty()) return false;
+        if (materialStack.isEmpty())
+            return false;
 
         // Must be a valid material
         if (!ConfigHelper.isValidMaterial(materialStack)) {
@@ -81,7 +90,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
         // Required material validation
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase();
+            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
             int needed = entry.getValue();
             int available = availableMaterials.getOrDefault(material, 0) * count;
 
@@ -96,10 +105,12 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     @Override
     public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
         ItemStack cast = input.getItem(1);
-        if (cast.isEmpty()) return ItemStack.EMPTY;
+        if (cast.isEmpty())
+            return ItemStack.EMPTY;
 
         CastData castData = cast.get(ModComponents.CAST_DATA.get());
-        if (castData == null) return ItemStack.EMPTY;
+        if (castData == null)
+            return ItemStack.EMPTY;
 
         // Build result item
         ItemStack out = result.copy();
@@ -236,18 +247,19 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
         private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
-                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
-                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("material").codec().fieldOf("input").forGetter(r -> r.requiredMaterials),
+                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
+                        .forGetter(r -> r.category),
+                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("material").codec().fieldOf("input")
+                        .forGetter(r -> r.requiredMaterials),
                 Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
                 ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
-        ).apply(instance, CastingRecipe::new));
+                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime))
+                .apply(instance, CastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
-                Serializer::toNetwork, Serializer::fromNetwork
-        );
+                Serializer::toNetwork, Serializer::fromNetwork);
 
         private static CastingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
             String group = buffer.readUtf();
@@ -259,7 +271,8 @@ public class CastingRecipe implements Recipe<RecipeInput> {
             float experience = buffer.readFloat();
             int cookingTime = buffer.readVarInt();
 
-            return new CastingRecipe(group, category, reqMaterials, toolType, result, need_polishing, experience, cookingTime);
+            return new CastingRecipe(group, category, reqMaterials, toolType, result, need_polishing, experience,
+                    cookingTime);
         }
 
         private static void toNetwork(RegistryFriendlyByteBuf buffer, CastingRecipe recipe) {

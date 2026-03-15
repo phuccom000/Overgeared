@@ -37,9 +37,12 @@ public enum BlueprintQuality implements StringRepresentable {
         BlueprintQuality a = fromString(q1);
         BlueprintQuality b = fromString(q2);
 
-        if (a == NONE && b == NONE) return 0;
-        if (a == NONE) return -1;
-        if (b == NONE) return 1;
+        if (a == NONE && b == NONE)
+            return 0;
+        if (a == NONE)
+            return -1;
+        if (b == NONE)
+            return 1;
 
         return Integer.compare(a.ordinal(), b.ordinal());
     }
@@ -49,7 +52,8 @@ public enum BlueprintQuality implements StringRepresentable {
      */
     public static BlueprintQuality fromString(String id) {
         for (BlueprintQuality q : values()) {
-            if (q.id.equalsIgnoreCase(id)) return q;
+            if (q.id.equalsIgnoreCase(id))
+                return q;
         }
         return NONE;
     }
@@ -58,7 +62,8 @@ public enum BlueprintQuality implements StringRepresentable {
      * Get the next tier of blueprint quality.
      */
     public static BlueprintQuality getNext(BlueprintQuality current) {
-        if (current == NONE) return POOR;
+        if (current == NONE)
+            return POOR;
 
         int index = current.ordinal();
         if (index + 1 < values().length) {
@@ -71,7 +76,8 @@ public enum BlueprintQuality implements StringRepresentable {
      * Get the previous tier of blueprint quality.
      */
     public static BlueprintQuality getPrevious(BlueprintQuality current) {
-        if (current == NONE) return NONE;
+        if (current == NONE)
+            return NONE;
 
         int index = current.ordinal();
         if (index - 1 > 0) { // skip NONE
@@ -94,7 +100,8 @@ public enum BlueprintQuality implements StringRepresentable {
     }
 
     public int getUse() {
-        if (this == NONE) return 0;
+        if (this == NONE)
+            return 0;
 
         try {
             return configSupplier.get().get();
@@ -109,7 +116,7 @@ public enum BlueprintQuality implements StringRepresentable {
     }
 
     public String getTranslationKey() {
-        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase();
+        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase(java.util.Locale.ROOT);
     }
 
     public String getId() {

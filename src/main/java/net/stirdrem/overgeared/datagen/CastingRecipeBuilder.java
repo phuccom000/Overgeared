@@ -55,7 +55,7 @@ public class CastingRecipeBuilder implements RecipeBuilder {
     }
 
     public CastingRecipeBuilder material(String material, int amount) {
-        this.materialInput.put(material.toLowerCase(), amount);
+        this.materialInput.put(material.toLowerCase(java.util.Locale.ROOT), amount);
         return this;
     }
 
@@ -92,13 +92,13 @@ public class CastingRecipeBuilder implements RecipeBuilder {
                 .rewards(AdvancementRewards.Builder.recipe(id))
                 .requirements(AdvancementRequirements.Strategy.OR);
         CastingRecipe recipe = getCastingRecipe();
-        ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_casting_furnace");
+        ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(),
+                id.getPath() + "_from_casting_furnace");
 
         output.accept(
                 recipeId,
                 recipe,
-                advBuilder.build(id.withPrefix("recipes/casting/"))
-        );
+                advBuilder.build(id.withPrefix("recipes/casting/")));
     }
 
     private @NotNull CastingRecipe getCastingRecipe() {
@@ -113,8 +113,7 @@ public class CastingRecipeBuilder implements RecipeBuilder {
                 resultStack,
                 Boolean.TRUE.equals(this.needPolishing),
                 this.experience,
-                this.cookTime
-        );
+                this.cookTime);
     }
 
     /* ================= VALIDATION ================= */

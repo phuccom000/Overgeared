@@ -30,7 +30,7 @@ public class ConfigHelper {
      * Example: "SWORD" -> "tooltype.overgeared.sword"
      */
     public static String getToolTypeDisplayName(String toolType) {
-        return "tooltype.overgeared." + toolType.toLowerCase();
+        return "tooltype.overgeared." + toolType.toLowerCase(java.util.Locale.ROOT);
     }
 
     /**
@@ -55,9 +55,8 @@ public class ConfigHelper {
      * Example: "IRON" -> "material.overgeared.iron"
      */
     public static String getMaterialDisplayName(String materialId) {
-        return "material.overgeared." + materialId.toLowerCase();
+        return "material.overgeared." + materialId.toLowerCase(java.util.Locale.ROOT);
     }
-
 
     // Cache for tool type mappings (populated from RecipeManager)
     private static final Map<Item, String> toolTypeCache = new ConcurrentHashMap<>();
@@ -65,10 +64,12 @@ public class ConfigHelper {
     /**
      * Get tool type from item using cached recipe data.
      * The cache is populated by getToolTypeForItem(Level, ItemStack) calls.
-     * This allows recipes without Level access to still use datapack-driven mappings.
+     * This allows recipes without Level access to still use datapack-driven
+     * mappings.
      */
     public static String getToolTypeFromItemDirect(ItemStack stack) {
-        if (stack.isEmpty()) return "none";
+        if (stack.isEmpty())
+            return "none";
         return toolTypeCache.getOrDefault(stack.getItem(), "none");
     }
 
@@ -102,10 +103,10 @@ public class ConfigHelper {
 
     public static String getMaterialForItem(Item item) {
         // First check datapack entries
-        Optional<MaterialSettingsReloadListener.MaterialEntry> datapackEntry =
-                MaterialSettingsReloadListener.getAllMaterialEntries().stream()
-                        .filter(entry -> matchesItemOrTag(item, entry.getItemOrTag()))
-                        .findFirst();
+        Optional<MaterialSettingsReloadListener.MaterialEntry> datapackEntry = MaterialSettingsReloadListener
+                .getAllMaterialEntries().stream()
+                .filter(entry -> matchesItemOrTag(item, entry.getItemOrTag()))
+                .findFirst();
 
         if (datapackEntry.isPresent()) {
             return datapackEntry.get().getMaterialId();
@@ -130,10 +131,10 @@ public class ConfigHelper {
 
     public static int getMaterialValue(Item item) {
         // First check datapack entries
-        Optional<MaterialSettingsReloadListener.MaterialEntry> datapackEntry =
-                MaterialSettingsReloadListener.getAllMaterialEntries().stream()
-                        .filter(entry -> matchesItemOrTag(item, entry.getItemOrTag()))
-                        .findFirst();
+        Optional<MaterialSettingsReloadListener.MaterialEntry> datapackEntry = MaterialSettingsReloadListener
+                .getAllMaterialEntries().stream()
+                .filter(entry -> matchesItemOrTag(item, entry.getItemOrTag()))
+                .findFirst();
 
         if (datapackEntry.isPresent()) {
             return datapackEntry.get().getMaterialValue();
@@ -176,7 +177,8 @@ public class ConfigHelper {
     }
 
     /**
-     * Get all material values for an item (useful when an item belongs to multiple materials)
+     * Get all material values for an item (useful when an item belongs to multiple
+     * materials)
      */
     public static Map<String, Integer> getMaterialValuesForItem(ItemStack stack) {
         return getMaterialValuesForItem(stack.getItem());
@@ -208,12 +210,14 @@ public class ConfigHelper {
      */
     private static boolean matchesItemOrTag(Item item, String key) {
         // Direct item match
-        if (BuiltInRegistries.ITEM.getKey(item).toString().equals(key)) return true;
+        if (BuiltInRegistries.ITEM.getKey(item).toString().equals(key))
+            return true;
 
         // Tag match
         if (key.startsWith("#")) {
             ResourceLocation tagId = ResourceLocation.tryParse(key.substring(1));
-            if (tagId == null) return false;
+            if (tagId == null)
+                return false;
 
             // ---- Item tag check ----
             TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
@@ -230,7 +234,6 @@ public class ConfigHelper {
 
         return false;
     }
-
 
     // -----------------------
     // New utility methods for datapack integration
