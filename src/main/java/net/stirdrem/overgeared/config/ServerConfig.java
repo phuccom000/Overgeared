@@ -9,8 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ServerConfig {
-
-    public static final int DEFAULT_WOODEN_BUCKET_BREAK_TEMPERATURE = 1000;
+    
     public static final ForgeConfigSpec SERVER_CONFIG;
     public static final ForgeConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
 
