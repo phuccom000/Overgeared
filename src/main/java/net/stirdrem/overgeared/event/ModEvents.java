@@ -155,7 +155,7 @@ public class ModEvents {
     }
 
     private static void modifyAttribute(ItemAttributeModifierEvent event, Attribute attribute, double bonus,
-            AttributeModifier.Operation operation, ForgingQuality quality) {
+                                        AttributeModifier.Operation operation, ForgingQuality quality) {
         // Get all modifiers currently on the item
         var modifiers = event.getModifiers();
 
@@ -167,12 +167,6 @@ public class ModEvents {
         // Modify each one
         for (var entry : targetModifiers) {
             AttributeModifier originalModifier = entry.modifier();
-
-            /*
-             * if (originalModifier.amount() == 0) {
-             * continue;
-             * }
-             */
 
             // Remove original
             if (operation == AttributeModifier.Operation.ADD_VALUE)
@@ -187,7 +181,7 @@ public class ModEvents {
     }
 
     private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus,
-            AttributeModifier.Operation operation, ForgingQuality quality) {
+                                                             AttributeModifier.Operation operation, ForgingQuality quality) {
         ResourceLocation id;
         double amount;
         if (operation == AttributeModifier.Operation.ADD_VALUE) {
@@ -340,7 +334,7 @@ public class ModEvents {
         if (quality != null) {
             Component qualityComponent = switch (quality) {
                 case MASTER ->
-                    Component.translatable("tooltip.overgeared.master").withStyle(ChatFormatting.LIGHT_PURPLE);
+                        Component.translatable("tooltip.overgeared.master").withStyle(ChatFormatting.LIGHT_PURPLE);
                 case PERFECT -> Component.translatable("tooltip.overgeared.perfect").withStyle(ChatFormatting.GOLD);
                 case EXPERT -> Component.translatable("tooltip.overgeared.expert").withStyle(ChatFormatting.BLUE);
                 case WELL -> Component.translatable("tooltip.overgeared.well").withStyle(ChatFormatting.YELLOW);
@@ -357,9 +351,9 @@ public class ModEvents {
         if (isPolished != null) {
             Component polishComponent = isPolished
                     ? Component.translatable("tooltip.overgeared.polished").withStyle(ChatFormatting.BLUE,
-                            ChatFormatting.ITALIC)
+                    ChatFormatting.ITALIC)
                     : Component.translatable("tooltip.overgeared.unpolished").withStyle(ChatFormatting.RED,
-                            ChatFormatting.ITALIC);
+                    ChatFormatting.ITALIC);
             tooltip.add(insertOffset++, polishComponent);
         }
         if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {
@@ -428,25 +422,10 @@ public class ModEvents {
                     .withStyle(ChatFormatting.RED));
         }
 
-        /*
-         * if (stack.is(ModTags.Items.HEATABLE_METALS)) {
-         * tooltip.add(insertOffset++,
-         * Component.translatable("tooltip.overgeared.heatablemetals.tooltip")
-         * .withStyle(ChatFormatting.GRAY));
-         * }
-         */
-
         if (stack.is(ModTags.Items.HOT_ITEMS)) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.hotitems.tooltip")
                     .withStyle(ChatFormatting.RED));
         }
-        /*
-         * if (stack.is(ModTags.Items.GRINDABLE)) {
-         * tooltip.add(insertOffset,
-         * Component.translatable("tooltip.overgeared.grindable")
-         * .withStyle(ChatFormatting.GRAY));
-         * }
-         */
 
         String creatorName = stack.get(ModComponents.CREATOR);
         if (creatorName != null) {

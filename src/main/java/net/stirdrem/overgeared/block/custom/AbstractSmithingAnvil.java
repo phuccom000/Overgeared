@@ -143,12 +143,12 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
             if (anvil.hasRecipe() && isHammer) {
                 // Check if this is our anvil
+
                 BlockPos ourAnvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
                 if (ourAnvilPos != null && !pos.equals(ourAnvilPos)) {
                     // Not our anvil - don't process hit
                     return ItemInteractionResult.SUCCESS;
                 }
-
                 // Check if minigame is visible (quality recipe with minigame enabled)
                 if (AnvilMinigameEvents.isVisible()) {
                     // Process the hit client-side to update minigame state
@@ -187,7 +187,9 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
             // Allow direct hammering for non-quality recipes OR when minigame is disabled
             // (Minigame hits are handled by PacketSendCounterC2SPacket, not here)
-            if (isHammer && ((!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
+            boolean test = !anvil.hasQuality();
+            boolean test2 = !anvil.needsMinigame();
+            if (isHammer && ((anvil.isMinigameOn() && ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID())) || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
                 // Check if player is at the correct anvil
                 BlockPos playerAnvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (playerAnvilPos != null && !pos.equals(playerAnvilPos)) {
@@ -305,7 +307,8 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     }
 
     @Override
-    public void onLand(Level pLevel, BlockPos pPos, BlockState pState, BlockState pReplaceableState, FallingBlockEntity pFallingBlock) {
+    public void onLand(Level pLevel, BlockPos pPos, BlockState pState, BlockState
+            pReplaceableState, FallingBlockEntity pFallingBlock) {
         if (!pFallingBlock.isSilent()) {
             pLevel.levelEvent(1031, pPos, 0);
         }
@@ -317,7 +320,8 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     }
 
     @Override
-    public BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState, LevelAccessor pLevel, BlockPos pPos, BlockPos pNeighborPos) {
+    public BlockState updateShape(BlockState pState, Direction pDirection, BlockState pNeighborState, LevelAccessor
+            pLevel, BlockPos pPos, BlockPos pNeighborPos) {
         pLevel.scheduleTick(pPos, this, 2);
         return super.updateShape(pState, pDirection, pNeighborState, pLevel, pPos, pNeighborPos);
     }

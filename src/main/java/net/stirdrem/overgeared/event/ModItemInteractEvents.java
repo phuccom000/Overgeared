@@ -57,9 +57,9 @@ import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
 import net.stirdrem.overgeared.heateditem.HeatedItem;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
-import net.stirdrem.overgeared.networking.packet.MinigameSetStartedC2SPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
-import net.stirdrem.overgeared.networking.packet.SetMinigameVisibleC2SPacket;
+import net.stirdrem.overgeared.networking.packet.StartMinigameS2CPacket;
+import net.stirdrem.overgeared.networking.packet.ToggleMinigameS2CPacket;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
@@ -122,10 +122,15 @@ public class ModItemInteractEvents {
     public static void onUseSmithingHammer(PlayerInteractEvent.RightClickBlock event, Player player, Level level, BlockState state) {
         BlockPos pos = event.getPos();
         BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) return;
+        boolean crouchRequired = ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get();
+        UUID currentOwner = anvilBE.getOwnerUUID();
+        if (level.isClientSide()) {
+            return;
+        }
 
         // Shift-right-click to convert stone into smithing anvil
-        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.ANVIL_BASES)
-                && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
+        if (player.isCrouching() && state.is(ModTags.Blocks.ANVIL_BASES) && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
@@ -141,8 +146,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.IRON_ANVIL_BASES)
-                && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
+        if (player.isCrouching() && state.is(ModTags.Blocks.IRON_ANVIL_BASES) && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
@@ -157,7 +161,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
+        if (player.isCrouching() && state.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
@@ -172,7 +176,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide && player.isCrouching() && state.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
+        if (player.isCrouching() && state.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
@@ -187,31 +191,24 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!level.isClientSide()) {
-            if (!(be instanceof AbstractSmithingAnvilBlockEntity)) {
-                if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
-                    hideMinigame((ServerPlayer) player);
-                }
-            }
+        if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
+            hideMinigame((ServerPlayer) player);
         }
 
-        if (!(be instanceof
-                AbstractSmithingAnvilBlockEntity anvilBE)) return;
         UUID playerUUID = player.getUUID();
 
         // Block interaction if a craft just finished (prevents GUI opening on last minigame hit)
-        if (!level.isClientSide && anvilBE.justCrafted(level.getGameTime())) {
+        if (anvilBE.justCrafted(level.getGameTime())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
             return;
         }
 
-        boolean crouchRequired = ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get();
 
         // Let useItemOn handle: no recipe, non-quality direct hammering, minigame disabled
         // Show error messages when player is crouching (intending to start minigame)
         if (!anvilBE.hasRecipe()) {
-            if (crouchRequired && player.isCrouching() && !level.isClientSide) {
+            if (crouchRequired && player.isCrouching()) {
                 ((ServerPlayer) player).sendSystemMessage(
                         Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED), true);
                 event.setCanceled(true);
@@ -220,7 +217,7 @@ public class ModItemInteractEvents {
             return;
         }
         if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-            if (crouchRequired && player.isCrouching() && !level.isClientSide) {
+            if (crouchRequired && player.isCrouching()) {
                 ((ServerPlayer) player).sendSystemMessage(
                         Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED), true);
                 event.setCanceled(true);
@@ -229,109 +226,67 @@ public class ModItemInteractEvents {
             return;
         }
         if (!ServerConfig.ENABLE_MINIGAME.get()) return;
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
 
-        // Minigame already running — cancel event so useItemOn doesn't also process a hit.
-        // Server-side hits are handled by PacketSendCounterC2SPacket (sent per client minigame hit).
-        // Visibility toggling is handled client-side via setIsVisible (sends C2S to update server).
-        if (!level.isClientSide) {
-            if (anvilBE.isMinigameOn()) {
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                return;
-            }
-        } else {
-            if (AnvilMinigameEvents.minigameStarted) {
-                if (crouchRequired) {
-                    if (player.isCrouching()) {
-                        // Always cancel so the server doesn't also process the click
-                        event.setCanceled(true);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        // Only toggle if player released crouch since starting (prevents instant cancel)
-                        if (AnvilMinigameEvents.crouchReleasedSinceStart) {
-                            if (AnvilMinigameEvents.isVisible()) {
-                                AnvilMinigameEvents.setIsVisible(pos, false);
-                                playerMinigameVisibility.put(playerUUID, false);
-                            } else {
-                                AnvilMinigameEvents.setIsVisible(pos, true);
-                                playerMinigameVisibility.put(playerUUID, true);
-                            }
-                        }
-                    }
-                    // When not crouching: don't cancel → useItemOn processes hit
-                } else {
-                    // crouchRequired=false: re-show hidden minigame on click
-                    if (!AnvilMinigameEvents.isVisible()) {
-                        AnvilMinigameEvents.setIsVisible(pos, true);
-                        playerMinigameVisibility.put(playerUUID, true);
-                        event.setCanceled(true);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                    }
-                    // When visible: don't cancel → useItemOn processes hit
-                }
-                return;
-            }
+        // Already used
+        if (currentOwner != null && !currentOwner.equals(playerUUID)) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.anvil_in_use_by_another")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
         }
 
-        // If crouch is required but player isn't crouching, let useItemOn open the GUI
-        if (crouchRequired && !player.isCrouching()) return;
+        // Player already using another anvil
+        if (playerAnvilPositions.containsKey(playerUUID)
+                && !pos.equals(playerAnvilPositions.get(playerUUID))) {
 
-        // --- First-click minigame initiation ---
-        if (!level.isClientSide) {
-            if (!(player instanceof ServerPlayer serverPlayer)) return;
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.another_anvil_in_use")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
 
-            UUID currentOwner = anvilBE.getOwnerUUID();
-            if (currentOwner != null && !currentOwner.equals(playerUUID)) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED), true);
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.FAIL);
-                return;
-            }
+        boolean crouching = player.isCrouching();
 
-            BlockPos existingAnvil = playerAnvilPositions.get(playerUUID);
-            if (existingAnvil != null && !pos.equals(existingAnvil)) {
-                serverPlayer.sendSystemMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED), true);
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.FAIL);
-                return;
-            }
+        if (crouchRequired && !player.isCrouching()) {
+            return;
+        }
 
-            // Start minigame on server
+        if (currentOwner == null) {
+
             anvilBE.setOwner(playerUUID);
-            anvilBE.setPlayer(player);
-            anvilBE.setMinigameOn(true);
-            playerAnvilPositions.put(playerUUID, pos);
-            playerMinigameVisibility.put(playerUUID, true);
+            int hitsRequired = anvilBE.getRequiredProgress();
+            String quality = anvilBE.minigameQuality().getDisplayName();
 
+
+            // Sync ownership
             CompoundTag sync = new CompoundTag();
             sync.putUUID("anvilOwner", playerUUID);
             sync.putLong("anvilPos", pos.asLong());
             PacketDistributor.sendToAllPlayers(new MinigameSyncS2CPacket(sync));
-        } else {
-            // Client-side ownership check
-            UUID currentOwner = ClientAnvilMinigameData.getOccupiedAnvil(pos);
-            if (currentOwner != null && !currentOwner.equals(playerUUID)) {
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.FAIL);
-                return;
-            }
 
-            BlockPos existingAnvil = playerAnvilPositions.get(playerUUID);
-            if (existingAnvil != null && !pos.equals(existingAnvil)) {
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.FAIL);
-                return;
-            }
+            // Tell client to start minigame UI
+            PacketDistributor.sendToPlayer(serverPlayer, new StartMinigameS2CPacket(pos, hitsRequired, quality));
 
-            // Start minigame on client
-            anvilBE.setOwner(playerUUID);
-            String quality = anvilBE.minigameQuality().getDisplayName();
-            AnvilMinigameEvents.reset(quality);
             playerAnvilPositions.put(playerUUID, pos);
             playerMinigameVisibility.put(playerUUID, true);
-            AnvilMinigameEvents.setMinigameStarted(pos, true);
-            PacketDistributor.sendToServer(new MinigameSetStartedC2SPacket(pos));
-            PacketDistributor.sendToServer(new SetMinigameVisibleC2SPacket(true, pos));
-            AnvilMinigameEvents.setHitsRemaining(anvilBE.getRequiredProgress());
+
+            anvilBE.setPlayer(player);
+            anvilBE.setMinigameOn(true);
+
+        } else if (currentOwner.equals(playerUUID)) {
+            if (!player.isCrouching()) {
+                return;
+            }
+
+            boolean visible = playerMinigameVisibility.get(playerUUID);
+            playerMinigameVisibility.put(playerUUID, !visible);
+            PacketDistributor.sendToPlayer(serverPlayer, new ToggleMinigameS2CPacket(pos, !visible));
+
         }
 
         event.setCanceled(true);

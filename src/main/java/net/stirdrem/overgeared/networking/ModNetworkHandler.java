@@ -44,6 +44,18 @@ public class ModNetworkHandler {
                 ResetMinigameS2CPacket::handle
         );
 
+        registrar.playToClient(
+                StartMinigameS2CPacket.TYPE,
+                StartMinigameS2CPacket.STREAM_CODEC,
+                StartMinigameS2CPacket::handle
+        );
+
+        registrar.playToClient(
+                ToggleMinigameS2CPacket.TYPE,
+                ToggleMinigameS2CPacket.STREAM_CODEC,
+                ToggleMinigameS2CPacket::handle
+        );
+
         // Client to Server packets
         registrar.playToServer(
                 KnappingChipC2SPacket.TYPE,
