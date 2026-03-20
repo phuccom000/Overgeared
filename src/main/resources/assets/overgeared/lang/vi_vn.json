@@ -148,7 +148,7 @@
   "message.overgeared.anvil_in_use_by_another": "Đe này đang được người chơi khác sử dụng!",
   "message.overgeared.item_has_no_quality": "Công thức này không có chỉ số chất lượng",
   "message.overgeared.no_recipe": "Không có công thức hợp lệ!",
-  "tooltip.overgeared.knappable_rock.tooltip": "Cầm hòn đá ở cả hai tay và nhấp chuột phải để bắt đầu đẽo đá.",
+  "tooltip.overgeared.knappable": "Cầm ở cả hai tay và nhấp chuột phải để bắt đầu đẽo.",
   "tooltip.overgeared.flint_flavor": "Nhấp chuột phải vào đá để gõ ra hòn đá. Có thể bị vỡ.",
   "tooltip.overgeared.polished": "Đã mài",
   "tooltip.overgeared.unpolished": "Chưa mài",
@@ -245,6 +245,7 @@
   "tooltip.overgeared.tool_cast.type": "Type:",
   "tooltip.overgeared.tool_cast.materials": "Materials:",
   "tooltip.overgeared.tool_cast.amount": "Amount:",
+  "tooltip.overgeared.tool_cast.contains": "Contains:",
   "quality.overgeared.master": "Bậc Thầy",
   "quality.overgeared.perfect": "Hoàn Hảo",
   "quality.overgeared.expert": "Chuyên Nghiệp",
@@ -273,5 +274,8 @@
   "overgeared.forging.perfect": "PERFECT!",
   "overgeared.forging.good": "GOOD!",
   "overgeared.forging.miss": "MISS!",
-  "tooltip.overgeared.tool_cast.contains": "Contains:"
+  "block.overgeared.casting_furnace": "Casting Furnace",
+  "container.overgeared.casting_furnace": "Casting Furnace",
+  "gui.overgeared.jei.category.casting": "Casting",
+  "overgeared.container.recipe_book.forgeable": "Forgeable"
 }

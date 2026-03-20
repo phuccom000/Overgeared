@@ -148,7 +148,7 @@
   "message.overgeared.anvil_in_use_by_another": "Эту наковальню использует другой игрок!",
   "message.overgeared.item_has_no_quality": "У этого рецепта нет значения качества",
   "message.overgeared.no_recipe": "Нет подходящего рецепта!",
-  "tooltip.overgeared.knappable_rock.tooltip": "Держите по камню в каждой руке и нажмите ПКМ чтобы начать оббивку.",
+  "tooltip.overgeared.knappable": "Держите по в каждой руке и нажмите ПКМ чтобы начать оббивку.",
   "tooltip.overgeared.flint_flavor": "ПКМ по блоку камня чтобы добыть кусок камня. Имеет шанс сломаться.",
   "tooltip.overgeared.polished": "Отполированный",
   "tooltip.overgeared.unpolished": "не отполированный",
@@ -245,6 +245,7 @@
   "tooltip.overgeared.tool_cast.type": "Типа:",
   "tooltip.overgeared.tool_cast.materials": "Материалы:",
   "tooltip.overgeared.tool_cast.amount": "Количество:",
+  "tooltip.overgeared.tool_cast.contains": "Содержит:",
   "quality.overgeared.master": "Мастер",
   "quality.overgeared.perfect": "Идеально",
   "quality.overgeared.expert": "Эксперт",
@@ -273,5 +274,8 @@
   "overgeared.forging.perfect": "ИДЕАЛЬНО!",
   "overgeared.forging.good": "ОТЛИЧНО!",
   "overgeared.forging.miss": "МИМО!",
-  "tooltip.overgeared.tool_cast.contains": "Содержит:"
+  "block.overgeared.casting_furnace": "Casting Furnace",
+  "container.overgeared.casting_furnace": "Casting Furnace",
+  "gui.overgeared.jei.category.casting": "Casting",
+  "overgeared.container.recipe_book.forgeable": "Forgeable"
 }

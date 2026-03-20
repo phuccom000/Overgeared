@@ -148,7 +148,7 @@
   "message.overgeared.anvil_in_use_by_another": "Dieser Amboss wird von einem anderen Spieler verwendet!",
   "message.overgeared.item_has_no_quality": "Dieses Rezept hat keinen Qualitätsmodifikator",
   "message.overgeared.no_recipe": "Es gibt kein gültiges Rezept!",
-  "tooltip.overgeared.knappable_rock.tooltip": "Halten Sie in jeder Hand einen Steinchen und rechtsklick, um mit dem Knapping zu beginnen.",
+  "tooltip.overgeared.knappable": "Halten Sie in jeder Hand einen und rechtsklick, um mit dem Knapping zu beginnen.",
   "tooltip.overgeared.flint_flavor": "Klicken Sie mit rechtsklick auf den Stein, um ein Stück herauszumeißeln. Es besteht die Möglichkeit, dass es zerbricht.",
   "tooltip.overgeared.polished": "geschliffen",
   "tooltip.overgeared.unpolished": "ungeschliffen",
@@ -245,6 +245,7 @@
   "tooltip.overgeared.tool_cast.type": "Type:",
   "tooltip.overgeared.tool_cast.materials": "Materials:",
   "tooltip.overgeared.tool_cast.amount": "Amount:",
+  "tooltip.overgeared.tool_cast.contains": "Contains:",
   "quality.overgeared.master": "Master",
   "quality.overgeared.perfect": "Perfect",
   "quality.overgeared.expert": "Expert",
@@ -272,5 +273,9 @@
   "tooltip.overgeared.stone_hammer_head": "Can only be used to make a hammer tool cast",
   "overgeared.forging.perfect": "PERFECT!",
   "overgeared.forging.good": "GOOD!",
-  "overgeared.forging.miss": "MISS!"
+  "overgeared.forging.miss": "MISS!",
+  "block.overgeared.casting_furnace": "Casting Furnace",
+  "container.overgeared.casting_furnace": "Casting Furnace",
+  "gui.overgeared.jei.category.casting": "Casting",
+  "overgeared.container.recipe_book.forgeable": "Forgeable"
 }
