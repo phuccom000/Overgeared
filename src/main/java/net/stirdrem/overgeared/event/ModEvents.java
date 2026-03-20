@@ -18,7 +18,6 @@ import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -249,46 +248,19 @@ public class ModEvents {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
+                anvil.clearOwner();
 
                 // Send reset packet to the specific player
                 PacketDistributor.sendToPlayer(player, new ResetMinigameS2CPacket(anvilPos));
                 ModItemInteractEvents.releaseAnvil(player, anvilPos);
                 ModItemInteractEvents.playerAnvilPositions.remove(playerId);
                 ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
-                Block block = player.level().getBlockState(anvilPos).getBlock();
                 blueprintQuality = anvil.minigameQuality().getDisplayName();
-                /*
-                 * if (block instanceof AbstractSmithingAnvilNew anvilNew) {
-                 * anvilNew.setMinigameOn(false);
-                 * }
-                 */
             }
 
         }
 
         AnvilMinigameEvents.reset(blueprintQuality);
-        // playerTimeoutCounters.remove(player.getUUID());
-    }
-
-    public static void resetMinigameForPlayer(ServerPlayer player, BlockPos anvilPos) {
-        // Only execute on server side
-        if (player == null)
-            return;
-        PacketDistributor.sendToPlayer(player, new OnlyResetMinigameS2CPacket());
-        BlockEntity be = player.level().getBlockEntity(anvilPos);
-        String quality = "perfect";
-        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
-            anvil.setProgress(0);
-            anvil.setChanged();
-            anvil.setMinigameOn(false);
-            quality = anvil.minigameQuality().getDisplayName();
-        }
-        AnvilMinigameEvents.reset(quality);
-        Block block = player.level().getBlockState(anvilPos).getBlock();
-
-        // Send reset packet to the specific player
-        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
-        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
     }
 
     public static void resetMinigameForAnvil(Level level, BlockPos anvilPos) {

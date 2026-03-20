@@ -229,13 +229,18 @@ public class ModItemInteractEvents {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
 
         // Already used
-        if (currentOwner != null && !currentOwner.equals(playerUUID)) {
-            serverPlayer.sendSystemMessage(
-                    Component.translatable("message.overgeared.anvil_in_use_by_another")
-                            .withStyle(ChatFormatting.RED),
-                    true
-            );
-            return;
+        if (currentOwner != null) {
+            Player ownerPlayer = level.getPlayerByUUID(currentOwner);
+            if (ownerPlayer == null) {
+                anvilBE.clearOwner();
+            } else if (!currentOwner.equals(player.getUUID())) {
+                serverPlayer.sendSystemMessage(
+                        Component.translatable("message.overgeared.anvil_in_use_by_another")
+                                .withStyle(ChatFormatting.RED),
+                        true
+                );
+                return;
+            }
         }
 
         // Player already using another anvil

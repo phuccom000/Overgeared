@@ -109,16 +109,22 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         // Check ownership
         if (anvil.hasRecipe()) {
             UUID currentOwner = anvil.getOwnerUUID();
-            if (currentOwner != null && !currentOwner.equals(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
+            if (currentOwner != null) {
                 Player ownerPlayer = level.getPlayerByUUID(currentOwner);
-                String ownerName = ownerPlayer != null ? ownerPlayer.getDisplayName().getString() : "Another player";
+                if (ownerPlayer == null) {
+                    anvil.clearOwner();
+                } else if (!currentOwner.equals(player.getUUID())) {
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        String ownerName = ownerPlayer.getDisplayName().getString();
 
-                serverPlayer.sendSystemMessage(
-                        Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
-                                .withStyle(ChatFormatting.RED),
-                        true
-                );
-                return InteractionResult.FAIL;
+                        serverPlayer.sendSystemMessage(
+                                Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
+                                        .withStyle(ChatFormatting.RED),
+                                true
+                        );
+                        return InteractionResult.FAIL;
+                    }
+                }
             }
         }
 
@@ -173,22 +179,26 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         // Check ownership
         if (anvil.hasRecipe()) {
             UUID currentOwner = anvil.getOwnerUUID();
-            if (currentOwner != null && !currentOwner.equals(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
+            if (currentOwner != null) {
                 Player ownerPlayer = level.getPlayerByUUID(currentOwner);
-                String ownerName = ownerPlayer != null ? ownerPlayer.getDisplayName().getString() : "Another player";
+                if (ownerPlayer == null) {
+                    anvil.clearOwner();
+                } else if (!currentOwner.equals(player.getUUID())) {
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        String ownerName = ownerPlayer.getDisplayName().getString();
 
-                serverPlayer.sendSystemMessage(
-                        Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
-                                .withStyle(ChatFormatting.RED),
-                        true
-                );
-                return ItemInteractionResult.FAIL;
+                        serverPlayer.sendSystemMessage(
+                                Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
+                                        .withStyle(ChatFormatting.RED),
+                                true
+                        );
+                        return ItemInteractionResult.FAIL;
+                    }
+                }
             }
 
             // Allow direct hammering for non-quality recipes OR when minigame is disabled
             // (Minigame hits are handled by PacketSendCounterC2SPacket, not here)
-            boolean test = !anvil.hasQuality();
-            boolean test2 = !anvil.needsMinigame();
             if (isHammer && ((anvil.isMinigameOn() && ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID())) || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
                 // Check if player is at the correct anvil
                 BlockPos playerAnvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
