@@ -587,10 +587,7 @@ public class ModItemInteractEvents {
         if (!(mainHand.is(ModTags.Items.KNAPPABLE) && offHand.is(ModTags.Items.KNAPPABLE))) {
             return;
         }
-        // Both items must be the SAME item
-        if (mainHand.getItem() != offHand.getItem()) {
-            return;
-        }
+
         // Prevent vanilla handling
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
