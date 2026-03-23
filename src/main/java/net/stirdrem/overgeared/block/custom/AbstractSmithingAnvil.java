@@ -199,7 +199,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
             // Allow direct hammering for non-quality recipes OR when minigame is disabled
             // (Minigame hits are handled by PacketSendCounterC2SPacket, not here)
-            if (isHammer && ((anvil.isMinigameOn() && ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID())) || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
+            if (isHammer && ((anvil.isMinigameOn()) || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get() || !ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get())) {
                 // Check if player is at the correct anvil
                 BlockPos playerAnvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (playerAnvilPos != null && !pos.equals(playerAnvilPos)) {

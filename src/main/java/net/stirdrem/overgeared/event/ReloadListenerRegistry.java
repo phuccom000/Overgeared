@@ -6,7 +6,7 @@ import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.*;
 
-@EventBusSubscriber(modid = OvergearedMod.MOD_ID)
+@EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class ReloadListenerRegistry {
     @SubscribeEvent
     public static void onReload(AddReloadListenerEvent event) {

@@ -28,5 +28,13 @@ versionRange = "${minecraft_version_range}"
 ordering = "AFTER"
 side = "BOTH"
 
+[[dependencies.${ mod_id }]]
+modId = "quark"
+type = "optional"
+versionRange = "[4,)"
+ordering = "NONE"
+side = "BOTH"
+optional = true
+
 [[mixins]]
 config = "overgeared.mixins.json"

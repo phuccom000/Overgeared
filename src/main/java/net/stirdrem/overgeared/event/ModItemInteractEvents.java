@@ -121,10 +121,7 @@ public class ModItemInteractEvents {
 
     public static void onUseSmithingHammer(PlayerInteractEvent.RightClickBlock event, Player player, Level level, BlockState state) {
         BlockPos pos = event.getPos();
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) return;
-        boolean crouchRequired = ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get();
-        UUID currentOwner = anvilBE.getOwnerUUID();
+
         if (level.isClientSide()) {
             return;
         }
@@ -191,11 +188,11 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
-            hideMinigame((ServerPlayer) player);
-        }
-
         UUID playerUUID = player.getUUID();
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) return;
+        boolean crouchRequired = ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get();
+        UUID currentOwner = anvilBE.getOwnerUUID();
 
         // Block interaction if a craft just finished (prevents GUI opening on last minigame hit)
         if (anvilBE.justCrafted(level.getGameTime())) {
