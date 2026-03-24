@@ -1,15 +1,15 @@
 {
-  "type": "overgeared:crafting_shapeless",
+  "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
     {
-      "item": "overgeared:stone_sword_blade"
+      "item": "overgeared:stone_axe_head"
     },
     {
       "item": "minecraft:stick"
     }
   ],
   "result": {
-    "item": "minecraft:stone_sword"
+    "id": "minecraft:stone_axe"
   }
 }

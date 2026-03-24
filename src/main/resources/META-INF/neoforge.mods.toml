@@ -32,9 +32,8 @@ side = "BOTH"
 modId = "quark"
 type = "optional"
 versionRange = "[4,)"
-ordering = "NONE"
+ordering = "AFTER"
 side = "BOTH"
-optional = true
 
 [[mixins]]
 config = "overgeared.mixins.json"

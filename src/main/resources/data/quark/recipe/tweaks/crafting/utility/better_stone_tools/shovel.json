@@ -1,5 +1,5 @@
 {
-  "type": "overgeared:crafting_shapeless",
+  "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
     {
@@ -10,6 +10,6 @@
     }
   ],
   "result": {
-    "item": "minecraft:stone_shovel"
+    "id": "minecraft:stone_shovel"
   }
 }
