@@ -48,6 +48,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.server.ServerLifecycleHooks;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -445,6 +446,15 @@ public class ModItemInteractEvents {
                         polishedItem.setCount(1);
                         polishedItem.getOrCreateTag().putBoolean("Polished", true);
 
+                        if (stack.getTag().contains("Heated") && stack.getTag().getBoolean("Heated")) {
+                            ForgingQuality quality = ForgingQuality.fromString(stack.getTag().getString("ForgingQuality"));
+                            if (quality != null) {
+                                ForgingQuality downgraded = quality.getLowerQuality(); // you need this helper
+                                if (downgraded != null) {
+                                    polishedItem.getOrCreateTag().putString("ForgingQuality", downgraded.getDisplayName());
+                                }
+                            }
+                        }
                         // Reduce held stack by 1
                         stack.shrink(1);
 

@@ -1,49 +1,49 @@
-[12Mar2026 09:44:06.069] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgedatauserdev, --assetIndex, 5, --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.4.0, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --mod, overgeared, --all, --output, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\generated\resources, --existing, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\main\resources, --mixin.config, mixins.overgeared.json]
-[12Mar2026 09:44:06.080] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.8 by Oracle Corporation; OS Windows 10 arch amd64 version 10.0
-[12Mar2026 09:44:06.274] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgedatauserdev
-[12Mar2026 09:44:06.357] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23130!/ Service=ModLauncher Env=CLIENT
-[12Mar2026 09:44:06.848] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.4.0\f0c0b352173d0a378cbdcec9cfc4ba65899a721\javafmllanguage-1.20.1-47.4.0.jar is missing mods.toml file
-[12Mar2026 09:44:06.857] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.4.0\e862740d8c84d08dbfedea412bef88fe42e727c5\lowcodelanguage-1.20.1-47.4.0.jar is missing mods.toml file
-[12Mar2026 09:44:06.865] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.4.0\5719b3a297a33f877ed5dde4cb4bd75c859096af\mclanguage-1.20.1-47.4.0.jar is missing mods.toml file
-[12Mar2026 09:44:06.873] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.4.0\235975dafa4309945b59c56b53f31dc5b65a6051\fmlcore-1.20.1-47.4.0.jar is missing mods.toml file
-[12Mar2026 09:44:08.607] [main/WARN] [net.minecraftforge.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: mixinextras. Using Mod File: C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\io.github.llamalad7\mixinextras-forge\0.4.1\5c35573a7b76103724799ca1174a69699b8a9aec\mixinextras-forge-0.4.1.jar
-[12Mar2026 09:44:08.607] [main/WARN] [net.minecraftforge.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: cloth_config. Using Mod File: C:\Users\Administrator\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\cloth-config-348521\5729105_mapped_parchment_2023.09.03-1.20.1\cloth-config-348521-5729105_mapped_parchment_2023.09.03-1.20.1.jar
-[12Mar2026 09:44:08.607] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: Found 26 dependencies adding them to mods collection
-[12Mar2026 09:44:11.824] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
-[12Mar2026 09:44:11.844] [main/ERROR] [mixin/]: Mixin config fabric-data-attachment-api-v1.mixins.json does not specify "minVersion" property
-[12Mar2026 09:44:11.846] [main/ERROR] [mixin/]: Mixin config fabric-data-attachment-api-v1.client.mixins.json does not specify "minVersion" property
-[12Mar2026 09:44:11.965] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgedatauserdev' with arguments [--gameDir, ., --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --assetIndex, 5, --mod, overgeared, --all, --output, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\generated\resources, --existing, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\main\resources]
-[12Mar2026 09:44:12.120] [main/WARN] [mixin/]: Reference map 'mixins.overgeared.refmap.json' for mixins.overgeared.json could not be read. If this is a development environment you can ignore this message
-[12Mar2026 09:44:12.422] [main/INFO] [mixin/]: Remapping refMap easyanvils.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.424] [main/INFO] [mixin/]: Remapping refMap easyanvils.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.425] [main/INFO] [mixin/]: Remapping refMap geckolib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.428] [main/INFO] [mixin/]: Remapping refMap recipeessentials.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.430] [main/INFO] [mixin/]: Remapping refMap caelus.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.431] [main/INFO] [mixin/]: Remapping refMap fabric-data-attachment-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.433] [main/INFO] [mixin/]: Remapping refMap fabric-data-attachment-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.540] [main/INFO] [mixin/]: Remapping refMap vtweaks.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.541] [main/INFO] [mixin/]: Remapping refMap immersive_armors-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.543] [main/WARN] [mixin/]: Reference map 'puzzlesaccessapi.common.refmap.json' for puzzlesaccessapi.common.mixins.json could not be read. If this is a development environment you can ignore this message
-[12Mar2026 09:44:12.548] [main/INFO] [mixin/]: Remapping refMap moonlight-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.550] [main/INFO] [mixin/]: Remapping refMap moonlight-forge-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.568] [main/INFO] [mixin/]: Remapping refMap jade.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.569] [main/INFO] [mixin/]: Remapping refMap lionfishapi.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.570] [main/INFO] [mixin/]: Remapping refMap backend-flywheel.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.572] [main/INFO] [mixin/]: Remapping refMap flywheel.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.573] [main/INFO] [mixin/]: Remapping refMap ponder.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.575] [main/INFO] [mixin/]: Remapping refMap ponder.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.578] [main/INFO] [mixin/]: Remapping refMap create.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.579] [main/INFO] [mixin/]: Remapping refMap cataclysm.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.580] [main/INFO] [mixin/]: Remapping refMap curios.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.582] [main/INFO] [mixin/]: Remapping refMap attributesetter.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.583] [main/INFO] [mixin/]: Remapping refMap fabric-entity-events-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.585] [main/INFO] [mixin/]: Remapping refMap fabric-entity-events-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.586] [main/INFO] [mixin/]: Remapping refMap spartanweaponry.mixins.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.588] [main/INFO] [mixin/]: Remapping refMap architectury-forge-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.590] [main/INFO] [mixin/]: Remapping refMap architectury-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.591] [main/INFO] [mixin/]: Remapping refMap fabric-object-builder-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.592] [main/INFO] [mixin/]: Remapping refMap cupboard.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.621] [main/INFO] [Puzzles Lib/]: Loading 35 mods:
+[24Mar2026 12:19:03.823] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgedatauserdev, --assetIndex, 5, --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --gameDir, ., --fml.forgeVersion, 47.4.0, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, --mod, overgeared, --all, --output, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\generated\resources, --existing, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\main\resources, --mixin.config, mixins.overgeared.json]
+[24Mar2026 12:19:03.844] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.8 by Oracle Corporation; OS Windows 10 arch amd64 version 10.0
+[24Mar2026 12:19:04.023] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgedatauserdev
+[24Mar2026 12:19:04.104] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/9d1c0c3a304ae6697ecd477218fa61b850bf57fc/mixin-0.8.5.jar%23130!/ Service=ModLauncher Env=CLIENT
+[24Mar2026 12:19:04.597] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\javafmllanguage\1.20.1-47.4.0\f0c0b352173d0a378cbdcec9cfc4ba65899a721\javafmllanguage-1.20.1-47.4.0.jar is missing mods.toml file
+[24Mar2026 12:19:04.607] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\lowcodelanguage\1.20.1-47.4.0\e862740d8c84d08dbfedea412bef88fe42e727c5\lowcodelanguage-1.20.1-47.4.0.jar is missing mods.toml file
+[24Mar2026 12:19:04.614] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\mclanguage\1.20.1-47.4.0\5719b3a297a33f877ed5dde4cb4bd75c859096af\mclanguage-1.20.1-47.4.0.jar is missing mods.toml file
+[24Mar2026 12:19:04.624] [main/WARN] [net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING]: Mod file C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\net.minecraftforge\fmlcore\1.20.1-47.4.0\235975dafa4309945b59c56b53f31dc5b65a6051\fmlcore-1.20.1-47.4.0.jar is missing mods.toml file
+[24Mar2026 12:19:06.428] [main/WARN] [net.minecraftforge.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: mixinextras. Using Mod File: C:\Users\Administrator\.gradle\caches\modules-2\files-2.1\io.github.llamalad7\mixinextras-forge\0.4.1\5c35573a7b76103724799ca1174a69699b8a9aec\mixinextras-forge-0.4.1.jar
+[24Mar2026 12:19:06.428] [main/WARN] [net.minecraftforge.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: cloth_config. Using Mod File: C:\Users\Administrator\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\cloth-config-348521\5729105_mapped_parchment_2023.09.03-1.20.1\cloth-config-348521-5729105_mapped_parchment_2023.09.03-1.20.1.jar
+[24Mar2026 12:19:06.429] [main/INFO] [net.minecraftforge.fml.loading.moddiscovery.JarInJarDependencyLocator/]: Found 26 dependencies adding them to mods collection
+[24Mar2026 12:19:10.178] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
+[24Mar2026 12:19:10.198] [main/ERROR] [mixin/]: Mixin config fabric-data-attachment-api-v1.mixins.json does not specify "minVersion" property
+[24Mar2026 12:19:10.200] [main/ERROR] [mixin/]: Mixin config fabric-data-attachment-api-v1.client.mixins.json does not specify "minVersion" property
+[24Mar2026 12:19:10.318] [main/INFO] [cpw.mods.modlauncher.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgedatauserdev' with arguments [--gameDir, ., --assetsDir, C:\Users\Administrator\.gradle\caches\forge_gradle\assets, --assetIndex, 5, --mod, overgeared, --all, --output, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\generated\resources, --existing, D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\src\main\resources]
+[24Mar2026 12:19:10.472] [main/WARN] [mixin/]: Reference map 'mixins.overgeared.refmap.json' for mixins.overgeared.json could not be read. If this is a development environment you can ignore this message
+[24Mar2026 12:19:10.779] [main/INFO] [mixin/]: Remapping refMap easyanvils.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.781] [main/INFO] [mixin/]: Remapping refMap easyanvils.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.783] [main/INFO] [mixin/]: Remapping refMap geckolib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.786] [main/INFO] [mixin/]: Remapping refMap recipeessentials.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.787] [main/INFO] [mixin/]: Remapping refMap caelus.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.788] [main/INFO] [mixin/]: Remapping refMap fabric-data-attachment-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.790] [main/INFO] [mixin/]: Remapping refMap fabric-data-attachment-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.899] [main/INFO] [mixin/]: Remapping refMap vtweaks.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.901] [main/INFO] [mixin/]: Remapping refMap immersive_armors-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.903] [main/WARN] [mixin/]: Reference map 'puzzlesaccessapi.common.refmap.json' for puzzlesaccessapi.common.mixins.json could not be read. If this is a development environment you can ignore this message
+[24Mar2026 12:19:10.908] [main/INFO] [mixin/]: Remapping refMap moonlight-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.910] [main/INFO] [mixin/]: Remapping refMap moonlight-forge-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.932] [main/INFO] [mixin/]: Remapping refMap jade.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.933] [main/INFO] [mixin/]: Remapping refMap lionfishapi.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.935] [main/INFO] [mixin/]: Remapping refMap backend-flywheel.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.936] [main/INFO] [mixin/]: Remapping refMap flywheel.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.938] [main/INFO] [mixin/]: Remapping refMap ponder.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.940] [main/INFO] [mixin/]: Remapping refMap ponder.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.944] [main/INFO] [mixin/]: Remapping refMap create.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.945] [main/INFO] [mixin/]: Remapping refMap cataclysm.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.947] [main/INFO] [mixin/]: Remapping refMap curios.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.948] [main/INFO] [mixin/]: Remapping refMap attributesetter.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.949] [main/INFO] [mixin/]: Remapping refMap fabric-entity-events-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.951] [main/INFO] [mixin/]: Remapping refMap fabric-entity-events-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.953] [main/INFO] [mixin/]: Remapping refMap spartanweaponry.mixins.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.956] [main/INFO] [mixin/]: Remapping refMap architectury-forge-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.957] [main/INFO] [mixin/]: Remapping refMap architectury-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.959] [main/INFO] [mixin/]: Remapping refMap fabric-object-builder-api-v1-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.960] [main/INFO] [mixin/]: Remapping refMap cupboard.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:10.995] [main/INFO] [Puzzles Lib/]: Loading 35 mods:
 	- architectury 9.2.14
 	- attributesetter 1.11.1-forge
 	- booklinggear 3.12
@@ -70,7 +70,7 @@
 	- minecraft 1.20.1
 	- mixinextras 0.4.1
 	- moonlight 1.20-2.16.10
-	- overgeared 1.20.1-1.6.20
+	- overgeared 1.20.1-1.6.23
 	- ponder 1.0.91
 	- puzzleslib 8.1.33
 		\-- puzzlesaccessapi 20.1.1
@@ -80,97 +80,97 @@
 		\-- jei 15.20.0.112
 	- valkyrienskies 2.4.10
 	- vtweaks 4.0.23
-[12Mar2026 09:44:12.622] [main/INFO] [mixin/]: Remapping refMap puzzleslib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.625] [main/INFO] [mixin/]: Remapping refMap puzzleslib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.626] [main/INFO] [mixin/]: Remapping refMap booklinggear.mixins-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.632] [main/INFO] [mixin/]: Remapping refMap valkyrienskies-120-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.635] [main/INFO] [mixin/]: Remapping refMap valkyrienskies-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.640] [main/INFO] [mixin/]: Remapping refMap emi-xplat-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.645] [main/INFO] [mixin/]: Remapping refMap lititup.mixins-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
-[12Mar2026 09:44:12.817] [main/INFO] [com.cupboard.Cupboard/]: Loaded config for: recipeessentials.json
-[12Mar2026 09:44:14.758] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/client/render/CustomLecternRenderer (java.lang.ClassNotFoundException: dan200.computercraft.client.render.CustomLecternRenderer)
-[12Mar2026 09:44:14.759] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/peripheral/speaker/SpeakerPosition (java.lang.ClassNotFoundException: dan200.computercraft.shared.peripheral.speaker.SpeakerPosition)
-[12Mar2026 09:44:14.761] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/client/sound/SpeakerSound (java.lang.ClassNotFoundException: dan200.computercraft.client.sound.SpeakerSound)
-[12Mar2026 09:44:14.762] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/turtle/core/TurtleBrain (java.lang.ClassNotFoundException: dan200.computercraft.shared.turtle.core.TurtleBrain)
-[12Mar2026 09:44:14.763] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/turtle/core/TurtleMoveCommand (java.lang.ClassNotFoundException: dan200.computercraft.shared.turtle.core.TurtleMoveCommand)
-[12Mar2026 09:44:14.764] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/peripheral/modem/wireless/WirelessNetwork (java.lang.ClassNotFoundException: dan200.computercraft.shared.peripheral.modem.wireless.WirelessNetwork)
-[12Mar2026 09:44:14.831] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/munitions/AbstractCannonProjectile (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.munitions.AbstractCannonProjectile)
-[12Mar2026 09:44:14.833] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/MountedAutocannonContraption (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.MountedAutocannonContraption)
-[12Mar2026 09:44:14.833] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.contraption.MountedAutocannonContraption was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinCannonContraption
-[12Mar2026 09:44:14.834] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/MountedBigCannonContraption (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.MountedBigCannonContraption)
-[12Mar2026 09:44:14.835] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.contraption.MountedBigCannonContraption was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinCannonContraption
-[12Mar2026 09:44:14.836] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/utils/CBCUtils (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.utils.CBCUtils)
-[12Mar2026 09:44:14.837] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/fixed_cannon_mount/FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour)
-[12Mar2026 09:44:14.837] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinFCMSVB
-[12Mar2026 09:44:14.838] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/PitchOrientedContraptionEntity (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity)
-[12Mar2026 09:44:14.840] [main/WARN] [mixin/]: Error loading class: rbasamoyai/ritchiesprojectilelib/RitchiesProjectileLib (java.lang.ClassNotFoundException: rbasamoyai.ritchiesprojectilelib.RitchiesProjectileLib)
-[12Mar2026 09:44:14.840] [main/WARN] [mixin/]: @Mixin target rbasamoyai.ritchiesprojectilelib.RitchiesProjectileLib was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinRitchiesProjectileLib
-[12Mar2026 09:44:14.841] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/network/ServerboundSetFixedCannonMountValuePacket (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.network.ServerboundSetFixedCannonMountValuePacket)
-[12Mar2026 09:44:14.841] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.network.ServerboundSetFixedCannonMountValuePacket was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinSSFCMVP
-[12Mar2026 09:44:14.843] [main/WARN] [mixin/]: Error loading class: me/duquee/createutilities/blocks/voidtypes/VoidLinkBehaviour (java.lang.ClassNotFoundException: me.duquee.createutilities.blocks.voidtypes.VoidLinkBehaviour)
-[12Mar2026 09:44:14.843] [main/WARN] [mixin/]: @Mixin target me.duquee.createutilities.blocks.voidtypes.VoidLinkBehaviour was not found valkyrienskies-common.mixins.json:mod_compat.create_utilities.MixinVoidLinkBehaviour
-[12Mar2026 09:44:14.844] [main/WARN] [mixin/]: Error loading class: fuzs/echochest/world/level/block/entity/EchoChestBlockEntity (java.lang.ClassNotFoundException: fuzs.echochest.world.level.block.entity.EchoChestBlockEntity)
-[12Mar2026 09:44:14.845] [main/WARN] [mixin/]: Error loading class: fuzs/echochest/world/level/block/entity/EchoChestListener (java.lang.ClassNotFoundException: fuzs.echochest.world.level.block.entity.EchoChestListener)
-[12Mar2026 09:44:14.850] [main/WARN] [mixin/]: Error loading class: dev/ftb/mods/ftbchunks/data/ClaimedChunkManagerImpl (java.lang.ClassNotFoundException: dev.ftb.mods.ftbchunks.data.ClaimedChunkManagerImpl)
-[12Mar2026 09:44:14.851] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/client/render/HexAdditionalRenderers (java.lang.ClassNotFoundException: at.petrak.hexcasting.client.render.HexAdditionalRenderers)
-[12Mar2026 09:44:14.853] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/raycast/OpEntityRaycast (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.raycast.OpEntityRaycast)
-[12Mar2026 09:44:14.854] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/spells/great/OpTeleport (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport)
-[12Mar2026 09:44:14.854] [main/WARN] [mixin/]: @Mixin target at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport was not found valkyrienskies-common.mixins.json:mod_compat.hexcasting.MixinOpTeleport
-[12Mar2026 09:44:14.856] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/spells/great/OpTeleport$Spell (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport$Spell)
-[12Mar2026 09:44:14.856] [main/WARN] [mixin/]: @Mixin target at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport$Spell was not found valkyrienskies-common.mixins.json:mod_compat.hexcasting.MixinOpTeleport$Spell
-[12Mar2026 09:44:14.857] [main/WARN] [mixin/]: Error loading class: net/beholderface/ephemera/casting/patterns/link/OpNetworkTeleport (java.lang.ClassNotFoundException: net.beholderface.ephemera.casting.patterns.link.OpNetworkTeleport)
-[12Mar2026 09:44:14.859] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/common/casting/actions/spells/link/OpLink (java.lang.ClassNotFoundException: ram.talia.hexal.common.casting.actions.spells.link.OpLink)
-[12Mar2026 09:44:14.861] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/common/casting/actions/spells/link/OpLinkOthers (java.lang.ClassNotFoundException: ram.talia.hexal.common.casting.actions.spells.link.OpLinkOthers)
-[12Mar2026 09:44:14.862] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/client/RenderHelperKt (java.lang.ClassNotFoundException: ram.talia.hexal.client.RenderHelperKt)
-[12Mar2026 09:44:14.863] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/api/linkable/ServerLinkableHolder (java.lang.ClassNotFoundException: ram.talia.hexal.api.linkable.ServerLinkableHolder)
-[12Mar2026 09:44:14.866] [main/WARN] [mixin/]: Error loading class: com/jamieswhiteshirt/reachentityattributes/ReachEntityAttributes (java.lang.ClassNotFoundException: com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes)
-[12Mar2026 09:44:14.868] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/common/entity/InfraredPacketEntity (java.lang.ClassNotFoundException: li.cil.tis3d.common.entity.InfraredPacketEntity)
-[12Mar2026 09:44:15.065] [main/WARN] [mixin/]: Error loading class: com/pedrorok/hypertube/core/connection/BezierConnection (java.lang.ClassNotFoundException: com.pedrorok.hypertube.core.connection.BezierConnection)
-[12Mar2026 09:44:15.067] [main/WARN] [mixin/]: Error loading class: com/pedrorok/hypertube/client/BezierTextureRenderer (java.lang.ClassNotFoundException: com.pedrorok.hypertube.client.BezierTextureRenderer)
-[12Mar2026 09:44:15.068] [main/WARN] [mixin/]: Error loading class: com/sonicether/soundphysics/SoundPhysics (java.lang.ClassNotFoundException: com.sonicether.soundphysics.SoundPhysics)
-[12Mar2026 09:44:15.069] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/client/renderer/block/entity/CasingBlockEntityRenderer (java.lang.ClassNotFoundException: li.cil.tis3d.client.renderer.block.entity.CasingBlockEntityRenderer)
-[12Mar2026 09:44:15.071] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/client/renderer/RenderContextImpl (java.lang.ClassNotFoundException: li.cil.tis3d.client.renderer.RenderContextImpl)
-[12Mar2026 09:44:15.117] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/entity/ChainCollisionEntity (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.entity.ChainCollisionEntity)
-[12Mar2026 09:44:15.118] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.entity.ChainCollisionEntity was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainCollisionEntity
-[12Mar2026 09:44:15.119] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/entity/ChainKnotEntity (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.entity.ChainKnotEntity)
-[12Mar2026 09:44:15.119] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.entity.ChainKnotEntity was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainKnotEntity
-[12Mar2026 09:44:15.120] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/chain/ChainLink (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.chain.ChainLink)
-[12Mar2026 09:44:15.120] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.chain.ChainLink was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainLink
-[12Mar2026 09:44:15.123] [main/WARN] [mixin/]: Error loading class: net/mcreator/createstuffadditions/procedures/GrapplinWhiskChainsLineProcedure (java.lang.ClassNotFoundException: net.mcreator.createstuffadditions.procedures.GrapplinWhiskChainsLineProcedure)
-[12Mar2026 09:44:15.125] [main/WARN] [mixin/]: Error loading class: net/mcreator/createstuffadditions/procedures/GrapplinWhiskItemInHandTickProcedure (java.lang.ClassNotFoundException: net.mcreator.createstuffadditions.procedures.GrapplinWhiskItemInHandTickProcedure)
-[12Mar2026 09:44:15.126] [main/WARN] [mixin/]: Error loading class: blusunrize/immersiveengineering/common/gui/BlockEntityInventory (java.lang.ClassNotFoundException: blusunrize.immersiveengineering.common.gui.BlockEntityInventory)
-[12Mar2026 09:44:15.127] [main/WARN] [mixin/]: Error loading class: org/cyclops/integrateddynamics/core/block/VoxelShapeComponents (java.lang.ClassNotFoundException: org.cyclops.integrateddynamics.core.block.VoxelShapeComponents)
-[12Mar2026 09:44:15.127] [main/WARN] [mixin/]: @Mixin target org.cyclops.integrateddynamics.core.block.VoxelShapeComponents was not found valkyrienskies-forge.mixins.json:compat.integrateddynamics.MixinVoxelShapeComponents
-[12Mar2026 09:44:15.129] [main/WARN] [mixin/]: Error loading class: mekanism/common/lib/radiation/RadiationManager (java.lang.ClassNotFoundException: mekanism.common.lib.radiation.RadiationManager)
-[12Mar2026 09:44:15.129] [main/WARN] [mixin/]: @Mixin target mekanism.common.lib.radiation.RadiationManager was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRadiationManager
-[12Mar2026 09:44:15.130] [main/WARN] [mixin/]: Error loading class: dev/su5ed/mffs/network/ClientPacketHandler (java.lang.ClassNotFoundException: dev.su5ed.mffs.network.ClientPacketHandler)
-[12Mar2026 09:44:15.131] [main/WARN] [mixin/]: Error loading class: dev/su5ed/mffs/util/FrequencyGrid (java.lang.ClassNotFoundException: dev.su5ed.mffs.util.FrequencyGrid)
-[12Mar2026 09:44:15.132] [main/WARN] [mixin/]: Error loading class: me/desht/modularrouters/container/RouterMenu (java.lang.ClassNotFoundException: me.desht.modularrouters.container.RouterMenu)
-[12Mar2026 09:44:15.134] [main/WARN] [mixin/]: Error loading class: cofh/core/block/entity/TileCoFH (java.lang.ClassNotFoundException: cofh.core.block.entity.TileCoFH)
-[12Mar2026 09:44:15.135] [main/WARN] [mixin/]: Error loading class: twilightforest/world/components/chunkgenerators/ChunkGeneratorTwilight (java.lang.ClassNotFoundException: twilightforest.world.components.chunkgenerators.ChunkGeneratorTwilight)
-[12Mar2026 09:44:15.135] [main/WARN] [mixin/]: @Mixin target twilightforest.world.components.chunkgenerators.ChunkGeneratorTwilight was not found valkyrienskies-forge.mixins.json:compat.twilightforest.ChunkGeneratorTwilightMixin
-[12Mar2026 09:44:15.143] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/client/render/entity/ChainKnotEntityRenderer (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.client.render.entity.ChainKnotEntityRenderer)
-[12Mar2026 09:44:15.143] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.client.render.entity.ChainKnotEntityRenderer was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.client.MixinChainKnotEntityRenderer
-[12Mar2026 09:44:15.146] [main/WARN] [mixin/]: Error loading class: traben/entity_model_features/models/animation/EMFAnimationEntityContext (java.lang.ClassNotFoundException: traben.entity_model_features.models.animation.EMFAnimationEntityContext)
-[12Mar2026 09:44:15.146] [main/WARN] [mixin/]: @Mixin target traben.entity_model_features.models.animation.EMFAnimationEntityContext was not found valkyrienskies-forge.mixins.json:compat.emf.MixinEMFAnimationEntityContext
-[12Mar2026 09:44:15.147] [main/WARN] [mixin/]: Error loading class: mekanism/client/render/data/RenderData$Builder (java.lang.ClassNotFoundException: mekanism.client.render.data.RenderData$Builder)
-[12Mar2026 09:44:15.147] [main/WARN] [mixin/]: @Mixin target mekanism.client.render.data.RenderData$Builder was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRenderData
-[12Mar2026 09:44:15.148] [main/WARN] [mixin/]: Error loading class: mekanism/client/render/RenderResizableCuboid (java.lang.ClassNotFoundException: mekanism.client.render.RenderResizableCuboid)
-[12Mar2026 09:44:15.148] [main/WARN] [mixin/]: @Mixin target mekanism.client.render.RenderResizableCuboid was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRenderResizableCuboid
-[12Mar2026 09:44:15.149] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/blockentity/ComputerRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.blockentity.ComputerRenderer)
-[12Mar2026 09:44:15.151] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/blockentity/MonitorRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.blockentity.MonitorRenderer)
-[12Mar2026 09:44:15.152] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/ProjectorDepthRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.ProjectorDepthRenderer)
-[12Mar2026 09:44:15.153] [main/WARN] [mixin/]: Error loading class: me/jellysquid/mods/sodium/client/render/SodiumWorldRenderer (java.lang.ClassNotFoundException: me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer)
-[12Mar2026 09:44:15.153] [main/WARN] [mixin/]: @Mixin target me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer was not found valkyrienskies-forge.mixins.json:compat.sodium.MixinSodiumWorldRenderer
-[12Mar2026 09:44:15.172] [main/WARN] [mixin/]: Error loading class: mezz/jei/library/load/PluginCaller (java.lang.ClassNotFoundException: mezz.jei.library.load.PluginCaller)
-[12Mar2026 09:44:15.191] [main/INFO] [com.eruannie_9.lititup.LitItUp/]: Overgeared compatibility loaded
-[12Mar2026 09:44:15.200] [main/WARN] [mixin/]: Error loading class: vectorwing/farmersdelight/common/block/StoveBlock (java.lang.ClassNotFoundException: vectorwing.farmersdelight.common.block.StoveBlock)
-[12Mar2026 09:44:15.200] [main/WARN] [mixin/]: @Mixin target vectorwing.farmersdelight.common.block.StoveBlock was not found lititup.mixins.json:compatibility.FarmersStoveBlockMixin
-[12Mar2026 09:44:15.270] [main/WARN] [mixin/]: Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero.map.gui.GuiMap)
-[12Mar2026 09:44:15.270] [main/WARN] [mixin/]: @Mixin target xaero.map.gui.GuiMap was not found create.mixins.json:compat.xaeros.XaeroFullscreenMapAccessor
-[12Mar2026 09:44:15.271] [main/WARN] [mixin/]: Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero.map.gui.GuiMap)
-[12Mar2026 09:44:15.271] [main/WARN] [mixin/]: @Mixin target xaero.map.gui.GuiMap was not found create.mixins.json:compat.xaeros.XaeroFullscreenMapMixin
-[12Mar2026 09:44:15.383] [main/ERROR] [mixin/]: valkyrienskies-common.mixins.json:feature.sculk.MixinVibrationSystemTicker: Interface mixin contains a non-public method! Found destWorldPos(Lnet/minecraft/world/level/gameevent/vibrations/VibrationInfo;Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/phys/Vec3; in valkyrienskies-common.mixins.json:feature.sculk.MixinVibrationSystemTicker
+[24Mar2026 12:19:10.998] [main/INFO] [mixin/]: Remapping refMap puzzleslib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.001] [main/INFO] [mixin/]: Remapping refMap puzzleslib.refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.002] [main/INFO] [mixin/]: Remapping refMap booklinggear.mixins-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.008] [main/INFO] [mixin/]: Remapping refMap valkyrienskies-120-common-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.012] [main/INFO] [mixin/]: Remapping refMap valkyrienskies-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.017] [main/INFO] [mixin/]: Remapping refMap emi-xplat-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.024] [main/INFO] [mixin/]: Remapping refMap lititup.mixins-refmap.json using D:\Minecraft Mods\Overgeared (Blacksmith mod) 1.20.1\build\createSrgToMcp\output.srg
+[24Mar2026 12:19:11.270] [main/INFO] [com.cupboard.Cupboard/]: Loaded config for: recipeessentials.json
+[24Mar2026 12:19:13.322] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/client/render/CustomLecternRenderer (java.lang.ClassNotFoundException: dan200.computercraft.client.render.CustomLecternRenderer)
+[24Mar2026 12:19:13.324] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/peripheral/speaker/SpeakerPosition (java.lang.ClassNotFoundException: dan200.computercraft.shared.peripheral.speaker.SpeakerPosition)
+[24Mar2026 12:19:13.325] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/client/sound/SpeakerSound (java.lang.ClassNotFoundException: dan200.computercraft.client.sound.SpeakerSound)
+[24Mar2026 12:19:13.326] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/turtle/core/TurtleBrain (java.lang.ClassNotFoundException: dan200.computercraft.shared.turtle.core.TurtleBrain)
+[24Mar2026 12:19:13.328] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/turtle/core/TurtleMoveCommand (java.lang.ClassNotFoundException: dan200.computercraft.shared.turtle.core.TurtleMoveCommand)
+[24Mar2026 12:19:13.329] [main/WARN] [mixin/]: Error loading class: dan200/computercraft/shared/peripheral/modem/wireless/WirelessNetwork (java.lang.ClassNotFoundException: dan200.computercraft.shared.peripheral.modem.wireless.WirelessNetwork)
+[24Mar2026 12:19:13.408] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/munitions/AbstractCannonProjectile (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.munitions.AbstractCannonProjectile)
+[24Mar2026 12:19:13.409] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/MountedAutocannonContraption (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.MountedAutocannonContraption)
+[24Mar2026 12:19:13.410] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.contraption.MountedAutocannonContraption was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinCannonContraption
+[24Mar2026 12:19:13.410] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/MountedBigCannonContraption (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.MountedBigCannonContraption)
+[24Mar2026 12:19:13.411] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.contraption.MountedBigCannonContraption was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinCannonContraption
+[24Mar2026 12:19:13.412] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/utils/CBCUtils (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.utils.CBCUtils)
+[24Mar2026 12:19:13.414] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/fixed_cannon_mount/FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour)
+[24Mar2026 12:19:13.415] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.cannon_control.fixed_cannon_mount.FixedCannonMountBlockEntity$FixedCannonMountScrollValueBehaviour was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinFCMSVB
+[24Mar2026 12:19:13.416] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/cannon_control/contraption/PitchOrientedContraptionEntity (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.cannon_control.contraption.PitchOrientedContraptionEntity)
+[24Mar2026 12:19:13.419] [main/WARN] [mixin/]: Error loading class: rbasamoyai/ritchiesprojectilelib/RitchiesProjectileLib (java.lang.ClassNotFoundException: rbasamoyai.ritchiesprojectilelib.RitchiesProjectileLib)
+[24Mar2026 12:19:13.419] [main/WARN] [mixin/]: @Mixin target rbasamoyai.ritchiesprojectilelib.RitchiesProjectileLib was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinRitchiesProjectileLib
+[24Mar2026 12:19:13.420] [main/WARN] [mixin/]: Error loading class: rbasamoyai/createbigcannons/network/ServerboundSetFixedCannonMountValuePacket (java.lang.ClassNotFoundException: rbasamoyai.createbigcannons.network.ServerboundSetFixedCannonMountValuePacket)
+[24Mar2026 12:19:13.421] [main/WARN] [mixin/]: @Mixin target rbasamoyai.createbigcannons.network.ServerboundSetFixedCannonMountValuePacket was not found valkyrienskies-common.mixins.json:mod_compat.create_big_cannons.MixinSSFCMVP
+[24Mar2026 12:19:13.422] [main/WARN] [mixin/]: Error loading class: me/duquee/createutilities/blocks/voidtypes/VoidLinkBehaviour (java.lang.ClassNotFoundException: me.duquee.createutilities.blocks.voidtypes.VoidLinkBehaviour)
+[24Mar2026 12:19:13.422] [main/WARN] [mixin/]: @Mixin target me.duquee.createutilities.blocks.voidtypes.VoidLinkBehaviour was not found valkyrienskies-common.mixins.json:mod_compat.create_utilities.MixinVoidLinkBehaviour
+[24Mar2026 12:19:13.424] [main/WARN] [mixin/]: Error loading class: fuzs/echochest/world/level/block/entity/EchoChestBlockEntity (java.lang.ClassNotFoundException: fuzs.echochest.world.level.block.entity.EchoChestBlockEntity)
+[24Mar2026 12:19:13.425] [main/WARN] [mixin/]: Error loading class: fuzs/echochest/world/level/block/entity/EchoChestListener (java.lang.ClassNotFoundException: fuzs.echochest.world.level.block.entity.EchoChestListener)
+[24Mar2026 12:19:13.431] [main/WARN] [mixin/]: Error loading class: dev/ftb/mods/ftbchunks/data/ClaimedChunkManagerImpl (java.lang.ClassNotFoundException: dev.ftb.mods.ftbchunks.data.ClaimedChunkManagerImpl)
+[24Mar2026 12:19:13.432] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/client/render/HexAdditionalRenderers (java.lang.ClassNotFoundException: at.petrak.hexcasting.client.render.HexAdditionalRenderers)
+[24Mar2026 12:19:13.434] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/raycast/OpEntityRaycast (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.raycast.OpEntityRaycast)
+[24Mar2026 12:19:13.436] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/spells/great/OpTeleport (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport)
+[24Mar2026 12:19:13.436] [main/WARN] [mixin/]: @Mixin target at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport was not found valkyrienskies-common.mixins.json:mod_compat.hexcasting.MixinOpTeleport
+[24Mar2026 12:19:13.437] [main/WARN] [mixin/]: Error loading class: at/petrak/hexcasting/common/casting/actions/spells/great/OpTeleport$Spell (java.lang.ClassNotFoundException: at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport$Spell)
+[24Mar2026 12:19:13.437] [main/WARN] [mixin/]: @Mixin target at.petrak.hexcasting.common.casting.actions.spells.great.OpTeleport$Spell was not found valkyrienskies-common.mixins.json:mod_compat.hexcasting.MixinOpTeleport$Spell
+[24Mar2026 12:19:13.439] [main/WARN] [mixin/]: Error loading class: net/beholderface/ephemera/casting/patterns/link/OpNetworkTeleport (java.lang.ClassNotFoundException: net.beholderface.ephemera.casting.patterns.link.OpNetworkTeleport)
+[24Mar2026 12:19:13.440] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/common/casting/actions/spells/link/OpLink (java.lang.ClassNotFoundException: ram.talia.hexal.common.casting.actions.spells.link.OpLink)
+[24Mar2026 12:19:13.441] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/common/casting/actions/spells/link/OpLinkOthers (java.lang.ClassNotFoundException: ram.talia.hexal.common.casting.actions.spells.link.OpLinkOthers)
+[24Mar2026 12:19:13.442] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/client/RenderHelperKt (java.lang.ClassNotFoundException: ram.talia.hexal.client.RenderHelperKt)
+[24Mar2026 12:19:13.445] [main/WARN] [mixin/]: Error loading class: ram/talia/hexal/api/linkable/ServerLinkableHolder (java.lang.ClassNotFoundException: ram.talia.hexal.api.linkable.ServerLinkableHolder)
+[24Mar2026 12:19:13.449] [main/WARN] [mixin/]: Error loading class: com/jamieswhiteshirt/reachentityattributes/ReachEntityAttributes (java.lang.ClassNotFoundException: com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes)
+[24Mar2026 12:19:13.451] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/common/entity/InfraredPacketEntity (java.lang.ClassNotFoundException: li.cil.tis3d.common.entity.InfraredPacketEntity)
+[24Mar2026 12:19:13.658] [main/WARN] [mixin/]: Error loading class: com/pedrorok/hypertube/core/connection/BezierConnection (java.lang.ClassNotFoundException: com.pedrorok.hypertube.core.connection.BezierConnection)
+[24Mar2026 12:19:13.661] [main/WARN] [mixin/]: Error loading class: com/pedrorok/hypertube/client/BezierTextureRenderer (java.lang.ClassNotFoundException: com.pedrorok.hypertube.client.BezierTextureRenderer)
+[24Mar2026 12:19:13.665] [main/WARN] [mixin/]: Error loading class: com/sonicether/soundphysics/SoundPhysics (java.lang.ClassNotFoundException: com.sonicether.soundphysics.SoundPhysics)
+[24Mar2026 12:19:13.667] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/client/renderer/block/entity/CasingBlockEntityRenderer (java.lang.ClassNotFoundException: li.cil.tis3d.client.renderer.block.entity.CasingBlockEntityRenderer)
+[24Mar2026 12:19:13.668] [main/WARN] [mixin/]: Error loading class: li/cil/tis3d/client/renderer/RenderContextImpl (java.lang.ClassNotFoundException: li.cil.tis3d.client.renderer.RenderContextImpl)
+[24Mar2026 12:19:13.722] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/entity/ChainCollisionEntity (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.entity.ChainCollisionEntity)
+[24Mar2026 12:19:13.722] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.entity.ChainCollisionEntity was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainCollisionEntity
+[24Mar2026 12:19:13.723] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/entity/ChainKnotEntity (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.entity.ChainKnotEntity)
+[24Mar2026 12:19:13.723] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.entity.ChainKnotEntity was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainKnotEntity
+[24Mar2026 12:19:13.725] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/chain/ChainLink (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.chain.ChainLink)
+[24Mar2026 12:19:13.725] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.chain.ChainLink was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.MixinChainLink
+[24Mar2026 12:19:13.729] [main/WARN] [mixin/]: Error loading class: net/mcreator/createstuffadditions/procedures/GrapplinWhiskChainsLineProcedure (java.lang.ClassNotFoundException: net.mcreator.createstuffadditions.procedures.GrapplinWhiskChainsLineProcedure)
+[24Mar2026 12:19:13.732] [main/WARN] [mixin/]: Error loading class: net/mcreator/createstuffadditions/procedures/GrapplinWhiskItemInHandTickProcedure (java.lang.ClassNotFoundException: net.mcreator.createstuffadditions.procedures.GrapplinWhiskItemInHandTickProcedure)
+[24Mar2026 12:19:13.733] [main/WARN] [mixin/]: Error loading class: blusunrize/immersiveengineering/common/gui/BlockEntityInventory (java.lang.ClassNotFoundException: blusunrize.immersiveengineering.common.gui.BlockEntityInventory)
+[24Mar2026 12:19:13.735] [main/WARN] [mixin/]: Error loading class: org/cyclops/integrateddynamics/core/block/VoxelShapeComponents (java.lang.ClassNotFoundException: org.cyclops.integrateddynamics.core.block.VoxelShapeComponents)
+[24Mar2026 12:19:13.735] [main/WARN] [mixin/]: @Mixin target org.cyclops.integrateddynamics.core.block.VoxelShapeComponents was not found valkyrienskies-forge.mixins.json:compat.integrateddynamics.MixinVoxelShapeComponents
+[24Mar2026 12:19:13.736] [main/WARN] [mixin/]: Error loading class: mekanism/common/lib/radiation/RadiationManager (java.lang.ClassNotFoundException: mekanism.common.lib.radiation.RadiationManager)
+[24Mar2026 12:19:13.736] [main/WARN] [mixin/]: @Mixin target mekanism.common.lib.radiation.RadiationManager was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRadiationManager
+[24Mar2026 12:19:13.737] [main/WARN] [mixin/]: Error loading class: dev/su5ed/mffs/network/ClientPacketHandler (java.lang.ClassNotFoundException: dev.su5ed.mffs.network.ClientPacketHandler)
+[24Mar2026 12:19:13.739] [main/WARN] [mixin/]: Error loading class: dev/su5ed/mffs/util/FrequencyGrid (java.lang.ClassNotFoundException: dev.su5ed.mffs.util.FrequencyGrid)
+[24Mar2026 12:19:13.740] [main/WARN] [mixin/]: Error loading class: me/desht/modularrouters/container/RouterMenu (java.lang.ClassNotFoundException: me.desht.modularrouters.container.RouterMenu)
+[24Mar2026 12:19:13.741] [main/WARN] [mixin/]: Error loading class: cofh/core/block/entity/TileCoFH (java.lang.ClassNotFoundException: cofh.core.block.entity.TileCoFH)
+[24Mar2026 12:19:13.742] [main/WARN] [mixin/]: Error loading class: twilightforest/world/components/chunkgenerators/ChunkGeneratorTwilight (java.lang.ClassNotFoundException: twilightforest.world.components.chunkgenerators.ChunkGeneratorTwilight)
+[24Mar2026 12:19:13.743] [main/WARN] [mixin/]: @Mixin target twilightforest.world.components.chunkgenerators.ChunkGeneratorTwilight was not found valkyrienskies-forge.mixins.json:compat.twilightforest.ChunkGeneratorTwilightMixin
+[24Mar2026 12:19:13.751] [main/WARN] [mixin/]: Error loading class: com/lilypuree/connectiblechains/client/render/entity/ChainKnotEntityRenderer (java.lang.ClassNotFoundException: com.lilypuree.connectiblechains.client.render.entity.ChainKnotEntityRenderer)
+[24Mar2026 12:19:13.751] [main/WARN] [mixin/]: @Mixin target com.lilypuree.connectiblechains.client.render.entity.ChainKnotEntityRenderer was not found valkyrienskies-forge.mixins.json:compat.connectiblechains.client.MixinChainKnotEntityRenderer
+[24Mar2026 12:19:13.753] [main/WARN] [mixin/]: Error loading class: traben/entity_model_features/models/animation/EMFAnimationEntityContext (java.lang.ClassNotFoundException: traben.entity_model_features.models.animation.EMFAnimationEntityContext)
+[24Mar2026 12:19:13.753] [main/WARN] [mixin/]: @Mixin target traben.entity_model_features.models.animation.EMFAnimationEntityContext was not found valkyrienskies-forge.mixins.json:compat.emf.MixinEMFAnimationEntityContext
+[24Mar2026 12:19:13.755] [main/WARN] [mixin/]: Error loading class: mekanism/client/render/data/RenderData$Builder (java.lang.ClassNotFoundException: mekanism.client.render.data.RenderData$Builder)
+[24Mar2026 12:19:13.755] [main/WARN] [mixin/]: @Mixin target mekanism.client.render.data.RenderData$Builder was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRenderData
+[24Mar2026 12:19:13.756] [main/WARN] [mixin/]: Error loading class: mekanism/client/render/RenderResizableCuboid (java.lang.ClassNotFoundException: mekanism.client.render.RenderResizableCuboid)
+[24Mar2026 12:19:13.756] [main/WARN] [mixin/]: @Mixin target mekanism.client.render.RenderResizableCuboid was not found valkyrienskies-forge.mixins.json:compat.mekanism.MixinRenderResizableCuboid
+[24Mar2026 12:19:13.757] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/blockentity/ComputerRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.blockentity.ComputerRenderer)
+[24Mar2026 12:19:13.759] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/blockentity/MonitorRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.blockentity.MonitorRenderer)
+[24Mar2026 12:19:13.760] [main/WARN] [mixin/]: Error loading class: li/cil/oc2/client/renderer/ProjectorDepthRenderer (java.lang.ClassNotFoundException: li.cil.oc2.client.renderer.ProjectorDepthRenderer)
+[24Mar2026 12:19:13.761] [main/WARN] [mixin/]: Error loading class: me/jellysquid/mods/sodium/client/render/SodiumWorldRenderer (java.lang.ClassNotFoundException: me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer)
+[24Mar2026 12:19:13.761] [main/WARN] [mixin/]: @Mixin target me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer was not found valkyrienskies-forge.mixins.json:compat.sodium.MixinSodiumWorldRenderer
+[24Mar2026 12:19:13.780] [main/WARN] [mixin/]: Error loading class: mezz/jei/library/load/PluginCaller (java.lang.ClassNotFoundException: mezz.jei.library.load.PluginCaller)
+[24Mar2026 12:19:13.801] [main/INFO] [com.eruannie_9.lititup.LitItUp/]: Overgeared compatibility loaded
+[24Mar2026 12:19:13.812] [main/WARN] [mixin/]: Error loading class: vectorwing/farmersdelight/common/block/StoveBlock (java.lang.ClassNotFoundException: vectorwing.farmersdelight.common.block.StoveBlock)
+[24Mar2026 12:19:13.812] [main/WARN] [mixin/]: @Mixin target vectorwing.farmersdelight.common.block.StoveBlock was not found lititup.mixins.json:compatibility.FarmersStoveBlockMixin
+[24Mar2026 12:19:13.898] [main/WARN] [mixin/]: Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero.map.gui.GuiMap)
+[24Mar2026 12:19:13.899] [main/WARN] [mixin/]: @Mixin target xaero.map.gui.GuiMap was not found create.mixins.json:compat.xaeros.XaeroFullscreenMapAccessor
+[24Mar2026 12:19:13.901] [main/WARN] [mixin/]: Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero.map.gui.GuiMap)
+[24Mar2026 12:19:13.901] [main/WARN] [mixin/]: @Mixin target xaero.map.gui.GuiMap was not found create.mixins.json:compat.xaeros.XaeroFullscreenMapMixin
+[24Mar2026 12:19:14.038] [main/ERROR] [mixin/]: valkyrienskies-common.mixins.json:feature.sculk.MixinVibrationSystemTicker: Interface mixin contains a non-public method! Found destWorldPos(Lnet/minecraft/world/level/gameevent/vibrations/VibrationInfo;Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/phys/Vec3; in valkyrienskies-common.mixins.json:feature.sculk.MixinVibrationSystemTicker
 org.spongepowered.asm.mixin.transformer.throwables.InvalidInterfaceMixinException: Interface mixin contains a non-public method! Found destWorldPos(Lnet/minecraft/world/level/gameevent/vibrations/VibrationInfo;Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/world/phys/Vec3; in valkyrienskies-common.mixins.json:feature.sculk.MixinVibrationSystemTicker
 	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorInterface.prepareMethod(MixinPreProcessorInterface.java:65) ~[mixin-0.8.5.jar:0.8.5+Jenkins-b310.git-155314e6e91465dad727e621a569906a410cd6f4]
 	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.prepare(MixinPreProcessorStandard.java:187) ~[mixin-0.8.5.jar:0.8.5+Jenkins-b310.git-155314e6e91465dad727e621a569906a410cd6f4]
@@ -208,58 +208,58 @@ org.spongepowered.asm.mixin.transformer.throwables.InvalidInterfaceMixinExceptio
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar:?]
 	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?]
-[12Mar2026 09:44:15.661] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
-[12Mar2026 09:44:15.908] [main/INFO] [net.minecraftforge.data.loading.DatagenModLoader/]: Initializing Data Gatherer for mods [overgeared]
-[12Mar2026 09:44:25.187] [modloading-worker-0/INFO] [com.simibubi.create.Create/]: Create 6.0.8 initializing! Commit hash: 1a1a9a2819b4f89f78caec41b55ed8cb222fa24b
-[12Mar2026 09:44:25.505] [modloading-worker-0/INFO] [Spartan Weaponry/]: Constructing Mod: Spartan Weaponry
-[12Mar2026 09:44:25.507] [modloading-worker-0/INFO] [Spartan Weaponry/]: Initialising API! Version: 12
-[12Mar2026 09:44:25.631] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.0, for MC 1.20.1 with MCP 20230612.114412
-[12Mar2026 09:44:25.637] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.0 Initialized
-[12Mar2026 09:44:25.639] [modloading-worker-0/INFO] [Spartan Weaponry/]: Spartan Weaponry API version 12 has been initalized!
-[12Mar2026 09:44:25.669] [modloading-worker-0/INFO] [thedarkcolour.kotlinforforge.test.KotlinForForge/]: Kotlin For Forge Enabled!
-[12Mar2026 09:44:25.722] [modloading-worker-0/INFO] [com.cupboard.Cupboard/]: Loaded config for: cupboard.json
-[12Mar2026 09:44:26.169] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing common components for easyanvils:main
-[12Mar2026 09:44:26.229] [modloading-worker-0/WARN] [software.bernie.geckolib.GeckoLib/]: Minecraft.getInstance() was null, could not register reload listeners
-[12Mar2026 09:44:26.234] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing common components for puzzleslib:main
-[12Mar2026 09:44:26.658] [modloading-worker-0/INFO] [toomanyrecipeviewers/]: Loading JEI Plugins: [jei:minecraft, vtweaks:jei_recipes, jade:main, create:jei_plugin, cataclysm:jei_plugin, curios:curios, spartanweaponry:jei_plugin, overgeared:jei_plugin, jei:internal]
-[12Mar2026 09:44:26.771] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: vtweaks:jei_recipes...
-[12Mar2026 09:44:26.771] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: vtweaks:jei_recipes took 112ms
-[12Mar2026 09:44:26.771] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jade:main...
-[12Mar2026 09:44:26.771] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jade:main took 0ms
-[12Mar2026 09:44:26.771] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: create:jei_plugin...
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: create:jei_plugin took 1ms
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: cataclysm:jei_plugin...
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: cataclysm:jei_plugin took 0ms
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: curios:curios...
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: curios:curios took 0ms
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: spartanweaponry:jei_plugin...
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: spartanweaponry:jei_plugin took 0ms
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: overgeared:jei_plugin...
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: overgeared:jei_plugin took 0ms
-[12Mar2026 09:44:26.772] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jei:internal...
-[12Mar2026 09:44:26.773] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jei:internal took 1ms
-[12Mar2026 09:44:26.773] [modloading-worker-0/INFO] [toomanyrecipeviewers/]: onConfigManagerAvailable took 114ms
-[12Mar2026 09:44:26.907] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing client components for easyanvils:main
-[12Mar2026 09:44:26.913] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing client components for puzzleslib:main
-[12Mar2026 09:44:27.030] [modloading-worker-0/INFO] [dev.architectury.networking.forge.NetworkManagerImpl/]: Registering S2C receiver with id architectury:sync_ids
-[12Mar2026 09:44:27.034] [modloading-worker-0/INFO] [dev.architectury.networking.forge.NetworkManagerImpl/]: Registering C2S receiver with id architectury:sync_ids
-[12Mar2026 09:44:28.435] [modloading-worker-0/INFO] [org.valkyrienskies.mod.platform.VSCoreProviderImpl/]: Initialized VSCore on Forge!
-[12Mar2026 09:44:32.682] [main/INFO] [Moonlight/]: Initialized block sets in 13ms
-[12Mar2026 09:44:33.517] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/Minecraft%20Mods/Overgeared%20(Blacksmith%20mod)%201.20.1/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1/forge-1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1-recomp.jar%23191!/assets/.mcassetsroot' uses unexpected schema
-[12Mar2026 09:44:33.518] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/Minecraft%20Mods/Overgeared%20(Blacksmith%20mod)%201.20.1/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1/forge-1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1-recomp.jar%23191!/data/.mcassetsroot' uses unexpected schema
-[12Mar2026 09:44:34.102] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Recipes
-[12Mar2026 09:44:34.186] [main/INFO] [net.minecraft.data.DataGenerator/]: Recipes finished after 83 ms
-[12Mar2026 09:44:34.186] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Loot Tables
-[12Mar2026 09:44:34.241] [main/INFO] [net.minecraft.data.DataGenerator/]: Loot Tables finished after 54 ms
-[12Mar2026 09:44:34.241] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Block States: overgeared
-[12Mar2026 09:44:34.381] [main/INFO] [net.minecraft.data.DataGenerator/]: Block States: overgeared finished after 140 ms
-[12Mar2026 09:44:34.382] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Item Models: overgeared
-[12Mar2026 09:44:34.564] [main/INFO] [net.minecraft.data.DataGenerator/]: Item Models: overgeared finished after 182 ms
-[12Mar2026 09:44:34.564] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Tags for minecraft:block mod id overgeared
-[12Mar2026 09:44:34.585] [main/INFO] [net.minecraft.data.DataGenerator/]: Tags for minecraft:block mod id overgeared finished after 20 ms
-[12Mar2026 09:44:34.585] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Tags for minecraft:item mod id overgeared
-[12Mar2026 09:44:34.591] [main/INFO] [net.minecraft.data.DataGenerator/]: Tags for minecraft:item mod id overgeared finished after 5 ms
-[12Mar2026 09:44:34.591] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Global Loot Modifiers : overgeared
-[12Mar2026 09:44:34.605] [main/INFO] [net.minecraft.data.DataGenerator/]: Global Loot Modifiers : overgeared finished after 13 ms
-[12Mar2026 09:44:34.605] [main/INFO] [net.minecraft.data.DataGenerator/]: All providers took: 503 ms
-[12Mar2026 09:44:34.639] [main/INFO] [net.minecraft.data.HashCache/]: Caching: total files: 724, old count: 723, new count: 725, removed stale: 0, written: 1
+[24Mar2026 12:19:14.341] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.4.1).
+[24Mar2026 12:19:14.693] [main/INFO] [net.minecraftforge.data.loading.DatagenModLoader/]: Initializing Data Gatherer for mods [overgeared]
+[24Mar2026 12:19:25.906] [modloading-worker-0/INFO] [com.simibubi.create.Create/]: Create 6.0.8 initializing! Commit hash: 1a1a9a2819b4f89f78caec41b55ed8cb222fa24b
+[24Mar2026 12:19:26.528] [modloading-worker-0/INFO] [Spartan Weaponry/]: Constructing Mod: Spartan Weaponry
+[24Mar2026 12:19:26.530] [modloading-worker-0/INFO] [Spartan Weaponry/]: Initialising API! Version: 12
+[24Mar2026 12:19:26.644] [modloading-worker-0/INFO] [thedarkcolour.kotlinforforge.test.KotlinForForge/]: Kotlin For Forge Enabled!
+[24Mar2026 12:19:26.730] [modloading-worker-0/INFO] [Spartan Weaponry/]: Spartan Weaponry API version 12 has been initalized!
+[24Mar2026 12:19:26.756] [modloading-worker-0/INFO] [com.cupboard.Cupboard/]: Loaded config for: cupboard.json
+[24Mar2026 12:19:26.778] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.0, for MC 1.20.1 with MCP 20230612.114412
+[24Mar2026 12:19:26.781] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.0 Initialized
+[24Mar2026 12:19:27.271] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing common components for easyanvils:main
+[24Mar2026 12:19:27.370] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing common components for puzzleslib:main
+[24Mar2026 12:19:27.974] [modloading-worker-0/WARN] [software.bernie.geckolib.GeckoLib/]: Minecraft.getInstance() was null, could not register reload listeners
+[24Mar2026 12:19:28.368] [modloading-worker-0/INFO] [toomanyrecipeviewers/]: Loading JEI Plugins: [jei:minecraft, vtweaks:jei_recipes, jade:main, create:jei_plugin, cataclysm:jei_plugin, curios:curios, spartanweaponry:jei_plugin, overgeared:jei_plugin, jei:internal]
+[24Mar2026 12:19:28.388] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: vtweaks:jei_recipes...
+[24Mar2026 12:19:28.388] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: vtweaks:jei_recipes took 19ms
+[24Mar2026 12:19:28.389] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jade:main...
+[24Mar2026 12:19:28.389] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jade:main took 0ms
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: create:jei_plugin...
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: create:jei_plugin took 0ms
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: cataclysm:jei_plugin...
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: cataclysm:jei_plugin took 0ms
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: curios:curios...
+[24Mar2026 12:19:28.390] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: curios:curios took 0ms
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: spartanweaponry:jei_plugin...
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: spartanweaponry:jei_plugin took 0ms
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: overgeared:jei_plugin...
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: overgeared:jei_plugin took 0ms
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jei:internal...
+[24Mar2026 12:19:28.391] [modloading-worker-0/INFO] [EMI/]: [EMI] [TMRV] onConfigManagerAvailable: jei:internal took 0ms
+[24Mar2026 12:19:28.392] [modloading-worker-0/INFO] [toomanyrecipeviewers/]: onConfigManagerAvailable took 23ms
+[24Mar2026 12:19:28.533] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing client components for easyanvils:main
+[24Mar2026 12:19:28.547] [modloading-worker-0/INFO] [Puzzles Lib/]: Constructing client components for puzzleslib:main
+[24Mar2026 12:19:28.693] [modloading-worker-0/INFO] [dev.architectury.networking.forge.NetworkManagerImpl/]: Registering S2C receiver with id architectury:sync_ids
+[24Mar2026 12:19:28.696] [modloading-worker-0/INFO] [dev.architectury.networking.forge.NetworkManagerImpl/]: Registering C2S receiver with id architectury:sync_ids
+[24Mar2026 12:19:30.290] [modloading-worker-0/INFO] [org.valkyrienskies.mod.platform.VSCoreProviderImpl/]: Initialized VSCore on Forge!
+[24Mar2026 12:19:35.524] [main/INFO] [Moonlight/]: Initialized block sets in 11ms
+[24Mar2026 12:19:36.410] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/Minecraft%20Mods/Overgeared%20(Blacksmith%20mod)%201.20.1/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1/forge-1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1-recomp.jar%23191!/assets/.mcassetsroot' uses unexpected schema
+[24Mar2026 12:19:36.412] [main/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/D:/Minecraft%20Mods/Overgeared%20(Blacksmith%20mod)%201.20.1/build/fg_cache/net/minecraftforge/forge/1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1/forge-1.20.1-47.4.0_mapped_parchment_2023.09.03-1.20.1-recomp.jar%23191!/data/.mcassetsroot' uses unexpected schema
+[24Mar2026 12:19:37.026] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Recipes
+[24Mar2026 12:19:37.134] [main/INFO] [net.minecraft.data.DataGenerator/]: Recipes finished after 107 ms
+[24Mar2026 12:19:37.134] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Loot Tables
+[24Mar2026 12:19:37.195] [main/INFO] [net.minecraft.data.DataGenerator/]: Loot Tables finished after 61 ms
+[24Mar2026 12:19:37.196] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Block States: overgeared
+[24Mar2026 12:19:37.353] [main/INFO] [net.minecraft.data.DataGenerator/]: Block States: overgeared finished after 157 ms
+[24Mar2026 12:19:37.353] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Item Models: overgeared
+[24Mar2026 12:19:37.524] [main/INFO] [net.minecraft.data.DataGenerator/]: Item Models: overgeared finished after 170 ms
+[24Mar2026 12:19:37.524] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Tags for minecraft:block mod id overgeared
+[24Mar2026 12:19:37.541] [main/INFO] [net.minecraft.data.DataGenerator/]: Tags for minecraft:block mod id overgeared finished after 15 ms
+[24Mar2026 12:19:37.541] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Tags for minecraft:item mod id overgeared
+[24Mar2026 12:19:37.545] [main/INFO] [net.minecraft.data.DataGenerator/]: Tags for minecraft:item mod id overgeared finished after 3 ms
+[24Mar2026 12:19:37.545] [main/INFO] [net.minecraft.data.DataGenerator/]: Starting provider: Global Loot Modifiers : overgeared
+[24Mar2026 12:19:37.557] [main/INFO] [net.minecraft.data.DataGenerator/]: Global Loot Modifiers : overgeared finished after 11 ms
+[24Mar2026 12:19:37.557] [main/INFO] [net.minecraft.data.DataGenerator/]: All providers took: 531 ms
+[24Mar2026 12:19:37.591] [main/INFO] [net.minecraft.data.HashCache/]: Caching: total files: 724, old count: 724, new count: 725, removed stale: 0, written: 0

@@ -392,7 +392,9 @@ public class ModEvents {
                 tooltip.add(insertOffset++, qualityComponent);
             }
         }
-
+        if (stack.hasTag() && stack.getTag().contains("Heated")) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+        }
         // Add Polish status
         if (stack.hasTag() && stack.getTag().contains("Polished")) {
             boolean isPolished = stack.getTag().getBoolean("Polished");
@@ -400,9 +402,6 @@ public class ModEvents {
                     ? Component.translatable("tooltip.overgeared.polished").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC)
                     : Component.translatable("tooltip.overgeared.unpolished").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
             tooltip.add(insertOffset++, polishComponent);
-        }
-        if (stack.hasTag() && stack.getTag().contains("Heated")) {
-            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         }
         if (stack.hasTag() && stack.getTag().contains("failedResult")) {
             tooltip.add(insertOffset, Component.translatable("tooltip.overgeared.failedResult")
