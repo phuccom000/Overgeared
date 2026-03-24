@@ -318,6 +318,11 @@ public class ModEvents {
             }
         }
 
+        if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated")
+                    .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+        }
+
         // Add Polish status
         Boolean isPolished = stack.get(ModComponents.POLISHED);
         if (isPolished != null) {
@@ -327,10 +332,6 @@ public class ModEvents {
                     : Component.translatable("tooltip.overgeared.unpolished").withStyle(ChatFormatting.RED,
                     ChatFormatting.ITALIC);
             tooltip.add(insertOffset++, polishComponent);
-        }
-        if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {
-            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated")
-                    .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         }
         if (Boolean.TRUE.equals(stack.get(ModComponents.FAILED_RESULT))) {
             tooltip.add(insertOffset, Component.translatable("tooltip.overgeared.failedResult")

@@ -343,6 +343,16 @@ public class ModItemInteractEvents {
                 ItemStack polishedItem = stack.copy();
                 polishedItem.setCount(1);
                 polishedItem.set(ModComponents.POLISHED, true);
+                // If item is still heated → reduce quality by 1
+                if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {
+                    ForgingQuality quality = polishedItem.get(ModComponents.FORGING_QUALITY);
+                    if (quality != null) {
+                        ForgingQuality downgraded = quality.getLowerQuality(); // you need this helper
+                        if (downgraded != null) {
+                            polishedItem.set(ModComponents.FORGING_QUALITY, downgraded);
+                        }
+                    }
+                }
                 stack.shrink(1);
                 if (!player.getInventory().add(polishedItem)) {
                     player.drop(polishedItem, false);
