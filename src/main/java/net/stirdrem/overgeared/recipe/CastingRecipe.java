@@ -35,8 +35,8 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     private final int cookingTime;
 
     public CastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
-            String toolType,
-            ItemStack result, boolean needPolishing, float experience, int cookingTime) {
+                         String toolType,
+                         ItemStack result, boolean needPolishing, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.requiredMaterials = requiredMaterials;
@@ -246,16 +246,15 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     public static class Serializer implements RecipeSerializer<CastingRecipe> {
 
         private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
-                CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
-                        .forGetter(r -> r.category),
-                CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("material").codec().fieldOf("input")
-                        .forGetter(r -> r.requiredMaterials),
-                Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
-                Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
-                Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime))
+                        Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
+                        CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
+                                .forGetter(r -> r.category),
+                        CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
+                        Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
+                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                        Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
+                        Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
+                        Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime))
                 .apply(instance, CastingRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
