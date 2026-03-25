@@ -440,6 +440,15 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy(getHasName(Items.IRON_INGOT), has(Items.IRON_INGOT))
                 .save(pWriter);
 
+        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_AXE_HEAD.get(), 3)
+                .tier(AnvilTier.STONE)
+                .setBlueprint(ToolType.AXE.getId())
+                .pattern("##")
+                .pattern(" #")
+                .define('#', ModItems.HEATED_IRON_INGOT.get())
+                .unlockedBy(getHasName(Items.IRON_INGOT), has(Items.IRON_INGOT))
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "iron_axe_head_2"));
+
         // Copper Tools
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_PICKAXE_HEAD.get(), 3)
@@ -493,8 +502,15 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('#', ModItems.HEATED_COPPER_INGOT.get())
                 .unlockedBy(getHasName(Items.COPPER_INGOT), has(Items.COPPER_INGOT))
                 .save(pWriter);
-
-// Steel Tools
+        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_AXE_HEAD.get(), 3)
+                .tier(AnvilTier.STONE)
+                .setBlueprint(ToolType.AXE.getId())
+                .pattern("##")
+                .pattern(" #")
+                .define('#', ModItems.HEATED_COPPER_INGOT.get())
+                .unlockedBy(getHasName(Items.COPPER_INGOT), has(Items.COPPER_INGOT))
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "copper_axe_head_2"));
+        // Steel Tools
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.STEEL_PICKAXE_HEAD.get(), 4)
                 .setBlueprint(ToolType.PICKAXE.getId())
                 .pattern("###")
@@ -540,7 +556,15 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('#', ModItems.HEATED_STEEL_INGOT.get())
                 .unlockedBy("has_steel_ingot", has(ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "ingots/steel"))))
                 .save(pWriter);
-
+        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.STEEL_AXE_HEAD.get(), 4)
+                .setBlueprint(ToolType.AXE.getId())
+                .pattern("##")
+                .pattern(" #")
+                .define('#', ModItems.HEATED_STEEL_INGOT.get())
+                .unlockedBy("has_steel_ingot",
+                        has(ItemTags.create(
+                                ResourceLocation.tryBuild("forge", "ingots/steel"))))
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "steel_axe_head_2"));
 // Gold Tools
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_PICKAXE_HEAD.get(), 3)
                 .tier(AnvilTier.STONE)
@@ -589,6 +613,15 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy(getHasName(Items.GOLD_INGOT), has(Items.GOLD_INGOT))
                 .save(pWriter);
 
+        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_AXE_HEAD.get(), 3)
+                .tier(AnvilTier.STONE)
+                .setBlueprint(ToolType.AXE.getId())
+                .setNeedQuenching(false)
+                .pattern("##")
+                .pattern(" #")
+                .define('#', Items.GOLD_INGOT)
+                .unlockedBy(getHasName(Items.GOLD_INGOT), has(Items.GOLD_INGOT))
+                .save(pWriter, ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "golden_axe_head_2"));
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_TONG.get(), 2)
                 .tier(AnvilTier.STONE)
