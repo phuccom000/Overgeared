@@ -1,12 +1,18 @@
 package net.stirdrem.overgeared.recipe;
 
 
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.recipe.castcooking.CastBlastingRecipe;
+import net.stirdrem.overgeared.recipe.castcooking.CastSmeltingRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTBlastingRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTCampfireRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTSmeltingRecipe;
 
 public class ModRecipes {
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
@@ -50,6 +56,12 @@ public class ModRecipes {
             SERIALIZERS.register("grinding", GrindingRecipe.Serializer::new);
     public static final RegistryObject<RecipeSerializer<CastingRecipe>> CASTING =
             SERIALIZERS.register("casting", () -> CastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTSmeltingRecipe>> NBT_ADD_SMELTING =
+            SERIALIZERS.register("nbt_add_smelting", () -> NBTSmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTBlastingRecipe>> NBT_ADD_BLASTING =
+            SERIALIZERS.register("nbt_add_blasting", () -> NBTBlastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTCampfireRecipe>> NBT_ADD_CAMPFIRE =
+            SERIALIZERS.register("nbt_add_campfire_cooking", () -> NBTCampfireRecipe.Serializer.INSTANCE);
 
     public static void register(IEventBus eventBus) {
         SERIALIZERS.register(eventBus);

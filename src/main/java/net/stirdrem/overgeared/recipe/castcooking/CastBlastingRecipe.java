@@ -1,4 +1,4 @@
-package net.stirdrem.overgeared.recipe;
+package net.stirdrem.overgeared.recipe.castcooking;
 
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
@@ -6,10 +6,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
+import net.stirdrem.overgeared.recipe.ModRecipes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

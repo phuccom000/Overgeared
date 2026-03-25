@@ -438,43 +438,52 @@ public class ModItemInteractEvents {
                     event.setCanceled(true);
                     return;
                 }
-                if (stack.hasTag() && stack.getTag().contains("Polished") && !stack.getTag().getBoolean("Polished")) {
-                    // Only convert 1 item in the stack
-                    if (stack.getCount() > 1) {
-                        // Split 1 item from the stack
-                        ItemStack polishedItem = stack.copy();
-                        polishedItem.setCount(1);
-                        polishedItem.getOrCreateTag().putBoolean("Polished", true);
+                if (!world.isClientSide) {
+                    CompoundTag tag = stack.getTag();
 
-                        if (stack.getTag().contains("Heated") && stack.getTag().getBoolean("Heated")) {
-                            ForgingQuality quality = ForgingQuality.fromString(stack.getTag().getString("ForgingQuality"));
-                            if (quality != null) {
-                                ForgingQuality downgraded = quality.getLowerQuality(); // you need this helper
-                                if (downgraded != null) {
-                                    polishedItem.getOrCreateTag().putString("ForgingQuality", downgraded.getDisplayName());
+                    if (tag != null && tag.contains("Polished") && !tag.getBoolean("Polished")) {
+
+                        // Create result item (either split or reuse)
+                        ItemStack resultItem;
+
+                        if (stack.getCount() > 1) {
+                            resultItem = stack.copy();
+                            resultItem.setCount(1);
+                            stack.shrink(1);
+                        } else {
+                            resultItem = stack;
+                        }
+
+                        CompoundTag resultTag = resultItem.getOrCreateTag();
+                        resultTag.putBoolean("Polished", true);
+
+                        if (tag.getBoolean("Heated")) {
+                            if (tag.contains("ForgingQuality")) {
+                                ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
+                                if (quality != null) {
+                                    ForgingQuality downgraded = quality.getLowerQuality();
+                                    if (downgraded != null) {
+                                        resultTag.putString("ForgingQuality", downgraded.getDisplayName());
+                                    }
                                 }
                             }
                         }
-                        // Reduce held stack by 1
-                        stack.shrink(1);
 
-                        // Try to add the polished item to player's inventory
-                        if (!player.getInventory().add(polishedItem)) {
-                            // If inventory is full, drop the item in the world
-                            player.drop(polishedItem, false);
+                        // Give item if split case
+                        if (resultItem != stack) {
+                            if (!player.getInventory().add(resultItem)) {
+                                player.drop(resultItem, false);
+                            }
                         }
-                    } else {
-                        // Only one item in stack, just polish it directly
-                        stack.getOrCreateTag().putBoolean("Polished", true);
-                    }
 
-                    world.playSound(null, player.blockPosition(),
-                            SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
-                            1.0f, 1.2f); // Higher pitch for polishing sound
-                    spawnGrindParticles(world, pos);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
-                    return;
+                        // Effects (safe to run server-side, will sync)
+                        world.playSound(null, player.blockPosition(),
+                                SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
+                                1.0f, 1.2f);
+                        spawnGrindParticles(world, pos);
+                        event.setCancellationResult(InteractionResult.SUCCESS);
+                        event.setCanceled(true);
+                    }
                 }
 
                 if (stack.isDamageableItem() && stack.getDamageValue() > 0) {
