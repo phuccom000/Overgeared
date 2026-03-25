@@ -1,7 +1,6 @@
 package net.stirdrem.overgeared.datagen;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
@@ -12,10 +11,10 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.recipe.ModRecipes;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -183,13 +182,9 @@ public class CastingRecipeBuilder implements RecipeBuilder {
             json.addProperty("tool_type", toolType);
 
             JsonObject inputObj = new JsonObject();
-            JsonObject materialObj = new JsonObject();
+            input.forEach(inputObj::addProperty);
 
-            input.forEach(materialObj::addProperty);
-
-            inputObj.add("material", materialObj);
             json.add("input", inputObj);
-
 
             JsonObject resultObj = new JsonObject();
             resultObj.addProperty(

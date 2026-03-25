@@ -1,6 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -261,11 +262,38 @@ public class CastingRecipe implements Recipe<Container> {
             String group = GsonHelper.getAsString(json, "group", "");
             CookingBookCategory category = CookingBookCategory.MISC;
 
-            JsonObject input = GsonHelper.getAsJsonObject(json, "input")
-                    .getAsJsonObject("material");
+            JsonObject input = GsonHelper.getAsJsonObject(json, "input");
 
             Map<String, Double> mats = new HashMap<>();
-            input.entrySet().forEach(e -> mats.put(e.getKey().toLowerCase(java.util.Locale.ROOT), e.getValue().getAsDouble()));
+            for (var entry : input.entrySet()) {
+                String key = entry.getKey().toLowerCase(java.util.Locale.ROOT);
+                var value = entry.getValue();
+
+                if (!value.isJsonPrimitive()) {
+                    throw new JsonParseException(
+                            "[Overgeared] Invalid casting recipe '" + id + "' → material '" +
+                                    key + "' must be a NUMBER, but got: " + value
+                    );
+                }
+
+                if (!value.getAsJsonPrimitive().isNumber()) {
+                    throw new JsonParseException(
+                            "[Overgeared] Invalid casting recipe '" + id + "' → material '" +
+                                    key + "' must be numeric, but got: " + value
+                    );
+                }
+
+                double amount = value.getAsDouble();
+
+                if (amount <= 0) {
+                    throw new JsonParseException(
+                            "[Overgeared] Invalid casting recipe '" + id + "' → material '" +
+                                    key + "' must be > 0, got: " + amount
+                    );
+                }
+
+                mats.put(key, amount);
+            }
 
             ItemStack result = ShapedRecipe.itemStackFromJson(
                     GsonHelper.getAsJsonObject(json, "result")
