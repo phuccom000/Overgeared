@@ -1,12 +1,11 @@
 package net.stirdrem.overgeared.recipe;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.stirdrem.overgeared.OvergearedMod;
-import org.spongepowered.asm.mixin.Dynamic;
 
 import java.util.function.Supplier;
 
@@ -53,6 +52,8 @@ public class ModRecipeSerializers {
             RECIPE_SERIALIZERS.register("grinding", GrindingRecipe.Serializer::new);
     public static final Supplier<RecipeSerializer<CastingRecipe>> CASTING =
             RECIPE_SERIALIZERS.register("casting", CastingRecipe.Serializer::new);
+    public static final Supplier<RecipeSerializer<NBTCampfireRecipe>> CAMPFIRE_HEATING =
+            RECIPE_SERIALIZERS.register("campfire_heating", NBTCampfireRecipe.Serializer::new);
 
     public static void register(IEventBus eventBus) {
         RECIPE_SERIALIZERS.register(eventBus);
