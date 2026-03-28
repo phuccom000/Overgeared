@@ -83,13 +83,13 @@ dependencies {
     runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
 
     modImplementation "maven.modrinth:polymorph:${polymorph_version}"
-    modImplementation "curse.maven:selene-499980:7708176"
+    /*modImplementation "curse.maven:selene-499980:7708176"
     runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7206981"
     modImplementation "curse.maven:biolith-852512:7074761"
     modImplementation "curse.maven:zeta-968868:7640154"
     modImplementation "curse.maven:quark-243121:7777937"
     modImplementation "curse.maven:puzzles-lib-495476:7140307"
-    runtimeOnly "curse.maven:easy-anvils-682567:5733955"
+    runtimeOnly "curse.maven:easy-anvils-682567:5733955"*/
 }
 
 processResources {

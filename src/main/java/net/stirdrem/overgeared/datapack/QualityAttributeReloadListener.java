@@ -13,20 +13,20 @@ import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class QualityAttributeReloadListener
         extends SimpleJsonResourceReloadListener {
 
-    public static final QualityAttributeReloadListener INSTANCE = new QualityAttributeReloadListener();
+    private static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .create();
 
-    private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
+    private static final Map<ResourceLocation, QualityAttributeDefinition> DEFINITIONS = new HashMap<>();
 
     public QualityAttributeReloadListener() {
-        super(new Gson(), "quality_attributes");
+        super(GSON, "quality_attributes");
     }
 
     @Override
@@ -34,21 +34,36 @@ public class QualityAttributeReloadListener
             Map<ResourceLocation, JsonElement> jsons,
             ResourceManager manager,
             ProfilerFiller profiler) {
-        definitions.clear();
 
-        for (JsonElement element : jsons.values()) {
-            definitions.add(parse(element.getAsJsonObject()));
+        DEFINITIONS.clear();
+
+        for (Map.Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
+            try {
+                JsonObject json = entry.getValue().getAsJsonObject();
+                QualityAttributeDefinition def = parse(json);
+                DEFINITIONS.put(entry.getKey(), def);
+                OvergearedMod.LOGGER.debug("Loaded quality attribute: {}", entry.getKey());
+            } catch (Exception e) {
+                OvergearedMod.LOGGER.error("Failed to parse quality attribute {}: {}", entry.getKey(), e.getMessage());
+            }
         }
-        OvergearedMod.LOGGER.info(
-                "Loaded {} quality attribute files", jsons.size());
+
+        OvergearedMod.LOGGER.info("Loaded {} quality attribute definitions", DEFINITIONS.size());
     }
 
-    public List<QualityAttributeDefinition> getAll() {
-        return definitions;
+    public static List<QualityAttributeDefinition> getAll() {
+        return new ArrayList<>(DEFINITIONS.values());
+    }
+
+    public static Optional<QualityAttributeDefinition> get(ResourceLocation id) {
+        return Optional.ofNullable(DEFINITIONS.get(id));
+    }
+
+    public static void clear() {
+        DEFINITIONS.clear();
     }
 
     private static QualityAttributeDefinition parse(JsonObject json) {
-
         // ---- attribute ----
         ResourceLocation attributeId = ResourceLocation.parse(
                 GsonHelper.getAsString(json, "attribute"));
@@ -79,7 +94,7 @@ public class QualityAttributeReloadListener
             JsonObject value = entry.getValue().getAsJsonObject();
 
             String opString = GsonHelper.getAsString(value, "operation")
-                    .toLowerCase(java.util.Locale.ROOT);
+                    .toLowerCase(Locale.ROOT);
 
             AttributeModifier.Operation operation = getOperation(opString);
 
@@ -95,17 +110,13 @@ public class QualityAttributeReloadListener
     }
 
     private static AttributeModifier.@NotNull Operation getOperation(String opString) {
-        AttributeModifier.Operation operation;
-
-        switch (opString) {
-            case "add" -> operation = AttributeModifier.Operation.ADD_VALUE;
-            case "mult_base" -> operation = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
-            case "mult_total" -> operation = AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+        return switch (opString) {
+            case "add" -> AttributeModifier.Operation.ADD_VALUE;
+            case "mult_base" -> AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+            case "mult_total" -> AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             default -> throw new JsonSyntaxException(
                     "Unknown operation: " + opString +
                             ". Valid values: add, mult_base, mult_total");
-        }
-        return operation;
+        };
     }
-
 }
