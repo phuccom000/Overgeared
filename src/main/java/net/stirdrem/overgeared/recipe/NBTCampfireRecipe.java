@@ -28,6 +28,7 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
         ItemStack result = super.assemble(input, registries).copy();
 
         result.set(ModComponents.HEATED_COMPONENT, true);
+        result.remove(ModComponents.FORGING_QUALITY);
 
         return result;
     }
