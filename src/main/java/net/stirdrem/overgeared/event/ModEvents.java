@@ -147,6 +147,7 @@ public class ModEvents {
             if (attribute == null) continue;
 
             modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
+            OvergearedMod.LOGGER.info("Applying attributes for: {}", stack);
         }
     }
 
@@ -204,11 +205,9 @@ public class ModEvents {
 
         if (!originalModifiers.containsKey(attribute)) return;
 
-        // ✅ COPY before modifying
         List<AttributeModifier> modifiers = List.copyOf(originalModifiers.get(attribute));
 
         for (AttributeModifier modifier : modifiers) {
-            //if (modifier.getAmount() == 0) continue;
 
             if (operation == AttributeModifier.Operation.ADDITION) event.removeModifier(attribute, modifier);
             event.addModifier(attribute, createModifiedAttribute(modifier, bonus, operation, quality));
@@ -221,14 +220,13 @@ public class ModEvents {
                                                             String quality) {
 
         UUID id;
+        String key = original.getId() + "_overgeared_" + quality + "_" + operation + bonus;
+        id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
         double amount;
 
         if (operation == AttributeModifier.Operation.ADDITION) {
-            id = original.getId();
             amount = original.getAmount() + bonus;
         } else {
-            String key = original.getId() + "_overgeared_" + quality + "_" + operation + bonus;
-            id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
             amount = bonus;
         }
 

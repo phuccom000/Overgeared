@@ -244,6 +244,7 @@ public class OvergearedMod {
 
     // Add the example block item to the building blocks tab
     private void addCreative(final BuildCreativeModeTabContentsEvent event) {
+        if (!ServerConfig.ENABLE_CREATIVE_TAB_ITEMS.get()) return;
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             var entries = event.getEntries();
             entries.putAfter(

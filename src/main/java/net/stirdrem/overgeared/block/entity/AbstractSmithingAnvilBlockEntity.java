@@ -392,6 +392,20 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         itemHandler.setStackInSlot(OUTPUT_SLOT, existing);
+
+        if (player instanceof ServerPlayer serverPlayer) {
+
+            SimpleContainer container = new SimpleContainer(9);
+            for (int i = 0; i < 9; i++) {
+                container.setItem(i, itemHandler.getStackInSlot(i));
+            }
+
+            net.minecraftforge.event.ForgeEventFactory.firePlayerCraftingEvent(
+                    serverPlayer,
+                    result,
+                    container
+            );
+        }
     }
 
     private boolean rollFailure(ForgingQuality quality) {
@@ -539,14 +553,15 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (recipeOptional.isEmpty()) return false;
 
         ForgingRecipe recipe = recipeOptional.get();
+
         AnvilTier requiredTier = AnvilTier.fromDisplayName(recipe.getAnvilTier());
 
-        // Safely skip if tier is invalid
         if (requiredTier == null || requiredTier.isEqualOrLowerThan(this.anvilTier)) {
             return false;
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
+
         return canInsertItemIntoOutputSlot(resultStack)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }

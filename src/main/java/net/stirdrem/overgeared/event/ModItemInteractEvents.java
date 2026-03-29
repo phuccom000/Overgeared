@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -265,6 +266,19 @@ public class ModItemInteractEvents {
             return;
         }
 
+        Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
+        ForgingRecipe recipe = recipeOpt.get();
+
+        if (level.getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING)) {
+            if (!serverPlayer.getRecipeBook().contains(recipe)) {
+                serverPlayer.sendSystemMessage(
+                        Component.translatable("message.overgeared.no_recipe")
+                                .withStyle(ChatFormatting.RED),
+                        true
+                );
+                return;
+            }
+        }
         // =========================
         // START MINIGAME (SERVER)
         // =========================

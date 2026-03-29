@@ -169,53 +169,14 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         }
 
         //output slot
-        this.resultSlot = new SlotItemHandler(iItemHandler, 10, 124, 35) {
-            private int removeCount;
-
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return false;
-            }
-
-            @Override
-            public boolean mayPickup(Player player) {
-                return true; // This is crucial for JEI transfers
-            }
-
-            @Override
-            public void onTake(Player player, ItemStack stack) {
-                this.checkTakeAchievements(stack);
-                super.onTake(player, stack);
-            }
-
-            @Override
-            public ItemStack remove(int amount) {
-                if (this.hasItem())
-                    this.removeCount += Math.min(amount, this.getItem().getCount());
-                return super.remove(amount);
-            }
-
-            @Override
-            public void onQuickCraft(ItemStack output, int amount) {
-                this.removeCount += amount;
-                this.checkTakeAchievements(output);
-            }
-
-            @Override
-            protected void onSwapCraft(int amount) {
-                this.removeCount = amount;
-            }
-
-            @Override
-            protected void checkTakeAchievements(ItemStack stack) {
-                if (this.removeCount > 0)
-                    stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(),
-                            AbstractSmithingAnvilMenu.this.player, this.removeCount);
-                if (this.container instanceof RecipeHolder recipeHolder)
-                    recipeHolder.awardUsedRecipes(AbstractSmithingAnvilMenu.this.player, List.of());
-                this.removeCount = 0;
-            }
-        };
+        this.resultSlot = new AnvilResultSlot(
+                iItemHandler,
+                10,
+                124,
+                35,
+                this.player,
+                this.craftingContainer
+        );
         this.addSlot(this.resultSlot);
 
         addPlayerInventory(inv);
@@ -291,7 +252,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
             clickedSlot.onTake(player, stack);
             return copy;
         }
-        
+
         // =========================
         // If clicking TE slot
         // =========================
@@ -588,4 +549,59 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         this.broadcastChanges();
     }
 
+    public class AnvilResultSlot extends SlotItemHandler {
+        private final Player player;
+        private final Container craftingContainer;
+        private int removeCount;
+
+        public AnvilResultSlot(IItemHandler handler, int index, int x, int y,
+                               Player player, Container craftingContainer) {
+            super(handler, index, x, y);
+            this.player = player;
+            this.craftingContainer = craftingContainer;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return false;
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            if (this.hasItem()) {
+                this.removeCount += Math.min(amount, this.getItem().getCount());
+            }
+            return super.remove(amount);
+        }
+
+        @Override
+        public void onQuickCraft(ItemStack stack, int amount) {
+            this.removeCount += amount;
+            this.checkTakeAchievements(stack);
+        }
+
+        protected void checkTakeAchievements(ItemStack stack) {
+            if (this.removeCount > 0) {
+                stack.onCraftedBy(player.level(), player, this.removeCount);
+
+                // 🔥 THIS is the important part
+                if (player instanceof ServerPlayer serverPlayer) {
+                    net.minecraftforge.event.ForgeEventFactory.firePlayerCraftingEvent(
+                            serverPlayer,
+                            stack,
+                            craftingContainer
+                    );
+                }
+            }
+            if (this.container instanceof RecipeHolder recipeHolder)
+                recipeHolder.awardUsedRecipes(AbstractSmithingAnvilMenu.this.player, List.of());
+            this.removeCount = 0;
+        }
+
+        @Override
+        public void onTake(Player player, ItemStack stack) {
+            this.checkTakeAchievements(stack);
+            super.onTake(player, stack);
+        }
+    }
 }

@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ServerConfig {
-    
+
     public static final ForgeConfigSpec SERVER_CONFIG;
     public static final ForgeConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
 
@@ -122,11 +122,13 @@ public class ServerConfig {
     public static ForgeConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
     public static ForgeConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
     public static ForgeConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
+    public static ForgeConfigSpec.BooleanValue ENABLE_CREATIVE_TAB_ITEMS;
 
     static {
         final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         builder.push("General Configs");
         ENABLE_MOD_TOOLTIPS = builder.comment("Toggle for the mod's custom tooltips").define("enableModTooltips", true);
+        ENABLE_CREATIVE_TAB_ITEMS = builder.comment("Toggle for the mod's items to appear in vanilla creative tabs").define("enableCreativeTabItems", true);
         builder.pop();
         // --- Anvil Conversion ---
         builder.push("Anvil Conversion");
