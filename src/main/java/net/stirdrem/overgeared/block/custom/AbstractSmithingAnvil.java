@@ -8,14 +8,12 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +41,6 @@ import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.packet.PacketSendCounterC2SPacket;
-import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Random;
@@ -213,7 +210,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                 }
 
                 // Check minigame visibility from server tracking
-                Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
+                /*Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
                 if (visible == null && anvil.isMinigameOn()) {
                     // Player hasn't started minigame yet, open menu instead
                     ModItemInteractEvents.hideMinigame((ServerPlayer) player);
@@ -235,7 +232,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     }
                 } else {
                     level.playSound(null, pos, ModSounds.ANVIL_HIT.get(), SoundSource.BLOCKS, 1f, 1f);
-                }
+                }*/
                 return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
 

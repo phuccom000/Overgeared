@@ -29,6 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -252,12 +253,22 @@ public class ModItemInteractEvents {
             return;
         }
 
-        boolean crouching = player.isCrouching();
-
         if (crouchRequired && !player.isCrouching()) {
             return;
         }
+        Optional<RecipeHolder<ForgingRecipe>> recipeOpt = anvilBE.getCurrentRecipeHolder();
 
+        if (level.getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING)) {
+            if (!serverPlayer.getRecipeBook().contains(recipeOpt.get())) {
+                serverPlayer.sendSystemMessage(
+                        Component.translatable("message.overgeared.no_recipe")
+                                .withStyle(ChatFormatting.RED),
+                        true
+                );
+                return;
+            }
+        }
+        
         if (currentOwner == null) {
 
             anvilBE.setOwner(playerUUID);

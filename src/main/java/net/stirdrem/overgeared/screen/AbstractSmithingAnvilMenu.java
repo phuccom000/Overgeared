@@ -3,7 +3,6 @@ package net.stirdrem.overgeared.screen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
@@ -33,7 +33,36 @@ import java.util.List;
 import java.util.Optional;
 
 public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, ForgingRecipe> {
-    private final Container craftingContainer = new Container() {
+    private final CraftingContainer craftingContainer = new CraftingContainer() {
+        @Override
+        public void fillStackedContents(StackedContents contents) {
+            for (int i = 0; i < getContainerSize(); i++) {
+                ItemStack stack = getItem(i);
+                if (!stack.isEmpty()) {
+                    contents.accountStack(stack, 1);
+                }
+            }
+        }
+
+        @Override
+        public int getWidth() {
+            return 3;
+        }
+
+        @Override
+        public int getHeight() {
+            return 3;
+        }
+
+        @Override
+        public List<ItemStack> getItems() {
+            List<ItemStack> items = new ArrayList<>(getContainerSize());
+            for (int i = 0; i < getContainerSize(); i++) {
+                items.add(getItem(i));
+            }
+            return items;
+        }
+
         @Override
         public int getContainerSize() {
             return 9;
@@ -42,7 +71,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         @Override
         public boolean isEmpty() {
             for (int i = 0; i < 9; i++) {
-                if (!blockEntity.getItemHandler().getStackInSlot(i).isEmpty()) {
+                if (!getItem(i).isEmpty()) {
                     return false;
                 }
             }
@@ -56,7 +85,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
 
         @Override
         public ItemStack removeItem(int slot, int amount) {
-            ItemStack stack = blockEntity.getItemHandler().getStackInSlot(slot).copy();
+            ItemStack stack = getItem(slot).copy();
             if (!stack.isEmpty()) {
                 if (stack.getCount() <= amount) {
                     blockEntity.getItemHandler().setStackInSlot(slot, ItemStack.EMPTY);
@@ -210,8 +239,10 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
 
             @Override
             protected void checkTakeAchievements(ItemStack stack) {
-                if (this.removeCount > 0)
+                if (this.removeCount > 0) {
                     stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(), AbstractSmithingAnvilMenu.this.player, this.removeCount);
+                    EventHooks.firePlayerCraftingEvent(AbstractSmithingAnvilMenu.this.player, stack, AbstractSmithingAnvilMenu.this.craftingContainer);
+                }
                 // Award recipe to player for recipe book integration
                 AbstractSmithingAnvilMenu.this.blockEntity.getCurrentRecipeHolder().ifPresent(holder ->
                         AbstractSmithingAnvilMenu.this.player.awardRecipes(List.of(holder))
