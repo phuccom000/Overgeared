@@ -17,6 +17,7 @@ import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
+import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,7 +147,7 @@ public class ForgingEmiRecipe implements EmiRecipe {
 
                     EmiIngredient emiIngredient;
 
-                    if (forgingIngredient.requiresHeated()) {
+                    if (forgingIngredient.requiresHeated() && !containsHeatedTaggedItem(ingredient)) {
                         List<EmiStack> stacks = Arrays.stream(ingredient.getItems())
                                 .map(stack -> {
                                     ItemStack copy = stack.copy();
@@ -191,5 +192,14 @@ public class ForgingEmiRecipe implements EmiRecipe {
                 .append(Component.literal(" "))
                 .append(Component.translatable(tierEnum.getLang()));
         widgets.addText(tierText, X_OFFSET + 82, 54, 0xFF808080, false);
+    }
+
+    private static boolean containsHeatedTaggedItem(Ingredient ingredient) {
+        for (ItemStack stack : ingredient.getItems()) {
+            if (stack.is(ModTags.Items.HEATED_METALS)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

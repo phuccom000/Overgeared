@@ -21,6 +21,7 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.client.ForgingBookCategory;
 import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
+import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -585,7 +586,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
         public boolean test(ItemStack stack) {
             if (!ingredient.test(stack)) return false;
-            return !requiresHeated || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
+            return !requiresHeated || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT)) || stack.is(ModTags.Items.HEATED_METALS);
         }
 
         public static final Codec<ForgingIngredient> CODEC = new Codec<>() {
