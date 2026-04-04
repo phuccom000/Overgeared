@@ -583,8 +583,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         protected void checkTakeAchievements(ItemStack stack) {
             if (this.removeCount > 0) {
                 stack.onCraftedBy(player.level(), player, this.removeCount);
-
-                // 🔥 THIS is the important part
                 if (player instanceof ServerPlayer serverPlayer) {
                     net.minecraftforge.event.ForgeEventFactory.firePlayerCraftingEvent(
                             serverPlayer,
@@ -593,8 +591,9 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
                     );
                 }
             }
-            if (this.container instanceof RecipeHolder recipeHolder)
-                recipeHolder.awardUsedRecipes(AbstractSmithingAnvilMenu.this.player, List.of());
+            AbstractSmithingAnvilMenu.this.blockEntity.getCurrentRecipe().ifPresent(holder ->
+                    AbstractSmithingAnvilMenu.this.player.awardRecipes(List.of(holder))
+            );
             this.removeCount = 0;
         }
 

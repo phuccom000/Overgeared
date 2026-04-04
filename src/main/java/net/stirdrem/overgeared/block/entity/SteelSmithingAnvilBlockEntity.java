@@ -59,5 +59,4 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
         return super.hasRecipeWithBlueprint();
     }
 
-
 }

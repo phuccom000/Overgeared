@@ -147,7 +147,6 @@ public class ModEvents {
             if (attribute == null) continue;
 
             modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
-            OvergearedMod.LOGGER.info("Applying attributes for: {}", stack);
         }
     }
 
