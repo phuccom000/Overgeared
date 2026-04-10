@@ -16,6 +16,12 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
+mixin {
+    add(sourceSets.main, "${mod_id}.refmap.json")
+
+    config("mixins.${mod_id}.json")
+}
+
 legacyForge {
     version = "${minecraft_version}-${forge_version}"
 
@@ -173,15 +179,6 @@ repositories {
 }
 
 dependencies {
-    // Specify the version of Minecraft to use.
-    // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
-    // The "userdev" classifier will be requested and setup by ForgeGradle.
-    // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
-    // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-
-    // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
@@ -223,7 +220,7 @@ dependencies {
         transitive = false
         exclude group: 'org.joml', module: ''
     }
-    implementation("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {
+    modImplementation("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {
         transitive = false
         exclude group: 'org.valkyrienskies.core', module: ''
     }
@@ -262,11 +259,17 @@ dependencies {
     modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
     modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
-    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     modImplementation("curse.maven:puzzles-lib-495476:6918565")
     modImplementation("curse.maven:easy-anvils-682567:5156621")
+
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
+
+    // Mixin
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    compileOnly "io.github.llamalad7:mixinextras-common:0.3.5"
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.3.5"))
+    annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
