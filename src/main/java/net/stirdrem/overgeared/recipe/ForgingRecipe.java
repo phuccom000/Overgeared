@@ -22,6 +22,7 @@ import net.stirdrem.overgeared.client.ForgingBookCategory;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ForgingRecipe implements Recipe<Container> {
     private static final ForgingIngredient EMPTY_ING =
@@ -73,10 +74,28 @@ public class ForgingRecipe implements Recipe<Container> {
     }
 
     public static Optional<ForgingRecipe> findBestMatch(Level world, Container inv) {
-        return world.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FORGING.get())
+        var manager = world.getRecipeManager();
+        //  Find a key item (first non-empty slot)
+        ItemStack keyStack = IntStream.range(0, 9).mapToObj(inv::getItem).filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+        // If empty grid → no recipe
+        if (keyStack.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return manager.getAllRecipesFor(ModRecipeTypes.FORGING.get())
                 .stream()
+                .filter(recipe -> recipe.containsIngredient(keyStack))
                 .filter(recipe -> recipe.matches(inv, world))
                 .max(Comparator.comparingInt(ForgingRecipe::getRecipeSize));
+    }
+
+    public boolean containsIngredient(ItemStack stack) {
+        for (ForgingIngredient ing : this.ingredients) {
+            if (ing.test(stack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean checkBlueprint(Container inv) {

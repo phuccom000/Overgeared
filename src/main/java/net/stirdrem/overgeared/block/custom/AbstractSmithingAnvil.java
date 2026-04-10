@@ -179,9 +179,10 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                 if (!ServerConfig.ENABLE_MINIGAME.get())
                     anvil.setBusyUntil(now + HAMMER_SOUND_DURATION_TICKS);
                 held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
-                anvil.increaseForgingProgress(level, pos, state);
                 spawnAnvilParticles(level, pos);
-                if (anvil.getHitsRemaining() == 1) {
+                anvil.increaseForgingProgress(level, pos, state);
+                int test = anvil.getHitsRemaining();
+                if (anvil.getHitsRemaining() == 0) {
                     if (anvil.isFailedResult()) {
                         level.playSound(null, pos, ModSounds.FORGING_FAILED.get(), SoundSource.BLOCKS, 1f, 1f);
                     } else

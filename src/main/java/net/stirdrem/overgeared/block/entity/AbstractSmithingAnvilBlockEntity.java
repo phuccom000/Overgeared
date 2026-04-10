@@ -102,7 +102,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     protected int progress;
     protected int maxProgress;
-    protected int hitRemains;
+    protected int hitRemains = 0;
     protected long busyUntilGameTime = 0L;
     protected UUID ownerUUID = null;
     protected AnvilTier anvilTier;
@@ -143,11 +143,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 return 3;
             }
         };
-    }
-
-    public static void applyForgingQuality(ItemStack stack, ForgingQuality quality) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString("ForgingQuality", quality.getDisplayName());
     }
 
     public ItemStack getRenderStack(int index) {
@@ -260,6 +255,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         lastRecipe = null;
         if (!level.isClientSide()) {
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
+            AbstractSmithingAnvil.setQuality(null);
         }
         player = null;
     }
@@ -654,6 +650,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void tick(Level lvl, BlockPos pos, BlockState st) {
         if (!pos.equals(this.worldPosition)) return; // sanity check
+        tickHeatedIngredients(lvl);
+        if (!needsRecipeUpdate) return;
         try {
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
@@ -709,11 +707,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
             resetProgress(pos);
         }
-        tickHeatedIngredients(lvl);
+
     }
 
     public int getHitsRemaining() {
-        return hitRemains;
+        return maxProgress - progress;
     }
 
     // Add this method to ensure data sync

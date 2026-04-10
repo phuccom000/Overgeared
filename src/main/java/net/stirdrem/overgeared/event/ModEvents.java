@@ -220,13 +220,14 @@ public class ModEvents {
 
         UUID id;
         String key = original.getId() + "_overgeared_" + quality + "_" + operation + bonus;
-        id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
         double amount;
 
         if (operation == AttributeModifier.Operation.ADDITION) {
             amount = original.getAmount() + bonus;
+            id = original.getId();
         } else {
             amount = bonus;
+            id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
         }
 
         return new AttributeModifier(
