@@ -49,6 +49,8 @@ import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
 public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider {
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
+    protected boolean needsRecipeUpdate = true;
+    protected Optional<ForgingRecipe> cachedRecipe = Optional.empty();
     protected final ItemStackHandler itemHandler = new ItemStackHandler(12) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -56,6 +58,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (!level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
+            needsRecipeUpdate = true;
         }
     };
 
@@ -592,14 +595,22 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     public Optional<ForgingRecipe> getCurrentRecipe() {
-        SimpleContainer inventory = new SimpleContainer(this.itemHandler.getSlots());
-        for (int i = 0; i < 9; i++) {
-            inventory.setItem(i, itemHandler.getStackInSlot(i));
-        }
-        inventory.setItem(11, itemHandler.getStackInSlot(11));
+        if (level == null) return Optional.empty();
 
-        return ForgingRecipe.findBestMatch(level, inventory)
-                .filter(this::matchesRecipeExactly);
+        if (needsRecipeUpdate) {
+            SimpleContainer inventory = new SimpleContainer(this.itemHandler.getSlots());
+            for (int i = 0; i < 9; i++) {
+                inventory.setItem(i, itemHandler.getStackInSlot(i));
+            }
+            inventory.setItem(11, itemHandler.getStackInSlot(11));
+
+            cachedRecipe = ForgingRecipe.findBestMatch(level, inventory)
+                    .filter(this::matchesRecipeExactly);
+
+            needsRecipeUpdate = false;
+        }
+
+        return cachedRecipe;
     }
 
     protected boolean canInsertItemIntoOutputSlot(ItemStack stackToInsert) {
