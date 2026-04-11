@@ -340,3 +340,10 @@ idea {
         downloadJavadoc = true
     }
 }
+
+jar {
+    finalizedBy('reobfJar')
+    manifest.attributes([
+            "MixinConfigs": "mixins.${mod_id}.json"
+    ])
+}

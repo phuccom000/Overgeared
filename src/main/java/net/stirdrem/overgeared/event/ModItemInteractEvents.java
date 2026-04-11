@@ -549,7 +549,7 @@ public class ModItemInteractEvents {
                     // Quality multiplier (if any)
                     float qualityMultiplier = 1.0f;
                     if (tag.contains("ForgingQuality")) {
-                        qualityMultiplier = QualityHelper.getQualityMultiplier(stack);
+                        qualityMultiplier = QualityHelper.getDurabilityMultiplier(stack);
                     }
                     int newOriginalDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
 

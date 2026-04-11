@@ -119,6 +119,7 @@ public class OvergearedConfigScreen extends Screen {
         buildQualitySettings();
         buildForgingZones();
         buildDurabilityBonuses();
+        buildMiningSpeedBonuses();
         buildHeatedItems();
         buildGrindingDurability();
         buildQualityFailure();
@@ -133,6 +134,11 @@ public class OvergearedConfigScreen extends Screen {
                 "Enable the mod's custom tooltips",
                 () -> getBoolean("General Configs.enableModTooltips"),
                 v -> setBoolean("General Configs.enableModTooltips", v)
+        ));
+        configList.addConfigEntry(new BooleanEntry(
+                "Enable items in vanilla creative tabs",
+                () -> getBoolean("General Configs.enableCreativeTabItems"),
+                v -> setBoolean("General Configs.enableCreativeTabItems", v)
         ));
     }
 
@@ -479,6 +485,24 @@ public class OvergearedConfigScreen extends Screen {
                 () -> getInt("Casting.firedCastDurability"),
                 v -> setInt("Casting.firedCastDurability", v),
                 0, Integer.MAX_VALUE
+        ));
+    }
+
+    private void buildMiningSpeedBonuses() {
+        configList.addConfigEntry(new HeaderEntry("Mining Speed Bonuses"));
+        buildMiningSpeedBonus("Poor", "Mining Speed Bonuses.poorMiningSpeedBonus", 0.0, 5.0);
+        buildMiningSpeedBonus("Well", "Mining Speed Bonuses.wellMiningSpeedBonus", -5.0, 5.0);
+        buildMiningSpeedBonus("Expert", "Mining Speed Bonuses.expertMiningSpeedBonus", -5.0, 5.0);
+        buildMiningSpeedBonus("Perfect", "Mining Speed Bonuses.perfectMiningSpeedBonus", -5.0, 5.0);
+        buildMiningSpeedBonus("Master", "Mining Speed Bonuses.masterMiningSpeedBonus", -5.0, 5.0);
+    }
+
+    private void buildMiningSpeedBonus(String quality, String path, double min, double max) {
+        configList.addConfigEntry(new DoubleEntry(
+                quality + " Mining Speed Bonus Multiplier",
+                () -> getDouble(path),
+                v -> setDouble(path, v),
+                min, max
         ));
     }
 

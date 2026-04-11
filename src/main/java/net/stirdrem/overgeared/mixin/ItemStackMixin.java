@@ -22,7 +22,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.*;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
 
@@ -38,7 +40,7 @@ public abstract class ItemStackMixin {
         float baseSpeed = cir.getReturnValueF();
 
         if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-            float multiplier = QualityHelper.getQualityMultiplier(stack);
+            float multiplier = QualityHelper.getMiningSpeedMultiplier(stack);
             cir.setReturnValue(baseSpeed * multiplier);
         }
     }
@@ -52,7 +54,7 @@ public abstract class ItemStackMixin {
     private void modifyDurabilityBasedOnQuality(CallbackInfoReturnable<Integer> cir) {
         ItemStack stack = (ItemStack) (Object) this;
         int originalDurability = cir.getReturnValue();
-        
+
         if (originalDurability <= 0) {
             return;
         }
@@ -64,7 +66,7 @@ public abstract class ItemStackMixin {
 
         // Apply quality multiplier
         if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-            float multiplier = QualityHelper.getQualityMultiplier(stack);
+            float multiplier = QualityHelper.getDurabilityMultiplier(stack);
             newBaseDurability = (int) (newBaseDurability * multiplier);
         }
 
@@ -75,7 +77,6 @@ public abstract class ItemStackMixin {
             durabilityPenaltyMultiplier = Math.max(0.1f, durabilityPenaltyMultiplier);
             newBaseDurability = (int) (newBaseDurability * durabilityPenaltyMultiplier);
         }
-
         cir.setReturnValue(newBaseDurability);
     }
 
