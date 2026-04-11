@@ -268,7 +268,7 @@ public class ModItemInteractEvents {
                 return;
             }
         }
-        
+
         if (currentOwner == null) {
 
             anvilBE.setOwner(playerUUID);
@@ -408,7 +408,7 @@ public class ModItemInteractEvents {
             float qualityMultiplier = 1.0f;
             ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
             if (quality != null) {
-                qualityMultiplier = quality.getDamageMultiplier();
+                qualityMultiplier = quality.getDurabilityMultiplier();
             }
             int newOriginalDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
             float penaltyMultiplier = Math.max(0.1f, 1.0f - (reducedCount * grindReduction));

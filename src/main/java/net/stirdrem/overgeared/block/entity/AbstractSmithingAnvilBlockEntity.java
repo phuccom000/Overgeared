@@ -57,7 +57,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (level == null || level.isClientSide())
                 return;
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-
             if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
                 hasHeatedItems = true;
             }
@@ -82,12 +81,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected static final int BLUEPRINT_SLOT = 11;
     protected boolean hasHeatedItems = false;
     // Define slot indices
-    private static final int[] TOP_SLOTS = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }; // input grid
-    private static final int[] BOTTOM_SLOTS = new int[] { OUTPUT_SLOT };
+    private static final int[] TOP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}; // input grid
+    private static final int[] BOTTOM_SLOTS = new int[]{OUTPUT_SLOT};
     private static final int[] SIDE_SLOTS = new int[0]; // nothing on sides
 
     public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
-            BlockPos pPos, BlockState pBlockState) {
+                                            BlockPos pPos, BlockState pBlockState) {
         super(type, pPos, pBlockState);
         this.anvilTier = tier;
         this.anvilBlock = anvilBlock;
@@ -260,6 +259,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (minigameOn)
                 lastCraftTick = level.getGameTime();
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
+            AbstractSmithingAnvil.setQuality(null);
         }
         player = null;
     }
@@ -466,6 +466,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
+        boolean test1 = canInsertItemIntoOutputSlot(resultStack);
+        boolean test2 = canInsertAmountIntoOutputSlot(resultStack.getCount());
         return canInsertItemIntoOutputSlot(resultStack)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
@@ -507,6 +509,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
+        boolean test1 = canInsertItemIntoOutputSlot(resultStack);
+        boolean test2 = canInsertAmountIntoOutputSlot(resultStack.getCount());
         return canInsertItemIntoOutputSlot(resultStack)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
@@ -517,6 +521,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public Optional<RecipeHolder<ForgingRecipe>> getCurrentRecipeHolder() {
         // Create a wrapper that only exposes the slots needed for recipe matching
+        if (level == null) return Optional.empty();
+
         ItemStackHandler recipeHandler = new ItemStackHandler(12);
         for (int i = 0; i < 9; i++) {
             recipeHandler.setStackInSlot(i, itemHandler.getStackInSlot(i));
@@ -530,7 +536,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (polymorphRecipe.isPresent()) {
             return polymorphRecipe.filter(holder -> matchesRecipeExactly(holder.value()));
         }
-
         // Fallback to best match when Polymorph is not available
         return ForgingRecipe.findBestMatchHolder(level, recipeInput)
                 .filter(holder -> matchesRecipeExactly(holder.value()));
@@ -542,8 +547,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     protected boolean canInsertAmountIntoOutputSlot(int count) {
-        return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler
-                .getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
+        ItemStack existing = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
+        if (existing.isEmpty()) {
+            return true;
+        }
+        return existing.getCount() + count <= existing.getMaxStackSize();
     }
 
     public boolean hasProgressFinished() {
@@ -983,7 +991,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     // Not the happiest with this due to constantly checking if it's open etc.,
-    // maybe figure smth out :)
+// maybe figure smth out :)
     public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
         if (!this.hasHeatedItems || level.isClientSide)
             return;

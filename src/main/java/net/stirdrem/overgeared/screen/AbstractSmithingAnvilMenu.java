@@ -468,6 +468,15 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
                             Polymorph.getSelectedOutput();
                     if (polymorphOutput.isPresent()) {
                         return polymorphOutput.get();
+                    } else {
+                        Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipe();
+                        if (recipeOptional.isPresent()) {
+                            ForgingRecipe recipe = recipeOptional.get();
+                            if (blockEntity.hasRecipe()) {
+                                return recipe.getResultItem(level.registryAccess()).copy();
+                            }
+                        }
+                        return ItemStack.EMPTY;
                     }
                 }
             } catch (Exception e) {

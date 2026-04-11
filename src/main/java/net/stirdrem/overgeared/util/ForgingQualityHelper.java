@@ -6,7 +6,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.ModComponents;
-import net.stirdrem.overgeared.config.ServerConfig;
 
 public class ForgingQualityHelper {
 
@@ -57,7 +56,7 @@ public class ForgingQualityHelper {
         return 10; // default fallback
     }
 
-    public static float getQualityMultiplier(ForgingQuality quality) {
+    public static float getDurabilityMultiplier(ForgingQuality quality) {
         return switch (quality) {
             case POOR -> 0.75f;
             case WELL -> 1.0f;
@@ -81,21 +80,5 @@ public class ForgingQualityHelper {
             case MASTER -> 32;
             default -> 5;
         };
-    }
-
-    public static float getQualityMultiplier(ItemStack stack) {
-        if (stack.has(ModComponents.FORGING_QUALITY)) {
-            ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
-            if (quality != null)
-                return switch (quality) {
-                    case POOR -> ServerConfig.POOR_DURABILITY_BONUS.get().floatValue();  // 30% worse
-                    case WELL -> ServerConfig.WELL_DURABILITY_BONUS.get().floatValue();  // 10% better
-                    case EXPERT -> ServerConfig.EXPERT_DURABILITY_BONUS.get().floatValue(); // 30% better
-                    case PERFECT -> ServerConfig.PERFECT_DURABILITY_BONUS.get().floatValue(); // 50% better
-                    case MASTER -> ServerConfig.MASTER_DURABILITY_BONUS.get().floatValue(); // 50% better
-                    default -> 1.0f;
-                };
-        }
-        return 1.0f;
     }
 }

@@ -8,12 +8,14 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,6 +43,7 @@ import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.packet.PacketSendCounterC2SPacket;
+import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Random;
@@ -162,7 +165,6 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     AnvilMinigameEvents.speedUp();
                     return ItemInteractionResult.SUCCESS;
                 } else if (!anvil.hasQuality() && !anvil.needsMinigame()) {
-                    // Non-quality recipe without minigame - allow direct hammering
                     return ItemInteractionResult.SUCCESS;
                 } else if (!ServerConfig.ENABLE_MINIGAME.get()) {
                     // Minigame disabled - allow direct hammering
@@ -208,31 +210,32 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     );
                     return ItemInteractionResult.FAIL;
                 }
-
-                // Check minigame visibility from server tracking
-                /*Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
-                if (visible == null && anvil.isMinigameOn()) {
-                    // Player hasn't started minigame yet, open menu instead
-                    ModItemInteractEvents.hideMinigame((ServerPlayer) player);
-                    player.openMenu(anvil, pos);
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
-                }
-
-                // Process the hammer hit
-                held.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
-                anvil.increaseForgingProgress(level, pos, state);
-                spawnAnvilParticles(level, pos);
-
-                // Play appropriate sound based on hits remaining
-                if (anvil.getHitsRemaining() == 1) {
-                    if (anvil.isFailedResult()) {
-                        level.playSound(null, pos, ModSounds.FORGING_FAILED.get(), SoundSource.BLOCKS, 1f, 1f);
-                    } else {
-                        level.playSound(null, pos, ModSounds.FORGING_COMPLETE.get(), SoundSource.BLOCKS, 1f, 1f);
+                if (!anvil.hasQuality() && !anvil.needsMinigame()) {
+                    // Check minigame visibility from server tracking
+                    Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
+                    if (visible == null && anvil.isMinigameOn()) {
+                        // Player hasn't started minigame yet, open menu instead
+                        ModItemInteractEvents.hideMinigame((ServerPlayer) player);
+                        player.openMenu(anvil, pos);
+                        return ItemInteractionResult.sidedSuccess(level.isClientSide());
                     }
-                } else {
-                    level.playSound(null, pos, ModSounds.ANVIL_HIT.get(), SoundSource.BLOCKS, 1f, 1f);
-                }*/
+
+                    // Process the hammer hit
+                    held.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                    anvil.increaseForgingProgress(level, pos, state);
+                    spawnAnvilParticles(level, pos);
+
+                    // Play appropriate sound based on hits remaining
+                    if (anvil.getHitsRemaining() == 1) {
+                        if (anvil.isFailedResult()) {
+                            level.playSound(null, pos, ModSounds.FORGING_FAILED.get(), SoundSource.BLOCKS, 1f, 1f);
+                        } else {
+                            level.playSound(null, pos, ModSounds.FORGING_COMPLETE.get(), SoundSource.BLOCKS, 1f, 1f);
+                        }
+                    } else {
+                        level.playSound(null, pos, ModSounds.ANVIL_HIT.get(), SoundSource.BLOCKS, 1f, 1f);
+                    }
+                }
                 return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
 

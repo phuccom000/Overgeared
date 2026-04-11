@@ -67,6 +67,12 @@ public class ServerConfig {
     public static final ModConfigSpec.DoubleValue EXPERT_DURABILITY_BONUS;
     public static final ModConfigSpec.DoubleValue WELL_DURABILITY_BONUS;
     public static final ModConfigSpec.DoubleValue POOR_DURABILITY_BONUS;
+    // --- Mining Speed Bonuses ---
+    public static final ModConfigSpec.DoubleValue MASTER_MINING_SPEED_BONUS;
+    public static final ModConfigSpec.DoubleValue PERFECT_MINING_SPEED_BONUS;
+    public static final ModConfigSpec.DoubleValue EXPERT_MINING_SPEED_BONUS;
+    public static final ModConfigSpec.DoubleValue WELL_MINING_SPEED_BONUS;
+    public static final ModConfigSpec.DoubleValue POOR_MINING_SPEED_BONUS;
     // --- Knapping Settings ---
     public static final ModConfigSpec.BooleanValue GET_ROCK_USING_FLINT;
     public static final ModConfigSpec.DoubleValue ROCK_DROPPING_CHANCE;
@@ -298,7 +304,13 @@ public class ServerConfig {
         WELL_DURABILITY_BONUS = builder.defineInRange("wellDurabilityBonus", 1, -5.0, 5.0);
         POOR_DURABILITY_BONUS = builder.defineInRange("poorDurabilityBonus", 0.7, 0, 5.0);
         builder.pop();
-
+        builder.push("Mining Speed Bonuses");
+        MASTER_MINING_SPEED_BONUS = builder.defineInRange("masterMiningSpeedBonus", 1.5, -5.0, 5.0);
+        PERFECT_MINING_SPEED_BONUS = builder.defineInRange("perfectMiningSpeedBonus", 1.3, -5.0, 5.0);
+        EXPERT_MINING_SPEED_BONUS = builder.defineInRange("expertMiningSpeedBonus", 1.15, -5.0, 5.0);
+        WELL_MINING_SPEED_BONUS = builder.defineInRange("wellMiningSpeedBonus", 1, -5.0, 5.0);
+        POOR_MINING_SPEED_BONUS = builder.defineInRange("poorMiningSpeedBonus", 0.7, 0, 5.0);
+        builder.pop();
         builder.push("Knapping Settings");
         GET_ROCK_USING_FLINT = builder.comment("Toggle for obtaining rock using flint").define("useFlintGetRock", true);
         ROCK_DROPPING_CHANCE = builder.defineInRange("rockDroppingChance", 0.1, 0, 1);

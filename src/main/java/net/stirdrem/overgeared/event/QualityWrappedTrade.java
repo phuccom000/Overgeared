@@ -3,7 +3,10 @@ package net.stirdrem.overgeared.event;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.stirdrem.overgeared.ForgingQuality;
@@ -48,7 +51,7 @@ public class QualityWrappedTrade implements VillagerTrades.ItemListing {
         int basePrice = ForgingQualityHelper.getBasePrice(result.getItem());
 
         // Quality multiplier
-        float mult = ForgingQualityHelper.getQualityMultiplier(quality);
+        float mult = ForgingQualityHelper.getDurabilityMultiplier(quality);
 
         int finalPrice = Math.max(1, Math.round(basePrice * mult));
 

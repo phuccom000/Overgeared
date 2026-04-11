@@ -52,13 +52,24 @@ public enum ForgingQuality implements StringRepresentable {
     /**
      * Returns the durability multiplier for this quality level based on config values.
      */
-    public float getDamageMultiplier() {
+    public float getDurabilityMultiplier() {
         return switch (this) {
             case POOR -> ServerConfig.POOR_DURABILITY_BONUS.get().floatValue();
             case WELL -> ServerConfig.WELL_DURABILITY_BONUS.get().floatValue();
             case EXPERT -> ServerConfig.EXPERT_DURABILITY_BONUS.get().floatValue();
             case PERFECT -> ServerConfig.PERFECT_DURABILITY_BONUS.get().floatValue();
             case MASTER -> ServerConfig.MASTER_DURABILITY_BONUS.get().floatValue();
+            case NONE -> 1.0f;
+        };
+    }
+
+    public float getMiningSpeedMultiplier() {
+        return switch (this) {
+            case POOR -> ServerConfig.POOR_MINING_SPEED_BONUS.get().floatValue();
+            case WELL -> ServerConfig.WELL_MINING_SPEED_BONUS.get().floatValue();
+            case EXPERT -> ServerConfig.EXPERT_MINING_SPEED_BONUS.get().floatValue();
+            case PERFECT -> ServerConfig.PERFECT_MINING_SPEED_BONUS.get().floatValue();
+            case MASTER -> ServerConfig.MASTER_MINING_SPEED_BONUS.get().floatValue();
             case NONE -> 1.0f;
         };
     }
