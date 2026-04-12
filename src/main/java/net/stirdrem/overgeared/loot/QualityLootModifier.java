@@ -91,7 +91,12 @@ public class QualityLootModifier extends LootModifier {
 
         if (!(item instanceof TieredItem) && !(item instanceof ArmorItem)) return false;
 
-        return !(item instanceof TieredItem tiered) || tiered.getTier() != Tiers.WOOD;
+        if (item instanceof TieredItem tiered && tiered.getTier() == Tiers.WOOD) {
+            return false;
+        }
+
+        return !(item instanceof ArmorItem armor) ||
+                armor.getMaterial() != ArmorMaterials.LEATHER;
     }
 
     @Override
