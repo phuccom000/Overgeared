@@ -615,7 +615,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     protected boolean canInsertAmountIntoOutputSlot(int count) {
-        return this.itemHandler.getStackInSlot(OUTPUT_SLOT).getCount() + count <= this.itemHandler.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
+        ItemStack existing = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
+        if (existing.isEmpty()) {
+            return true;
+        }
+        return existing.getCount() + count <= existing.getMaxStackSize();
     }
 
     public boolean hasProgressFinished() {

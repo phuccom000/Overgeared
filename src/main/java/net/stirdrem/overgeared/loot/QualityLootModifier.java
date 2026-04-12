@@ -3,11 +3,9 @@ package net.stirdrem.overgeared.loot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.loot.LootModifier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -89,7 +87,13 @@ public class QualityLootModifier extends LootModifier {
         if (!(item instanceof TieredItem) && !(item instanceof ArmorItem)) return false;
 
         // Skip wooden tools
-        return !(item instanceof TieredItem tiered) || tiered.getTier() != Tiers.WOOD;
+        if (item instanceof TieredItem tiered && tiered.getTier() == Tiers.WOOD) {
+            return false;
+        }
+
+        // Skip leather armor
+        return !(item instanceof ArmorItem armor) ||
+                armor.getMaterial() != ArmorMaterials.LEATHER;
     }
 
     @Override
