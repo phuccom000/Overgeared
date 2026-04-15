@@ -92,6 +92,9 @@ public abstract class ItemStackMixin {
         if (level.isClientSide) return;
         if (!(entity instanceof Player player)) return;
         //if (slot != 0) return; // Only process once per player per tick
+        if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+            return;
+        }
 
         long tick = level.getGameTime();
         int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get(); // add to your config
@@ -161,6 +164,10 @@ public abstract class ItemStackMixin {
             tongsStack = ItemStack.EMPTY;
         }
 
+        if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+            return;
+        }
+
         if (!tongsStack.isEmpty()) {
             if (tick % 40 != 0) return;
             long last = lastTongsHit.getOrDefault(uuid, -1L);
@@ -173,9 +180,7 @@ public abstract class ItemStackMixin {
                 lastTongsHit.put(uuid, tick);
             }
         } else {
-            if (!player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                player.hurt(player.damageSources().hotFloor(), 1.0f);
-            }
+            player.hurt(player.damageSources().hotFloor(), 1.0f);
         }
     }
 

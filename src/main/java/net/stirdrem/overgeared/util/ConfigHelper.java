@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.CastingToolTypesReloadListener;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
@@ -35,12 +36,19 @@ public class ConfigHelper {
      * config row: [tool_id, max_amount]
      */
     public static int getMaxMaterialAmount(String toolType) {
+
+        int datapackValue = CastingToolTypesReloadListener.getMaxMaterialAmount(toolType);
+        if (datapackValue > 0) {
+            return datapackValue;
+        }
+
         for (var e : ServerConfig.CASTING_TOOL_TYPES.get()) {
-            List<?> row = (List<?>) e;
+            List<?> row = e;
             if (row.get(0).equals(toolType)) {
                 return ((Number) row.get(1)).intValue();
             }
         }
+
         return 0;
     }
 
