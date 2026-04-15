@@ -13,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -22,7 +21,6 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
@@ -49,10 +47,10 @@ import java.util.Map;
 public class ClientModEvents {
 
     public static void init(final FMLClientSetupEvent event) {
-        ModList.get().getModContainerById(OvergearedMod.MOD_ID).orElseThrow()
+        /*ModList.get().getModContainerById(OvergearedMod.MOD_ID).orElseThrow()
                 .registerExtensionPoint(
                         IConfigScreenFactory.class,
-                        (container, parent) -> new OvergearedConfigScreen(parent));
+                        (container, parent) -> new OvergearedConfigScreen(parent));*/
 
         // Initialize client-side mod compatibility
         ModCompat.initClient();
