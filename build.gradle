@@ -107,11 +107,11 @@ repositories {
 dependencies {
     // JEI
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    // runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
     // EMI
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
-    // runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
 
     // PolyMorph
     implementation "maven.modrinth:polymorph:${polymorph_version}"

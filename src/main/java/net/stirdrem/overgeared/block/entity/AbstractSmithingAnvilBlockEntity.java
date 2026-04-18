@@ -50,6 +50,10 @@ import java.util.*;
 public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider, WorldlyContainer {
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
+
+    protected boolean needsRecipeUpdate = true;
+    protected Optional<ForgingRecipe> cachedRecipe = Optional.empty();
+
     protected final ItemStackHandler itemHandler = new ItemStackHandler(12) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -60,8 +64,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
                 hasHeatedItems = true;
             }
+            needsRecipeUpdate = true;
         }
     };
+
     protected final ContainerData data;
     protected int progress;
     protected int maxProgress;
@@ -73,13 +79,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected long sessionStartTime = 0L; // optional, for timeout logic
     protected ItemStack failedResult;
     protected Player player;
-    protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
     private long lastCraftTick = -1;
     protected AbstractSmithingAnvil anvilBlock;
     protected static final int BLUEPRINT_SLOT = 11;
     protected boolean hasHeatedItems = false;
+
     // Define slot indices
     private static final int[] TOP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}; // input grid
     private static final int[] BOTTOM_SLOTS = new int[]{OUTPUT_SLOT};
@@ -235,26 +241,26 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     public void increaseForgingProgress(Level pLevel, BlockPos pPos, BlockState pState) {
-        Optional<ForgingRecipe> recipe = getCurrentRecipe();
         if (hasRecipe()) {
-            ForgingRecipe currentRecipe = recipe.get();
+            ForgingRecipe currentRecipe = getCurrentRecipe().get();
             maxProgress = currentRecipe.getHammeringRequired();
             increaseCraftingProgress();
             setChanged(pLevel, pPos, pState);
 
             if (hasProgressFinished()) {
                 craftItem();
-                resetProgress(pPos);
+                resetProgress();
             }
         } else {
-            resetProgress(pPos);
+            resetProgress();
         }
     }
 
-    public void resetProgress(BlockPos pos) {
+    public void resetProgress() {
         progress = 0;
         maxProgress = 0;
-        lastRecipe = null;
+        cachedRecipe = Optional.empty();
+        needsRecipeUpdate = true;
         if (level != null && !level.isClientSide()) {
             if (minigameOn)
                 lastCraftTick = level.getGameTime();
@@ -466,8 +472,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
-        boolean test1 = canInsertItemIntoOutputSlot(resultStack);
-        boolean test2 = canInsertAmountIntoOutputSlot(resultStack.getCount());
         return canInsertItemIntoOutputSlot(resultStack)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
@@ -509,26 +513,38 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
-        boolean test1 = canInsertItemIntoOutputSlot(resultStack);
-        boolean test2 = canInsertAmountIntoOutputSlot(resultStack.getCount());
         return canInsertItemIntoOutputSlot(resultStack)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
 
     public Optional<ForgingRecipe> getCurrentRecipe() {
-        return getCurrentRecipeHolder().map(RecipeHolder::value);
+        if (!needsRecipeUpdate) return cachedRecipe;
+        needsRecipeUpdate = false;
+        cachedRecipe = getCurrentRecipeHolder().map(RecipeHolder::value);
+        return cachedRecipe;
     }
 
     public Optional<RecipeHolder<ForgingRecipe>> getCurrentRecipeHolder() {
         // Create a wrapper that only exposes the slots needed for recipe matching
         if (level == null) return Optional.empty();
 
+        // Check if we have an input
+        boolean hasAnyInput = false;
+        for (int i = 0; i < 9; i++) {
+            if (!itemHandler.getStackInSlot(i).isEmpty()) {
+                hasAnyInput = true;
+                break;
+            }
+        }
+        if (!hasAnyInput) {
+            return Optional.empty();
+        }
+
         ItemStackHandler recipeHandler = new ItemStackHandler(12);
         for (int i = 0; i < 9; i++) {
             recipeHandler.setStackInSlot(i, itemHandler.getStackInSlot(i));
         }
         recipeHandler.setStackInSlot(11, itemHandler.getStackInSlot(11));
-
         RecipeWrapper recipeInput = new RecipeWrapper(recipeHandler);
 
         // Try to use Polymorph's selected recipe if available
@@ -536,6 +552,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (polymorphRecipe.isPresent()) {
             return polymorphRecipe.filter(holder -> matchesRecipeExactly(holder.value()));
         }
+
         // Fallback to best match when Polymorph is not available
         return ForgingRecipe.findBestMatchHolder(level, recipeInput)
                 .filter(holder -> matchesRecipeExactly(holder.value()));
@@ -591,62 +608,39 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
             if (!ItemStack.isSameItemSameComponents(currentBlueprint, lastBlueprint)) {
-                if (progress > 0 || lastRecipe != null || isMinigameOn()) {
-                    resetProgress(pos);
+                if (progress > 0 || cachedRecipe.isPresent() || isMinigameOn()) {
+                    resetProgress();
                     setMinigameOn(false);
                     OvergearedMod.LOGGER.debug("Blueprint changed at {}, minigame reset", pos);
                 }
             }
             lastBlueprint = currentBlueprint.copy();
 
-            Optional<ForgingRecipe> currentRecipeOpt = getCurrentRecipe();
-            if (currentRecipeOpt.isEmpty()) {
-                if (progress > 0 || lastRecipe != null) {
-                    resetProgress(pos);
+            if (getCurrentRecipe().isEmpty()) {
+                if (progress > 0) {
+                    resetProgress();
                 }
                 return;
             }
 
-            ForgingRecipe currentRecipe = currentRecipeOpt.get();
-
-            boolean recipeChanged = false;
-            if (lastRecipe != null) {
-                // Compare recipes by their result items since Recipe.getId() is not available
-                // in 1.21+
-                // Recipes are wrapped in RecipeHolder, but we're working with the raw recipe
-                // here
-                ItemStack currentResult = currentRecipe.getResultItem(level.registryAccess());
-                ItemStack lastResult = lastRecipe.getResultItem(level.registryAccess());
-                recipeChanged = !ItemStack.isSameItemSameComponents(currentResult, lastResult);
-            } else if (maxProgress > 0) {
-                recipeChanged = true;
-            }
-
-            if (recipeChanged) {
-                resetProgress(pos);
-                lastRecipe = currentRecipe;
-                return;
-            }
-
-            lastRecipe = currentRecipe;
-
             if (hasRecipe()) {
+                ForgingRecipe currentRecipe = getCurrentRecipe().get();
                 maxProgress = currentRecipe.getHammeringRequired();
                 hitRemains = maxProgress - progress;
                 setChanged(lvl, pos, st);
 
                 if (hasProgressFinished()) {
                     craftItem();
-                    resetProgress(pos);
+                    resetProgress();
                 }
             } else {
                 if (progress > 0 || maxProgress > 0) {
-                    resetProgress(pos);
+                    resetProgress();
                 }
             }
         } catch (Exception e) {
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
-            resetProgress(pos);
+            resetProgress();
         }
     }
 
