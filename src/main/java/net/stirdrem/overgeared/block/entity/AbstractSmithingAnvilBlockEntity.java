@@ -37,6 +37,7 @@ import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
+import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
@@ -417,10 +418,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (!blueprint.isEmpty() && blueprint.hasTag()) {
             CompoundTag tag = blueprint.getOrCreateTag();
 
-            if (tag.contains("Quality") && tag.contains("Uses") && tag.contains("UsesToLevel")) {
+            if (tag.contains("Quality") && tag.contains("Uses")) {
                 String currentQualityStr = tag.getString("Quality");
                 int uses = tag.getInt("Uses");
-                int usesToLevel = tag.getInt("UsesToLevel");
+                int usesToLevel = BlueprintItem.getUsesToNextLevel(blueprint);
 
                 BlueprintQuality currentQuality = BlueprintQuality.fromString(currentQualityStr);
 
@@ -444,7 +445,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                         if (nextQuality != null) {
                             tag.putString("Quality", nextQuality.getDisplayName());
                             tag.putInt("Uses", 0);
-                            tag.putInt("UsesToLevel", nextQuality.getUse());
                             if (player instanceof ServerPlayer serverPlayer) {
                                 if (nextQuality.equals(BlueprintQuality.PERFECT) || nextQuality.equals(BlueprintQuality.MASTER))
                                     ModAdvancementTriggers.MAX_LEVEL_BLUEPRINT.trigger(serverPlayer);

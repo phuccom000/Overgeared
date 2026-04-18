@@ -3,10 +3,11 @@ package net.stirdrem.overgeared.item.custom;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
-import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +28,6 @@ public class BlueprintItem extends Item {
         // Set default quality to POOR
         tag.putString("Quality", BlueprintQuality.POOR.name());
         tag.putInt("Uses", 0);
-        tag.putInt("UsesToLevel", getUsesToNextLevel(BlueprintQuality.POOR));
 
         // Set default tool type to first available or SWORD
         List<ToolType> types = ToolTypeRegistry.getRegisteredTypesAll();

@@ -224,7 +224,6 @@ public class ModCreativeModeTabs {
                                 tag.putString("ToolType", toolType.getId());
                                 tag.putString("Quality", quality.name());
                                 tag.putInt("Uses", 0);
-                                tag.putInt("UsesToLevel", quality.getUse());
 
                                 blueprint.setTag(tag);
                                 output.accept(blueprint);

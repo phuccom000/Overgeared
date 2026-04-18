@@ -4,14 +4,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
-import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -34,12 +32,10 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         ItemStack result = blueprintItem.copy();
         CompoundTag tag = result.getOrCreateTag();
 
-        // ---------- QUALITY ROLL ----------
         BlueprintQuality quality = rollQuality(random);
 
         tag.putString("Quality", quality.name());
         tag.putInt("Uses", 0);
-        tag.putInt("UsesToLevel", quality.getUse());
 
         // ---------- RANDOM TOOL TYPE ----------
         List<ToolType> types = ToolTypeRegistry.getRegisteredTypesAll();
