@@ -77,7 +77,6 @@ public class PolymorphIntegration {
         
         IBlockEntityRecipeData recipeData = PolymorphCapabilities.getRecipeData(blockEntity);
         if (recipeData == null) {
-            OvergearedMod.LOGGER.debug("Polymorph: No recipe data found for block entity");
             return Optional.empty();
         }
         
@@ -88,15 +87,13 @@ public class PolymorphIntegration {
                 .filter(holder -> holder.value().matches(recipeInput, level))
                 .toList();
         
-        OvergearedMod.LOGGER.debug("Polymorph: Found {} matching forging recipes", allMatchingRecipes.size());
-        
         if (allMatchingRecipes.isEmpty()) {
             return Optional.empty();
         }
         
         // If only one recipe matches, no conflict - just return it
         if (allMatchingRecipes.size() == 1) {
-            return Optional.of(allMatchingRecipes.get(0));
+            return Optional.of(allMatchingRecipes.getFirst());
         }
 
         // Multiple recipes match - use Polymorph's getRecipe to handle selection
