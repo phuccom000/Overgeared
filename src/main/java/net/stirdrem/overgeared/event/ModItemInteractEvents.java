@@ -657,14 +657,6 @@ public class ModItemInteractEvents {
         int waterLevel = state.getValue(levelProperty);
 
         if (waterLevel > 0) {
-            // Update water level
-            /*if (waterLevel == 1) {
-                level.setBlockAndUpdate(pos, Blocks.CAULDRON.defaultBlockState());
-            } else {
-                level.setBlockAndUpdate(pos, state.setValue(levelProperty, waterLevel - 1));
-            }
-            level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);*/
-
             // Cool the ingot
             coolItem(player, heldStack);
         }

@@ -130,8 +130,9 @@ public class ModEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onItemAttributes(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
-        if (!stack.hasTag()) return;
+        if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) return;
 
+        if (!stack.hasTag()) return;
         String quality = stack.getTag().getString("ForgingQuality");
         if (quality.isEmpty()) return;
 
@@ -145,7 +146,6 @@ public class ModEvents {
             Attribute attribute = ForgeRegistries.ATTRIBUTES
                     .getValue(def.attribute());
             if (attribute == null) continue;
-
             modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
         }
     }
@@ -390,6 +390,12 @@ public class ModEvents {
                 tooltip.add(insertOffset++, qualityComponent);
             }
         }
+        if (isBroken(stack)) {
+            tooltip.add(insertOffset++,
+                    Component.translatable("tooltip.overgeared.item_broken")
+                            .withStyle(ChatFormatting.RED)
+            );
+        }
         if (stack.hasTag() && stack.getTag().contains("Heated")) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         }
@@ -426,7 +432,6 @@ public class ModEvents {
             }
         }
 
-        // 🔽 Add Potion Uses Left Tooltip
         if (stack.is(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
             CompoundTag tag = stack.getTag();
             int maxUses = ServerConfig.MAX_POTION_TIPPING_USE.get();
@@ -487,6 +492,11 @@ public class ModEvents {
             tooltip.add(insertOffset++, creatorComponent);
 
         }
+    }
+
+    private static boolean isBroken(ItemStack stack) {
+        return stack.isDamageableItem()
+                && stack.getDamageValue() >= stack.getMaxDamage();
     }
 
     @SubscribeEvent

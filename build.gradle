@@ -80,6 +80,15 @@ repositories {
         dir 'libs'
     }
     maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url "https://maven.theillusivec4.top/"
+    }
+    maven {
         // location of the maven that hosts JEI files before January 2023
         name = "Progwml6's maven"
         url = "https://dvs1.progwml6.com/files/maven/"
@@ -142,15 +151,7 @@ repositories {
         }
     }
 
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven {
-        url "https://maven.theillusivec4.top/"
-    }
+
     maven {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
@@ -179,11 +180,11 @@ repositories {
 }
 
 dependencies {
-    modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
     modRuntimeOnly("curse.maven:tmrv-1194921:6717421")
-    modCompileOnly("dev.emi:emi-forge:1.1.22+1.20.1:api")
+    compileOnly("dev.emi:emi-forge:1.1.22+1.20.1:api")
     modRuntimeOnly("dev.emi:emi-forge:1.1.22+1.20.1")
 
     modRuntimeOnly("curse.maven:curios-309927:6418456")
@@ -234,13 +235,13 @@ dependencies {
 
     // endregion
     // Compile against only the API artifact
-    modCompileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
     // Use the full Curios API jar at runtime
     modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
 
     modRuntimeOnly("curse.maven:selene-499980:6983934")
     modRuntimeOnly("curse.maven:owo-lib-532610:4749199")
-    modCompileOnly("curse.maven:accessories-938917:7164863")
+    compileOnly("curse.maven:accessories-938917:7164863")
 
     modImplementation("dev.su5ed.sinytra.fabric-api:fabric-api-base:0.4.31+ef105b4977")
 
@@ -256,7 +257,7 @@ dependencies {
 
     modImplementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
     modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
 

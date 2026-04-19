@@ -271,6 +271,7 @@
   "tooltip.overgeared.add_materials": "Pick up the materials and right-click on the cast to add",
   "tooltip.overgeared.made_by": "Made by",
   "tooltip.overgeared.stone_hammer_head": "Can only be used to make a hammer tool cast",
+  "tooltip.overgeared.item_broken": "Broken",
   "overgeared.forging.perfect": "PERFECT!",
   "overgeared.forging.good": "GOOD!",
   "overgeared.forging.miss": "MISS!",

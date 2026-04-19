@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared;
 
+import net.minecraft.world.item.ItemStack;
+
 public enum ForgingQuality {
     POOR("poor"),
     WELL("well"),
@@ -34,6 +36,30 @@ public enum ForgingQuality {
         ForgingQuality[] values = values();
         int index = this.ordinal();
         return index > 0 ? values[index - 1] : this; // POOR stays POOR
+    }
+
+    public static void downgrade(ItemStack stack) {
+        if (stack == null || !stack.hasTag()) return;
+
+        String current = stack.getTag().getString("ForgingQuality");
+        if (current.isEmpty()) return;
+
+        ForgingQuality quality = fromString(current);
+        ForgingQuality lower = quality.getLowerQuality();
+
+        // If already lowest (POOR or NONE), remove or clamp
+        if (quality == lower) {
+            // Your design choice:
+            // OPTION 1: keep POOR
+            if (quality == POOR) return;
+
+            // OPTION 2: remove quality entirely
+            stack.getTag().remove("ForgingQuality");
+            return;
+        }
+
+        // Apply downgraded quality
+        stack.getTag().putString("ForgingQuality", lower.getDisplayName());
     }
 }
 

@@ -30,6 +30,9 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
     @Override
     public void adjustAttributes(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
+        if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) {
+            return;
+        }
         if (!stack.hasTag()) return;
 
         String quality = stack.getTag().getString("ForgingQuality");
