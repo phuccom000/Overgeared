@@ -44,7 +44,7 @@ public class BlueprintItem extends Item {
                 tooltip.add(Component.translatable(
                         "tooltip.overgeared.blueprint.progress",
                         data.uses(),
-                        data.usesToLevel()
+                        getUsesToNextLevel(quality)
                 ).withStyle(ChatFormatting.GRAY));
             }
         }
@@ -96,8 +96,7 @@ public class BlueprintItem extends Item {
         BlueprintData data = new BlueprintData(
                 BlueprintQuality.POOR.name(),
                 defaultToolType,
-                0,
-                getUsesToNextLevel(BlueprintQuality.POOR)
+                0
         );
         stack.set(ModComponents.BLUEPRINT_DATA, data);
     }

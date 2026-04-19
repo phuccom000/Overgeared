@@ -78,8 +78,7 @@ public class BlueprintWorkbenchMenu extends AbstractContainerMenu {
             newOutput.set(ModComponents.BLUEPRINT_DATA, new BlueprintData(
                     BlueprintQuality.WELL.name(),
                     toolType.getId(),
-                    0,
-                    BlueprintQuality.WELL.getUse()));
+                    0));
 
             // Set output and consume 1 input item
             this.outputContainer.setItem(0, newOutput);

@@ -1,10 +1,8 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.ItemCost;
@@ -14,7 +12,6 @@ import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
-import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -47,7 +44,6 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
             BlueprintData newData = blueprintData
                     .withQuality(quality.getDisplayName())
                     .withUses(0)
-                    .withUsesToLevel(quality.getUse())
                     .withToolType(type.getId());
             result.set(ModComponents.BLUEPRINT_DATA, newData);
         }

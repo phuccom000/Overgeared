@@ -10,8 +10,7 @@ import net.stirdrem.overgeared.BlueprintQuality;
 public record BlueprintData(
         String quality,
         String toolType,
-        int uses,
-        int usesToLevel
+        int uses
 ) {
     private static final String DEFAULT_TOOL_TYPE = "sword";
 
@@ -19,8 +18,7 @@ public record BlueprintData(
             instance.group(
                     Codec.STRING.optionalFieldOf("quality", BlueprintQuality.POOR.getId()).forGetter(BlueprintData::quality),
                     Codec.STRING.optionalFieldOf("tool_type", DEFAULT_TOOL_TYPE).forGetter(BlueprintData::toolType),
-                    Codec.INT.optionalFieldOf("uses", 0).forGetter(BlueprintData::uses),
-                    Codec.INT.optionalFieldOf("uses_to_level", BlueprintQuality.POOR.getUse()).forGetter(BlueprintData::usesToLevel)
+                    Codec.INT.optionalFieldOf("uses", 0).forGetter(BlueprintData::uses)
             ).apply(instance, BlueprintData::new)
     );
 
@@ -28,7 +26,6 @@ public record BlueprintData(
             ByteBufCodecs.STRING_UTF8, BlueprintData::quality,
             ByteBufCodecs.STRING_UTF8, BlueprintData::toolType,
             ByteBufCodecs.VAR_INT, BlueprintData::uses,
-            ByteBufCodecs.VAR_INT, BlueprintData::usesToLevel,
             BlueprintData::new
     );
 
@@ -39,25 +36,20 @@ public record BlueprintData(
         return new BlueprintData(
                 BlueprintQuality.NONE.getId(),
                 DEFAULT_TOOL_TYPE,
-                0,
-                BlueprintQuality.NONE.getUse()
+                0
         );
     }
 
     public BlueprintData withQuality(String quality) {
-        return new BlueprintData(quality, this.toolType, this.uses, this.usesToLevel);
+        return new BlueprintData(quality, this.toolType, this.uses);
     }
 
     public BlueprintData withToolType(String toolType) {
-        return new BlueprintData(this.quality, toolType, this.uses, this.usesToLevel);
+        return new BlueprintData(this.quality, toolType, this.uses);
     }
 
     public BlueprintData withUses(int uses) {
-        return new BlueprintData(this.quality, this.toolType, uses, this.usesToLevel);
-    }
-
-    public BlueprintData withUsesToLevel(int usesToLevel) {
-        return new BlueprintData(this.quality, this.toolType, this.uses, usesToLevel);
+        return new BlueprintData(this.quality, this.toolType, uses);
     }
 
     public BlueprintQuality getQualityEnum() {

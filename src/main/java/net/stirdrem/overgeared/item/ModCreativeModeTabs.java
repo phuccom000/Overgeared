@@ -212,8 +212,7 @@ public class ModCreativeModeTabs {
                                 blueprint.set(ModComponents.BLUEPRINT_DATA, new BlueprintData(
                                         quality.name(),
                                         toolType.getId(),
-                                        0,
-                                        quality.getUse()));
+                                        0));
                                 output.accept(blueprint);
                             }
                         }

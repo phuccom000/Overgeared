@@ -40,6 +40,7 @@ import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.heateditem.HeatedItem;
+import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 import net.stirdrem.overgeared.util.ModTags;
@@ -408,7 +409,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             return;
         String currentQualityStr = blueprintData.quality();
         int uses = blueprintData.uses();
-        int usesToLevel = blueprintData.usesToLevel();
+        int usesToLevel = BlueprintItem.getUsesToNextLevel(blueprint);
 
         BlueprintQuality currentQuality = BlueprintQuality.fromString(currentQualityStr);
 
@@ -434,8 +435,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (nextQuality != null) {
                 BlueprintData newData = blueprintData
                         .withQuality(nextQuality.getDisplayName())
-                        .withUses(0)
-                        .withUsesToLevel(nextQuality.getUse());
+                        .withUses(0);
                 blueprint.set(ModComponents.BLUEPRINT_DATA, newData);
                 if (player instanceof ServerPlayer serverPlayer) {
                     if (nextQuality.equals(BlueprintQuality.PERFECT) || nextQuality.equals(BlueprintQuality.MASTER))
