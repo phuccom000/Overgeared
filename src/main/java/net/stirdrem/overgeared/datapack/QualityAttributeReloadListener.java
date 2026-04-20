@@ -1,12 +1,19 @@
 package net.stirdrem.overgeared.datapack;
 
 import com.google.gson.*;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
@@ -27,20 +34,25 @@ public class QualityAttributeReloadListener
         super(new Gson(), "quality_attributes");
     }
 
+    private static final Set<Item> cachedItems = new HashSet<>();
+
     @Override
-    protected void apply(
-            Map<ResourceLocation, JsonElement> jsons,
-            ResourceManager manager,
-            ProfilerFiller profiler
-    ) {
+    protected void apply(Map<ResourceLocation, JsonElement> jsons,
+                         ResourceManager manager,
+                         ProfilerFiller profiler) {
+
         definitions.clear();
+        cachedItems.clear();
 
         for (JsonElement element : jsons.values()) {
-            definitions.add(parse(element.getAsJsonObject()));
+            QualityAttributeDefinition def = parse(element.getAsJsonObject());
+            definitions.add(def);
         }
-        OvergearedMod.LOGGER.info(
-                "Loaded {} quality attribute files", jsons.size()
-        );
+
+        // build cache
+        cachedItems.addAll(resolveItems());
+
+        OvergearedMod.LOGGER.info("Loaded {} quality attribute files", jsons.size());
     }
 
     public List<QualityAttributeDefinition> getAll() {
@@ -111,4 +123,61 @@ public class QualityAttributeReloadListener
         return operation;
     }
 
+    public static Set<Item> resolveItems() {
+        Set<Item> items = new HashSet<>();
+
+        for (QualityAttributeDefinition def : INSTANCE.getAll()) {
+            for (QualityTarget target : def.targets()) {
+
+                switch (target.type()) {
+
+                    case ITEM -> {
+                        if (target.id() != null) {
+                            Item item = ForgeRegistries.ITEMS.getValue(target.id());
+                            if (item != null) {
+                                items.add(item);
+                            }
+                        }
+                    }
+
+                    case ITEM_TAG -> {
+                        if (target.id() != null) {
+                            TagKey<Item> tag = TagKey.create(Registries.ITEM, target.id());
+
+                            ForgeRegistries.ITEMS.getValues().forEach(item -> {
+                                if (item.builtInRegistryHolder().is(tag)) {
+                                    items.add(item);
+                                }
+                            });
+                        }
+                    }
+
+                    case WEAPON -> {
+                        ForgeRegistries.ITEMS.getValues().forEach(item -> {
+                            if (item instanceof TieredItem ||
+                                    item instanceof ProjectileWeaponItem) {
+                                items.add(item);
+                            }
+                        });
+                    }
+
+                    case ARMOR -> {
+                        ForgeRegistries.ITEMS.getValues().forEach(item -> {
+                            if (item instanceof ArmorItem) {
+                                items.add(item);
+                            }
+                        });
+                    }
+
+                    case ITEM_ALL -> items.addAll(ForgeRegistries.ITEMS.getValues());
+                }
+            }
+        }
+
+        return items;
+    }
+
+    public Set<Item> getAllItems() {
+        return cachedItems;
+    }
 }

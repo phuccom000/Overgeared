@@ -1,6 +1,8 @@
 package net.stirdrem.overgeared;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 
 public enum ForgingQuality {
     POOR("poor"),
@@ -38,28 +40,36 @@ public enum ForgingQuality {
         return index > 0 ? values[index - 1] : this; // POOR stays POOR
     }
 
-    public static void downgrade(ItemStack stack) {
-        if (stack == null || !stack.hasTag()) return;
+    public static void downgradeDamageableItems(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return;
+        if (!stack.isDamageableItem()) return;
+        CompoundTag tag = stack.getTag();
 
-        String current = stack.getTag().getString("ForgingQuality");
-        if (current.isEmpty()) return;
+        String current = tag != null ? tag.getString("ForgingQuality") : "";
+        ForgingQuality quality;
 
-        ForgingQuality quality = fromString(current);
-        ForgingQuality lower = quality.getLowerQuality();
+        if (current.isEmpty()) {
+            // Check if item is affected by datapack
+            boolean affected = QualityAttributeReloadListener.INSTANCE
+                    .getAllItems()
+                    .contains(stack.getItem());
 
-        // If already lowest (POOR or NONE), remove or clamp
-        if (quality == lower) {
-            // Your design choice:
-            // OPTION 1: keep POOR
-            if (quality == POOR) return;
+            if (!affected) return;
 
-            // OPTION 2: remove quality entirely
-            stack.getTag().remove("ForgingQuality");
-            return;
+            // Default to WELL
+            quality = ForgingQuality.WELL;
+        } else {
+            quality = fromString(current);
         }
 
-        // Apply downgraded quality
-        stack.getTag().putString("ForgingQuality", lower.getDisplayName());
+        ForgingQuality lower = quality.getLowerQuality();
+
+        if (tag == null) {
+            tag = new CompoundTag();
+            stack.setTag(tag);
+        }
+
+        tag.putString("ForgingQuality", lower.getDisplayName());
     }
 }
 

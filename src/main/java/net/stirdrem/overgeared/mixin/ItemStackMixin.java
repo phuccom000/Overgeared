@@ -260,7 +260,26 @@ public abstract class ItemStackMixin {
                 return;
             }
             stack.setDamageValue(max);
-            ForgingQuality.downgrade(stack);
+            ForgingQuality.downgradeDamageableItems(stack);
+
+            if (entity instanceof Player player) {
+                InteractionHand hand = player.getMainHandItem() == stack
+                        ? InteractionHand.MAIN_HAND
+                        : InteractionHand.OFF_HAND;
+
+                player.broadcastBreakEvent(hand);
+            } else {
+                entity.level().playSound(
+                        null,
+                        entity.getX(),
+                        entity.getY(),
+                        entity.getZ(),
+                        SoundEvents.ITEM_BREAK,
+                        SoundSource.PLAYERS,
+                        0.8F,
+                        0.8F + entity.level().random.nextFloat() * 0.4F
+                );
+            }
             ci.cancel();
         }
     }
