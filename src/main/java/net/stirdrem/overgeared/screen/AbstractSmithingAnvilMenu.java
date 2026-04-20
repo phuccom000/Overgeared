@@ -469,7 +469,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
                     if (polymorphOutput.isPresent()) {
                         return polymorphOutput.get();
                     } else {
-                        Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipeHolder().map(RecipeHolder::value);
+                        Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipe();
                         if (recipeOptional.isPresent()) {
                             ForgingRecipe recipe = recipeOptional.get();
                             if (blockEntity.hasRecipe()) {
@@ -486,7 +486,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
 
         // Default behavior: return the expected result based on current inputs
         // Avoid using cached recipe (getCurrentRecipe())
-        Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipeHolder().map(RecipeHolder::value);
+        Optional<ForgingRecipe> recipeOptional = blockEntity.getCurrentRecipe();
         if (recipeOptional.isPresent()) {
             ForgingRecipe recipe = recipeOptional.get();
             if (blockEntity.hasRecipe()) {
