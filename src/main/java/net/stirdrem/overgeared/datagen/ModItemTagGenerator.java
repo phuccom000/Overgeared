@@ -237,6 +237,20 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                         ModItems.CLAY_TOOL_CAST.get(),
                         ModItems.NETHER_TOOL_CAST.get()
                 );
+        this.tag(ModTags.Items.QUALITY_BLACKLIST)
+                .add(
+                        Items.WOODEN_SWORD,
+                        Items.WOODEN_PICKAXE,
+                        Items.WOODEN_AXE,
+                        Items.WOODEN_SHOVEL,
+                        Items.WOODEN_HOE,
+                        Items.LEATHER_HELMET,
+                        Items.LEATHER_CHESTPLATE,
+                        Items.LEATHER_LEGGINGS,
+                        Items.LEATHER_BOOTS,
+                        Items.FLINT_AND_STEEL,
+                        Items.ELYTRA
+                );
     }
 }
 

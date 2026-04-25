@@ -36,7 +36,7 @@ public class ModTags {
         public static final TagKey<Item> KNAPPABLE = tag("knappables");
         public static final TagKey<Item> IRON_PLATES = tag("iron_plates");
         public static final TagKey<Item> COPPER_PLATES = tag("copper_plates");
-
+        public static final TagKey<Item> QUALITY_BLACKLIST = tag("quality_blacklist");
 
         private static TagKey<Item> tag(String name) {
             return ItemTags.create(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, name));

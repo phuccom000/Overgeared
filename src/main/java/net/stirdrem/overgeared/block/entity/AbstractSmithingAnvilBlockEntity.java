@@ -243,14 +243,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             if (hasProgressFinished()) {
                 craftItem();
-                resetProgress(pPos);
+                resetProgress();
             }
         } else {
-            resetProgress(pPos);
+            resetProgress();
         }
     }
 
-    public void resetProgress(BlockPos pos) {
+    public void resetProgress() {
         progress = 0;
         maxProgress = 0;
         lastRecipe = null;
@@ -661,7 +661,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
             if (!ItemStack.isSameItemSameTags(currentBlueprint, lastBlueprint)) {
                 if (progress > 0 || lastRecipe != null || isMinigameOn()) {
-                    resetProgress(pos);
+                    resetProgress();
                     setMinigameOn(false);
                     OvergearedMod.LOGGER.debug("Blueprint changed at {}, minigame reset", pos);
                 }
@@ -671,7 +671,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             Optional<ForgingRecipe> currentRecipeOpt = getCurrentRecipe();
             if (currentRecipeOpt.isEmpty()) {
                 if (progress > 0 || lastRecipe != null) {
-                    resetProgress(pos);
+                    resetProgress();
                 }
                 return;
             }
@@ -686,7 +686,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
 
             if (recipeChanged) {
-                resetProgress(pos);
+                resetProgress();
                 lastRecipe = currentRecipe;
                 return;
             }
@@ -700,16 +700,16 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
                 if (hasProgressFinished()) {
                     craftItem();
-                    resetProgress(pos);
+                    resetProgress();
                 }
             } else {
                 if (progress > 0 || maxProgress > 0) {
-                    resetProgress(pos);
+                    resetProgress();
                 }
             }
         } catch (Exception e) {
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
-            resetProgress(pos);
+            resetProgress();
         }
 
     }

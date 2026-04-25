@@ -3,12 +3,14 @@ package net.stirdrem.overgeared.loot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraftforge.common.loot.LootModifier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
 
 public class QualityLootModifier extends LootModifier {
@@ -83,17 +85,9 @@ public class QualityLootModifier extends LootModifier {
     private static boolean isEligibleItem(ItemStack stack) {
         Item item = stack.getItem();
 
-        // Must be a tool or armor item
-        if (!(item instanceof TieredItem) && !(item instanceof ArmorItem)) return false;
+        if (!item.isDamageable(stack)) return false;
 
-        // Skip wooden tools
-        if (item instanceof TieredItem tiered && tiered.getTier() == Tiers.WOOD) {
-            return false;
-        }
-
-        // Skip leather armor
-        return !(item instanceof ArmorItem armor) ||
-                armor.getMaterial() != ArmorMaterials.LEATHER;
+        return !stack.is(ModTags.Items.QUALITY_BLACKLIST);
     }
 
     @Override
