@@ -6,6 +6,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
+
 @Mixin(Player.class)
 public abstract class PlayerMixin {
 
@@ -18,7 +20,7 @@ public abstract class PlayerMixin {
     )
     private boolean disableSweepWhenBroken(ItemStack stack, net.minecraftforge.common.ToolAction action) {
         if (action == net.minecraftforge.common.ToolActions.SWORD_SWEEP) {
-            if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) {
+            if (isBroken(stack)) {
                 return false;
             }
         }

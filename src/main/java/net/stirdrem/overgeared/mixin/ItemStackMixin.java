@@ -39,6 +39,7 @@ import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
@@ -49,7 +50,7 @@ public abstract class ItemStackMixin {
     )
     private void modifyMiningSpeed(BlockState state, CallbackInfoReturnable<Float> cir) {
         ItemStack stack = (ItemStack) (Object) this;
-        if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) {
+        if (isBroken(stack)) {
             cir.setReturnValue(0.0F);
             return;
         }
@@ -342,11 +343,6 @@ public abstract class ItemStackMixin {
         if (isBroken(stack)) {
             cir.setReturnValue(InteractionResultHolder.fail(stack));
         }
-    }
-
-    @Unique
-    private boolean isBroken(ItemStack stack) {
-        return stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage();
     }
 }
 

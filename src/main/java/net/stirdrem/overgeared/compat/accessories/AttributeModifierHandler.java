@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static net.stirdrem.overgeared.event.ModEvents.createModifiedAttribute;
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
 // Register to modify attributes dynamically
 public class AttributeModifierHandler implements AdjustAttributeModifierCallback {
@@ -30,7 +31,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
 
     @Override
     public void adjustAttributes(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
-        if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) {
+        if (isBroken(stack)) {
             return;
         }
         if (!stack.hasTag()) return;

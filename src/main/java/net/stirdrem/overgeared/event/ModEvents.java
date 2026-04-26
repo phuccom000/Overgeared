@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
+
 @Mod.EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class ModEvents {
     private static final int HEATED_ITEM_CHECK_INTERVAL = 20; // 1 second
@@ -130,7 +132,7 @@ public class ModEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onItemAttributes(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
-        if (stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage()) return;
+        if (isBroken(stack)) return;
 
         if (!stack.hasTag()) return;
         String quality = stack.getTag().getString("ForgingQuality");
@@ -492,11 +494,6 @@ public class ModEvents {
             tooltip.add(insertOffset++, creatorComponent);
 
         }
-    }
-
-    private static boolean isBroken(ItemStack stack) {
-        return stack.isDamageableItem()
-                && stack.getDamageValue() >= stack.getMaxDamage();
     }
 
     @SubscribeEvent

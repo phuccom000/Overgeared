@@ -264,8 +264,12 @@ dependencies {
     modImplementation("curse.maven:puzzles-lib-495476:6918565")
     modImplementation("curse.maven:easy-anvils-682567:5156621")
 
+    modImplementation("curse.maven:endremastered-404183:5598990")
     compileOnly 'org.jetbrains:annotations:26.0.2-1'
 
+    modImplementation("curse.maven:supermartijn642s-config-lib-438332:4715408")
+    modImplementation("curse.maven:durability-tooltip-511040:6833215")
+    
     // Mixin
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     compileOnly "io.github.llamalad7:mixinextras-common:0.3.5"
