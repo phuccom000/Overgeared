@@ -247,7 +247,7 @@ public abstract class ItemStackMixin {
     private void qualityBasedBreak(int amount, LivingEntity entity, Consumer<LivingEntity> onBreak, CallbackInfo ci) {
         ItemStack stack = (ItemStack) (Object) this;
         int currentDamage = stack.getDamageValue();
-        int newDamage = stack.getDamageValue() + amount;
+        int newDamage = currentDamage + amount;
         int max = stack.getMaxDamage();
 
         if (currentDamage < max && newDamage >= max) {
@@ -260,8 +260,15 @@ public abstract class ItemStackMixin {
             if (entity.getRandom().nextFloat() < breakChance) {
                 return;
             }
+
             stack.setDamageValue(max);
             ForgingQuality.downgradeDamageableItems(stack);
+
+            if (stack.getDamageValue() < 0) {
+                stack.setDamageValue(0);
+            } else if (stack.getDamageValue() > stack.getMaxDamage()) {
+                stack.setDamageValue(stack.getMaxDamage());
+            }
 
             if (entity instanceof Player player) {
                 InteractionHand hand = player.getMainHandItem() == stack
@@ -281,6 +288,7 @@ public abstract class ItemStackMixin {
                         0.8F + entity.level().random.nextFloat() * 0.4F
                 );
             }
+
             ci.cancel();
         }
     }
