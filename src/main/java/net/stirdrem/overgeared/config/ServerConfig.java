@@ -184,7 +184,7 @@ public class ServerConfig {
         INGREDIENTS_DEFINE_MAX_QUALITY = builder.comment("Toggle for if ingredients' quality define the result's").define("ingredientsDefineQuality", true);
         MASTER_QUALITY_CHANCE = builder.comment("How likely it is for the player to get Masterwork when getting Perfectly Forged. Set to 0 to disable it.").defineInRange("masterQualityChance", 0.05, 0, 1);
         MASTER_FROM_INGREDIENT_CHANCE = builder.comment("Chance that using a Master-quality ingredient results in Master-quality result").defineInRange("masterFromIngredientChance", 0.5, 0.0, 1.0);
-        MAX_ANVIL_DISTANCE = builder.comment("Maximum distance you can go from your Smithing Anvil before minigame reset").defineInRange("maxAnvilDistance", 100, 0, 1000);
+        MAX_ANVIL_DISTANCE = builder.comment("Maximum distance you can go from your Smithing Anvil before minigame reset. Set to 0 to disable it.").defineInRange("maxAnvilDistance", 100, 0, 1000);
         PLAYER_AUTHOR_TOOLTIPS = builder.comment("Toggle for if the result item has player's name").define("enableAuthorTooltips", true);
 
         PERFECT_QUALITY_SCORE = builder.comment("Lowest score required to get perfect quality").defineInRange("perfectQualityScore", 0.9, 0, 1.0);

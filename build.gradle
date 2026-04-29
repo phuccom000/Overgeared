@@ -91,16 +91,33 @@ repositories {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
-    maven {
-        // Curse Maven
-        url "https://cursemaven.com"
-        content {
+    exclusiveContent {
+        forRepository {
+            maven {
+                url "https://cursemaven.com"
+            }
+        }
+        filter {
             includeGroup "curse.maven"
         }
     }
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
+    }
+    maven {
+        name = "RyanHCode Maven"
+        url = "https://maven.ryanhcode.dev/releases"
+    }
+
+    maven {
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+
+    maven {
+        name = 'BlameJared Maven (CrT / Bookshelf)'
+        url = 'https://maven.blamejared.com'
     }
 }
 
@@ -116,6 +133,15 @@ dependencies {
     // PolyMorph
     implementation "maven.modrinth:polymorph:${polymorph_version}"
 
+    implementation "curse.maven:create-328085:7963363"
+    api("dev.ryanhcode.sable:sable-common-${project.minecraft_version}:${project.sable_version}")
+    runtimeOnly "curse.maven:sable-1312371:8007005"
+    jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:[${project.sable_companion_version},)")) {
+        version {
+            prefer project.sable_companion_version
+        }
+    }
+    implementation "maven.modrinth:create-aeronautics:1.1.3+mc1.21.1"
     /*modImplementation "curse.maven:selene-499980:7708176"
     runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7206981"
     modImplementation "curse.maven:biolith-852512:7074761"
@@ -127,14 +153,14 @@ dependencies {
 
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
-             minecraft_version_range: minecraft_version_range,
-             neo_version            : neo_version,
-             mod_id                 : mod_id,
-             mod_name               : mod_name,
-             mod_license            : mod_license,
-             mod_version            : mod_version,
-             mod_authors            : mod_authors,
-             mod_description        : mod_description
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
     ]
     inputs.properties replaceProperties
 

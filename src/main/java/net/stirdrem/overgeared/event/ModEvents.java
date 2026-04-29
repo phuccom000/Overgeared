@@ -18,6 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -32,6 +33,7 @@ import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.compat.sable.SableCompat;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
@@ -61,15 +63,28 @@ public class ModEvents {
             return;
         Level level = player.level();
         handleAnvilDistance(player, level);
+        handleAnvilDistance(player, level);
     }
 
     private static void handleAnvilDistance(ServerPlayer player, Level level) {
+        if (ServerConfig.MAX_ANVIL_DISTANCE.get() == 0) return;
+
+        boolean sableLoaded = ModList.get().isLoaded("sable");
+
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
             if ((be instanceof AbstractSmithingAnvilBlockEntity)) {
-                double distSq = player.blockPosition().distSqr(anvilPos);
-                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get(); // e.g. 7
+                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+
+                double distSq;
+
+                if (sableLoaded) {
+                    distSq = SableCompat.distanceSquaredWithSubLevels(level, player.position(), anvilPos.getCenter());
+                } else {
+                    distSq = player.blockPosition().distSqr(anvilPos);
+                }
+
                 if (distSq > maxDist * maxDist) {
                     resetMinigameForPlayer(player);
                 }
