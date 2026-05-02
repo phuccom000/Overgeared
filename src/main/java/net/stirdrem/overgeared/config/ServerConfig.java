@@ -128,6 +128,13 @@ public class ServerConfig {
     public static ModConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
     public static ModConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
     public static ModConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
+    public static ModConfigSpec.BooleanValue ENABLE_QUALITY_BREAK_SYSTEM;
+
+    public static ModConfigSpec.DoubleValue BREAK_CHANCE_POOR;
+    public static ModConfigSpec.DoubleValue BREAK_CHANCE_WELL;
+    public static ModConfigSpec.DoubleValue BREAK_CHANCE_EXPERT;
+    public static ModConfigSpec.DoubleValue BREAK_CHANCE_PERFECT;
+    public static ModConfigSpec.DoubleValue BREAK_CHANCE_MASTER;
 
     static {
         final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -311,6 +318,34 @@ public class ServerConfig {
         WELL_MINING_SPEED_BONUS = builder.defineInRange("wellMiningSpeedBonus", 1, -5.0, 5.0);
         POOR_MINING_SPEED_BONUS = builder.defineInRange("poorMiningSpeedBonus", 0.7, 0, 5.0);
         builder.pop();
+
+        builder.push("Item Break Chance");
+
+        ENABLE_QUALITY_BREAK_SYSTEM = builder
+                .comment("Enable quality-based break chance system")
+                .define("enableQualityBreakSystem", true);
+
+        BREAK_CHANCE_POOR = builder
+                .comment("Break chance at 0 durability for POOR quality")
+                .defineInRange("breakChancePoor", 1.0, 0.0, 1.0);
+
+        BREAK_CHANCE_WELL = builder
+                .comment("Break chance for WELL quality")
+                .defineInRange("breakChanceWell", 0.5, 0.0, 1.0);
+
+        BREAK_CHANCE_EXPERT = builder
+                .comment("Break chance for EXPERT quality")
+                .defineInRange("breakChanceExpert", 0.75, 0.0, 1.0);
+
+        BREAK_CHANCE_PERFECT = builder
+                .comment("Break chance for PERFECT quality")
+                .defineInRange("breakChancePerfect", 0.0, 0.0, 1.0);
+
+        BREAK_CHANCE_MASTER = builder
+                .comment("Break chance for MASTER quality")
+                .defineInRange("breakChanceMaster", 0.0, 0.0, 1.0);
+        builder.pop();
+
         builder.push("Knapping Settings");
         GET_ROCK_USING_FLINT = builder.comment("Toggle for obtaining rock using flint").define("useFlintGetRock", true);
         ROCK_DROPPING_CHANCE = builder.defineInRange("rockDroppingChance", 0.1, 0, 1);

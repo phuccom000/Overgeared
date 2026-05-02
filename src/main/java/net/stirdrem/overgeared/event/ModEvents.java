@@ -44,6 +44,8 @@ import net.stirdrem.overgeared.util.ModTags;
 import java.util.List;
 import java.util.UUID;
 
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
+
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class ModEvents {
     private static final int HEATED_ITEM_CHECK_INTERVAL = 20; // 1 second
@@ -214,6 +216,13 @@ public class ModEvents {
             if (qualityComponent != null) {
                 tooltip.add(insertOffset++, qualityComponent);
             }
+        }
+
+        if (isBroken(stack)) {
+            tooltip.add(insertOffset++,
+                    Component.translatable("tooltip.overgeared.item_broken")
+                            .withStyle(ChatFormatting.RED)
+            );
         }
 
         if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) {

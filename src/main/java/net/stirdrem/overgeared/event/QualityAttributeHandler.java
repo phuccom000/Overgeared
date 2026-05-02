@@ -22,12 +22,15 @@ import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
+
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class QualityAttributeHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onItemAttributes(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
+        if (isBroken(stack)) return;
 
         ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
         if (quality != null && quality != ForgingQuality.NONE)

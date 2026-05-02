@@ -5,7 +5,10 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 
 public enum ForgingQuality implements StringRepresentable {
     POOR("poor"),
@@ -83,6 +86,26 @@ public enum ForgingQuality implements StringRepresentable {
         ForgingQuality[] values = values();
         int index = this.ordinal();
         return index > 0 ? values[index - 1] : this; // POOR stays POOR
+    }
+
+    public static void downgrade(ItemStack stack) {
+        if (stack == null) return;
+
+        ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
+        if (quality == null) {
+            // Check if item is affected by datapack
+            boolean affected = QualityAttributeReloadListener.INSTANCE
+                    .getAllItems()
+                    .contains(stack.getItem());
+
+            if (!affected) return;
+
+            // Default to WELL
+            quality = ForgingQuality.WELL;
+        }
+        ForgingQuality lower = quality.getLowerQuality();
+        // Apply downgraded quality
+        stack.set(ModComponents.FORGING_QUALITY, lower);
     }
 }
 

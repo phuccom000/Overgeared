@@ -1,12 +1,19 @@
 package net.stirdrem.overgeared.datapack;
 
 import com.google.gson.*;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TieredItem;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
@@ -18,55 +25,46 @@ import java.util.*;
 public class QualityAttributeReloadListener
         extends SimpleJsonResourceReloadListener {
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .disableHtmlEscaping()
-            .create();
+    public static final QualityAttributeReloadListener INSTANCE =
+            new QualityAttributeReloadListener();
 
-    private static final Map<ResourceLocation, QualityAttributeDefinition> DEFINITIONS = new HashMap<>();
+    private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
 
     public QualityAttributeReloadListener() {
-        super(GSON, "quality_attributes");
+        super(new Gson(), "quality_attributes");
     }
 
+    private static final Set<Item> cachedItems = new HashSet<>();
+
     @Override
-    protected void apply(
-            Map<ResourceLocation, JsonElement> jsons,
-            ResourceManager manager,
-            ProfilerFiller profiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> jsons,
+                         ResourceManager manager,
+                         ProfilerFiller profiler) {
 
-        DEFINITIONS.clear();
+        definitions.clear();
+        cachedItems.clear();
 
-        for (Map.Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
-            try {
-                JsonObject json = entry.getValue().getAsJsonObject();
-                QualityAttributeDefinition def = parse(json);
-                DEFINITIONS.put(entry.getKey(), def);
-                OvergearedMod.LOGGER.debug("Loaded quality attribute: {}", entry.getKey());
-            } catch (Exception e) {
-                OvergearedMod.LOGGER.error("Failed to parse quality attribute {}: {}", entry.getKey(), e.getMessage());
-            }
+        for (JsonElement element : jsons.values()) {
+            QualityAttributeDefinition def = parse(element.getAsJsonObject());
+            definitions.add(def);
         }
 
-        OvergearedMod.LOGGER.info("Loaded {} quality attribute definitions", DEFINITIONS.size());
+        // build cache
+        cachedItems.addAll(resolveItems());
+
+        OvergearedMod.LOGGER.info("Loaded {} quality attribute files", jsons.size());
     }
 
     public static List<QualityAttributeDefinition> getAll() {
-        return new ArrayList<>(DEFINITIONS.values());
-    }
-
-    public static Optional<QualityAttributeDefinition> get(ResourceLocation id) {
-        return Optional.ofNullable(DEFINITIONS.get(id));
-    }
-
-    public static void clear() {
-        DEFINITIONS.clear();
+        return definitions;
     }
 
     private static QualityAttributeDefinition parse(JsonObject json) {
+
         // ---- attribute ----
-        ResourceLocation attributeId = ResourceLocation.parse(
-                GsonHelper.getAsString(json, "attribute"));
+        ResourceLocation attributeId = ResourceLocation.tryParse(
+                GsonHelper.getAsString(json, "attribute")
+        );
 
         // ---- targets ----
         List<QualityTarget> targets = new ArrayList<>();
@@ -76,10 +74,10 @@ public class QualityAttributeReloadListener
             JsonObject obj = elem.getAsJsonObject();
 
             QualityTarget.TargetType type = QualityTarget.TargetType
-                    .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase());
+                    .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase(Locale.ROOT));
 
             ResourceLocation id = obj.has("id")
-                    ? ResourceLocation.parse(GsonHelper.getAsString(obj, "id"))
+                    ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "id"))
                     : null;
 
             targets.add(new QualityTarget(type, id));
@@ -106,7 +104,8 @@ public class QualityAttributeReloadListener
         return new QualityAttributeDefinition(
                 attributeId,
                 targets,
-                qualities);
+                qualities
+        );
     }
 
     private static AttributeModifier.@NotNull Operation getOperation(String opString) {
@@ -118,5 +117,60 @@ public class QualityAttributeReloadListener
                     "Unknown operation: " + opString +
                             ". Valid values: add, mult_base, mult_total");
         };
+    }
+
+    public static Set<Item> resolveItems() {
+        Set<Item> items = new HashSet<>();
+
+        for (QualityAttributeDefinition def : INSTANCE.getAll()) {
+            for (QualityTarget target : def.targets()) {
+
+                switch (target.type()) {
+
+                    case ITEM -> {
+                        if (target.id() != null) {
+                            Item item = BuiltInRegistries.ITEM.get(target.id());
+                            items.add(item);
+                        }
+                    }
+
+                    case ITEM_TAG -> {
+                        if (target.id() != null) {
+                            TagKey<Item> tag = TagKey.create(Registries.ITEM, target.id());
+                            BuiltInRegistries.ITEM.holders()
+                                    .filter(holder -> holder.is(tag))
+                                    .forEach(holder -> items.add(holder.value()));
+                        }
+                    }
+
+                    case WEAPON -> {
+                        BuiltInRegistries.ITEM.stream().forEach(item -> {
+                            if (item instanceof TieredItem ||
+                                    item instanceof ProjectileWeaponItem) {
+                                items.add(item);
+                            }
+                        });
+                    }
+
+                    case ARMOR -> {
+                        BuiltInRegistries.ITEM.stream().forEach(item -> {
+                            if (item instanceof ArmorItem) {
+                                items.add(item);
+                            }
+                        });
+                    }
+
+                    case ITEM_ALL -> {
+                        BuiltInRegistries.ITEM.stream().forEach(items::add);
+                    }
+                }
+            }
+        }
+
+        return items;
+    }
+
+    public Set<Item> getAllItems() {
+        return cachedItems;
     }
 }

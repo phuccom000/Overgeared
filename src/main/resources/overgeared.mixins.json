@@ -8,11 +8,13 @@
   "mixins": [
     "BrewingStandBlockEntityMixin",
     "ContainerCoolingMixin",
+    "IItemStackExtensionMixin",
     "InventoryCoolingMixin",
     "ItemEntityCoolingMixin",
-    "MobHeatedItemMixin",
     "ItemStackMixin",
     "ItemStackStackingMixin",
+    "MobHeatedItemMixin",
+    "PlayerMixin",
     "PotionItemMixin",
     "SlotMixin"
   ],
