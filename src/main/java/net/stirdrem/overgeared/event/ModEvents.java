@@ -18,7 +18,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -71,8 +70,6 @@ public class ModEvents {
     private static void handleAnvilDistance(ServerPlayer player, Level level) {
         if (ServerConfig.MAX_ANVIL_DISTANCE.get() == 0) return;
 
-        boolean sableLoaded = ModList.get().isLoaded("sable");
-
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
@@ -81,7 +78,7 @@ public class ModEvents {
 
                 double distSq;
 
-                if (sableLoaded) {
+                if (SableCompat.LOADED) {
                     distSq = SableCompat.distanceSquaredWithSubLevels(level, player.position(), anvilPos.getCenter());
                 } else {
                     distSq = player.blockPosition().distSqr(anvilPos);

@@ -1,30 +1,32 @@
 package net.stirdrem.overgeared.heateditem;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.stirdrem.overgeared.compat.sable.SableCompat;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 import static net.stirdrem.overgeared.util.ItemUtils.copyComponentsExceptHeated;
 import static net.stirdrem.overgeared.util.ItemUtils.getCooledItem;
@@ -33,7 +35,8 @@ public final class HeatedItem {
     // Per-entity last-hit tick to prevent multiple tongs damage per tick
     private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
 
-    private HeatedItem() {}
+    private HeatedItem() {
+    }
 
     public static boolean isHeated(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -89,7 +92,10 @@ public final class HeatedItem {
         // Instant cool if in water
         BlockPos pos = entity.blockPosition();
         BlockState state = level.getBlockState(pos);
-        boolean inWater = state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON);
+        boolean inWater;
+        if (SableCompat.LOADED)
+            inWater = SableCompat.isWater(level, entity.position());
+        else inWater = state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON);
 
         if (!inWater && !hasCooled(stack, level, pos)) return;
 
