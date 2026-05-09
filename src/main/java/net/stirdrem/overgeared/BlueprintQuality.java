@@ -34,17 +34,10 @@ public enum BlueprintQuality implements StringRepresentable {
     }
 
     public static int compare(String q1, String q2) {
-        BlueprintQuality a = fromString(q1);
-        BlueprintQuality b = fromString(q2);
-
-        if (a == NONE && b == NONE)
-            return 0;
-        if (a == NONE)
-            return -1;
-        if (b == NONE)
-            return 1;
-
-        return Integer.compare(a.ordinal(), b.ordinal());
+        return Integer.compare(
+                fromString(q1).ordinal(),
+                fromString(q2).ordinal()
+        );
     }
 
     /**
@@ -76,23 +69,15 @@ public enum BlueprintQuality implements StringRepresentable {
      * Get the previous tier of blueprint quality.
      */
     public static BlueprintQuality getPrevious(BlueprintQuality current) {
-        if (current == NONE)
+        if (current.ordinal() <= POOR.ordinal()) {
             return NONE;
-
-        int index = current.ordinal();
-        if (index - 1 > 0) { // skip NONE
-            return values()[index - 1];
         }
-        return NONE;
+
+        return values()[current.ordinal() - 1];
     }
 
     public static ChatFormatting getColor(String qualityName) {
-        for (BlueprintQuality q : values()) {
-            if (q.name().equalsIgnoreCase(qualityName)) {
-                return q.color; // assuming the color field exists in your enum
-            }
-        }
-        return ChatFormatting.GRAY;
+        return fromString(qualityName).getColor();
     }
 
     public String getDisplayName() {

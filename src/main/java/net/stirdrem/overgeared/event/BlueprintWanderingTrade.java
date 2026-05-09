@@ -32,19 +32,32 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
     public @Nullable MerchantOffer getOffer(Entity entity, RandomSource random) {
 
         ItemStack result = blueprintItem.copy();
+
         BlueprintData blueprintData = result.get(ModComponents.BLUEPRINT_DATA);
+
+        // Create default data if missing
+        if (blueprintData == null) {
+            blueprintData = new BlueprintData(
+                    BlueprintQuality.WELL.getDisplayName(),
+                    "sword",
+                    0
+            );
+        }
+
         // ---------- QUALITY ROLL ----------
         BlueprintQuality quality = rollQuality(random);
 
-
         // ---------- RANDOM TOOL TYPE ----------
         List<ToolType> types = ToolTypeRegistry.getRegisteredTypesAll();
+
         if (!types.isEmpty()) {
             ToolType type = types.get(random.nextInt(types.size()));
+
             BlueprintData newData = blueprintData
                     .withQuality(quality.getDisplayName())
                     .withUses(0)
                     .withToolType(type.getId());
+
             result.set(ModComponents.BLUEPRINT_DATA, newData);
         }
 
@@ -52,8 +65,8 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         ItemCost emeraldCost = getEmeraldCostForQuality(quality);
 
         return new MerchantOffer(
-                emeraldCost,          // Cost A (emeralds)
-                result,               // Result
+                emeraldCost,
+                result,
                 maxUses,
                 traderXp,
                 0.05F
