@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -141,7 +142,7 @@ public abstract class ItemStackMixin {
         int currentDamage = stack.getDamageValue();
         int newDamage = currentDamage + amount;
         int max = stack.getMaxDamage();
-
+        RandomSource random = level.random;
         if (currentDamage < max && newDamage >= max) {
             if (!ServerConfig.ENABLE_QUALITY_BREAK_SYSTEM.get()) {
                 return;
@@ -149,7 +150,7 @@ public abstract class ItemStackMixin {
 
             float breakChance = getBreakChance(stack);
 
-            if (entity.getRandom().nextFloat() < breakChance) {
+            if (random.nextFloat() < breakChance) {
                 return;
             }
 
