@@ -38,8 +38,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -80,7 +82,7 @@ public class ModItemInteractEvents {
     public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
     public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
         Player player = event.getEntity();
@@ -308,7 +310,8 @@ public class ModItemInteractEvents {
 
     private static void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
         if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
-
+        event.setUseItem(TriState.FALSE);
+        event.setUseBlock(TriState.FALSE);
         BlockPos pos = event.getPos();
         SimpleMenuProvider provider = new SimpleMenuProvider(
                 (windowId, playerInv, p) ->
@@ -337,7 +340,8 @@ public class ModItemInteractEvents {
     private static void onUseGrindstone(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack stack, Level level, BlockPos pos) {
         // If crouch required but not crouching, let vanilla grindstone GUI open
         if (ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() && !player.isCrouching()) return;
-
+        event.setUseItem(TriState.FALSE);
+        event.setUseBlock(TriState.FALSE);
         // Grinding recipe (e.g. diamond shard)
         if (hasGrindingRecipe(stack.getItem(), level)) {
             grindItem(player, stack);
