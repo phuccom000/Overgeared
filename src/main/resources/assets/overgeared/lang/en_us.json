@@ -205,6 +205,8 @@
   "tooltip.overgeared.potion_uses": "Tipping Uses Left: %s/%s",
   "jei.overgeared.category.steel_anvil": "How to make Smithing Anvil",
   "jei.overgeared.steel_anvil.description": "Crouch right click on a vanilla Anvil with a Smithing Hammer to convert it to a Smithing Anvil.",
+  "jei.overgeared.category.drafting_table": "Drafting Table",
+  "jei.overgeared.drafting_table.description": "Use the Drafting Table to turn an Empty Blueprint into a Smithing Blueprint for a chosen tool type.",
   "creativetab.overgeared.lingering_arrows_tab": "Fletching and Arrows",
   "container.overgeared.fletching_table": "Fletching",
   "creativetab.overgeared.blueprint_tab": "Smithing Blueprints",
