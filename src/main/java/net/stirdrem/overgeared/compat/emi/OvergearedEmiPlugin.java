@@ -13,11 +13,16 @@ import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+<<<<<<< HEAD
+=======
+import net.minecraft.world.item.alchemy.Potion;
+>>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.Tags;
 
+import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -205,6 +210,43 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             registry.addRecipe(new FletchingEmiRecipe(holder));
         }
 
+<<<<<<< HEAD
+=======
+        // Register per-potion tipped/lingering entries for each arrow type.
+        // Vanilla arrow: arrow → tipped_arrow / lingering_arrow (always shown).
+        // Upgrade arrows (iron/steel/diamond): only when UPGRADE_ARROW_POTION_TOGGLE is enabled.
+        List<Item> arrowItems = new ArrayList<>();
+        arrowItems.add(Items.ARROW); // vanilla always included
+        if (ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get()) {
+            arrowItems.add(ModItems.IRON_UPGRADE_ARROW.get());
+            arrowItems.add(ModItems.STEEL_UPGRADE_ARROW.get());
+            arrowItems.add(ModItems.DIAMOND_UPGRADE_ARROW.get());
+        }
+        for (Item arrowItem : arrowItems) {
+            for (Holder<Potion> potionHolder : BuiltInRegistries.POTION.holders().toList()) {
+                if (potionHolder.value().getEffects().isEmpty()) continue;
+                ResourceLocation potionKey = BuiltInRegistries.POTION.getKey(potionHolder.value());
+                if (potionKey == null) continue;
+                registry.addRecipe(new PotionFletchingEmiRecipe(
+                        arrowItem, potionHolder, potionKey, PotionFletchingEmiRecipe.Variant.TIPPED));
+                registry.addRecipe(new PotionFletchingEmiRecipe(
+                        arrowItem, potionHolder, potionKey, PotionFletchingEmiRecipe.Variant.LINGERING));
+            }
+        }
+
+        // Register Blueprint Cloning — one entry per quality tier (crafting table)
+        for (BlueprintQuality quality : new BlueprintQuality[]{
+                BlueprintQuality.POOR, BlueprintQuality.WELL, BlueprintQuality.EXPERT,
+                BlueprintQuality.PERFECT, BlueprintQuality.MASTER}) {
+            registry.addRecipe(new BlueprintCloningEmiRecipe(quality));
+        }
+
+        // Drafting Table explanation
+        registry.addCategory(DRAFTING_TABLE_CATEGORY);
+        registry.addWorkstation(DRAFTING_TABLE_CATEGORY, DRAFTING_TABLE_WORKSTATION);
+        registry.addRecipe(new DraftingTableEmiRecipe());
+
+>>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
         registry.addCategory(COOLING_CATEGORY);
         registry.addWorkstation(COOLING_CATEGORY, COOLING_WORKSTATION);
 

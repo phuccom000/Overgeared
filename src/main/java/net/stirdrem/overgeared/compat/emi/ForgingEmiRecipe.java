@@ -52,6 +52,19 @@ public class ForgingEmiRecipe implements EmiRecipe {
 
         // Create blueprint stacks for recipes that support blueprints
         this.blueprintStacks = createBlueprintStacks();
+<<<<<<< HEAD
+=======
+
+
+        // surfaces forging recipes that accept one
+        List<EmiIngredient> inputList = new ArrayList<>(recipe.getIngredients().stream()
+                .map(EmiIngredient::of)
+                .toList());
+        if (!blueprintStacks.isEmpty()) {
+            inputList.add(EmiIngredient.of(Ingredient.of(ModItems.BLUEPRINT.get())));
+        }
+        this.inputs = inputList;
+>>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
     }
 
     /**
