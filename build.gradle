@@ -68,7 +68,9 @@ neoForge {
         }
     }
 }
-
+java {
+    withSourcesJar()
+}
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
@@ -170,6 +172,20 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifactId base.archivesName.get()
+            artifact jar
+            artifact sourcesJar
+            from components.java
+
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
