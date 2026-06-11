@@ -290,6 +290,7 @@
   "cast.overgeared.clay_tool_cast": "Clay %s Cast",
   "cast.overgeared.nether_tool_cast": "Nether %s Cast",
   "overgeared.container.recipe_book.forgeable": "Forgeable",
-  "tooltip.overgeared.item_broken": "Broken"
+  "tooltip.overgeared.item_broken": "Broken",
+  "gui.overgeared.jei.category.drafting": "Drafting"
 }
 

@@ -35,7 +35,6 @@ public class PotionFletchingEmiRecipe implements EmiRecipe {
     private static final int SLOT_SIZE = 18;
 
     private final ResourceLocation id;
-    private final Variant variant;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
 
@@ -44,7 +43,6 @@ public class PotionFletchingEmiRecipe implements EmiRecipe {
         String arrowPath = arrowItem.builtInRegistryHolder().key().location().getPath();
         this.id = OvergearedMod.loc("fletching/" + variant.name().toLowerCase()
                 + "_conv/" + arrowPath + "/" + potionKey.getPath());
-        this.variant = variant;
 
         // Input: 1x base arrow (goes in tip slot)
         ItemStack arrowInput = new ItemStack(arrowItem, 1);

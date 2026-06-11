@@ -10,13 +10,14 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-<<<<<<< HEAD
-=======
 import net.minecraft.world.item.alchemy.Potion;
->>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
@@ -97,6 +98,17 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         @Override
         public Component getName() {
             return Component.translatable("gui.overgeared.jei.category.fletching");
+        }
+    };
+    public static final EmiStack DRAFTING_TABLE_WORKSTATION = EmiStack.of(ModBlocks.DRAFTING_TABLE);
+    public static final EmiRecipeCategory DRAFTING_TABLE_CATEGORY = new EmiRecipeCategory(
+            OvergearedMod.loc("drafting"),
+            DRAFTING_TABLE_WORKSTATION,
+            new EmiTexture(OvergearedMod.loc("textures/gui/drafting_table.png"), 0, 0, 16, 16)
+    ) {
+        @Override
+        public Component getName() {
+            return Component.translatable("gui.overgeared.jei.category.drafting");
         }
     };
 
@@ -210,8 +222,6 @@ public class OvergearedEmiPlugin implements EmiPlugin {
             registry.addRecipe(new FletchingEmiRecipe(holder));
         }
 
-<<<<<<< HEAD
-=======
         // Register per-potion tipped/lingering entries for each arrow type.
         // Vanilla arrow: arrow → tipped_arrow / lingering_arrow (always shown).
         // Upgrade arrows (iron/steel/diamond): only when UPGRADE_ARROW_POTION_TOGGLE is enabled.
@@ -246,7 +256,6 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         registry.addWorkstation(DRAFTING_TABLE_CATEGORY, DRAFTING_TABLE_WORKSTATION);
         registry.addRecipe(new DraftingTableEmiRecipe());
 
->>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
         registry.addCategory(COOLING_CATEGORY);
         registry.addWorkstation(COOLING_CATEGORY, COOLING_WORKSTATION);
 

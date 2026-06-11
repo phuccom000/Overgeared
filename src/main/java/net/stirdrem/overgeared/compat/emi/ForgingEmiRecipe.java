@@ -41,20 +41,8 @@ public class ForgingEmiRecipe implements EmiRecipe {
         this.recipe = holder.value();
 
         // Convert ingredients to EMI format
-        this.inputs = recipe.getIngredients().stream()
-                .map(EmiIngredient::of)
-                .toList();
-
-        this.outputs = List.of(EmiStack.of(recipe.getResultItem(null)));
-        ItemStack failureStack = recipe.getFailedResultItem(null).copy();
-        failureStack.set(ModComponents.FAILED_RESULT, true);
-        this.outputFailure = List.of(EmiStack.of(failureStack));
-
         // Create blueprint stacks for recipes that support blueprints
         this.blueprintStacks = createBlueprintStacks();
-<<<<<<< HEAD
-=======
-
 
         // surfaces forging recipes that accept one
         List<EmiIngredient> inputList = new ArrayList<>(recipe.getIngredients().stream()
@@ -64,7 +52,11 @@ public class ForgingEmiRecipe implements EmiRecipe {
             inputList.add(EmiIngredient.of(Ingredient.of(ModItems.BLUEPRINT.get())));
         }
         this.inputs = inputList;
->>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
+
+        this.outputs = List.of(EmiStack.of(recipe.getResultItem(null)));
+        ItemStack failureStack = recipe.getFailedResultItem(null).copy();
+        failureStack.set(ModComponents.FAILED_RESULT, true);
+        this.outputFailure = List.of(EmiStack.of(failureStack));
     }
 
     /**

@@ -77,8 +77,7 @@ public class FletchingEmiRecipe implements EmiRecipe {
         // Match in-game GUI diagonal layout
         int offsetX = 4;
         int offsetY = 4;
-<<<<<<< HEAD
-        
+
         // Tip slot (top-right of diagonal)
         int tipX = offsetX + 36;
         int tipY = offsetY;
@@ -93,44 +92,7 @@ public class FletchingEmiRecipe implements EmiRecipe {
         int featherX = offsetX;
         int featherY = offsetY + SLOT_SIZE * 2;
         widgets.addSlot(EmiIngredient.of(recipe.getFeather()), featherX, featherY);
-        
-        // Arrow 
-=======
 
-        if (variant == Variant.BASE) {
-            // Tip slot (top-right of diagonal)
-            int tipX = offsetX + 36;
-            int tipY = offsetY;
-            widgets.addSlot(EmiIngredient.of(recipe.getTip()), tipX, tipY);
-
-            // Shaft slot (middle-left)
-            int shaftX = offsetX + 18;
-            int shaftY = offsetY + SLOT_SIZE;
-            widgets.addSlot(EmiIngredient.of(recipe.getShaft()), shaftX, shaftY);
-
-            // Feather slot (bottom-left)
-            int featherX = offsetX;
-            int featherY = offsetY + SLOT_SIZE * 2;
-            widgets.addSlot(EmiIngredient.of(recipe.getFeather()), featherX, featherY);
-        } else {
-            EmiIngredient arrow = EmiStack.of(recipe.getDefaultResult().copyWithCount(1));
-            EmiIngredient potion = variant == Variant.TIPPED
-                    ? (recipe.hasPotion() ? EmiIngredient.of(recipe.getPotion())
-                            : EmiStack.of(PotionContents.createItemStack(Items.POTION, Potions.NIGHT_VISION)))
-                    : (recipe.hasPotion() ? EmiIngredient.of(recipe.getPotion())
-                            : EmiStack.of(PotionContents.createItemStack(Items.LINGERING_POTION, Potions.NIGHT_VISION)));
-
-            int shaftX = offsetX + 18;
-            int shaftY = offsetY + SLOT_SIZE;
-            widgets.addSlot(arrow, shaftX, shaftY);
-
-            int potionX = offsetX + 36;
-            int potionY = offsetY + SLOT_SIZE * 2;
-            widgets.addSlot(potion, potionX, potionY);
-        }
-
-        // Arrow
->>>>>>> f185c2b (fix: add missing EMI entries for blueprint cloning, tipped/lingering arrows and forging blueprint usage)
         int arrowX = offsetX + 54;
         int arrowY = offsetY + SLOT_SIZE;
         widgets.addTexture(EmiTexture.EMPTY_ARROW, arrowX, arrowY);
