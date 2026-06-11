@@ -34,7 +34,7 @@ public class BlueprintCloningRecipeMaker {
             ItemStack input = new ItemStack(ModItems.BLUEPRINT.get());
             input.getOrCreateTag().putString("Quality", quality.getId());
 
-            ItemStack output = new ItemStack(ModItems.BLUEPRINT.get(), 1);
+            ItemStack output = new ItemStack(ModItems.BLUEPRINT.get(), 2);
             output.getOrCreateTag().putString("Quality", outputQuality.getId());
 
             Ingredient blueprintIngredient = Ingredient.of(input);
