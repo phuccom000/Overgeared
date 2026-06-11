@@ -131,6 +131,7 @@ public class ServerConfig {
     public static ForgeConfigSpec.BooleanValue ENABLE_CREATIVE_TAB_ITEMS;
 
     public static final ForgeConfigSpec.BooleanValue ENABLE_QUALITY_BREAK_SYSTEM;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> QUALITY_BREAK_BLACKLIST;
 
     public static final ForgeConfigSpec.DoubleValue BREAK_CHANCE_POOR;
     public static final ForgeConfigSpec.DoubleValue BREAK_CHANCE_WELL;
@@ -310,6 +311,9 @@ public class ServerConfig {
         ENABLE_QUALITY_BREAK_SYSTEM = builder
                 .comment("Enable quality-based break chance system")
                 .define("enableQualityBreakSystem", true);
+        QUALITY_BREAK_BLACKLIST = builder
+                .comment("Items or tags that will NOT receive quality-based break chance system")
+                .defineListAllowEmpty("qualityBreakBlacklist", List.of("minecraft:flint_and_steel", "overgeared:fired_tool_cast"), o -> o instanceof String);
 
         BREAK_CHANCE_POOR = builder
                 .comment("Break chance at 0 durability for POOR quality")

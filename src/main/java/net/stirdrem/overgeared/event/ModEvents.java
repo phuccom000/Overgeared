@@ -392,7 +392,7 @@ public class ModEvents {
                 tooltip.add(insertOffset++, qualityComponent);
             }
         }
-        if (isBroken(stack)) {
+        if (isBroken(stack) && ServerConfig.ENABLE_MOD_TOOLTIPS.get()) {
             tooltip.add(insertOffset++,
                     Component.translatable("tooltip.overgeared.item_broken")
                             .withStyle(ChatFormatting.RED)

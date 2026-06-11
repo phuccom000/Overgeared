@@ -45,6 +45,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
@@ -412,200 +414,207 @@ public class ModItemInteractEvents {
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        ItemStack stack = event.getItemStack();
-        Player player = event.getEntity();
         Level world = event.getLevel();
         if (world.isClientSide()) return;
 
-        // 🔹 Check if the player is holding a heated metal and targeting water
-        if (stack.is(ModTags.Items.HEATED_METALS)) {
-            HitResult hit = player.pick(5.0D, 0.0F, false);
-            if (hit.getType() == HitResult.Type.BLOCK) {
-                BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-                BlockState state = world.getBlockState(pos);
-                if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
-                    coolItem(player, stack);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
+        Player player = event.getEntity();
+        ItemStack stack = event.getItemStack();
+
+        if (handleCooling(event, player, stack, world)) return;
+        if (handleGrinding(event, player, stack, world)) return;
+        handleMinigameCleanup(player, world);
+    }
+
+    private static boolean handleCooling(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world) {
+        if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
+
+        HitResult hit = player.pick(5.0D, 0.0F, false);
+        if (hit.getType() != HitResult.Type.BLOCK) return false;
+
+        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
+        BlockState state = world.getBlockState(pos);
+
+        if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
+            coolItem(player, stack);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean handleGrinding(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world) {
+        if (!player.isCrouching()) return false;
+
+        HitResult hit = player.pick(5.0D, 0.0F, false);
+        if (hit.getType() != HitResult.Type.BLOCK) return false;
+
+        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
+        BlockState state = world.getBlockState(pos);
+
+        if (!state.is(ModTags.Blocks.GRINDSTONES)) return false;
+        if (player.getMainHandItem() != stack) return false;
+
+        // Priority order
+        if (handleGrindingRecipe(event, player, stack, world, pos)) return true;
+        if (handlePolishing(event, player, stack, world, pos)) return true;
+        if (handleDurabilityGrinding(event, stack, world, pos)) return true;
+
+        return false;
+    }
+
+    private static boolean handleGrindingRecipe(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world, BlockPos pos) {
+        if (!hasGrindingRecipe(stack.getItem(), world)) return false;
+
+        grindItem(player, stack);
+        playGrindEffects(world, pos);
+
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+        return true;
+    }
+
+    private static boolean handlePolishing(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world, BlockPos pos) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains("Polished") || tag.getBoolean("Polished")) return false;
+
+        ItemStack resultItem;
+
+        if (stack.getCount() > 1) {
+            resultItem = stack.copy();
+            resultItem.setCount(1);
+            stack.shrink(1);
+        } else {
+            resultItem = stack;
+        }
+
+        CompoundTag resultTag = resultItem.getOrCreateTag();
+        resultTag.putBoolean("Polished", true);
+
+        // Quality downgrade if heated
+        if (tag.getBoolean("Heated") && tag.contains("ForgingQuality")) {
+            ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
+            if (quality != null) {
+                ForgingQuality downgraded = quality.getLowerQuality();
+                if (downgraded != null) {
+                    resultTag.putString("ForgingQuality", downgraded.getDisplayName());
                 }
             }
         }
 
-
-        if (!world.isClientSide()) {
-            HitResult hit = player.pick(5.0D, 0.0F, false);
-            BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-            BlockState state = world.getBlockState(pos);
-            if (player.isCrouching() && state.is(ModTags.Blocks.GRINDSTONES)) {
-
-                if (player.getMainHandItem() != stack) {
-                    return;
-                }
-
-                if (hasGrindingRecipe(stack.getItem(), event.getLevel())) {
-                    grindItem(player, stack);
-                    world.playSound(null, player.blockPosition(),
-                            SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
-                            1.0f, 1.2f); // Higher pitch for polishing sound
-                    spawnGrindParticles(world, pos);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
-                    return;
-                }
-                if (!world.isClientSide) {
-                    CompoundTag tag = stack.getTag();
-
-                    if (tag != null && tag.contains("Polished") && !tag.getBoolean("Polished")) {
-
-                        // Create result item (either split or reuse)
-                        ItemStack resultItem;
-
-                        if (stack.getCount() > 1) {
-                            resultItem = stack.copy();
-                            resultItem.setCount(1);
-                            stack.shrink(1);
-                        } else {
-                            resultItem = stack;
-                        }
-
-                        CompoundTag resultTag = resultItem.getOrCreateTag();
-                        resultTag.putBoolean("Polished", true);
-
-                        if (tag.getBoolean("Heated")) {
-                            if (tag.contains("ForgingQuality")) {
-                                ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
-                                if (quality != null) {
-                                    ForgingQuality downgraded = quality.getLowerQuality();
-                                    if (downgraded != null) {
-                                        resultTag.putString("ForgingQuality", downgraded.getDisplayName());
-                                    }
-                                }
-                            }
-                        }
-
-                        // Give item if split case
-                        if (resultItem != stack) {
-                            if (!player.getInventory().add(resultItem)) {
-                                player.drop(resultItem, false);
-                            }
-                        }
-
-                        // Effects (safe to run server-side, will sync)
-                        world.playSound(null, player.blockPosition(),
-                                SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
-                                1.0f, 1.2f);
-                        spawnGrindParticles(world, pos);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                    }
-                }
-
-                if (stack.isDamageableItem() && stack.getDamageValue() > 0) {
-                    if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                        return;
-                    }
-                    Item item = stack.getItem();
-// Check blacklist
-                    ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-                    List<? extends String> blacklist = ServerConfig.GRINDING_BLACKLIST.get();
-
-                    for (String entry : blacklist) {
-                        if (entry.startsWith("#")) {
-                            // Handle tag-based blacklist entries
-                            ResourceLocation tagId = new ResourceLocation(entry.substring(1));
-                            TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
-                            if (stack.is(tag)) {
-                                event.setCancellationResult(InteractionResult.PASS);
-                                event.setCanceled(true);
-                                return;
-                            }
-                        } else {
-                            // Handle direct item blacklist entries
-                            if (itemId != null && itemId.equals(new ResourceLocation(entry))) {
-                                event.setCancellationResult(InteractionResult.PASS);
-                                event.setCanceled(true);
-                                return;
-                            }
-                        }
-                    }
-                    boolean isBlacklisted = GrindingBlacklistReloadListener.isBlacklisted(stack);
-                    if (isBlacklisted) {
-                        event.setCancellationResult(InteractionResult.PASS);
-                        event.setCanceled(true);
-                        return;
-                    }
-
-                    CompoundTag tag = stack.getOrCreateTag();
-                    int reducedCount = tag.getInt("ReducedMaxDurability");
-
-                    // Base vanilla durability
-                    int originalDurability = stack.getItem().getMaxDamage();
-                    // Config multipliers
-                    float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
-                    float grindReduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
-
-                    // Quality multiplier (if any)
-                    float qualityMultiplier = 1.0f;
-                    if (tag.contains("ForgingQuality")) {
-                        qualityMultiplier = QualityHelper.getDurabilityMultiplier(stack);
-                    }
-                    int newOriginalDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
-
-                    // Final durability multiplier, clamped to 10% minimum
-                    float penaltyMultiplier = Math.max(0.1f, 1.0f - (reducedCount * grindReduction));
-
-                    int effectiveMaxDurability = (int) (newOriginalDurability * penaltyMultiplier);
-                    effectiveMaxDurability = Math.max(1, effectiveMaxDurability); // Clamp to avoid zero
-
-                    int currentDamage = stack.getDamageValue();
-
-                    // If already fully repaired relative to reduced max, skip
-                    if (currentDamage <= (newOriginalDurability - effectiveMaxDurability)) {
-                        tag.putInt("ReducedMaxDurability", reducedCount + 1);
-                        stack.setDamageValue(0);
-                        event.getLevel().playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-                        spawnGrindParticles(world, pos);
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                        return;
-                    }
-
-                    float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue(); // e.g., 0.05F for 5%
-                    int theoreticalMaxDurability = (int) (originalDurability * baseMultiplier * qualityMultiplier);
-                    int repairAmount = Math.max(1, (int) (theoreticalMaxDurability * restorePercent));
-
-                    // Respect effective max cap
-                    int newDamage = Math.max(theoreticalMaxDurability - effectiveMaxDurability, currentDamage - repairAmount);
-
-                    stack.setDamageValue(newDamage);
-                    tag.putInt("ReducedMaxDurability", reducedCount + 1);
-                    event.getLevel().playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-                    spawnGrindParticles(world, pos);
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
-                }
-
-            }
+        if (resultItem != stack && !player.getInventory().add(resultItem)) {
+            player.drop(resultItem, false);
         }
-        if (!world.isClientSide()) {
-            ItemStack mainHand = player.getMainHandItem();
-            HitResult hit = player.pick(5.0D, 0.0F, false);
-            BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-            BlockState state = world.getBlockState(pos);
-            // Only hide if MAIN HAND is not a hammer
-            if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) || !state.is(ModTags.Blocks.SMITHING_ANVIL)) {
-                hideMinigame((ServerPlayer) player);
+
+        playGrindEffects(world, pos);
+
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+        return true;
+    }
+
+    private static boolean handleDurabilityGrinding(PlayerInteractEvent event, ItemStack stack, Level world, BlockPos pos) {
+        if (!stack.isDamageableItem() || stack.getDamageValue() <= 0) return false;
+
+        if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return true;
+        }
+
+        if (isBlacklisted(stack)) {
+            event.setCancellationResult(InteractionResult.PASS);
+            event.setCanceled(true);
+            return true;
+        }
+
+        applyDurabilityRepair(stack);
+        playGrindEffects(world, pos);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+        return true;
+    }
+
+    private static boolean isBlacklisted(ItemStack stack) {
+        Item item = stack.getItem();
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+
+        for (String entry : ServerConfig.GRINDING_BLACKLIST.get()) {
+            if (entry.startsWith("#")) {
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(entry.substring(1)));
+                if (stack.is(tag)) return true;
+            } else if (itemId != null && itemId.equals(ResourceLocation.parse(entry))) {
+                return true;
             }
         }
 
+        return GrindingBlacklistReloadListener.isBlacklisted(stack);
+    }
+
+    private static void applyDurabilityRepair(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+
+        int reducedCount = tag.getInt("ReducedMaxDurability");
+        int originalDurability = stack.getItem().getMaxDamage();
+
+        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
+        float reduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
+
+        float qualityMultiplier = tag.contains("ForgingQuality")
+                ? QualityHelper.getDurabilityMultiplier(stack)
+                : 1.0f;
+
+        int adjustedMax = (int) (originalDurability * baseMultiplier * qualityMultiplier);
+
+        float penalty = Math.max(0.1f, 1.0f - (reducedCount * reduction));
+        int effectiveMax = Math.max(1, (int) (adjustedMax * penalty));
+
+        int currentDamage = stack.getDamageValue();
+
+        if (currentDamage <= (adjustedMax - effectiveMax)) {
+            tag.putInt("ReducedMaxDurability", reducedCount + 1);
+            stack.setDamageValue(0);
+            return;
+        }
+
+        float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue();
+        int repairAmount = Math.max(1, (int) (adjustedMax * restorePercent));
+
+        int newDamage = Math.max(adjustedMax - effectiveMax, currentDamage - repairAmount);
+
+        stack.setDamageValue(newDamage);
+        tag.putInt("ReducedMaxDurability", reducedCount + 1);
+    }
+
+    private static void playGrindEffects(Level world, BlockPos pos) {
+        world.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.2f);
+        spawnGrindParticles(world, pos);
+    }
+
+    private static void handleMinigameCleanup(Player player, Level world) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+
+        ItemStack mainHand = player.getMainHandItem();
+        HitResult hit = player.pick(5.0D, 0.0F, false);
+
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            hideMinigame(serverPlayer);
+            return;
+        }
+
+        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
+        BlockState state = world.getBlockState(pos);
+
+        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) ||
+                !state.is(ModTags.Blocks.SMITHING_ANVIL)) {
+            hideMinigame(serverPlayer);
+        }
     }
 
     @SubscribeEvent
     public static void onUsingKnappable(PlayerInteractEvent.RightClickItem event) {
         Player player = event.getEntity();
-        InteractionHand hand = event.getHand();
         ItemStack usedStack = event.getItemStack();
 
         // Only trigger for knappable items
@@ -1245,37 +1254,43 @@ public class ModItemInteractEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickFletching(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
         BlockPos pos = event.getPos();
         Player player = event.getEntity();
+
         if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
-        // Only respond to main-hand to avoid double-open with offhand
+
+        // Main hand only
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
 
         BlockState state = level.getBlockState(pos);
         if (!state.is(Blocks.FLETCHING_TABLE)) return;
 
-        // Optional: sneak to bypass opening (let players interact as normal)
-        // if (player.isShiftKeyDown()) return;
+        // Prevent held item usage (bows, food, shields, etc.)
+        event.setUseItem(Event.Result.DENY);
+        event.setUseBlock(Event.Result.DENY);
 
-        // Client: mark success so the hand anim plays; open screen ONLY on server
         if (level.isClientSide) {
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
             return;
         }
 
-        // Server: open our custom menu via a SimpleMenuProvider (vanilla table has no BE)
         SimpleMenuProvider provider = new SimpleMenuProvider(
                 (windowId, playerInv, p) ->
-                        new FletchingStationMenu(windowId, playerInv, ContainerLevelAccess.create(level, pos)),
+                        new FletchingStationMenu(
+                                windowId,
+                                playerInv,
+                                ContainerLevelAccess.create(level, pos)
+                        ),
                 Component.translatable("container.overgeared.fletching_table")
         );
 
         NetworkHooks.openScreen((ServerPlayer) player, provider, pos);
-        event.setCancellationResult(InteractionResult.sidedSuccess(false));
+
+        event.setCancellationResult(InteractionResult.CONSUME);
         event.setCanceled(true);
     }
 }

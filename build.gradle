@@ -269,7 +269,8 @@ dependencies {
 
     modImplementation("curse.maven:supermartijn642s-config-lib-438332:4715408")
     modImplementation("curse.maven:durability-tooltip-511040:6833215")
-    
+    modImplementation("curse.maven:bots-lib-1062753:7283906")
+    modImplementation("curse.maven:watering-cans-dew-drop-1062863:5550049")
     // Mixin
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     compileOnly "io.github.llamalad7:mixinextras-common:0.3.5"
