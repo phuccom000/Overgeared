@@ -28,8 +28,7 @@ public class KnappingEmiRecipe implements EmiRecipe {
         this.id = holder.id();
         this.recipe = holder.value();
         this.outputs = List.of(EmiStack.of(recipe.getResult()));
-        // Recipe always consumes 1 Rock
-        this.inputs = List.of(EmiStack.of(ModItems.ROCK.get()));
+        this.inputs = List.of(EmiIngredient.of(recipe.getIngredient()));
     }
 
     @Override

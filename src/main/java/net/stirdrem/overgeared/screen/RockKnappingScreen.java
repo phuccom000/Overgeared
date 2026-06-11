@@ -15,8 +15,6 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.networking.packet.KnappingChipC2SPacket;
 import org.jetbrains.annotations.NotNull;
 
-import static net.minecraft.sounds.SoundEvents.STONE_BREAK;
-
 public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu> {
     private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/rock_knapping_gui.png");
     private static final ResourceLocation CHIPPED_TEXTURE = OvergearedMod.loc("textures/gui/blank.png");
@@ -137,7 +135,7 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
         @Override
         public void playDownSound(SoundManager pHandler) {
             if (minecraft != null && minecraft.player != null) {
-                minecraft.player.playSound(STONE_BREAK, 1.0F, 1.0F);
+                minecraft.player.playSound(menu.getSound(), 1.0F, 1.0F);
             }
         }
 

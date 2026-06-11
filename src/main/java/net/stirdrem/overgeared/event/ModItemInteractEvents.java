@@ -838,14 +838,14 @@ public class ModItemInteractEvents {
 
         if (!player.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
 
-            player.level().playSound(
+            /*player.level().playSound(
                     null,
                     player.blockPosition(),
                     SoundEvents.STONE_PLACE,
                     SoundSource.PLAYERS,
                     0.6f,
                     1.0f
-            );
+            );*/
 
             serverPlayer.openMenu(new RockKnappingMenuProvider(), buf -> {
                 ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, mainHand);
