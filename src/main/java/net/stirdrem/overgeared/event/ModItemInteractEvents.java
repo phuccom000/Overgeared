@@ -95,28 +95,24 @@ public class ModItemInteractEvents {
             onUseSmithingHammer(event, player, level, state);
             return;
         }
-
-        if (level.isClientSide) return;
-        if (!(player instanceof ServerPlayer serverPlayer)) return;
-
         // Fletching
         if (state.is(Blocks.FLETCHING_TABLE) && event.getHand() == InteractionHand.MAIN_HAND) {
-            onUseFletching(event, serverPlayer, level);
+            onUseFletching(event, player, level);
         }
         // Heated Ingot on Cauldron (maybe any water-y block later?)
         else if (state.is(Blocks.WATER_CAULDRON) && HeatedItem.isHeated(heldItem)) {
-            onUseCauldron(event, serverPlayer, heldItem, state);
+            onUseCauldron(event, player, heldItem, state, level);
         }
         // Grindstone (intercept before vanilla opens its GUI)
         else if (state.is(ModTags.Blocks.GRINDSTONES) && event.getHand() == InteractionHand.MAIN_HAND
                 && !heldItem.isEmpty()) {
-            onUseGrindstone(event, serverPlayer, heldItem, level, pos);
+            onUseGrindstone(event, player, heldItem, level, pos);
         }
         // Stone
         else {
             for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
                 if (!data.matches(state, heldItem)) continue;
-                onFlintUsedOnStone(event, serverPlayer, heldItem, level, data);
+                onFlintUsedOnStone(event, player, heldItem, level, data);
                 return;
             }
         }
@@ -305,11 +301,14 @@ public class ModItemInteractEvents {
         }
 
         event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
     }
 
     private static void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
         if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
+        if (player.isUsingItem()) {
+            player.stopUsingItem();
+        }
         event.setUseItem(TriState.FALSE);
         event.setUseBlock(TriState.FALSE);
         BlockPos pos = event.getPos();
@@ -320,11 +319,11 @@ public class ModItemInteractEvents {
         );
         player.openMenu(provider, pos);
 
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
         event.setCanceled(true);
     }
 
-    private static void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state) {
+    private static void onUseCauldron(PlayerInteractEvent.RightClickBlock event, Player player, ItemStack heldItem, BlockState state, Level level) {
         if (!HeatedItem.isHeated(heldItem)) return;
 
         IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
@@ -333,7 +332,7 @@ public class ModItemInteractEvents {
         if (waterLevel <= 0) return;
         HeatedItem.setCooledSingle(heldItem, player);
 
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
         event.setCanceled(true);
     }
 
