@@ -379,11 +379,13 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.SMITHING_ANVIL.get()),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL.get()),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
+        if (ServerConfig.ENABLE_TIER_A.get())
+            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL.get()),
+                    ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL.get()),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
+        if (ServerConfig.ENABLE_TIER_B.get())
+            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL.get()),
+                    ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
         registration.addRecipeCatalyst(new ItemStack(Blocks.FLETCHING_TABLE),
                 FletchingCategory.FLETCHING_RECIPE_TYPE);

@@ -131,8 +131,10 @@ public class ModCreativeModeTabs {
 */
                         pOutput.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
                         pOutput.accept(ModBlocks.SMITHING_ANVIL.get());
-                        pOutput.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
-                        pOutput.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+                        if (ServerConfig.ENABLE_TIER_A.get())
+                            pOutput.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
+                        if (ServerConfig.ENABLE_TIER_B.get())
+                            pOutput.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
                         pOutput.accept(ModBlocks.STEEL_BLOCK.get());
                         pOutput.accept(ModBlocks.DRAFTING_TABLE.get());
                         pOutput.accept(ModBlocks.ALLOY_FURNACE.get());
