@@ -183,9 +183,9 @@ dependencies {
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
-    modRuntimeOnly("curse.maven:tmrv-1194921:6717421")
-    compileOnly("dev.emi:emi-forge:1.1.22+1.20.1:api")
-    modRuntimeOnly("dev.emi:emi-forge:1.1.22+1.20.1")
+    modRuntimeOnly("curse.maven:tmrv-1194921:8145843")
+    compileOnly("dev.emi:emi-forge:1.1.24+1.20.1:api")
+    modRuntimeOnly("dev.emi:emi-forge:1.1.24+1.20.1")
 
     modRuntimeOnly("curse.maven:curios-309927:6418456")
     modRuntimeOnly("curse.maven:lionfish-api-1001614:5922047")

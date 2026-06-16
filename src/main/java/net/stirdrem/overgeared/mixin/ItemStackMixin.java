@@ -142,7 +142,7 @@ public abstract class ItemStackMixin {
                     boolean isMain = stack == player.getMainHandItem();
                     boolean isOff = stack == player.getOffhandItem();
 
-                    stack.setCount(0); // Remove old heated item
+                    stack.shrink(stack.getCount()); // Remove old heated item
 
                     if (isMain) {
                         player.setItemInHand(InteractionHand.MAIN_HAND, newStack);

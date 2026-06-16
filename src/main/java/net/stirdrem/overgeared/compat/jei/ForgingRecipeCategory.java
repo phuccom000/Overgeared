@@ -16,6 +16,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -81,9 +82,20 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         String tierRaw = recipe.getAnvilTier();
         AnvilTier tierName = AnvilTier.fromDisplayName(tierRaw);
-        Component tierText = Component.translatable("tooltip.overgeared.recipe.tier")
-                .append(Component.literal(" "))
-                .append(Component.translatable(tierName.getLang()));
+
+        MutableComponent tierText =
+                Component.translatable("tooltip.overgeared.recipe.tier")
+                        .append(Component.literal(" "));
+
+        if (tierName != null) {
+            tierText = tierText.append(
+                    Component.translatable(tierName.getLang())
+            );
+        } else {
+            tierText = tierText.append(
+                    Component.literal(tierRaw)
+            );
+        }
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
             guiGraphics.blit(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
@@ -106,90 +118,147 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, ForgingRecipe recipe, IFocusGroup focuses) {
-        int gridWidth = 3; // Always 3x3 grid
+    public void setRecipe(
+            IRecipeLayoutBuilder builder,
+            ForgingRecipe recipe,
+            IFocusGroup focuses
+    ) {
+        try {
+            setupRecipe(builder, recipe, focuses);
+        } catch (Exception e) {
+
+            OvergearedMod.LOGGER.error(
+                    "JEI failed recipe: {}",
+                    recipe.getId(),
+                    e
+            );
+
+        }
+    }
+
+    public void setupRecipe(IRecipeLayoutBuilder builder, ForgingRecipe recipe, IFocusGroup focuses) {
+
+        int gridWidth = 3;
         int gridHeight = 3;
+
         int recipeWidth = recipe.width;
         int recipeHeight = recipe.height;
 
-        NonNullList<ForgingRecipe.ForgingIngredient> forgingIngredients =
+        NonNullList<ForgingRecipe.ForgingIngredient> ingredients =
                 recipe.getForgingIngredients();
 
         int offsetX = (gridWidth - recipeWidth) / 2;
         int offsetY = getOffsetY(gridHeight, gridWidth, recipeHeight, recipeWidth);
 
-        for (int gridY = 0; gridY < gridHeight; gridY++) {
-            for (int gridX = 0; gridX < gridWidth; gridX++) {
 
-                var slotBuilder = builder.addSlot(
-                        RecipeIngredientRole.INPUT,
-                        23 + gridX * 18,
-                        1 + gridY * 18
-                );
+        for (int y = 0; y < recipeHeight; y++) {
+            for (int x = 0; x < recipeWidth; x++) {
 
-                int recipeX = gridX - offsetX;
-                int recipeY = gridY - offsetY;
+                int slotX = 23 + (x + offsetX) * 18;
+                int slotY = 1 + (y + offsetY) * 18;
 
-                boolean insideRecipe =
-                        recipeX >= 0 && recipeY >= 0 &&
-                                recipeX < recipeWidth &&
-                                recipeY < recipeHeight;
+                int index = y * recipeWidth + x;
 
-                if (insideRecipe) {
+                if (index >= ingredients.size())
+                    continue;
 
-                    int recipeIndex = recipeY * recipeWidth + recipeX;
 
-                    if (recipeIndex < forgingIngredients.size()) {
+                ForgingRecipe.ForgingIngredient forgingIngredient =
+                        ingredients.get(index);
 
-                        ForgingRecipe.ForgingIngredient forgingIngredient =
-                                forgingIngredients.get(recipeIndex);
 
-                        Ingredient ingredient = forgingIngredient.ingredient();
-                        ItemStack[] stacks = ingredient.getItems();
+                Ingredient ingredient = forgingIngredient.ingredient();
 
-                        if (stacks.length > 0) {
-                            List<ItemStack> displayStacks = new ArrayList<>();
+                if (ingredient.isEmpty())
+                    continue;
 
-                            for (ItemStack stack : stacks) {
-                                ItemStack copy = stack.copy();
 
-                                if (forgingIngredient.requiresHeated()) {
-                                    copy.getOrCreateTag().putBoolean("Heated", true);
-                                }
+                List<ItemStack> stacks = new ArrayList<>();
 
-                                displayStacks.add(copy);
-                            }
+                for (ItemStack stack : ingredient.getItems()) {
 
-                            slotBuilder.addItemStacks(displayStacks);
-                        } else {
-                            slotBuilder.addItemStack(ItemStack.EMPTY);
-                        }
+                    if (stack.isEmpty())
+                        continue;
+
+                    ItemStack copy = stack.copy();
+
+                    if (forgingIngredient.requiresHeated()) {
+                        copy.getOrCreateTag()
+                                .putBoolean("Heated", true);
                     }
 
-                } else {
-                    slotBuilder.addItemStack(ItemStack.EMPTY);
+                    stacks.add(copy);
+                }
+
+
+                if (!stacks.isEmpty()) {
+                    builder.addSlot(
+                            RecipeIngredientRole.INPUT,
+                            slotX,
+                            slotY
+                    ).addItemStacks(stacks);
                 }
             }
         }
 
-        // Rest of your code (blueprint and output slots) remains the same...
-        //BLUEPRINT SLOT
-        builder.addSlot(RecipeIngredientRole.CATALYST, 1, 19)
-                .addItemStacks(createBlueprintStacksForRecipe(recipe));
+
+        // blueprint
+
+        List<ItemStack> blueprints =
+                createBlueprintStacksForRecipe(recipe);
+
+        if (!blueprints.isEmpty()) {
+            builder.addSlot(
+                    RecipeIngredientRole.CATALYST,
+                    1,
+                    19
+            ).addItemStacks(blueprints);
+        }
+
+
+        Minecraft mc = Minecraft.getInstance();
+
+        if (mc.level == null)
+            return;
+
+
+        ItemStack result =
+                recipe.getResultItem(mc.level.registryAccess());
+
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 19)
-                    .addItemStack(recipe.getResultItem(null));
-        } else {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 10)
-                    .addItemStack(recipe.getResultItem(null));
-            ItemStack failedStack = recipe.getFailedResultItem(null).copy();
-            CompoundTag failedTag = failedStack.getOrCreateTag();
-            failedTag.putBoolean("failedResult", true);
-            failedStack.setTag(failedTag);
 
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 28)
-                    .addItemStack(failedStack);
+            builder.addSlot(
+                    RecipeIngredientRole.OUTPUT,
+                    117,
+                    19
+            ).addItemStack(result);
+
+        } else {
+
+            builder.addSlot(
+                    RecipeIngredientRole.OUTPUT,
+                    117,
+                    10
+            ).addItemStack(result);
+
+
+            ItemStack failed =
+                    recipe.getFailedResultItem(mc.level.registryAccess())
+                            .copy();
+
+            if (!failed.isEmpty()) {
+
+                failed.getOrCreateTag()
+                        .putBoolean("failedResult", true);
+
+
+                builder.addSlot(
+                        RecipeIngredientRole.OUTPUT,
+                        117,
+                        28
+                ).addItemStack(failed);
+            }
         }
     }
 
