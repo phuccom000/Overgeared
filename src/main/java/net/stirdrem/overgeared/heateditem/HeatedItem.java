@@ -85,10 +85,6 @@ public final class HeatedItem {
 
     // Called from ItemEntityCoolingMixin — handles water detection + timer cooling
     public static void tickItemEntity(ItemStack stack, Level level, ItemEntity entity) {
-        Item cooled = getCooledItem(stack.getItem(), level);
-        boolean hasComponent = Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
-        if (cooled == null && !hasComponent) return;
-
         // Instant cool if in water
         BlockPos pos = entity.blockPosition();
         BlockState state = level.getBlockState(pos);
@@ -98,6 +94,8 @@ public final class HeatedItem {
         else inWater = state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON);
 
         if (!inWater && !hasCooled(stack, level, pos)) return;
+
+        Item cooled = getCooledItem(stack.getItem(), level);
 
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.SMOKE,
@@ -116,11 +114,8 @@ public final class HeatedItem {
     }
 
     public static void handleCoolingLivingEntity(ItemStack stack, Level level, LivingEntity lEntity) {
-        Item cooled = getCooledItem(stack.getItem(), level);
-        boolean hasComponent = Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
-        if (cooled == null && !hasComponent) return;
         if (!hasCooled(stack, level, lEntity.blockPosition())) return;
-
+        Item cooled = getCooledItem(stack.getItem(), level);
         setCooled(stack, lEntity, cooled);
     }
 
@@ -132,10 +127,9 @@ public final class HeatedItem {
         if (level.isClientSide) return false;
         ItemStack stack = slot.getItem();
 
-        Item cooled = getCooledItem(stack.getItem(), level);
-        if (cooled == null && !Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) return false;
         if (!hasCooled(stack, level, skipThrottle)) return false;
 
+        Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled != null) {
             ItemStack newStack = new ItemStack(cooled, stack.getCount());
             copyComponentsExceptHeated(stack, newStack);
@@ -150,10 +144,9 @@ public final class HeatedItem {
         if (level.isClientSide) return false;
         ItemStack stack = handler.getStackInSlot(index);
 
-        Item cooled = getCooledItem(stack.getItem(), level);
-        if (cooled == null && !Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT))) return false;
         if (!hasCooled(stack, level)) return false;
 
+        Item cooled = getCooledItem(stack.getItem(), level);
         if (cooled != null) {
             ItemStack newStack = new ItemStack(cooled, stack.getCount());
             copyComponentsExceptHeated(stack, newStack);
