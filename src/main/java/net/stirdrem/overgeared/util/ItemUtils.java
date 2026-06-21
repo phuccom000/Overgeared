@@ -7,6 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.components.ModComponents;
@@ -19,7 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class for item-related helper methods.
@@ -30,18 +33,25 @@ public final class ItemUtils {
         // Utility class - no instantiation
     }
 
-    /**
-     * Gets the cooled Item for a heated Item.
-     *
-     * @param heatedItem The heated item
-     * @param level      The level for recipe lookup
-     * @return The cooled item, or null if no recipe found
-     */
+    private static volatile RecipeManager cooledItemCacheRecipeManager;
+    private static final Map<Item, Item> COOLED_ITEM_CACHE = new ConcurrentHashMap<>();
+
     @Nullable
     public static Item getCooledItem(@Nullable Item heatedItem, @NotNull Level level) {
         if (heatedItem == null || level == null) return null;
-        ItemStack result = getCooledItem(new ItemStack(heatedItem), level);
-        return result.isEmpty() ? heatedItem : result.getItem();
+        if (level.isClientSide) {
+            ItemStack result = getCooledItem(new ItemStack(heatedItem), level);
+            return result.isEmpty() ? heatedItem : result.getItem();
+        }
+        RecipeManager recipeManager = level.getRecipeManager();
+        if (recipeManager != cooledItemCacheRecipeManager) {
+            COOLED_ITEM_CACHE.clear();
+            cooledItemCacheRecipeManager = recipeManager;
+        }
+        return COOLED_ITEM_CACHE.computeIfAbsent(heatedItem, item -> {
+            ItemStack result = getCooledItem(new ItemStack(item), level);
+            return result.isEmpty() ? item : result.getItem();
+        });
     }
 
     /**

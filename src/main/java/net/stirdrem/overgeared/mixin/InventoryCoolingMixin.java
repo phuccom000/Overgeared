@@ -8,7 +8,6 @@ import net.stirdrem.overgeared.heateditem.HeatedItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,27 +17,12 @@ public abstract class InventoryCoolingMixin {
 
     @Shadow @Final public Player player;
 
-    @Unique
-    private boolean overgeared$hasHeatedItems = false;
-
-    // Flag when heated items enter the inventory
-    @Inject(method = "setItem", at = @At("HEAD"))
-    private void onSetItem(int slot, ItemStack stack, CallbackInfo ci) {
-        if (HeatedItem.isHeated(stack)) {
-            overgeared$hasHeatedItems = true;
-        }
-    }
-
-    // Inventory.tick() runs every player tick — scan only when flagged
     @Inject(method = "tick", at = @At("TAIL"))
     private void onInventoryTick(CallbackInfo ci) {
-        if (!overgeared$hasHeatedItems) return;
-
         Level level = player.level();
         if (level.isClientSide) return;
 
         Inventory inv = (Inventory) (Object) this;
-        boolean found = false;
         boolean damaged = false;
 
         for (int i = 0; i < inv.getContainerSize(); i++) {
@@ -46,9 +30,6 @@ public abstract class InventoryCoolingMixin {
             if (stack.isEmpty()) continue;
             if (!HeatedItem.isHeated(stack)) continue;
 
-            found = true;
-
-            // Damage + tongs only once per tick
             if (!damaged) {
                 HeatedItem.tickInventory(stack, level, player);
                 damaged = true;
@@ -56,7 +37,5 @@ public abstract class InventoryCoolingMixin {
 
             HeatedItem.handleCoolingLivingEntity(stack, level, player);
         }
-
-        overgeared$hasHeatedItems = found;
     }
 }
