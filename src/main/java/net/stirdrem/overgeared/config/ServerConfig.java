@@ -19,6 +19,8 @@ public class ServerConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
     public static final ModConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
     public static final ModConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
+    public static final ModConfigSpec.BooleanValue ENABLE_TIER_A;
+    public static final ModConfigSpec.BooleanValue ENABLE_TIER_B;
 
     // --- Heated Items ---
     public static final ModConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
@@ -147,6 +149,8 @@ public class ServerConfig {
         ENABLE_STONE_TO_ANVIL = builder.comment("Allow shift-right-clicking stone to convert into Stone Smithing Anvil").define("enableStoneToAnvil", true);
         ENABLE_ANVIL_TO_SMITHING = builder.comment("Allow shift-right-clicking vanilla anvil to convert into Smithing Anvil").define("enableAnvilToSmithing", true);
         ENABLE_BLUEPRINT_FORGING = builder.comment("Requires blueprint to obtain higher quality items").define("enableBlueprintForging", true);
+        ENABLE_TIER_A = builder.comment("Enable Tier A Smithing Anvil to appears").define("enableTierA", false);
+        ENABLE_TIER_B = builder.comment("Enable Tier B Smithing Anvil to appears").define("enableTierB", false);
         builder.pop();
 
         builder.push("Stone Smithing Anvil");

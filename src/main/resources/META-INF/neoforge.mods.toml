@@ -14,24 +14,31 @@ modId = "${mod_id}"
 version = "${mod_version}"
 enumExtensions = "META-INF/enumextensions.json"
 
-[[dependencies.${mod_id}]]
+[[dependencies.${ mod_id }]]
 modId = "neoforge"
 type = "required"
 versionRange = "[${neo_version},)"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.${ mod_id }]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft_version_range}"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.${ mod_id }]]
 modId = "quark"
 type = "optional"
 versionRange = "[4,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${ mod_id }]]
+modId = "dragonsurvival"
+type = "optional"
+versionRange = "[2.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
