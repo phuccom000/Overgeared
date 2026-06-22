@@ -43,6 +43,10 @@ public abstract class ItemStackMixin {
             return;
         }
 
+        if (!stack.isCorrectToolForDrops(state)) {
+            return;
+        }
+
         float baseSpeed = cir.getReturnValueF();
 
         ForgingQuality quality = stack.get(ModComponents.FORGING_QUALITY);
