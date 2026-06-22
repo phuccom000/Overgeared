@@ -54,6 +54,9 @@ public abstract class ItemStackMixin {
             cir.setReturnValue(0.0F);
             return;
         }
+        if (!stack.isCorrectToolForDrops(state)) {
+            return;
+        }
         if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
             float baseSpeed = cir.getReturnValueF();
             float multiplier = QualityHelper.getMiningSpeedMultiplier(stack);
