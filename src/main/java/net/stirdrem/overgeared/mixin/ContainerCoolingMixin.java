@@ -20,9 +20,6 @@ import java.util.List;
 @Mixin(ServerPlayer.class)
 public class ContainerCoolingMixin {
 
-    @Unique
-    private AbstractContainerMenu overgeared$lastMenu = null;
-
     // Runs before sendAllDataToRemote — cools items before the client ever sees them
     @Inject(method = "initMenu", at = @At("HEAD"))
     private void onInitMenu(AbstractContainerMenu menu, CallbackInfo ci) {
@@ -42,8 +39,6 @@ public class ContainerCoolingMixin {
     private void tickContainerCooling(CallbackInfo ci) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         AbstractContainerMenu menu = player.containerMenu;
-
-        overgeared$lastMenu = menu;
 
         // No external container open — inventoryTick handles the player's own inventory
         if (menu == player.inventoryMenu) return;

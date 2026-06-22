@@ -30,13 +30,6 @@ public final class ItemUtils {
         // Utility class - no instantiation
     }
 
-    /**
-     * Gets the cooled Item for a heated Item.
-     *
-     * @param heatedItem The heated item
-     * @param level      The level for recipe lookup
-     * @return The cooled item, or null if no recipe found
-     */
     @Nullable
     public static Item getCooledItem(@Nullable Item heatedItem, @NotNull Level level) {
         if (heatedItem == null || level == null) return null;
