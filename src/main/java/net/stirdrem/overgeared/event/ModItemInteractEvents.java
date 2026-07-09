@@ -50,7 +50,9 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.BaseSmithingAnvilBlock;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.BaseSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -510,16 +512,16 @@ public class ModItemInteractEvents {
         BlockPos pos = BlockPos.of(syncData.getLong("anvilPos"));
         ClientAnvilMinigameData.putOccupiedAnvil(pos, owner);
 
-        // ✅ Only start minigame if this client is the new owner and it was waiting
+        //  Only start minigame if this client is the new owner and it was waiting
         if (Minecraft.getInstance().player != null
                 && Minecraft.getInstance().player.getUUID().equals(owner)
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
             BlockEntity be = Minecraft.getInstance().level.getBlockEntity(pos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
-                Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
+            if (be instanceof BaseSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
+                Optional<?> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> {
-                    ClientAnvilMinigameData.clearPendingMinigame(); // ✅ Done
+                    ClientAnvilMinigameData.clearPendingMinigame(); //  Done
                 });
             }
         }
@@ -536,7 +538,7 @@ public class ModItemInteractEvents {
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
+            if (be instanceof BaseSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality().getDisplayName();
             }
@@ -610,7 +612,7 @@ public class ModItemInteractEvents {
         // Only hide if MAIN HAND is not a hammer
         HitResult hit = player.pick(5.0D, 0.0F, false);
         BlockState hitState = world.getBlockState(((BlockHitResult) hit).getBlockPos());
-        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) || !hitState.is(ModTags.Blocks.SMITHING_ANVIL)) {
+        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) && !(hitState.getBlock() instanceof BaseSmithingAnvilBlock)) {
             if (!ServerConfig.REQUIRE_CROUCH_FOR_FORGING_GRINDING.get() || player.isCrouching()) {
                 hideMinigame((ServerPlayer) player);
             }

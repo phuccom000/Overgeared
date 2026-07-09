@@ -7,13 +7,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.TierASmithingAnvil;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.TierASmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class TierASmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class TierASmithingAnvilBlockEntity extends SteelSmithingAnvilBlockEntity {
 
     public TierASmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super((TierASmithingAnvil) pBlockState.getBlock(), AnvilTier.ABOVE_A, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
@@ -31,23 +29,5 @@ public class TierASmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
             return new TierASmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
         }
         return null;
-    }
-
-    @Override
-    protected void craftItem() {
-        super.craftItem();
-        super.craftItemWithBlueprint();
-    }
-
-    @Override
-    public boolean hasRecipe() {
-        return super.hasRecipeWithBlueprint();
-    }
-
-    @Override
-    protected ForgingQuality determineForgingQuality() {
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
-            return super.determineForgingQualityNoBlueprint();
-        } else return super.determineForgingQuality();
     }
 }

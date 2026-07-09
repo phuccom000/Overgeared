@@ -6,7 +6,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -51,7 +50,7 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     }
 
     @Override
-    protected void craftItem() {
+    public void craftItem() {
         super.craftItem(); // Perform regular crafting logic
         if (ServerConfig.STONE_ANVIL_MAX_USES.get() == 0) return;
         craftCount++;

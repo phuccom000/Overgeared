@@ -3,8 +3,6 @@ package net.stirdrem.overgeared.block.custom;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,7 +21,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Fallable;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -45,13 +42,12 @@ import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.packet.PacketSendCounterC2SPacket;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
+import net.stirdrem.overgeared.util.ParticleUtils;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Random;
-import org.joml.Vector3f;
 
 import java.util.UUID;
 
-public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements Fallable {
+public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock implements Fallable {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
@@ -63,12 +59,14 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         tier = anvilTier;
     }
 
+    @Override
     public ForgingQuality getQuality() {
         // Return current quality or default if null
         return quality != null ? quality : ForgingQuality.NONE;
     }
 
-    public static void setQuality(ForgingQuality quality) {
+    @Override
+    public void setQuality(ForgingQuality quality) {
         AbstractSmithingAnvil.quality = quality;
     }
 
@@ -161,7 +159,8 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     AnvilMinigameEvents.resetPopUps();
                     String hitQuality = AnvilMinigameEvents.handleHit();
                     // Send the quality result to server
-                    PacketDistributor.sendToServer(new PacketSendCounterC2SPacket(hitQuality, pos));
+                    PacketDistributor.sendToServer(new PacketSendCounterC2SPacket(hitQuality, pos,
+                            ModSounds.FORGING_FAILED.getId(), ModSounds.FORGING_COMPLETE.getId(), ModSounds.ANVIL_HIT.getId()));
                     AnvilMinigameEvents.speedUp();
                     return ItemInteractionResult.SUCCESS;
                 } else if (!anvil.hasQuality() && !anvil.needsMinigame()) {
@@ -223,7 +222,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     // Process the hammer hit
                     held.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                     anvil.increaseForgingProgress(level, pos, state);
-                    spawnAnvilParticles(level, pos);
+                    ParticleUtils.spawnAnvilParticles(level, pos);
 
                     // Play appropriate sound based on hits remaining
                     if (anvil.getHitsRemaining() == 1) {
@@ -248,28 +247,6 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
 
         player.openMenu(anvil, pos);
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
-    }
-
-    public static void spawnAnvilParticles(Level level, BlockPos pos) {
-        if (level instanceof ServerLevel serverLevel) {
-
-            Random random = new Random();
-            for (int i = 0; i < 6; i++) {
-                double offsetX = 0.5 + (random.nextFloat() - 0.5);
-                double offsetY = 1.0 + random.nextFloat() * 0.5;
-                double offsetZ = 0.5 + (random.nextFloat() - 0.5);
-                double velocityX = (random.nextFloat() - 0.5) * 0.1;
-                double velocityY = random.nextFloat() * 0.1;
-                double velocityZ = (random.nextFloat() - 0.5) * 0.1;
-
-                serverLevel.sendParticles(new DustParticleOptions(new Vector3f(1.0f, 0.5f, 0.0f), 1.0f),
-                        pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
-                        velocityX, velocityY, velocityZ, 1);
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                        pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
-                        velocityX, velocityY, velocityZ, 1);
-            }
-        }
     }
 
     @Nullable

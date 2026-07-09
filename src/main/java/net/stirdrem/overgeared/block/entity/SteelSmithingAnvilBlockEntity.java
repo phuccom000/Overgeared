@@ -5,9 +5,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.SteelSmithingAnvilMenu;
@@ -17,6 +19,12 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
 
     public SteelSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super((SteelSmithingAnvil) pBlockState.getBlock(), AnvilTier.IRON, ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
+    }
+
+    public SteelSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
+                                         BlockPos pPos, BlockState pBlockState) {
+        super(anvilBlock, tier, type, pPos, pBlockState);
+
     }
 
     @Override
@@ -34,7 +42,7 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     }
 
     @Override
-    protected void craftItem() {
+    public void craftItem() {
         super.craftItem();
         super.craftItemWithBlueprint();
     }

@@ -12,7 +12,6 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
@@ -21,7 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -34,6 +32,7 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.BaseSmithingAnvilBlock;
 import net.stirdrem.overgeared.compat.polymorph.Polymorph;
 import net.stirdrem.overgeared.components.BlueprintData;
 import net.stirdrem.overgeared.components.ModComponents;
@@ -48,22 +47,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider, WorldlyContainer {
+public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvilBlockEntity implements MenuProvider, WorldlyContainer {
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
-
-    protected final ItemStackHandler itemHandler = new ItemStackHandler(12) {
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-            if (level == null || level.isClientSide())
-                return;
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-            if (slot < 9 && HeatedItem.isHeated(getStackInSlot(slot))) {
-                hasHeatedItems = true;
-            }
-        }
-    };
 
     protected final ContainerData data;
     protected int progress;
@@ -75,7 +61,6 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected AnvilTier anvilTier;
     protected long sessionStartTime = 0L; // optional, for timeout logic
     protected ItemStack failedResult;
-    protected Player player;
     protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
@@ -91,7 +76,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
                                             BlockPos pPos, BlockState pBlockState) {
-        super(type, pPos, pBlockState);
+        super(anvilBlock, type, pPos, pBlockState);
         this.anvilTier = tier;
         this.anvilBlock = anvilBlock;
         this.data = new ContainerData() {
@@ -124,16 +109,16 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         stack.set(ModComponents.FORGING_QUALITY, quality);
     }
 
-    public ItemStack getRenderStack(int index) {
-        return itemHandler.getStackInSlot(index);
+    @Override
+    protected void onSlotChanged(int slot) {
+        if (slot < 9 &&
+                HeatedItem.isHeated(itemHandler.getStackInSlot(slot))) {
+            hasHeatedItems = true;
+        }
     }
 
-    public void drops() {
-        SimpleContainer inventory = new SimpleContainer(itemHandler.getSlots());
-        for (int i = 0; i < itemHandler.getSlots(); i++) {
-            inventory.setItem(i, itemHandler.getStackInSlot(i));
-        }
-        Containers.dropContents(this.level, this.worldPosition, inventory);
+    public ItemStack getRenderStack(int index) {
+        return itemHandler.getStackInSlot(index);
     }
 
     @Override
@@ -230,14 +215,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
+    @Override
     public void increaseForgingProgress(Level pLevel, BlockPos pPos, BlockState pState) {
         Optional<ForgingRecipe> recipe = getCurrentRecipe();
         if (hasRecipe()) {
@@ -248,14 +226,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
             if (hasProgressFinished()) {
                 craftItem();
-                resetProgress();
+                resetProgress(anvilBlock);
             }
         } else {
-            resetProgress();
+            resetProgress(anvilBlock);
         }
     }
 
-    public void resetProgress() {
+    public void resetProgress(BaseSmithingAnvilBlock anvilBlock) {
         progress = 0;
         maxProgress = 0;
         lastRecipe = null;
@@ -263,12 +241,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (minigameOn)
                 lastCraftTick = level.getGameTime();
             ModEvents.resetMinigameForPlayer((ServerPlayer) player);
-            AbstractSmithingAnvil.setQuality(null);
+            anvilBlock.setQuality(null);
         }
         player = null;
     }
 
-    protected void craftItem() {
+    @Override
+    public void craftItem() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty())
             return;
@@ -449,12 +428,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         this.itemHandler.setStackInSlot(BLUEPRINT_SLOT, blueprint);
     }
 
+    @Override
     public boolean isFailedResult() {
         ItemStack result = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
 
         return ItemStack.isSameItem(result, failedResult);
     }
 
+    @Override
     public boolean hasRecipe() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty())
@@ -514,6 +495,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
 
+    @Override
     public Optional<ForgingRecipe> getCurrentRecipe() {
         return getCurrentRecipeHolder().map(RecipeHolder::value);
     }
@@ -604,7 +586,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
             if (!ItemStack.isSameItemSameComponents(currentBlueprint, lastBlueprint)) {
                 if (progress > 0 || lastRecipe != null || isMinigameOn()) {
-                    resetProgress();
+                    resetProgress(anvilBlock);
                     setMinigameOn(false);
                     OvergearedMod.LOGGER.debug("Blueprint changed at {}, minigame reset", pos);
                 }
@@ -614,7 +596,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             Optional<ForgingRecipe> currentRecipeOpt = getCurrentRecipe();
             if (currentRecipeOpt.isEmpty()) {
                 if (progress > 0 || lastRecipe != null) {
-                    resetProgress();
+                    resetProgress(anvilBlock);
                 }
                 return;
             }
@@ -635,7 +617,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
 
             if (recipeChanged) {
-                resetProgress();
+                resetProgress(anvilBlock);
                 lastRecipe = currentRecipe;
                 return;
             }
@@ -649,19 +631,20 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
                 if (hasProgressFinished()) {
                     craftItem();
-                    resetProgress();
+                    resetProgress(anvilBlock);
                 }
             } else {
                 if (progress > 0 || maxProgress > 0) {
-                    resetProgress();
+                    resetProgress(anvilBlock);
                 }
             }
         } catch (Exception e) {
             OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
-            resetProgress();
+            resetProgress(anvilBlock);
         }
     }
 
+    @Override
     public int getHitsRemaining() {
         return hitRemains;
     }
@@ -712,6 +695,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return recipe.matches(recipeInput, level);
     }
 
+    @Override
     protected ForgingQuality determineForgingQuality() {
         ForgingQuality quality = anvilBlock.getQuality();
         if (quality == null)
@@ -791,6 +775,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return quality;
     }
 
+    @Override
     protected ForgingQuality determineForgingQualityNoBlueprint() {
         // Get quality from anvil or use default if null
         ForgingQuality quality = anvilBlock.getQuality();
@@ -830,6 +815,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             return quality;
     }
 
+    @Override
     public ForgingQuality minigameQuality() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty()) {
@@ -846,6 +832,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             return recipe.getQualityDifficulty();
     }
 
+    @Override
     public ForgingQuality qualityFromBlueprint() {
         ForgingQuality quality = anvilBlock.getQuality();
         if (quality == null) {
@@ -918,12 +905,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         super.onChunkUnloaded();
     }
 
+    @Override
     public void setOwner(UUID uuid) {
         ownerUUID = uuid;
         sessionStartTime = level.getGameTime();
         setChanged();
     }
 
+    @Override
     public void clearOwner() {
         ownerUUID = null;
         sessionStartTime = 0L;
@@ -946,6 +935,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         occupiedAnvils.put(pos, me);
     }
 
+    @Override
     public boolean hasQuality() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty())
@@ -957,6 +947,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return recipe.hasQuality();
     }
 
+    @Override
     public boolean needsMinigame() {
         Optional<ForgingRecipe> recipeOptional = getCurrentRecipe();
         if (recipeOptional.isEmpty())
@@ -982,14 +973,17 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return null; // Not found
     }
 
+    @Override
     public UUID getOwnerUUID() {
         return ownerUUID;
     }
 
+    @Override
     public boolean isMinigameOn() {
         return minigameOn;
     }
 
+    @Override
     public void setMinigameOn(boolean value) {
         this.minigameOn = value;
         setChanged(); // mark dirty for save

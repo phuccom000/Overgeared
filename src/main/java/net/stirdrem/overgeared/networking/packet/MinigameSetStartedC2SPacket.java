@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.BaseSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
 import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerAnvilPositions;
@@ -32,7 +32,8 @@ public record MinigameSetStartedC2SPacket(BlockPos pos) implements CustomPacketP
     public static void handle(MinigameSetStartedC2SPacket payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
-            if (!(player.level().getBlockEntity(payload.pos) instanceof AbstractSmithingAnvilBlockEntity anvilEntity)) return;
+            if (!(player.level().getBlockEntity(payload.pos) instanceof BaseSmithingAnvilBlockEntity anvilEntity))
+                return;
             AnvilMinigameEvents.setMinigameStarted(payload.pos, true);
             PacketDistributor.sendToPlayer(player, new MinigameSetStartedS2CPacket(payload.pos));
             playerAnvilPositions.put(player.getUUID(), payload.pos);

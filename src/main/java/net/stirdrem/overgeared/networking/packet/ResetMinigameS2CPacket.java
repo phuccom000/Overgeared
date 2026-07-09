@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.BaseSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
@@ -31,7 +31,7 @@ public record ResetMinigameS2CPacket(BlockPos anvilPos) implements CustomPacketP
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
             BlockEntity be = player.level().getBlockEntity(payload.anvilPos);
-            if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) return;
+            if (!(be instanceof BaseSmithingAnvilBlockEntity anvil)) return;
             String quality = anvil.minigameQuality().getDisplayName();
             OvergearedMod.LOGGER.debug(
                     "Resetting minigame for {} at anvil {} with quality {}",

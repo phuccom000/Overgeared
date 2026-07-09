@@ -137,13 +137,13 @@ dependencies {
 
     implementation "curse.maven:create-328085:7963363"
     api("dev.ryanhcode.sable:sable-common-${project.minecraft_version}:${project.sable_version}")
-    runtimeOnly "curse.maven:sable-1312371:8007005"
+    //runtimeOnly "curse.maven:sable-1312371:8007005"
     jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:[${project.sable_companion_version},)")) {
         version {
             prefer project.sable_companion_version
         }
     }
-    implementation "maven.modrinth:create-aeronautics:1.1.3+mc1.21.1"
+    //implementation "maven.modrinth:create-aeronautics:1.1.3+mc1.21.1"
     compileOnly "curse.maven:wooden-tools-are-dumb-736942:5695358"
     implementation "curse.maven:selene-499980:7708176"
     runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7206981"
