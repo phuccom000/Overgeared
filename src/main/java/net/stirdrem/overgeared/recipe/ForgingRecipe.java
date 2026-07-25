@@ -207,8 +207,14 @@ public class ForgingRecipe implements Recipe<Container> {
         return result.copy();
     }
 
+    public boolean hasFailedResult() {
+        return failedResult != null
+                && !failedResult.isEmpty()
+                && !failedResult.is(result.getItem());
+    }
+
     public ItemStack getFailedResultItem(RegistryAccess registryAccess) {
-        return failedResult == null || failedResult.isEmpty() || failedResult.is(result.getItem()) ? ItemStack.EMPTY : failedResult.copy();
+        return hasFailedResult() ? failedResult.copy() : ItemStack.EMPTY;
     }
 
     @Override

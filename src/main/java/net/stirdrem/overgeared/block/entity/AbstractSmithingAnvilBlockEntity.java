@@ -547,7 +547,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
 
-        return canInsertItemIntoOutputSlot(resultStack)
+        return canInsertItemIntoOutputSlot(resultStack, recipe)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
 
@@ -586,7 +586,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         ItemStack resultStack = recipe.getResultItem(level.registryAccess());
-        return canInsertItemIntoOutputSlot(resultStack)
+        return canInsertItemIntoOutputSlot(resultStack, recipe)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
 
@@ -609,9 +609,15 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return cachedRecipe;
     }
 
-    protected boolean canInsertItemIntoOutputSlot(ItemStack stackToInsert) {
+    protected boolean canInsertItemIntoOutputSlot(ItemStack stackToInsert, ForgingRecipe currentRecipe) {
         ItemStack existing = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
-        return (existing.isEmpty() || ItemStack.isSameItemSameTags(existing, stackToInsert));
+
+        if (!existing.isEmpty() && currentRecipe != null && currentRecipe.hasFailedResult()) {
+            return false;
+        }
+
+        return existing.isEmpty()
+                || ItemStack.isSameItemSameTags(existing, stackToInsert);
     }
 
     protected boolean canInsertAmountIntoOutputSlot(int count) {
