@@ -53,11 +53,14 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         Blocks.IRON_BLOCK
                 );
 
-        this.tag(BlockTags.NEEDS_STONE_TOOL)
-                .remove(Blocks.IRON_ORE)
-                .remove(Blocks.DEEPSLATE_IRON_ORE)
-                .remove(Blocks.RAW_IRON_BLOCK)
-                .remove(Blocks.IRON_BLOCK);
+        /*this.tag(BlockTags.NEEDS_STONE_TOOL)
+                .remove(
+                        Blocks.IRON_ORE,
+                        Blocks.DEEPSLATE_IRON_ORE,
+                        Blocks.RAW_IRON_BLOCK,
+                        Blocks.IRON_BLOCK
+                );*/
+
 
         this.tag(BlockTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
@@ -69,18 +72,13 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                 .add(Blocks.ANVIL
                 );
 
-        this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL);
-
         this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
                 .addTag(BlockTags.NEEDS_IRON_TOOL)
                 .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
-                .remove(ModTags.Blocks.NEEDS_COPPER_TOOL);
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
 
         this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
-                .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .remove(ModTags.Blocks.NEEDS_STEEL_TOOL);
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
 
         this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
@@ -88,7 +86,13 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
         this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .add(
+                        Blocks.RAW_IRON_BLOCK,
+                        Blocks.IRON_ORE,
+                        Blocks.DEEPSLATE_IRON_ORE,
+                        Blocks.IRON_BLOCK
+                );
 
         this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)

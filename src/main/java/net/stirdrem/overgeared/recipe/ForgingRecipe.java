@@ -191,8 +191,14 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return result.copy();
     }
 
+    public boolean hasFailedResult() {
+        return failedResult != null
+                && !failedResult.isEmpty()
+                && !failedResult.is(result.getItem());
+    }
+
     public ItemStack getFailedResultItem(HolderLookup.Provider registries) {
-        return failedResult == null || failedResult.isEmpty() || failedResult.is(result.getItem()) ? ItemStack.EMPTY : failedResult.copy();
+        return hasFailedResult() ? ItemStack.EMPTY : failedResult.copy();
     }
 
     @Override
