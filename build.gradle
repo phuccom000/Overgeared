@@ -80,6 +80,10 @@ repositories {
         dir 'libs'
     }
     maven {
+        name = "Sleeping Town"
+        url = "https://repo.sleeping.town/"
+    }
+    maven {
         url "https://cursemaven.com"
         content {
             includeGroup "curse.maven"
@@ -185,7 +189,7 @@ dependencies {
     //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
     modRuntimeOnly("curse.maven:tmrv-1194921:8145843")
     compileOnly("dev.emi:emi-forge:1.1.24+1.20.1:api")
-    modRuntimeOnly("dev.emi:emi-forge:1.1.24+1.20.1")
+    modRuntimeOnly("dev.emi:emi-forge:1.1.23+1.20.1")
 
     modRuntimeOnly("curse.maven:curios-309927:6418456")
     modRuntimeOnly("curse.maven:lionfish-api-1001614:5922047")

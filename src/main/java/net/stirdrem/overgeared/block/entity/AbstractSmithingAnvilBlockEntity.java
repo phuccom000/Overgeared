@@ -658,10 +658,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         setChanged(level, worldPosition, getBlockState());
     }
 
+
     public void tick(Level lvl, BlockPos pos, BlockState st) {
         if (!pos.equals(this.worldPosition)) return; // sanity check
         tickHeatedIngredients(lvl);
-        if (!needsRecipeUpdate) return;
+        //if (!needsRecipeUpdate) return;
         try {
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
