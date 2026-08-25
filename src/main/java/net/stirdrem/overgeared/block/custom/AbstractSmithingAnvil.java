@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -130,10 +132,14 @@ public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock imple
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
+    public TagKey<Item> hammerTag() {
+        return ModTags.Items.SMITHING_HAMMERS;
+    }
+
     @Override
     public ItemInteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos,
                                            Player player, InteractionHand hand, BlockHitResult hit) {
-        boolean isHammer = held.is(ModTags.Items.SMITHING_HAMMERS);
+        boolean isHammer = held.is(hammerTag());
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
@@ -160,7 +166,7 @@ public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock imple
                     String hitQuality = AnvilMinigameEvents.handleHit();
                     // Send the quality result to server
                     PacketDistributor.sendToServer(new PacketSendCounterC2SPacket(hitQuality, pos,
-                            ModSounds.FORGING_FAILED.getId(), ModSounds.FORGING_COMPLETE.getId(), ModSounds.ANVIL_HIT.getId()));
+                            ModSounds.ANVIL_HIT.getId(), ModSounds.FORGING_COMPLETE.getId(), ModSounds.FORGING_FAILED.getId()));
                     AnvilMinigameEvents.speedUp();
                     return ItemInteractionResult.SUCCESS;
                 } else if (!anvil.hasQuality() && !anvil.needsMinigame()) {

@@ -5,7 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -27,6 +29,7 @@ import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
 public class StoneSmithingAnvil extends AbstractSmithingAnvil {
@@ -136,4 +139,11 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
         }
     }
 
+    @Override
+    public TagKey<Item> hammerTag() {
+        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+            return ModTags.Items.STONE_SMITHING_HAMMERS;
+        }
+        return super.hammerTag();
+    }
 }

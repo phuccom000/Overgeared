@@ -3,6 +3,8 @@ package net.stirdrem.overgeared.block.custom;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -21,6 +23,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
 public class SteelSmithingAnvil extends AbstractSmithingAnvil {
@@ -89,5 +93,13 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
                     (level, pos, state, blockEntity) -> blockEntity.tick(level, pos, state));
         }
         return null;
+    }
+
+    @Override
+    public TagKey<Item> hammerTag() {
+        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+            return ModTags.Items.IRON_SMITHING_HAMMERS;
+        }
+        return super.hammerTag();
     }
 }

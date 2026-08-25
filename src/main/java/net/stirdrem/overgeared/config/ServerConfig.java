@@ -19,6 +19,7 @@ public class ServerConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
     public static final ModConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
     public static final ModConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
+    public static final ModConfigSpec.BooleanValue ENABLE_TIERED_HAMMERS;
     public static final ModConfigSpec.BooleanValue ENABLE_TIER_A;
     public static final ModConfigSpec.BooleanValue ENABLE_TIER_B;
 
@@ -57,8 +58,7 @@ public class ServerConfig {
     // --- Tool/Blueprint Settings ---
     public static final ModConfigSpec.ConfigValue<List<? extends String>> AVAILABLE_TOOL_TYPES;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_TOOL_TYPES;
-    public static final ModConfigSpec.IntValue MASTER_MAX_USE;
-    public static final ModConfigSpec.IntValue PERFECT_MAX_USE;
+
     public static final ModConfigSpec.IntValue EXPERT_MAX_USE;
     public static final ModConfigSpec.IntValue WELL_MAX_USE;
     public static final ModConfigSpec.IntValue POOR_MAX_USE;
@@ -149,6 +149,7 @@ public class ServerConfig {
         ENABLE_STONE_TO_ANVIL = builder.comment("Allow shift-right-clicking stone to convert into Stone Smithing Anvil").define("enableStoneToAnvil", true);
         ENABLE_ANVIL_TO_SMITHING = builder.comment("Allow shift-right-clicking vanilla anvil to convert into Smithing Anvil").define("enableAnvilToSmithing", true);
         ENABLE_BLUEPRINT_FORGING = builder.comment("Requires blueprint to obtain higher quality items").define("enableBlueprintForging", true);
+        ENABLE_TIERED_HAMMERS = builder.comment("Requires specific hammers to forge on specific anvils").define("enableTieredHammerForging", false);
         ENABLE_TIER_A = builder.comment("Enable Tier A Smithing Anvil to appears").define("enableTierA", false);
         ENABLE_TIER_B = builder.comment("Enable Tier B Smithing Anvil to appears").define("enableTierB", false);
         builder.pop();
@@ -301,8 +302,6 @@ public class ServerConfig {
 
         EXPERT_ABOVE_INCREASE_BLUEPRINT = builder.comment("Only increase blueprint's use if you get Expert or above in minigame.").define("expertAboveIncreaseBlueprintToggle", true);
 
-        MASTER_MAX_USE = builder.comment("Uses required to reach the next quality after Master").defineInRange("masterMaxUse", 0, 0, Integer.MAX_VALUE);
-        PERFECT_MAX_USE = builder.comment("Uses required to reach the next quality after Perfect").defineInRange("perfectMaxUse", 50, 0, 1000);
         EXPERT_MAX_USE = builder.comment("Uses required to reach the next quality after Expert").defineInRange("expertMaxUse", 20, 0, 1000);
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);

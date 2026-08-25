@@ -94,7 +94,7 @@ public class ModItemInteractEvents {
 
         // Smithing
         if (heldItem.is(ModTags.Items.SMITHING_HAMMERS) && event.getHand() == InteractionHand.MAIN_HAND) {
-            onUseSmithingHammer(event, player, level, state);
+            onUseSmithingHammer(heldItem, event, player, level, state);
             return;
         }
         // Fletching
@@ -120,7 +120,7 @@ public class ModItemInteractEvents {
         }
     }
 
-    public static void onUseSmithingHammer(PlayerInteractEvent.RightClickBlock event, Player player, Level level, BlockState state) {
+    public static void onUseSmithingHammer(ItemStack heldItem, PlayerInteractEvent.RightClickBlock event, Player player, Level level, BlockState state) {
         BlockPos pos = event.getPos();
 
         if (level.isClientSide()) {
@@ -225,6 +225,14 @@ public class ModItemInteractEvents {
         }
         if (!ServerConfig.ENABLE_MINIGAME.get()) return;
         if (!(player instanceof ServerPlayer serverPlayer)) return;
+        if (state.getBlock() instanceof AbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.wrong_hammer")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
 
         // Already used
         if (currentOwner != null) {

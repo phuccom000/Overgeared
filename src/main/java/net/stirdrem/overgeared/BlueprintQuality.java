@@ -13,8 +13,8 @@ public enum BlueprintQuality implements StringRepresentable {
     POOR("poor", 10, ChatFormatting.RED, () -> ServerConfig.POOR_MAX_USE),
     WELL("well", 15, ChatFormatting.YELLOW, () -> ServerConfig.WELL_MAX_USE),
     EXPERT("expert", 20, ChatFormatting.BLUE, () -> ServerConfig.EXPERT_MAX_USE),
-    PERFECT("perfect", 25, ChatFormatting.GOLD, () -> ServerConfig.PERFECT_MAX_USE),
-    MASTER("master", 30, ChatFormatting.LIGHT_PURPLE, () -> ServerConfig.MASTER_MAX_USE); // Final tier
+    PERFECT("perfect", 25, ChatFormatting.GOLD, null),
+    MASTER("master", 30, ChatFormatting.LIGHT_PURPLE, null); // Final tier
 
     private final String id;
     private final int defaultUse;
