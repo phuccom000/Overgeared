@@ -20,6 +20,7 @@ public class ServerConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
     public static final ForgeConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_TIERED_HAMMERS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_TIER_A;
     public static final ForgeConfigSpec.BooleanValue ENABLE_TIER_B;
 
@@ -154,6 +155,7 @@ public class ServerConfig {
         ENABLE_STONE_TO_ANVIL = builder.comment("Allow shift-right-clicking stone to convert into Stone Smithing Anvil").define("enableStoneToAnvil", true);
         ENABLE_ANVIL_TO_SMITHING = builder.comment("Allow shift-right-clicking vanilla anvil to convert into Smithing Anvil").define("enableAnvilToSmithing", true);
         ENABLE_BLUEPRINT_FORGING = builder.comment("Requires blueprint to obtain higher quality items").define("enableBlueprintForging", true);
+        ENABLE_TIERED_HAMMERS = builder.comment("Requires specific hammers to forge on specific anvils").define("enableTieredHammerForging", false);
         ENABLE_TIER_A = builder.comment("Enable Tier A Smithing Anvil to appears").define("enableTierA", false);
         ENABLE_TIER_B = builder.comment("Enable Tier B Smithing Anvil to appears").define("enableTierB", false);
         builder.pop();

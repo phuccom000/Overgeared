@@ -221,6 +221,14 @@ public class ModItemInteractEvents {
 
         if (level.isClientSide) return;
         if (!(player instanceof ServerPlayer serverPlayer)) return;
+        if (clickedState.getBlock() instanceof AbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
+            serverPlayer.sendSystemMessage(
+                    Component.translatable("message.overgeared.wrong_hammer")
+                            .withStyle(ChatFormatting.RED),
+                    true
+            );
+            return;
+        }
 
         UUID playerUUID = player.getUUID();
 

@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -17,6 +18,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -96,12 +98,15 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
     }
 
+    public TagKey<Item> hammerTag() {
+        return ModTags.Items.SMITHING_HAMMERS;
+    }
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos,
                                  Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
-        boolean isHammer = held.is(ModTags.Items.SMITHING_HAMMERS);  // Tag-based check
+        boolean isHammer = held.is(hammerTag());  // Tag-based check
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) {
             return InteractionResult.PASS;

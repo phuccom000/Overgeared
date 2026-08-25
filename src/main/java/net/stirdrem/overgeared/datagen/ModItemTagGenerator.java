@@ -115,7 +115,27 @@ public class ModItemTagGenerator extends ItemTagsProvider {
                 .add(
                         ModItems.SMITHING_HAMMER.get(),
                         ModItems.COPPER_SMITHING_HAMMER.get()
-                );
+                )
+                .addTag(ModTags.Items.STONE_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.IRON_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_A_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_B_SMITHING_HAMMERS)
+        ;
+        this.tag(ModTags.Items.STONE_SMITHING_HAMMERS)
+                .add(ModItems.COPPER_SMITHING_HAMMER.get())
+                .addTag(ModTags.Items.IRON_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_A_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_B_SMITHING_HAMMERS);
+        this.tag(ModTags.Items.IRON_SMITHING_HAMMERS)
+                .add(ModItems.SMITHING_HAMMER.get())
+                .addTag(ModTags.Items.TIER_A_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_B_SMITHING_HAMMERS);
+
+        this.tag(ModTags.Items.TIER_A_SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TIER_B_SMITHING_HAMMERS);
+
+        this.tag(ModTags.Items.TIER_B_SMITHING_HAMMERS);
+
         this.tag(ItemTags.create(ResourceLocation.tryBuild("forge", "ingots/steel")))
                 .add(ModItems.STEEL_INGOT.get());
         this.tag(ItemTags.create(ResourceLocation.tryBuild("forge", "nuggets/steel")))

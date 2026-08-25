@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -203,7 +202,7 @@ public class CastFurnaceBlockEntity extends BaseContainerBlockEntity implements 
         if (outTag == null) outTag = new CompoundTag();
         outTag.putBoolean("Heated", true);
         output.setTag(outTag);
-        
+
 
         return output;
     }

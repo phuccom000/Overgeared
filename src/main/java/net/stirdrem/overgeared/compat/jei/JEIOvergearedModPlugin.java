@@ -27,6 +27,7 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.*;
 import net.stirdrem.overgeared.screen.*;
+import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,7 +53,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         Item item = output.getItem();
 
         if (output.is(net.minecraftforge.common.Tags.Items.ARMORS)) return "armor";
-        if (output.is(net.stirdrem.overgeared.util.ModTags.Items.TOOL_PARTS)) return "tool_head";
+        if (output.is(ModTags.Items.TOOL_PARTS)) return "tool_head";
         if (output.is(net.minecraftforge.common.Tags.Items.TOOLS)) return "tools";
 
         if (item == ModItems.IRON_PLATE.get()

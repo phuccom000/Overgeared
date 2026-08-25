@@ -2,6 +2,8 @@ package net.stirdrem.overgeared.block.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -19,6 +21,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
 public class SteelSmithingAnvil extends AbstractSmithingAnvil {
@@ -38,8 +42,6 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
 
     // Z-axis oriented shape
     private static final VoxelShape Z_AXIS_AABB = Shapes.or(Z1, Z2, Z3, Z4, Z5);
-
-    private static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     public SteelSmithingAnvil(AnvilTier tier, Properties properties) {
         super(tier, properties);
@@ -90,5 +92,12 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
         return null;
     }
 
+    @Override
+    public TagKey<Item> hammerTag() {
+        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+            return ModTags.Items.IRON_SMITHING_HAMMERS;
+        }
+        return super.hammerTag();
+    }
 
 }

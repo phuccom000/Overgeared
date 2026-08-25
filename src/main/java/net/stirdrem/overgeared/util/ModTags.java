@@ -32,6 +32,10 @@ public class ModTags {
         public static final TagKey<Item> HEATED_METALS = tag("heated_metals");
         public static final TagKey<Item> HOT_ITEMS = tag("hot_items");
         public static final TagKey<Item> SMITHING_HAMMERS = tag("smithing_hammers");
+        public static final TagKey<Item> STONE_SMITHING_HAMMERS = tag("stone_smithing_hammers");
+        public static final TagKey<Item> IRON_SMITHING_HAMMERS = tag("iron_smithing_hammers");
+        public static final TagKey<Item> TIER_A_SMITHING_HAMMERS = tag("tier_a_smithing_hammers");
+        public static final TagKey<Item> TIER_B_SMITHING_HAMMERS = tag("tier_b_smithing_hammers");
         public static final TagKey<Item> TOOL_CAST = tag("tool_casts");
         public static final TagKey<Item> KNAPPABLE = tag("knappables");
         public static final TagKey<Item> IRON_PLATES = tag("iron_plates");

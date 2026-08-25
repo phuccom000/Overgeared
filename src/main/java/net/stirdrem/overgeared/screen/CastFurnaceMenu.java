@@ -8,10 +8,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.common.ForgeHooks;
-import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.CastFurnaceBlockEntity;
-import net.stirdrem.overgeared.block.entity.NetherAlloySmelterBlockEntity;
-import net.stirdrem.overgeared.screen.ModMenuTypes;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import net.stirdrem.overgeared.util.ModTags;
 

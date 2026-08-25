@@ -4,7 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -24,6 +26,7 @@ import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
 public class StoneSmithingAnvil extends AbstractSmithingAnvil {
@@ -51,10 +54,6 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
     // Combined composite shapes
     private static final VoxelShape SHAPE_Z = Shapes.or(Z1, Z2);
     private static final VoxelShape SHAPE_X = Shapes.or(X1, X2);
-
-    // Z-axis oriented shape
-    private static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
-
 
     public StoneSmithingAnvil(Properties properties) {
         super(AnvilTier.STONE, properties);
@@ -131,4 +130,11 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
         }
     }
 
+    @Override
+    public TagKey<Item> hammerTag() {
+        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+            return ModTags.Items.STONE_SMITHING_HAMMERS;
+        }
+        return super.hammerTag();
+    }
 }
