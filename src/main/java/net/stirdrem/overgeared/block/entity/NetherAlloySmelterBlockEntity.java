@@ -30,7 +30,6 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import net.stirdrem.overgeared.recipe.NetherAlloySmeltingRecipe;
-import net.stirdrem.overgeared.recipe.NetherAlloySmeltingRecipe;
 import net.stirdrem.overgeared.recipe.ShapedNetherAlloySmeltingRecipe;
 import net.stirdrem.overgeared.screen.NetherAlloySmelterMenu;
 import org.jetbrains.annotations.NotNull;
@@ -222,7 +221,67 @@ public class NetherAlloySmelterBlockEntity extends BaseContainerBlockEntity impl
 
         for (int i = 0; i < INPUT_SLOTS; i++) {
             ItemStack input = itemHandler.getStackInSlot(i);
-            if (!input.isEmpty()) input.shrink(1);
+
+            if (input.isEmpty()) {
+                continue;
+            }
+
+            // Get the crafting remainder before consuming the item.
+            ItemStack remainder = input.getCraftingRemainingItem();
+
+            // Consume one input item.
+            input.shrink(1);
+
+            if (remainder.isEmpty()) {
+                continue;
+            }
+
+            // If the input stack is now empty, put the remainder
+            // directly back into the same slot.
+            if (input.isEmpty()) {
+                itemHandler.setStackInSlot(i, remainder);
+                continue;
+            }
+
+            // Otherwise, try to put the remainder into another input slot.
+
+            for (int j = 0; j < INPUT_SLOTS; j++) {
+                ItemStack target = itemHandler.getStackInSlot(j);
+
+                // Empty slot
+                if (target.isEmpty()) {
+                    itemHandler.setStackInSlot(j, remainder);
+                    break;
+                }
+
+                // Same item/components and room for the remainder
+                if (ItemStack.isSameItemSameTags(target, remainder)
+                        && target.getCount() < target.getMaxStackSize()) {
+
+                    int amount = Math.min(
+                            remainder.getCount(),
+                            target.getMaxStackSize() - target.getCount()
+                    );
+
+                    target.grow(amount);
+                    remainder.shrink(amount);
+
+                    if (remainder.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+
+            // No room for the remainder -> drop it into the world.
+            if (!remainder.isEmpty() && level != null && !level.isClientSide) {
+                Containers.dropItemStack(
+                        level,
+                        worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.0,
+                        worldPosition.getZ() + 0.5,
+                        remainder
+                );
+            }
         }
 
         if (!level.isClientSide && xp > 0.0F) {
