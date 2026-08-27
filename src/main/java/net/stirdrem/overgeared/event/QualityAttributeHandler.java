@@ -49,6 +49,8 @@ public class QualityAttributeHandler {
 
                 modifyAttribute(event, attribute, value.amount(), value.operation(), quality);
             }
+
+        stack.set(ModComponents.FORGING_QUALITY, quality);
     }
 
     public static boolean matches(ItemStack stack, List<QualityTarget> targets) {

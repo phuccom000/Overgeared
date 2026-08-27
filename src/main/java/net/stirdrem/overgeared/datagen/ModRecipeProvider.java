@@ -153,8 +153,6 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
         oreSmelting(pWriter, COPPER_SMELTABLES, RecipeCategory.MISC, ModItems.HEATED_COPPER_INGOT.get(), 0, 140, "copper_ingot");
         oreBlasting(pWriter, IRON_SOURCE, RecipeCategory.MISC, ModItems.HEATED_IRON_INGOT.get(), 0.7f, 100, "iron_ingot");
         oreBlasting(pWriter, COPPER_SOURCE, RecipeCategory.MISC, ModItems.HEATED_COPPER_INGOT.get(), 0.7f, 100, "copper_ingot");
-        oreSmelting(pWriter, IRON_SOURCE, RecipeCategory.MISC, Items.IRON_INGOT, 0.7f, 200, "iron_ingot");
-        oreSmelting(pWriter, COPPER_SOURCE, RecipeCategory.MISC, Items.COPPER_INGOT, 0.7f, 200, "copper_ingot");
         oreSmelting(pWriter, IRON_HEADS, RecipeCategory.MISC, Items.IRON_NUGGET, 0.1f, 200, null);
         oreBlasting(pWriter, IRON_HEADS, RecipeCategory.MISC, Items.IRON_NUGGET, 0.1f, 100, null);
         oreSmelting(pWriter, GOLDEN_HEADS, RecipeCategory.MISC, Items.GOLD_NUGGET, 0.1f, 200, null);
