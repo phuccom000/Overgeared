@@ -240,7 +240,6 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
             // Input stack still exists, so try to put the remainder
             // into another input slot.
             if (!remainder.isEmpty()) {
-                boolean inserted = false;
 
                 for (int j = 0; j < 4; j++) {
                     ItemStack target = itemHandler.getStackInSlot(j);
@@ -261,7 +260,6 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
                         remainder.shrink(amount);
 
                         if (remainder.isEmpty()) {
-                            inserted = true;
                             break;
                         }
                     }
