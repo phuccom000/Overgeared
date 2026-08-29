@@ -2,7 +2,6 @@ package net.stirdrem.overgeared.datagen;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
@@ -172,16 +171,6 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> pWriter) {
-        CompoundTag nbtTag = new CompoundTag();
-        nbtTag.putString("heat",
-                "200");
-
-        // oreCampfire(pWriter, STEEL_SMELTABLES, RecipeCategory.MISC,
-        // ModItems.STEEL_INGOT.get(), 0.7f, 140, "");
-        // oreCampfire(pWriter, IRON_INGOT, RecipeCategory.MISC,
-        // ModItems.HEATED_IRON_INGOT.get(), 0.5f, 140, "iron_ingot");
-        // oreCampfire(pWriter, STEEL_INGOT, RecipeCategory.MISC,
-        // ModItems.HEATED_STEEL_INGOT.get(), 0.7f, 140, "steel_ingot");
         oreBlasting(pWriter, STEEL_SMELTABLES, RecipeCategory.MISC, ModItems.HEATED_CRUDE_STEEL.get(), 0, 100,
                 "steel_ingot");
         oreBlasting(pWriter, COPPER_SMELTABLES, RecipeCategory.MISC, ModItems.HEATED_COPPER_INGOT.get(), 0, 70,
