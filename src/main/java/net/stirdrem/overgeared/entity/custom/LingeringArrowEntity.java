@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.entity.custom;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.AreaEffectCloudEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
@@ -13,13 +13,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.stirdrem.overgeared.util.PotionColorHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -60,7 +60,7 @@ public class LingeringArrowEntity extends ArrowEntity {
         }
     }
 
-    @Override
+    /*@Override
     protected void onCollision(HitResult result) {
         super.onCollision(result);
         if (!getWorld().isClient) {
@@ -72,7 +72,7 @@ public class LingeringArrowEntity extends ArrowEntity {
                 makeAreaOfEffectCloud(stack, effects, result);
             }
         }
-    }
+    }*/
 
     @Override
     protected void onBlockHit(BlockHitResult result) {
@@ -87,21 +87,23 @@ public class LingeringArrowEntity extends ArrowEntity {
         }
     }
 
+    @Override
+    protected void onEntityHit(EntityHitResult result) {
+        super.onEntityHit(result);
+
+        if (!getWorld().isClient) {
+            ItemStack stack = this.referenceStack;
+            List<StatusEffectInstance> effects =
+                    PotionColorHelper.getAllEffects(stack.getNbt());
+
+            if (!effects.isEmpty()) {
+                makeAreaOfEffectCloud(stack, effects, result);
+            }
+        }
+    }
+
     private void makeAreaOfEffectCloud(ItemStack stack, List<StatusEffectInstance> effects, HitResult result) {
-        Vec3d hit = result.getPos();
-
-        // Compute vertical motion ratio
-        Vec3d motion = this.getVelocity();
-        double verticalRatio = motion.y / motion.length(); // -1 to 1
-
-        // Map verticalRatio to offset: more vertical ➜ larger downward offset
-        double offset = verticalRatio > 0 ? -verticalRatio * 0.5 : -0.2;
-
-        double cloudY = hit.y + offset + 0.25;
-        double cloudX = hit.x;
-        double cloudZ = hit.z;
-
-        AreaEffectCloudEntity cloud = new AreaEffectCloudEntity(getWorld(), cloudX, cloudY, cloudZ);
+        AreaEffectCloudEntity cloud = getAreaEffectCloudEntity(result);
         Entity owner = getOwner();
         if (owner instanceof LivingEntity le) {
             cloud.setOwner(le);
@@ -131,6 +133,24 @@ public class LingeringArrowEntity extends ArrowEntity {
         }
 
         ((net.minecraft.server.world.ServerWorld) getWorld()).spawnEntity(cloud);
+    }
+
+    private @NotNull AreaEffectCloudEntity getAreaEffectCloudEntity(HitResult result) {
+        Vec3d hit = result.getPos();
+
+        // Compute vertical motion ratio
+        Vec3d motion = this.getVelocity();
+        double verticalRatio = motion.y / motion.length(); // -1 to 1
+
+        // Map verticalRatio to offset: more vertical ➜ larger downward offset
+        double offset = verticalRatio > 0 ? -verticalRatio * 0.5 : -0.2;
+
+        double cloudY = hit.y + offset + 0.25;
+        double cloudX = hit.x;
+        double cloudZ = hit.z;
+
+        AreaEffectCloudEntity cloud = new AreaEffectCloudEntity(getWorld(), cloudX, cloudY, cloudZ);
+        return cloud;
     }
 
     private void makeParticle(int amount) {

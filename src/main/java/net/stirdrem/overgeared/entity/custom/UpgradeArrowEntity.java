@@ -29,7 +29,6 @@ import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.PotionColorHelper;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -89,6 +88,13 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
     protected void onEntityHit(EntityHitResult result) {
         setDamage(getDamage() * getArrowTier().getDamageBonus());
         super.onEntityHit(result);
+        createLingeringCloud(result);
+    }
+
+    @Override
+    protected void onBlockHit(BlockHitResult result) {
+        super.onBlockHit(result);
+        createLingeringCloud(result);
     }
 
     @Override
@@ -124,30 +130,6 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
             }
         }
     }
-
-
-    @Override
-    protected void onCollision(HitResult result) {
-        super.onCollision(result);
-        if (!getWorld().isClient) {
-            NbtCompound tag = this.referenceStack.getNbt();
-
-            // Only lingering type creates cloud
-            if (tag != null && (tag.contains("LingeringPotion") || getArrowTier() == ArrowTier.FLINT && tag.contains("Potion", NbtElement.STRING_TYPE))) {
-                Potion potion = getPotion(tag);
-                List<StatusEffectInstance> effects = getAllEffects(tag);
-                if (!effects.isEmpty()) {
-                    makeAreaOfEffectCloud(this.referenceStack, effects, result);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onBlockHit(BlockHitResult result) {
-        super.onBlockHit(result);
-    }
-
 
     @Override
     protected ItemStack asItemStack() {
@@ -206,6 +188,27 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
         NbtCompound tag = this.referenceStack.getNbt();
         Potion potion = getPotion(tag);
         this.getDataTracker().set(DATA_POTION_COLOR, PotionUtil.getColor(PotionUtil.getPotionEffects(potion, this.effects)));
+    }
+
+    private void createLingeringCloud(HitResult result) {
+        if (getWorld().isClient) {
+            return;
+        }
+
+        NbtCompound tag = this.referenceStack.getNbt();
+
+        // Only lingering arrows create a cloud
+        if (tag != null && (
+                tag.contains("LingeringPotion")
+                        || (getArrowTier() == ArrowTier.FLINT
+                        && tag.contains("Potion", NbtElement.STRING_TYPE))
+        )) {
+            List<StatusEffectInstance> effects = getAllEffects(tag);
+
+            if (!effects.isEmpty()) {
+                makeAreaOfEffectCloud(this.referenceStack, effects, result);
+            }
+        }
     }
 
     private void makeAreaOfEffectCloud(ItemStack stack, List<StatusEffectInstance> effects, HitResult result) {
