@@ -44,7 +44,7 @@ public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe i
     }
 
     public static class Type implements RecipeType<ShapedNetherAlloySmeltingRecipe> {
-        public static final ShapedNetherAlloySmeltingRecipe.Type INSTANCE = new ShapedNetherAlloySmeltingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "shaped_nether_alloy_smelting";
     }
 

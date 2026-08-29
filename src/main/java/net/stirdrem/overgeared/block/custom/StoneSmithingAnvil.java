@@ -60,7 +60,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
     private static final VoxelShape SHAPE_Z = VoxelShapes.union(Z1, Z2);
     private static final VoxelShape SHAPE_X = VoxelShapes.union(X1, X2);
 
-    public StoneSmithingAnvil(AbstractBlock.Settings settings) {
+    public StoneSmithingAnvil(Settings settings) {
         super(AnvilTier.STONE, settings);
     }
 

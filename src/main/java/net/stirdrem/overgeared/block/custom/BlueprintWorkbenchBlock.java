@@ -29,7 +29,7 @@ public class BlueprintWorkbenchBlock extends Block {
     private static final Text CONTAINER_TITLE =
             Text.translatable("gui.overgeared.drafting_table");
 
-    public BlueprintWorkbenchBlock(AbstractBlock.Settings settings) {
+    public BlueprintWorkbenchBlock(Settings settings) {
         super(settings);
     }
 

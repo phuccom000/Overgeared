@@ -69,7 +69,7 @@ public class GrindingRecipe implements Recipe<SimpleInventory> {
     }
 
     public static class Type implements RecipeType<GrindingRecipe> {
-        public static final GrindingRecipe.Type INSTANCE = new GrindingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "grinding";
     }
 

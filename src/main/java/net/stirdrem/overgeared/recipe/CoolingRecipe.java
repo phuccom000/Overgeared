@@ -69,7 +69,7 @@ public class CoolingRecipe implements Recipe<SimpleInventory> {
     }
 
     public static class Type implements RecipeType<CoolingRecipe> {
-        public static final CoolingRecipe.Type INSTANCE = new CoolingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "cooling";
     }
 

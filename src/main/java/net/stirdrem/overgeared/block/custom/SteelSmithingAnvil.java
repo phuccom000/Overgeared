@@ -44,7 +44,7 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
     // Z-axis oriented shape
     private static final VoxelShape Z_AXIS_AABB = VoxelShapes.union(Z1, Z2, Z3, Z4, Z5);
 
-    public SteelSmithingAnvil(AnvilTier tier, AbstractBlock.Settings settings) {
+    public SteelSmithingAnvil(AnvilTier tier, Settings settings) {
         super(tier, settings);
     }
 

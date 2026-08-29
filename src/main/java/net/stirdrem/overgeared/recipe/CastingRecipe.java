@@ -253,12 +253,12 @@ public class CastingRecipe implements Recipe<Inventory> {
     }
 
     public static class Type implements RecipeType<CastingRecipe> {
-        public static final CastingRecipe.Type INSTANCE = new CastingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "casting";
     }
 
     public static class Serializer implements RecipeSerializer<CastingRecipe> {
-        public static final CastingRecipe.Serializer INSTANCE = new CastingRecipe.Serializer();
+        public static final Serializer INSTANCE = new Serializer();
 
         @Override
         public CastingRecipe read(Identifier id, JsonObject json) {

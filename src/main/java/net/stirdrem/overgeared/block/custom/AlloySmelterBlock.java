@@ -40,7 +40,7 @@ public class AlloySmelterBlock extends BlockWithEntity {
 
     public static final VoxelShape SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
 
-    public AlloySmelterBlock(AbstractBlock.Settings settings) {
+    public AlloySmelterBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)

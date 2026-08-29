@@ -650,7 +650,7 @@ public class ModModelProvider extends FabricModelProviderPlus {
     }
 
     private String getItemName(Item item) {
-        return net.minecraft.registry.Registries.ITEM
+        return Registries.ITEM
                 .getId(item)
                 .getPath();
     }

@@ -61,7 +61,7 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
     protected static String quality = null;
     protected static AnvilTier tier;
 
-    public AbstractSmithingAnvil(AnvilTier anvilTier, AbstractBlock.Settings settings) {
+    public AbstractSmithingAnvil(AnvilTier anvilTier, Settings settings) {
         super(settings);
         tier = anvilTier;
     }

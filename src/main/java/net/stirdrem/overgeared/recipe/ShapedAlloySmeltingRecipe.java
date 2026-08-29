@@ -45,7 +45,7 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
     }
 
     public static class Type implements RecipeType<ShapedAlloySmeltingRecipe> {
-        public static final ShapedAlloySmeltingRecipe.Type INSTANCE = new ShapedAlloySmeltingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "shaped_alloy_smelting";
     }
 

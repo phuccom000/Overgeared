@@ -39,7 +39,7 @@ public class NetherAlloySmelterBlock extends BlockWithEntity {
 
     public static final VoxelShape SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
 
-    public NetherAlloySmelterBlock(AbstractBlock.Settings settings) {
+    public NetherAlloySmelterBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)

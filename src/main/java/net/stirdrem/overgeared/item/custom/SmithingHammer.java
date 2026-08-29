@@ -13,7 +13,7 @@ import net.stirdrem.overgeared.util.ModTags;
 
 public class SmithingHammer extends MiningToolItem {
 
-    public SmithingHammer(ToolMaterial material, int attackDamage, float attackSpeed, Item.Settings settings) {
+    public SmithingHammer(ToolMaterial material, int attackDamage, float attackSpeed, Settings settings) {
         super(attackDamage, attackSpeed, material, ModTags.Blocks.SMITHING, settings);
     }
 

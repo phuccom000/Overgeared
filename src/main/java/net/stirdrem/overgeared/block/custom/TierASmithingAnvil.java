@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class TierASmithingAnvil extends SteelSmithingAnvil {
 
-    public TierASmithingAnvil(AnvilTier tier, AbstractBlock.Settings settings) {
+    public TierASmithingAnvil(AnvilTier tier, Settings settings) {
         super(tier, settings);
     }
 

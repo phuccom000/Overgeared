@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Tongs extends MiningToolItem {
 
-    public Tongs(ToolMaterial material, int attackDamageModifier, float attackSpeedModifier, Item.Settings settings) {
+    public Tongs(ToolMaterial material, int attackDamageModifier, float attackSpeedModifier, Settings settings) {
         super(attackDamageModifier, attackSpeedModifier, material, ModTags.Blocks.SMITHING, settings);
     }
 

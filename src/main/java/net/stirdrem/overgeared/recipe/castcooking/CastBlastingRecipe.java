@@ -186,7 +186,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<CastBlastingRecipe> {
-        public static final CastBlastingRecipe.Serializer INSTANCE = new CastBlastingRecipe.Serializer();
+        public static final Serializer INSTANCE = new Serializer();
 
         @Override
         public CastBlastingRecipe read(Identifier id, JsonObject json) {

@@ -39,7 +39,7 @@ public class CastFurnaceBlock extends BlockWithEntity {
 
     public static final VoxelShape SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
 
-    public CastFurnaceBlock(AbstractBlock.Settings settings) {
+    public CastFurnaceBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)

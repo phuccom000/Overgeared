@@ -1,4 +1,4 @@
-// 1.20.1	2026-08-29T22:08:28.3396099	Overgeared: A Blacksmith Mod/Model Definitions
+// 1.20.1	2026-08-29T23:34:00.0439152	Overgeared: A Blacksmith Mod/Model Definitions
 53d01e1c89f401cd1625f39df5b513ddb525dfbe assets\overgeared\models\item\copper_axe_head.json
 16309118620cd37a04a05473f31dcedd9317374d assets\overgeared\models\item\steel_helmet_iron_trim.json
 a49a011f7bf4cdb762139a4cff005a238095b32d assets\overgeared\models\item\iron_arrow_head.json
@@ -7,8 +7,8 @@ dafd8edc5580461a256211002045cb5ff30c2579 assets\overgeared\models\item\steel_boo
 5451d1e4217a7d89fe58f0eba6afb7356de6a867 assets\overgeared\models\item\steel_leggings_emerald_trim.json
 d02b7262b940edfeb2d898634d534c02b18256bf assets\overgeared\models\item\copper_leggings_quartz_trim.json
 a290a3113914fd50bdaf2bdc5b64396221f1c576 assets\overgeared\models\item\copper_chestplate_quartz_trim.json
-7b9321cbee638e9a0c50a599ca92ce1c658b95d4 assets\overgeared\models\item\copper_hammer_head.json
 70b3663dd0aa427875bf1e3094777a1d38b4b2dc assets\overgeared\models\item\steel_helmet_amethyst_trim.json
+7b9321cbee638e9a0c50a599ca92ce1c658b95d4 assets\overgeared\models\item\copper_hammer_head.json
 c8a09d807ec50fe79e5d49a678f59e239a485a1b assets\overgeared\models\item\stone_hoe_head.json
 e4a961e93bea3df97dc03b5e6b26e6ca9a29e877 assets\overgeared\models\item\steel_sword.json
 e345122b190b1975d5fd4a0181f5f3109f0623dd assets\overgeared\models\item\steel_boots_netherite_trim.json
@@ -95,8 +95,8 @@ e3f3595f19edabd572414398db9bde39cb80b081 assets\overgeared\models\item\steel_che
 8c61b760586290fcf62fab04fa11c976800eb3b9 assets\overgeared\models\item\copper_boots.json
 ee7af8531f03597217a64899b64445dd961552db assets\overgeared\models\item\netherite_alloy.json
 c1b6033cc2c8ff7a763c912043b2e1a582340b60 assets\overgeared\models\item\stone_pickaxe_head.json
-0a41079641f2678210633281db830e619a29148a assets\overgeared\models\item\copper_hoe.json
 a889677d2d7b9b0a2f00b0e4f6941e0a9aa150de assets\overgeared\models\item\steel_helmet_copper_trim.json
+0a41079641f2678210633281db830e619a29148a assets\overgeared\models\item\copper_hoe.json
 d34e932202fd6a0f7bf4b9287a837dd42e0227e9 assets\overgeared\models\item\copper_chestplate_amethyst_trim.json
 37108dbe226dba5c76baf92ea1d3f445c43787b5 assets\overgeared\models\item\copper_boots_copper_trim.json
 f972b1f6be945990cc7f1f2b1c1039cba9d1adf7 assets\overgeared\models\item\heated_steel_ingot.json

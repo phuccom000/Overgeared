@@ -785,7 +785,7 @@ public class ModItemInteractEvents {
                 .orElse(false);
     }
 
-    private static final Set<ItemEntity> knownTrackedEntities = Collections.newSetFromMap(new java.util.WeakHashMap<>());
+    private static final Set<ItemEntity> knownTrackedEntities = Collections.newSetFromMap(new WeakHashMap<>());
 
     /**
      * Forge's EntityJoinLevelEvent has no Fabric API equivalent (fabric-entity-events-v1 only

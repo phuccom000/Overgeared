@@ -122,12 +122,12 @@ public class FletchingRecipe implements Recipe<Inventory> {
     }
 
     public static class Type implements RecipeType<FletchingRecipe> {
-        public static final FletchingRecipe.Type INSTANCE = new FletchingRecipe.Type();
+        public static final Type INSTANCE = new Type();
         public static final String ID = "fletching";
     }
 
     public static class Serializer implements RecipeSerializer<FletchingRecipe> {
-        public static final FletchingRecipe.Serializer INSTANCE = new FletchingRecipe.Serializer();
+        public static final Serializer INSTANCE = new Serializer();
         public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "fletching");
 
         @Override
