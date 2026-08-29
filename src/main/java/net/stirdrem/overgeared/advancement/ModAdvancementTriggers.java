@@ -1,7 +1,12 @@
 package net.stirdrem.overgeared.advancement;
 
-import net.minecraft.advancements.CriteriaTriggers;
+import net.fabricmc.fabric.api.object.builder.v1.advancement.CriterionRegistry;
 
+/**
+ * Vanilla's Criteria.register is private - Criteria only self-registers vanilla triggers in its
+ * static initializer. Fabric API's CriterionRegistry is the supported entry point for mods to
+ * register their own Criterion implementations.
+ */
 public class ModAdvancementTriggers {
 
     public static final MakeSmithingAnvilTrigger MAKE_SMITHING_ANVIL =
@@ -16,10 +21,10 @@ public class ModAdvancementTriggers {
             new MaxLevelBlueprintAdvancementTrigger();
 
     public static void register() {
-        CriteriaTriggers.register(MAKE_SMITHING_ANVIL);
-        CriteriaTriggers.register(KNAPPING);
-        CriteriaTriggers.register(FORGING_QUALITY);
-        CriteriaTriggers.register(BLUEPRINT_QUALITY);
-        CriteriaTriggers.register(MAX_LEVEL_BLUEPRINT);
+        CriterionRegistry.register(MAKE_SMITHING_ANVIL);
+        CriterionRegistry.register(KNAPPING);
+        CriterionRegistry.register(FORGING_QUALITY);
+        CriterionRegistry.register(BLUEPRINT_QUALITY);
+        CriterionRegistry.register(MAX_LEVEL_BLUEPRINT);
     }
 }

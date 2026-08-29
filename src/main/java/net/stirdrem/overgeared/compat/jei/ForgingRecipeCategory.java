@@ -11,17 +11,17 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.DefaultedList;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
@@ -31,15 +31,12 @@ import java.util.List;
 import java.util.Set;
 
 public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
-    public static final ResourceLocation UID = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "forging");
-    public static final ResourceLocation TEXTURE = ResourceLocation.tryBuild(OvergearedMod.MOD_ID,
-            "textures/gui/smithing_anvil_jei.png");
+    public static final Identifier UID = Overgeared.id("forging");
+    public static final Identifier TEXTURE = Overgeared.id("textures/gui/smithing_anvil_jei.png");
 
-    public static final ResourceLocation RESULT_BIG = ResourceLocation.tryBuild(OvergearedMod.MOD_ID,
-            "textures/gui/result_big.png");
+    public static final Identifier RESULT_BIG = Overgeared.id("textures/gui/result_big.png");
 
-    public static final ResourceLocation RESULT_TWOSLOT = ResourceLocation.tryBuild(OvergearedMod.MOD_ID,
-            "textures/gui/twoslot.png");
+    public static final Identifier RESULT_TWOSLOT = Overgeared.id("textures/gui/twoslot.png");
 
     public static final RecipeType<ForgingRecipe> FORGING_RECIPE_TYPE =
             new RecipeType<>(UID, ForgingRecipe.class);
@@ -49,13 +46,13 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     private static final int imageWidth = 138;
     private static final int imageHeight = 54;
 
-    private final int animationTime = 200; // full cycle in ticks
+    private final int animationTime = 200;
     private final IDrawableStatic arrowStatic;
     private final IDrawableAnimated arrowAnimated;
 
     public ForgingRecipeCategory(IGuiHelper helper) {
         this.background = helper.createDrawable(TEXTURE, 7, 16, imageWidth, imageHeight);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.SMITHING_ANVIL.get()));
+        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.SMITHING_ANVIL));
         arrowStatic = helper.createDrawable(TEXTURE, 176, 0, 24, 17);
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
     }
@@ -67,8 +64,8 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatable("gui.overgeared.smithing_anvil");
+    public Text getTitle() {
+        return Text.translatable("gui.overgeared.smithing_anvil");
     }
 
     @Override
@@ -77,35 +74,34 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     }
 
     @Override
-    public void draw(ForgingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        String hitsText = Component.translatable("tooltip.overgeared.recipe.hits", recipe.getRemainingHits()).getString();
+    public void draw(ForgingRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
+        String hitsText = Text.translatable("tooltip.overgeared.recipe.hits", recipe.getRemainingHits()).getString();
 
         String tierRaw = recipe.getAnvilTier();
         AnvilTier tierName = AnvilTier.fromDisplayName(tierRaw);
 
-        MutableComponent tierText =
-                Component.translatable("tooltip.overgeared.recipe.tier")
-                        .append(Component.literal(" "));
+        MutableText tierText =
+                Text.translatable("tooltip.overgeared.recipe.tier")
+                        .append(Text.literal(" "));
 
         if (tierName != null) {
             tierText = tierText.append(
-                    Component.translatable(tierName.getLang())
+                    Text.translatable(tierName.getLang())
             );
         } else {
             tierText = tierText.append(
-                    Component.literal(tierRaw)
+                    Text.literal(tierRaw)
             );
         }
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
-            guiGraphics.blit(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
+            guiGraphics.drawTexture(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
         } else {
-            guiGraphics.blit(RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
+            guiGraphics.drawTexture(RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
         }
 
-        // Draw text
-        guiGraphics.drawString(Minecraft.getInstance().font, hitsText, 79, 1, 0xFF808080, false);
-        guiGraphics.drawString(Minecraft.getInstance().font, tierText, 79, 47, 0xFF808080, false);
+        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, hitsText, 79, 1, 0xFF808080, false);
+        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, tierText, 79, 47, 0xFF808080, false);
 
         arrowAnimated.draw(guiGraphics, 82, 19);
 
@@ -127,7 +123,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
             setupRecipe(builder, recipe, focuses);
         } catch (Exception e) {
 
-            OvergearedMod.LOGGER.error(
+            Overgeared.LOGGER.error(
                     "JEI failed recipe: {}",
                     recipe.getId(),
                     e
@@ -144,7 +140,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         int recipeWidth = recipe.width;
         int recipeHeight = recipe.height;
 
-        NonNullList<ForgingRecipe.ForgingIngredient> ingredients =
+        DefaultedList<ForgingRecipe.ForgingIngredient> ingredients =
                 recipe.getForgingIngredients();
 
         int offsetX = (gridWidth - recipeWidth) / 2;
@@ -175,7 +171,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
                 List<ItemStack> stacks = new ArrayList<>();
 
-                for (ItemStack stack : ingredient.getItems()) {
+                for (ItemStack stack : ingredient.getMatchingStacks()) {
 
                     if (stack.isEmpty())
                         continue;
@@ -183,7 +179,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                     ItemStack copy = stack.copy();
 
                     if (forgingIngredient.requiresHeated()) {
-                        copy.getOrCreateTag()
+                        copy.getOrCreateNbt()
                                 .putBoolean("Heated", true);
                     }
 
@@ -216,14 +212,14 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         }
 
 
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (mc.level == null)
+        if (mc.world == null)
             return;
 
 
         ItemStack result =
-                recipe.getResultItem(mc.level.registryAccess());
+                recipe.getOutput(mc.world.getRegistryManager());
 
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
@@ -244,12 +240,12 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
 
             ItemStack failed =
-                    recipe.getFailedResultItem(mc.level.registryAccess())
+                    recipe.getFailedResultItem(mc.world.getRegistryManager())
                             .copy();
 
             if (!failed.isEmpty()) {
 
-                failed.getOrCreateTag()
+                failed.getOrCreateNbt()
                         .putBoolean("failedResult", true);
 
 
@@ -271,7 +267,6 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
             else if (recipeWidth == 3)
                 offsetY = gridHeight - recipeHeight;
         } else if (recipeHeight == 2 && recipeWidth == 3) {
-            // Anchor to bottom
             offsetY = gridHeight - recipeHeight;
         }
 
@@ -284,13 +279,12 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         List<ItemStack> stacks = new ArrayList<>();
 
         for (String type : types) {
-            ItemStack stack = new ItemStack(ModItems.BLUEPRINT.get());
-            CompoundTag tag = new CompoundTag();
+            ItemStack stack = new ItemStack(ModItems.BLUEPRINT);
+            NbtCompound tag = new NbtCompound();
 
-            // Set a single string value for ToolType
             tag.putString("ToolType", type);
             tag.putBoolean("Required", required);
-            stack.setTag(tag);
+            stack.setNbt(tag);
             stacks.add(stack);
         }
 

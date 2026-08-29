@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "overgeared:steel_block",
+    "overgeared:smithing_anvil",
+    "overgeared:stone_anvil",
+    "overgeared:tier_a_smithing_anvil",
+    "overgeared:tier_b_smithing_anvil",
+    "overgeared:alloy_furnace",
+    "overgeared:nether_alloy_furnace"
+  ]
+}

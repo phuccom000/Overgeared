@@ -1,30 +1,36 @@
 package net.stirdrem.overgeared.mixin;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import com.llamalad7.mixinextras.expression.Definition;
+import com.llamalad7.mixinextras.expression.Expression;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
-@Mixin(Player.class)
+/**
+ * Vanilla gates the sweep-attack purely on {@code itemStack.getItem() instanceof SwordItem} deep
+ * inside PlayerEntity.attack() - there's no clean event/hook at that point, so this uses
+ * MixinExtras' expression matching to intercept just that instanceof check rather than a fragile
+ * local-variable-ordinal mixin into a huge, heavily-obfuscated vanilla method.
+ */
+@Mixin(PlayerEntity.class)
 public abstract class PlayerMixin {
 
-    @Redirect(
-            method = "attack",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/ItemStack;canPerformAction(Lnet/minecraftforge/common/ToolAction;)Z"
-            )
-    )
-    private boolean disableSweepWhenBroken(ItemStack stack, net.minecraftforge.common.ToolAction action) {
-        if (action == net.minecraftforge.common.ToolActions.SWORD_SWEEP) {
+    @Definition(id = "sword", type = SwordItem.class)
+    @Definition(id = "getItem", method = "Lnet/minecraft/item/ItemStack;getItem()Lnet/minecraft/item/Item;")
+    @Expression("?.getItem() instanceof sword")
+    @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
+    private boolean overgeared$disableSweepWhenBroken(boolean original) {
+        if (original) {
+            ItemStack stack = ((PlayerEntity) (Object) this).getMainHandStack();
             if (isBroken(stack)) {
                 return false;
             }
         }
-
-        return stack.canPerformAction(action);
+        return original;
     }
 }

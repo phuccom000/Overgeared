@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.datapack;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Ingredient;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class RockInteractionData {
     }
 
     public boolean matches(BlockState state, ItemStack stack) {
-        if (!state.is(inputBlock)) return false;
+        if (!state.isOf(inputBlock)) return false;
         return tools.stream().anyMatch(t -> t.ingredient.test(stack));
     }
 

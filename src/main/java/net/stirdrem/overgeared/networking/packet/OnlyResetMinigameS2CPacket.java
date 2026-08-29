@@ -1,39 +1,23 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
-
-import java.util.function.Supplier;
+import net.minecraft.network.PacketByteBuf;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 
 public class OnlyResetMinigameS2CPacket {
 
-    public OnlyResetMinigameS2CPacket() {
-
+    public static void encode(OnlyResetMinigameS2CPacket msg, PacketByteBuf buf) {
     }
 
-    public OnlyResetMinigameS2CPacket(FriendlyByteBuf buf) {
-
+    public static OnlyResetMinigameS2CPacket decode(PacketByteBuf buf) {
+        return new OnlyResetMinigameS2CPacket();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-
-    }
-
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            try {
-                // Only reset if the current anvil position matches the one in the packet
-                AnvilMinigameEvents.reset();
-
-            } catch (Exception e) {
-                OvergearedMod.LOGGER.error("Failed to process ResetMinigameS2CPacket for anvil", e);
-            }
-        });
-        return true;
+    public static void handle(OnlyResetMinigameS2CPacket msg) {
+        try {
+            AnvilMinigameEvents.reset();
+        } catch (Exception e) {
+            Overgeared.LOGGER.error("Failed to process ResetMinigameS2CPacket for anvil", e);
+        }
     }
 }

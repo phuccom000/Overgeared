@@ -1,12 +1,13 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.CastingToolTypesReloadListener;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
@@ -67,9 +68,9 @@ public class ConfigHelper {
     // -----------------------
     // Tool Head → Tool Type
     // -----------------------
-    public static String getToolTypeForItem(Level level, ItemStack stack) {
-        return level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE.get())
+    public static String getToolTypeForItem(World world, ItemStack stack) {
+        return world.getRecipeManager()
+                .listAllOfType(ModRecipeTypes.ITEM_TO_TOOLTYPE)
                 .stream()
                 .filter(r -> r.getInput().test(stack))
                 .map(ItemToToolTypeRecipe::getToolType)
@@ -169,12 +170,12 @@ public class ConfigHelper {
     /**
      * Get all material values for an item (useful when an item belongs to multiple materials)
      */
-    public static java.util.Map<String, Integer> getMaterialValuesForItem(ItemStack stack) {
+    public static Map<String, Integer> getMaterialValuesForItem(ItemStack stack) {
         return getMaterialValuesForItem(stack.getItem());
     }
 
-    public static java.util.Map<String, Integer> getMaterialValuesForItem(Item item) {
-        java.util.Map<String, Integer> result = new java.util.HashMap<>();
+    public static Map<String, Integer> getMaterialValuesForItem(Item item) {
+        Map<String, Integer> result = new java.util.HashMap<>();
 
         // Add datapack entries
         MaterialSettingsReloadListener.getAllMaterialEntries().stream()
@@ -201,35 +202,26 @@ public class ConfigHelper {
     private static boolean matchesItemOrTag(Item item, String key) {
 
         // Direct item match
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+        Identifier itemId = Registries.ITEM.getId(item);
         if (itemId != null && itemId.toString().equals(key)) {
             return true;
         }
 
         // Tag match
         if (key.startsWith("#")) {
-            ResourceLocation tagId = new ResourceLocation(key.substring(1));
+            Identifier tagId = new Identifier(key.substring(1));
 
             // ---- Item tag check ----
-            TagKey<Item> itemTag = TagKey.create(
-                    ForgeRegistries.ITEMS.getRegistryKey(),
-                    tagId
-            );
-            if (item.builtInRegistryHolder().is(itemTag)) {
+            TagKey<Item> itemTag = TagKey.of(RegistryKeys.ITEM, tagId);
+            if (Registries.ITEM.getEntry(item).isIn(itemTag)) {
                 return true;
             }
 
             // ---- Block tag check (for BlockItems) ----
-            if (item instanceof net.minecraft.world.item.BlockItem blockItem) {
-                TagKey<net.minecraft.world.level.block.Block> blockTag =
-                        TagKey.create(
-                                ForgeRegistries.BLOCKS.getRegistryKey(),
-                                tagId
-                        );
+            if (item instanceof BlockItem blockItem) {
+                TagKey<net.minecraft.block.Block> blockTag = TagKey.of(RegistryKeys.BLOCK, tagId);
 
-                return blockItem.getBlock()
-                        .builtInRegistryHolder()
-                        .is(blockTag);
+                return Registries.BLOCK.getEntry(blockItem.getBlock()).isIn(blockTag);
             }
         }
 
@@ -264,8 +256,8 @@ public class ConfigHelper {
     /**
      * Get all items for a specific material
      */
-    public static java.util.List<String> getItemsForMaterial(String materialId) {
-        java.util.List<String> items = new java.util.ArrayList<>();
+    public static List<String> getItemsForMaterial(String materialId) {
+        List<String> items = new java.util.ArrayList<>();
 
         // From datapack
         MaterialSettingsReloadListener.getEntriesForMaterial(materialId).stream()
@@ -305,37 +297,31 @@ public class ConfigHelper {
 
         // Tag
         if (key.startsWith("#")) {
-            ResourceLocation tagId = new ResourceLocation(key.substring(1));
+            Identifier tagId = new Identifier(key.substring(1));
 
             // ---- Item tag ----
-            TagKey<Item> itemTag = TagKey.create(
-                    ForgeRegistries.ITEMS.getRegistryKey(),
-                    tagId
-            );
+            TagKey<Item> itemTag = TagKey.of(RegistryKeys.ITEM, tagId);
 
-            ForgeRegistries.ITEMS.getValues().stream()
-                    .filter(item -> item.builtInRegistryHolder().is(itemTag))
-                    .forEach(out::add);
+            for (var entry : Registries.ITEM.iterateEntries(itemTag)) {
+                out.add(entry.value());
+            }
 
             // ---- Block tag → BlockItem ----
-            TagKey<net.minecraft.world.level.block.Block> blockTag =
-                    TagKey.create(
-                            ForgeRegistries.BLOCKS.getRegistryKey(),
-                            tagId
-                    );
+            TagKey<net.minecraft.block.Block> blockTag = TagKey.of(RegistryKeys.BLOCK, tagId);
 
-            ForgeRegistries.BLOCKS.getValues().stream()
-                    .filter(block -> block.builtInRegistryHolder().is(blockTag))
-                    .map(net.minecraft.world.item.Item.BY_BLOCK::get)
-                    .filter(item -> item != null && item != net.minecraft.world.item.Items.AIR)
-                    .forEach(out::add);
+            for (var entry : Registries.BLOCK.iterateEntries(blockTag)) {
+                Item item = entry.value().asItem();
+                if (item != net.minecraft.item.Items.AIR) {
+                    out.add(item);
+                }
+            }
 
             return;
         }
 
         // Direct item
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(key));
-        if (item != null && item != net.minecraft.world.item.Items.AIR) {
+        Item item = Registries.ITEM.get(new Identifier(key));
+        if (item != net.minecraft.item.Items.AIR) {
             out.add(item);
         }
     }

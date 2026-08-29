@@ -1,12 +1,12 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.village.TradeOffer;
+import net.minecraft.village.TradeOffers;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
+public class BlueprintWanderingTrade implements TradeOffers.Factory {
 
     private final ItemStack blueprintItem;
     private final int maxUses;
@@ -27,10 +27,10 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
     }
 
     @Override
-    public @Nullable MerchantOffer getOffer(Entity entity, RandomSource random) {
+    public @Nullable TradeOffer create(Entity entity, Random random) {
 
         ItemStack result = blueprintItem.copy();
-        CompoundTag tag = result.getOrCreateTag();
+        NbtCompound tag = result.getOrCreateNbt();
 
         BlueprintQuality quality = rollQuality(random);
 
@@ -47,7 +47,7 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         // ---------- EMERALD PRICE BY QUALITY ----------
         ItemStack emeraldCost = getEmeraldCostForQuality(quality);
 
-        return new MerchantOffer(
+        return new TradeOffer(
                 emeraldCost,          // Cost A (emeralds)
                 ItemStack.EMPTY,      // Cost B
                 result,               // Result
@@ -57,7 +57,7 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         );
     }
 
-    private BlueprintQuality rollQuality(RandomSource random) {
+    private BlueprintQuality rollQuality(Random random) {
         int roll = random.nextInt(1000);
 
         // 0–9     → MASTER  (1%)
@@ -79,4 +79,3 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         };
     }
 }
-

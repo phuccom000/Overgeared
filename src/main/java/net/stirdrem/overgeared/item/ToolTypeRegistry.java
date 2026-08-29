@@ -1,6 +1,6 @@
 package net.stirdrem.overgeared.item;
 
-import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.BlueprintTooltypesReloadListener;
 
@@ -47,10 +47,10 @@ public class ToolTypeRegistry {
             }
         }
 
-        System.out.println("Registered tool types: " +
+        Overgeared.LOGGER.info("Registered tool types: " +
                 BY_ID.keySet().stream().collect(Collectors.joining(", "))
         );
-        OvergearedMod.LOGGER.info("Tool types initialized: {}",
+        Overgeared.LOGGER.info("Tool types initialized: {}",
                 ToolTypeRegistry.getRegisteredTypes().size());
     }
 

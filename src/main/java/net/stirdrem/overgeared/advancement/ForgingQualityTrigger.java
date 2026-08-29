@@ -1,58 +1,59 @@
 package net.stirdrem.overgeared.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.critereon.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.advancement.criterion.AbstractCriterion;
+import net.minecraft.advancement.criterion.AbstractCriterionConditions;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
+import net.minecraft.predicate.entity.LootContextPredicate;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.stirdrem.overgeared.Overgeared;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class ForgingQualityTrigger
-        extends SimpleCriterionTrigger<ForgingQualityTrigger.TriggerInstance> {
+        extends AbstractCriterion<ForgingQualityTrigger.Conditions> {
 
-    public static final ResourceLocation ID =
-            new ResourceLocation(OvergearedMod.MOD_ID, "forging_quality");
+    public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "forging_quality");
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return ID;
     }
 
     @Override
-    protected TriggerInstance createInstance(
+    protected Conditions conditionsFromJson(
             JsonObject json,
-            ContextAwarePredicate player,
-            DeserializationContext context
+            LootContextPredicate playerPredicate,
+            AdvancementEntityPredicateDeserializer context
     ) {
         @Nullable String quality = null;
 
-        if (json.has("quality")) {
-            quality = GsonHelper.getAsString(json, "quality");
+        if (JsonHelper.hasString(json, "quality")) {
+            quality = JsonHelper.getString(json, "quality");
         }
 
-        return new TriggerInstance(player, quality);
+        return new Conditions(playerPredicate, quality);
     }
 
     /**
      * Call when forging completes
      */
-    public void trigger(ServerPlayer player, String forgedQuality) {
+    public void trigger(ServerPlayerEntity player, String forgedQuality) {
         this.trigger(player, inst -> inst.matches(forgedQuality));
     }
 
     // ─────────────────────────────────────────────────────────────
 
-    public static class TriggerInstance
-            extends AbstractCriterionTriggerInstance {
+    public static class Conditions extends AbstractCriterionConditions {
 
         @Nullable
         private final String requiredQuality;
 
-        public TriggerInstance(ContextAwarePredicate player,
-                               @Nullable String requiredQuality) {
-            super(ID, player);
+        public Conditions(LootContextPredicate playerPredicate,
+                           @Nullable String requiredQuality) {
+            super(ID, playerPredicate);
             this.requiredQuality = requiredQuality;
         }
 

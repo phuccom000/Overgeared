@@ -1,58 +1,36 @@
-package net.stirdrem.overgeared.item.armor.model;// Made with Blockbench 4.12.5
+package net.stirdrem.overgeared.item.armor.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.stirdrem.overgeared.OvergearedMod;
-// Made with Blockbench 4.12.5
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
+import net.minecraft.client.model.Dilation;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.EntityModelLayer;
+import net.stirdrem.overgeared.Overgeared;
 
+public class CustomCopperLeggings {
+    public static final EntityModelLayer LAYER_LOCATION = new EntityModelLayer(Overgeared.id("copper_leggings"), "main");
 
-public class CustomCopperLeggings<T extends Entity> extends EntityModel<T> {
-    // This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "copper_leggings"), "main");
-    public final ModelPart Body;
-    public final ModelPart RightLeg;
-    public final ModelPart LeftLeg;
+    public static TexturedModelData createBodyLayer() {
+        ModelData modelData = new ModelData();
+        ModelPartData partData = modelData.getRoot();
 
-    public CustomCopperLeggings(ModelPart root) {
-        this.Body = root.getChild("Body");
-        this.RightLeg = root.getChild("RightLeg");
-        this.LeftLeg = root.getChild("LeftLeg");
-    }
+        partData.addChild("Body", ModelPartBuilder.create()
+                        .uv(16, 16).cuboid(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new Dilation(0.51F))
+                        .uv(16, 0).cuboid(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new Dilation(0.65F)),
+                ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
-    public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshdefinition = new MeshDefinition();
-        PartDefinition partdefinition = meshdefinition.getRoot();
+        partData.addChild("RightLeg", ModelPartBuilder.create()
+                        .uv(0, 16).cuboid(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new Dilation(0.5F))
+                        .uv(40, 0).cuboid(-2.1F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new Dilation(0.65F)),
+                ModelTransform.pivot(-1.9F, 12.0F, 0.0F));
 
-        PartDefinition Body = partdefinition.addOrReplaceChild("Body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.51F))
-                .texOffs(16, 0).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.65F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+        partData.addChild("LeftLeg", ModelPartBuilder.create()
+                        .uv(0, 16).mirrored().cuboid(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new Dilation(0.5F)).mirrored(false)
+                        .uv(40, 0).cuboid(-5.9F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new Dilation(0.65F)),
+                ModelTransform.pivot(1.9F, 12.0F, 0.0F));
 
-        PartDefinition RightLeg = partdefinition.addOrReplaceChild("RightLeg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.5F))
-                .texOffs(40, 0).addBox(-2.1F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.65F)), PartPose.offset(-1.9F, 12.0F, 0.0F));
-
-        PartDefinition LeftLeg = partdefinition.addOrReplaceChild("LeftLeg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.5F)).mirror(false)
-                .texOffs(40, 0).addBox(-5.9F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.65F)), PartPose.offset(1.9F, 12.0F, 0.0F));
-
-        return LayerDefinition.create(meshdefinition, 64, 32);
-    }
-
-    @Override
-    public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-
-    }
-
-    @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        Body.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        RightLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        LeftLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        return TexturedModelData.of(modelData, 64, 32);
     }
 }

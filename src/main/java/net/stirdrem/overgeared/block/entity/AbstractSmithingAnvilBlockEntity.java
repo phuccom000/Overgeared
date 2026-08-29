@@ -1,105 +1,76 @@
 package net.stirdrem.overgeared.block.entity;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.ItemStackHandler;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SidedInventory;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ShieldItem;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
+import net.stirdrem.overgeared.util.ItemStackHandler;
 import net.stirdrem.overgeared.util.ModTags;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 
-public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Fabric has no equivalent of Forge's IItemHandler capability system, so hopper/automation
+ * interaction is implemented directly via Inventory/SidedInventory instead of a separate
+ * capability object. Block entity sync also relies on the default full-NBT
+ * toInitialChunkDataNbt()/toUpdatePacket() implementation rather than porting the original's
+ * smaller custom update tag - functionally equivalent, just a little more data per sync packet.
+ */
+public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, Inventory, SidedInventory {
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
+    protected static final int BLUEPRINT_SLOT = 11;
+
     protected boolean needsRecipeUpdate = true;
     protected Optional<ForgingRecipe> cachedRecipe = Optional.empty();
     protected final ItemStackHandler itemHandler = new ItemStackHandler(12) {
         @Override
         protected void onContentsChanged(int slot) {
-            setChanged();
-            if (!level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            markDirty();
+            if (!world.isClient) {
+                world.updateListeners(getPos(), getCachedState(), getCachedState(), 3);
             }
             needsRecipeUpdate = true;
         }
     };
 
-
-    protected final ContainerData data;
-    protected LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.empty();
-    private final LazyOptional<IItemHandler> outputHandler =
-            LazyOptional.of(() -> new IItemHandler() {
-
-                @Override
-                public int getSlots() {
-                    return 1;
-                }
-
-                @Override
-                public @NotNull ItemStack getStackInSlot(int slot) {
-                    return itemHandler.getStackInSlot(OUTPUT_SLOT);
-                }
-
-                @Override
-                public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                    return stack;
-                }
-
-                @Override
-                public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                    return itemHandler.extractItem(OUTPUT_SLOT, amount, simulate);
-                }
-
-                @Override
-                public int getSlotLimit(int slot) {
-                    return itemHandler.getSlotLimit(OUTPUT_SLOT);
-                }
-
-                @Override
-                public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-                    return false;
-                }
-            });
-
+    protected final PropertyDelegate data;
 
     protected int progress;
     protected int maxProgress;
@@ -109,21 +80,20 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     protected AnvilTier anvilTier;
     protected long sessionStartTime = 0L; // optional, for timeout logic
     protected ItemStack failedResult;
-    protected Player player;
+    protected PlayerEntity player;
     protected ForgingRecipe lastRecipe = null;
     protected ItemStack lastBlueprint = ItemStack.EMPTY;
     private boolean minigameOn = false;
     protected AbstractSmithingAnvil anvilBlock;
-    protected static final int BLUEPRINT_SLOT = 11;
 
     public AbstractSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
         super(type, pPos, pBlockState);
         this.anvilTier = tier;
         this.anvilBlock = anvilBlock;
-        this.data = new ContainerData() {
+        this.data = new PropertyDelegate() {
             @Override
-            public int get(int pIndex) {
-                return switch (pIndex) {
+            public int get(int index) {
+                return switch (index) {
                     case 0 -> AbstractSmithingAnvilBlockEntity.this.progress;
                     case 1 -> AbstractSmithingAnvilBlockEntity.this.maxProgress;
                     case 2 -> AbstractSmithingAnvilBlockEntity.this.hitRemains;
@@ -132,15 +102,15 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
 
             @Override
-            public void set(int pIndex, int pValue) {
-                switch (pIndex) {
-                    case 0 -> AbstractSmithingAnvilBlockEntity.this.progress = pValue;
-                    case 1 -> AbstractSmithingAnvilBlockEntity.this.maxProgress = pValue;
+            public void set(int index, int value) {
+                switch (index) {
+                    case 0 -> AbstractSmithingAnvilBlockEntity.this.progress = value;
+                    case 1 -> AbstractSmithingAnvilBlockEntity.this.maxProgress = value;
                 }
             }
 
             @Override
-            public int getCount() {
+            public int size() {
                 return 3;
             }
         };
@@ -150,96 +120,88 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return itemHandler.getStackInSlot(index);
     }
 
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            if (side == Direction.DOWN) {
-                return outputHandler.cast();
-            }
-            return LazyOptional.of(() -> itemHandler).cast();
-        }
-
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        lazyItemHandler = LazyOptional.of(() -> itemHandler);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        lazyItemHandler.invalidate();
-        outputHandler.invalidate();
-    }
-
     public void drops() {
-        SimpleContainer inventory = new SimpleContainer(itemHandler.getSlots());
+        SimpleInventory inventory = new SimpleInventory(itemHandler.getSlots());
         for (int i = 0; i < itemHandler.getSlots(); i++) {
-            inventory.setItem(i, itemHandler.getStackInSlot(i));
+            inventory.setStack(i, itemHandler.getStackInSlot(i));
         }
-        Containers.dropContents(this.level, this.worldPosition, inventory);
+        ItemScatterer.spawn(this.world, this.pos, inventory);
     }
 
     @Override
-    public Component getDisplayName() {
-        return Component.translatable("gui.overgeared.smithing_anvil");
+    public Text getDisplayName() {
+        return Text.translatable("gui.overgeared.smithing_anvil");
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+        buf.writeBlockPos(pos);
+    }
+
+    @Override
+    protected void writeNbt(NbtCompound tag) {
+        super.writeNbt(tag);
         tag.putInt("hitRemains", hitRemains);
         tag.putInt("progress", progress);
         tag.putInt("maxProgress", maxProgress);
         tag.put("inventory", itemHandler.serializeNBT());
 
         if (ownerUUID != null) {
-            tag.putUUID("ownerUUID", ownerUUID);
+            tag.putUuid("ownerUUID", ownerUUID);
             tag.putLong("sessionStartTime", sessionStartTime);
         }
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void readNbt(NbtCompound tag) {
+        super.readNbt(tag);
+
         if (tag.contains("inventory")) {
             itemHandler.deserializeNBT(tag.getCompound("inventory"));
         }
-        if (tag.contains("hitRemains")) {
-            hitRemains = tag.getInt("hitRemains");
-        }
-        if (tag.contains("progress")) {
-            progress = tag.getInt("progress");
-        }
-        if (tag.contains("maxProgress")) {
-            maxProgress = tag.getInt("maxProgress");
-        }
-        if (tag.hasUUID("ownerUUID")) {
-            ownerUUID = tag.getUUID("ownerUUID");
+
+        hitRemains = tag.getInt("hitRemains");
+        progress = tag.getInt("progress");
+        maxProgress = tag.getInt("maxProgress");
+
+        if (tag.containsUuid("ownerUUID")) {
+            ownerUUID = tag.getUuid("ownerUUID");
             sessionStartTime = tag.getLong("sessionStartTime");
         } else {
             ownerUUID = null;
+            sessionStartTime = 0L;
         }
+
+        // The cached recipe must be recalculated after loading.
+        needsRecipeUpdate = true;
+        cachedRecipe = Optional.empty();
     }
 
-    public Player getPlayer() {
+    @Override
+    public NbtCompound toInitialChunkDataNbt() {
+        return createNbt();
+    }
+    
+    @Override
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
+    }
+
+    public PlayerEntity getPlayer() {
         return player;
     }
 
-    public void setPlayer(Player player) {
+    public void setPlayer(PlayerEntity player) {
         this.player = player;
     }
 
-    public void increaseForgingProgress(Level pLevel, BlockPos pPos, BlockState pState) {
+    public void increaseForgingProgress(World pLevel, BlockPos pPos, BlockState pState) {
         Optional<ForgingRecipe> recipe = getCurrentRecipe();
         if (hasRecipe()) {
             ForgingRecipe currentRecipe = recipe.get();
             maxProgress = currentRecipe.getHammeringRequired();
             increaseCraftingProgress();
-            setChanged(pLevel, pPos, pState);
+            markDirty(pLevel, pPos, pState);
 
             if (hasProgressFinished()) {
                 craftItem();
@@ -254,8 +216,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         progress = 0;
         maxProgress = 0;
         lastRecipe = null;
-        if (!level.isClientSide()) {
-            ModEvents.resetMinigameForPlayer((ServerPlayer) player);
+        if (!world.isClient) {
+            ModEvents.resetMinigameForPlayer((ServerPlayerEntity) player);
             AbstractSmithingAnvil.setQuality(null);
         }
         player = null;
@@ -266,18 +228,18 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (opt.isEmpty()) return;
 
         ForgingRecipe recipe = opt.get();
-        ItemStack result = recipe.getResultItem(level.registryAccess());
-        failedResult = recipe.getFailedResultItem(level.registryAccess());
+        ItemStack result = recipe.getOutput(world.getRegistryManager());
+        failedResult = recipe.getFailedResultItem(world.getRegistryManager());
 
         // Collect max ingredient quality
         ForgingQuality maxIngredientQuality = null;
 
         for (int i = 0; i < 9; i++) {
             ItemStack stack = itemHandler.getStackInSlot(i);
-            if (!stack.hasTag()) continue;
+            if (!stack.hasNbt()) continue;
 
-            CompoundTag tag = stack.getTag();
-            if (tag == null || !tag.contains("ForgingQuality", CompoundTag.TAG_STRING)) {
+            NbtCompound tag = stack.getNbt();
+            if (tag == null || !tag.contains("ForgingQuality", NbtElement.STRING_TYPE)) {
                 continue;
             }
 
@@ -289,8 +251,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
         }
 
-        CompoundTag resultTag = result.getTag();
-        if (resultTag == null) resultTag = new CompoundTag();
+        NbtCompound resultTag = result.getNbt();
+        if (resultTag == null) resultTag = new NbtCompound();
         // Base result NBT
         if (recipe.hasQuality()
                 && player != null
@@ -299,8 +261,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         if (recipe.needQuenching()
-                && !result.is(ModTags.Items.HEATED_METALS)
-                && !result.is(ModTags.Items.HOT_ITEMS)) {
+                && !result.isIn(ModTags.Items.HEATED_METALS)
+                && !result.isIn(ModTags.Items.HOT_ITEMS)) {
             resultTag.putBoolean("Heated", true);
         }
 
@@ -326,10 +288,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                     quality = maxIngredientQuality;
                 }
 
-                // PERFECT → MASTER roll
+                // PERFECT -> MASTER roll
                 if (quality == ForgingQuality.PERFECT
                         && ServerConfig.MASTER_QUALITY_CHANCE.get() > 0
-                        && level.random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get()) {
+                        && world.random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get()) {
                     quality = ForgingQuality.MASTER;
                 }
 
@@ -337,7 +299,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 if (recipe.hasQuality()) {
                     resultTag.putString("ForgingQuality", quality.getDisplayName());
 
-                    if (player instanceof ServerPlayer serverPlayer) {
+                    if (player instanceof ServerPlayerEntity serverPlayer) {
                         ModAdvancementTriggers.FORGING_QUALITY
                                 .trigger(serverPlayer, quality.getDisplayName());
                     }
@@ -353,7 +315,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
         }
         if (!resultTag.isEmpty())
-            result.setTag(resultTag);
+            result.setNbt(resultTag);
 
         transferIngredientNBT(result, recipe);
 
@@ -370,24 +332,24 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             return;
         }
 
-        if (!ItemStack.isSameItemSameTags(existing, result)) return;
+        if (!ItemStack.canCombine(existing, result)) return;
 
         int total = existing.getCount() + result.getCount();
-        int max = Math.min(existing.getMaxStackSize(),
+        int max = Math.min(existing.getMaxCount(),
                 itemHandler.getSlotLimit(OUTPUT_SLOT));
 
         if (total <= max) {
-            existing.grow(result.getCount());
+            existing.increment(result.getCount());
         } else {
             int overflow = total - max;
             existing.setCount(max);
 
             ItemStack drop = result.copy();
             drop.setCount(overflow);
-            Containers.dropItemStack(level,
-                    worldPosition.getX(),
-                    worldPosition.getY(),
-                    worldPosition.getZ(),
+            ItemScatterer.spawn(world,
+                    pos.getX(),
+                    pos.getY(),
+                    pos.getZ(),
                     drop);
         }
 
@@ -397,9 +359,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     private boolean rollFailure(ForgingQuality quality) {
         return switch (quality) {
             case POOR -> true;
-            case WELL -> level.random.nextFloat()
+            case WELL -> world.random.nextFloat()
                     < ServerConfig.FAIL_ON_WELL_QUALITY_CHANCE.get();
-            case EXPERT -> level.random.nextFloat()
+            case EXPERT -> world.random.nextFloat()
                     < ServerConfig.FAIL_ON_EXPERT_QUALITY_CHANCE.get();
             default -> false;
         };
@@ -415,8 +377,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         // Handle blueprint progression (slot 11)
         ItemStack blueprint = this.itemHandler.getStackInSlot(BLUEPRINT_SLOT);
-        if (!blueprint.isEmpty() && blueprint.hasTag()) {
-            CompoundTag tag = blueprint.getOrCreateTag();
+        if (!blueprint.isEmpty() && blueprint.hasNbt()) {
+            NbtCompound tag = blueprint.getOrCreateNbt();
 
             if (tag.contains("Quality") && tag.contains("Uses")) {
                 String currentQualityStr = tag.getString("Quality");
@@ -445,7 +407,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                         if (nextQuality != null) {
                             tag.putString("Quality", nextQuality.getDisplayName());
                             tag.putInt("Uses", 0);
-                            if (player instanceof ServerPlayer serverPlayer) {
+                            if (player instanceof ServerPlayerEntity serverPlayer) {
                                 if (nextQuality.equals(BlueprintQuality.PERFECT) || nextQuality.equals(BlueprintQuality.MASTER))
                                     ModAdvancementTriggers.MAX_LEVEL_BLUEPRINT.trigger(serverPlayer);
                                 ModAdvancementTriggers.BLUEPRINT_QUALITY.trigger(serverPlayer, nextQuality.getDisplayName());
@@ -459,7 +421,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                         tag.putInt("Uses", uses); // Just increment
                     }
 
-                    blueprint.setTag(tag);
+                    blueprint.setNbt(tag);
                     this.itemHandler.setStackInSlot(BLUEPRINT_SLOT, blueprint);
                 }
             }
@@ -467,9 +429,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     private void transferIngredientNBT(ItemStack result, ForgingRecipe recipe) {
-        CompoundTag resultTag = result.getTag();
+        NbtCompound resultTag = result.getNbt();
         if (resultTag == null)
-            resultTag = new CompoundTag();
+            resultTag = new NbtCompound();
 
         List<ForgingRecipe.ForgingIngredient> ingredients =
                 recipe.getForgingIngredients();
@@ -487,23 +449,23 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (ingredientStack.isEmpty()) continue;
 
             // Damage transfer (lowest)
-            if (ingredientStack.isDamageableItem()
-                    && result.isDamageableItem()) {
+            if (ingredientStack.isDamageable()
+                    && result.isDamageable()) {
 
                 transferredDamage = Math.min(
                         transferredDamage,
-                        ingredientStack.getDamageValue()
+                        ingredientStack.getDamage()
                 );
                 foundDamage = true;
             }
 
             // NBT transfer
-            if (!ingredientStack.hasTag()) continue;
+            if (!ingredientStack.hasNbt()) continue;
 
-            CompoundTag ingredientTag = ingredientStack.getTag();
+            NbtCompound ingredientTag = ingredientStack.getNbt();
             if (ingredientTag == null) continue;
 
-            for (String key : ingredientTag.getAllKeys()) {
+            for (String key : ingredientTag.getKeys()) {
                 if (key.equals("ForgingQuality")
                         || key.equals("Creator")
                         || key.equals("Heated")
@@ -515,14 +477,14 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
         }
 
-        if (foundDamage && result.isDamageableItem()) {
-            result.setDamageValue(
+        if (foundDamage && result.isDamageable()) {
+            result.setDamage(
                     Math.min(transferredDamage, result.getMaxDamage() - 1)
             );
         }
 
         if (!resultTag.isEmpty()) {
-            result.setTag(resultTag);
+            result.setNbt(resultTag);
         }
     }
 
@@ -530,7 +492,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public boolean isFailedResult() {
         ItemStack result = this.itemHandler.getStackInSlot(OUTPUT_SLOT);
 
-        return ItemStack.isSameItem(result, failedResult);
+        return ItemStack.areItemsEqual(result, failedResult);
     }
 
     public boolean hasRecipe() {
@@ -545,7 +507,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             return false;
         }
 
-        ItemStack resultStack = recipe.getResultItem(level.registryAccess());
+        ItemStack resultStack = recipe.getOutput(world.getRegistryManager());
 
         return canInsertItemIntoOutputSlot(resultStack, recipe)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
@@ -567,40 +529,40 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
         if (recipe.requiresBlueprint()) {
             // Must have a valid matching blueprint
-            if (blueprint.isEmpty() || !blueprint.hasTag() || !blueprint.getTag().contains("ToolType")) {
+            if (blueprint.isEmpty() || !blueprint.hasNbt() || !blueprint.getNbt().contains("ToolType")) {
                 return false;
             }
 
-            String blueprintToolType = blueprint.getTag().getString("ToolType").toLowerCase(Locale.ROOT);
+            String blueprintToolType = blueprint.getNbt().getString("ToolType").toLowerCase(Locale.ROOT);
             if (!recipe.getBlueprintTypes().contains(blueprintToolType)) {
                 return false;
             }
         } else {
             // Optional blueprint: if present, it must match
-            if (!blueprint.isEmpty() && blueprint.hasTag() && blueprint.getTag().contains("ToolType")) {
-                String blueprintToolType = blueprint.getTag().getString("ToolType").toLowerCase(Locale.ROOT);
+            if (!blueprint.isEmpty() && blueprint.hasNbt() && blueprint.getNbt().contains("ToolType")) {
+                String blueprintToolType = blueprint.getNbt().getString("ToolType").toLowerCase(Locale.ROOT);
                 if (!recipe.getBlueprintTypes().contains(blueprintToolType)) {
                     return false;
                 }
             }
         }
 
-        ItemStack resultStack = recipe.getResultItem(level.registryAccess());
+        ItemStack resultStack = recipe.getOutput(world.getRegistryManager());
         return canInsertItemIntoOutputSlot(resultStack, recipe)
                 && canInsertAmountIntoOutputSlot(resultStack.getCount());
     }
 
     public Optional<ForgingRecipe> getCurrentRecipe() {
-        if (level == null) return Optional.empty();
+        if (world == null) return Optional.empty();
 
         if (needsRecipeUpdate) {
-            SimpleContainer inventory = new SimpleContainer(this.itemHandler.getSlots());
+            SimpleInventory inventory = new SimpleInventory(this.itemHandler.getSlots());
             for (int i = 0; i < 9; i++) {
-                inventory.setItem(i, itemHandler.getStackInSlot(i));
+                inventory.setStack(i, itemHandler.getStackInSlot(i));
             }
-            inventory.setItem(11, itemHandler.getStackInSlot(11));
+            inventory.setStack(11, itemHandler.getStackInSlot(11));
 
-            cachedRecipe = ForgingRecipe.findBestMatch(level, inventory)
+            cachedRecipe = ForgingRecipe.findBestMatch(world, inventory)
                     .filter(this::matchesRecipeExactly);
 
             needsRecipeUpdate = false;
@@ -617,7 +579,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         return existing.isEmpty()
-                || ItemStack.isSameItemSameTags(existing, stackToInsert);
+                || ItemStack.canCombine(existing, stackToInsert);
     }
 
     protected boolean canInsertAmountIntoOutputSlot(int count) {
@@ -625,7 +587,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (existing.isEmpty()) {
             return true;
         }
-        return existing.getCount() + count <= existing.getMaxStackSize();
+        return existing.getCount() + count <= existing.getMaxCount();
     }
 
     public boolean hasProgressFinished() {
@@ -635,10 +597,10 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public void increaseCraftingProgress() {
         progress++;
 
-        setChanged();
+        markDirty();
 
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        if (world != null && !world.isClient) {
+            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
         }
 
         if (data != null) {
@@ -655,22 +617,21 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void setBusyUntil(long time) {
         this.busyUntilGameTime = time;
-        setChanged(level, worldPosition, getBlockState());
+        markDirty(world, pos, getCachedState());
     }
 
 
-    public void tick(Level lvl, BlockPos pos, BlockState st) {
-        if (!pos.equals(this.worldPosition)) return; // sanity check
+    public void tick(World lvl, BlockPos pos, BlockState st) {
+        if (!pos.equals(this.pos)) return; // sanity check
         tickHeatedIngredients(lvl);
-        //if (!needsRecipeUpdate) return;
         try {
             // Check if blueprint changed mid-forging
             ItemStack currentBlueprint = this.itemHandler.getStackInSlot(11);
-            if (!ItemStack.isSameItemSameTags(currentBlueprint, lastBlueprint)) {
+            if (!ItemStack.canCombine(currentBlueprint, lastBlueprint)) {
                 if (progress > 0 || lastRecipe != null || isMinigameOn()) {
                     resetProgress();
                     setMinigameOn(false);
-                    OvergearedMod.LOGGER.debug("Blueprint changed at {}, minigame reset", pos);
+                    Overgeared.LOGGER.debug("Blueprint changed at {}, minigame reset", pos);
                 }
             }
             lastBlueprint = currentBlueprint.copy();
@@ -703,7 +664,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             if (hasRecipe()) {
                 maxProgress = currentRecipe.getHammeringRequired();
                 hitRemains = maxProgress - progress;
-                setChanged(lvl, pos, st);
+                markDirty(lvl, pos, st);
 
                 if (hasProgressFinished()) {
                     craftItem();
@@ -715,7 +676,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 }
             }
         } catch (Exception e) {
-            OvergearedMod.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
+            Overgeared.LOGGER.error("Error ticking smithing anvil at {}", pos, e);
             resetProgress();
         }
 
@@ -725,48 +686,18 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return maxProgress - progress;
     }
 
-    // Add this method to ensure data sync
-    public ContainerData getContainerData() {
+    public PropertyDelegate getContainerData() {
         return data;
     }
 
-    @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
-        tag.put("inventory", itemHandler.serializeNBT());
-        tag.putInt("progress", progress);
-        tag.putInt("maxProgress", maxProgress);
-        tag.putInt("hitRemains", hitRemains);
-        return tag;
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
-        if (tag.contains("progress")) {
-            this.progress = tag.getInt("progress");
-        }
-        if (tag.contains("maxProgress")) {
-            this.maxProgress = tag.getInt("maxProgress");
-        }
-        if (tag.contains("hitRemains")) {
-            this.hitRemains = tag.getInt("hitRemains");
-        }
-    }
-
     protected boolean matchesRecipeExactly(ForgingRecipe recipe) {
-        SimpleContainer inventory = new SimpleContainer(this.itemHandler.getSlots()); // 3x3 grid
+        SimpleInventory inventory = new SimpleInventory(this.itemHandler.getSlots()); // 3x3 grid
         // Copy items from input slots (0-8) to our 3x3 grid
         for (int i = 0; i < 9; i++) {
-            inventory.setItem(i, this.itemHandler.getStackInSlot(i));
+            inventory.setStack(i, this.itemHandler.getStackInSlot(i));
         }
-        inventory.setItem(11, this.itemHandler.getStackInSlot(11));
-        return recipe.matches(inventory, level);
+        inventory.setStack(11, this.itemHandler.getStackInSlot(11));
+        return recipe.matches(inventory, world);
     }
 
     protected String determineForgingQuality() {
@@ -782,25 +713,25 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             List<String> qualityTiers = List.of("poor", "well", "expert", "perfect", "master");
 
             // If blueprint is missing or invalid, fallback logic
-            if (blueprint.isEmpty() || !blueprint.hasTag()) {
-                return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
+            if (blueprint.isEmpty() || !blueprint.hasNbt()) {
+                return switch (quality.toLowerCase(Locale.ROOT)) {
                     case "poor" -> ForgingQuality.POOR.getDisplayName();
                     default -> "well"; // Cap quality at 'well' without blueprint
                 };
             }
 
-            CompoundTag nbt = blueprint.getTag();
+            NbtCompound nbt = blueprint.getNbt();
             if (nbt == null || !nbt.contains("Quality")) {
-                return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
+                return switch (quality.toLowerCase(Locale.ROOT)) {
                     case "poor" -> ForgingQuality.POOR.getDisplayName();
                     default -> "well"; // Cap quality at 'well' without ToolType
                 };
             }
 
-            String blueprintToolType = nbt.getString("Quality").toLowerCase(java.util.Locale.ROOT);
+            String blueprintToolType = nbt.getString("Quality").toLowerCase(Locale.ROOT);
 
             // Determine capped quality
-            int anvilTierIndex = qualityTiers.indexOf(quality.toLowerCase(java.util.Locale.ROOT));
+            int anvilTierIndex = qualityTiers.indexOf(quality.toLowerCase(Locale.ROOT));
             int blueprintTierIndex = qualityTiers.indexOf(blueprintToolType);
 
             // Default to lowest if any tier is missing
@@ -818,13 +749,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 case "perfect": {
                     Random random = new Random();
 
-                    // 🔹 Check if any crafting slot contains a Master-quality ingredient
+                    // Check if any crafting slot contains a Master-quality ingredient
                     boolean hasMasterIngredient = false;
                     for (int i = 0; i < this.itemHandler.getSlots(); i++) {
                         if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
                         ItemStack stack = this.itemHandler.getStackInSlot(i);
-                        if (!stack.isEmpty() && stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-                            String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase(java.util.Locale.ROOT);
+                        if (!stack.isEmpty() && stack.hasNbt() && stack.getNbt().contains("ForgingQuality")) {
+                            String ingQuality = stack.getNbt().getString("ForgingQuality").toLowerCase(Locale.ROOT);
                             if ("master".equals(ingQuality)) {
                                 hasMasterIngredient = true;
                                 break;
@@ -863,13 +794,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         if (quality.equals(ForgingQuality.PERFECT.getDisplayName())) {
             Random random = new Random();
 
-            // 🔹 Check if any crafting slot contains a Master-quality ingredient
+            // Check if any crafting slot contains a Master-quality ingredient
             boolean hasMasterIngredient = false;
             for (int i = 0; i < this.itemHandler.getSlots(); i++) {
                 if (i == OUTPUT_SLOT || i == BLUEPRINT_SLOT) continue; // skip output + blueprint
                 ItemStack stack = this.itemHandler.getStackInSlot(i);
-                if (!stack.isEmpty() && stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-                    String ingQuality = stack.getTag().getString("ForgingQuality").toLowerCase(java.util.Locale.ROOT);
+                if (!stack.isEmpty() && stack.hasNbt() && stack.getNbt().contains("ForgingQuality")) {
+                    String ingQuality = stack.getNbt().getString("ForgingQuality").toLowerCase(Locale.ROOT);
                     if ("master".equals(ingQuality)) {
                         hasMasterIngredient = true;
                         break;
@@ -928,21 +859,21 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             // Quality tiers in order
             List<String> qualityTiers = List.of("poor", "well", "expert", "perfect", "master");
 
-            // Missing or invalid blueprint → cap quality
+            // Missing or invalid blueprint -> cap quality
             String poor = quality.equalsIgnoreCase("poor")
                     ? ForgingQuality.POOR.getDisplayName()
                     : ForgingQuality.NONE.getDisplayName();
-            if (blueprint.isEmpty() || !blueprint.hasTag()) {
+            if (blueprint.isEmpty() || !blueprint.hasNbt()) {
                 return poor;
             }
 
-            CompoundTag nbt = blueprint.getTag();
+            NbtCompound nbt = blueprint.getNbt();
             if (nbt == null || !nbt.contains("Quality")) {
                 return poor;
             }
 
-            String bpQuality = nbt.getString("Quality").toLowerCase(java.util.Locale.ROOT);
-            // ensure it’s in our tier list, otherwise default
+            String bpQuality = nbt.getString("Quality").toLowerCase(Locale.ROOT);
+            // ensure it's in our tier list, otherwise default
             return qualityTiers.contains(bpQuality) ? bpQuality : ForgingQuality.NONE.getDisplayName();
         }
 
@@ -951,11 +882,11 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void setProgress(int progress) {
         this.progress = progress;
-        this.setChanged();
+        this.markDirty();
 
         // Force sync to client
-        if (level != null && !level.isClientSide()) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        if (world != null && !world.isClient) {
+            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
         }
 
         if (this.data != null) {
@@ -970,48 +901,31 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     }
 
     public int getProgress() {
-        if (level != null && level.isClientSide() && data != null) {
+        if (world != null && world.isClient && data != null) {
             // On client, get from synced container data
             return data.get(0);
         }
         return this.progress;
     }
 
-    @Override
-    public void onChunkUnloaded() {
-        super.onChunkUnloaded();
-        // Ensure any players are reset
-        /*ServerPlayer user = ModItemInteractEvents.getUsingPlayer(getBlockPos());
-        if (user != null) {
-            user.getCapability(AnvilMinigameProvider.ANVIL_MINIGAME).ifPresent(minigame -> {
-                //minigame.resetNBTData();
-                minigame.reset(user);
-                //minigame.setIsVisible(false, user);
-                progress = 0;
-                ModItemInteractEvents.releaseAnvil(user, getBlockPos());
-                //ModMessages.sendToPlayer(new MinigameSyncS2CPacket(new CompoundTag().putBoolean("isVisible", false)), user);
-            });
-        }*/
-    }
-
     public void setOwner(UUID uuid) {
         ownerUUID = uuid;
-        sessionStartTime = level.getGameTime();
-        setChanged();
+        sessionStartTime = world.getTime();
+        markDirty();
     }
 
     public void clearOwner() {
         ownerUUID = null;
         sessionStartTime = 0L;
-        setChanged();
+        markDirty();
     }
 
-    public boolean isOwnedBy(Player player) {
-        return ownerUUID != null && ownerUUID.equals(player.getUUID());
+    public boolean isOwnedBy(PlayerEntity player) {
+        return ownerUUID != null && ownerUUID.equals(player.getUuid());
     }
 
-    public boolean isOwnedByOther(Player player) {
-        return ownerUUID != null && !ownerUUID.equals(player.getUUID());
+    public boolean isOwnedByOther(PlayerEntity player) {
+        return ownerUUID != null && !ownerUUID.equals(player.getUuid());
     }
 
     public boolean hasQuality() {
@@ -1034,7 +948,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return !recipe.hasQuality() && recipe.needsMinigame();
     }
 
-    public IItemHandlerModifiable getItemHandler() {
+    public ItemStackHandler getItemHandler() {
         return itemHandler;
     }
 
@@ -1048,23 +962,23 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
     public void setMinigameOn(boolean value) {
         this.minigameOn = value;
-        setChanged(); // mark dirty for save
+        markDirty(); // mark dirty for save
     }
 
     private static final String HEATED_TIME_TAG = "HeatedSince";
 
-    public void tickHeatedIngredients(Level level) {
-        if (level.isClientSide) return;
-        long tick = level.getGameTime();
+    public void tickHeatedIngredients(World world) {
+        if (world.isClient) return;
+        long tick = world.getTime();
         int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
-            if (!stack.is(ModTags.Items.HEATED_METALS)) continue;
+            if (!stack.isIn(ModTags.Items.HEATED_METALS)) continue;
 
-            CompoundTag tag = stack.getTag();
-            if (tag == null) tag = new CompoundTag();
+            NbtCompound tag = stack.getNbt();
+            if (tag == null) tag = new NbtCompound();
             long heatedSince = tag.getLong(HEATED_TIME_TAG);
 
             // Initialize timestamp if not present
@@ -1073,31 +987,31 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 continue;
             }
 
-            // Cooldown complete → convert to cooled version
+            // Cooldown complete -> convert to cooled version
             if (tick - heatedSince >= cooldownTicks) {
-                Item cooled = getCooledItem(stack.getItem(), level);
+                Item cooled = getCooledItem(stack.getItem(), world);
                 if (cooled != null) {
                     ItemStack newStack = new ItemStack(cooled, stack.getCount());
                     // Preserve quality or other metadata if needed
-                    if (stack.hasTag()) {
-                        CompoundTag oldTag = stack.getTag().copy();
+                    if (stack.hasNbt()) {
+                        NbtCompound oldTag = stack.getNbt().copy();
                         oldTag.remove(HEATED_TIME_TAG);
                         if (oldTag.isEmpty()) {
-                            newStack.setTag(null); // fully clear
+                            newStack.setNbt(null); // fully clear
                         } else {
-                            newStack.setTag(oldTag);
+                            newStack.setNbt(oldTag);
                         }
                     }
-                    level.playSound(
+                    world.playSound(
                             null,                              // no player (broadcast to all nearby)
-                            worldPosition,                     // block position
-                            SoundEvents.FIRE_EXTINGUISH,       // extinguish sound
-                            SoundSource.BLOCKS,                // sound category
+                            pos,                                // block position
+                            SoundEvents.BLOCK_FIRE_EXTINGUISH, // extinguish sound
+                            SoundCategory.BLOCKS,               // sound category
                             1.0F,                              // volume
                             1.0F                               // pitch
                     );
                     itemHandler.setStackInSlot(slot, newStack);
-                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                    world.updateListeners(pos, getCachedState(), getCachedState(), 3);
                 }
             }
         }
@@ -1107,21 +1021,89 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return anvilTier;
     }
 
-    public boolean tryStartMinigame(ServerPlayer player) {
+    public boolean tryStartMinigame(ServerPlayerEntity player) {
 
         if (minigameOn) return false;
 
-        if (ownerUUID != null && !ownerUUID.equals(player.getUUID())) {
+        if (ownerUUID != null && !ownerUUID.equals(player.getUuid())) {
             return false;
         }
 
-        ownerUUID = player.getUUID();
+        ownerUUID = player.getUuid();
         minigameOn = true;
-        sessionStartTime = level.getGameTime();
+        sessionStartTime = world.getTime();
 
-        setChanged();
-        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        markDirty();
+        world.updateListeners(pos, getCachedState(), getCachedState(), 3);
 
         return true;
+    }
+
+    // ---------------- Inventory / SidedInventory (replaces the Forge IItemHandler capability) ----------------
+
+    @Override
+    public int size() {
+        return itemHandler.getSlots();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        for (int i = 0; i < itemHandler.getSlots(); i++) {
+            if (!itemHandler.getStackInSlot(i).isEmpty()) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public ItemStack getStack(int slot) {
+        return itemHandler.getStackInSlot(slot);
+    }
+
+    @Override
+    public ItemStack removeStack(int slot, int amount) {
+        return itemHandler.extractItem(slot, amount, false);
+    }
+
+    @Override
+    public ItemStack removeStack(int slot) {
+        return itemHandler.extractItem(slot, itemHandler.getStackInSlot(slot).getCount(), false);
+    }
+
+    @Override
+    public void setStack(int slot, ItemStack stack) {
+        itemHandler.setStackInSlot(slot, stack);
+    }
+
+    @Override
+    public boolean canPlayerUse(PlayerEntity player) {
+        return world != null && world.getBlockEntity(pos) == this
+                && player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0;
+    }
+
+    @Override
+    public void clear() {
+        for (int i = 0; i < itemHandler.getSlots(); i++) {
+            itemHandler.setStackInSlot(i, ItemStack.EMPTY);
+        }
+    }
+
+    @Override
+    public int[] getAvailableSlots(Direction side) {
+        if (side == Direction.DOWN) {
+            return new int[]{OUTPUT_SLOT};
+        }
+        int[] slots = new int[itemHandler.getSlots()];
+        for (int i = 0; i < slots.length; i++) slots[i] = i;
+        return slots;
+    }
+
+    @Override
+    public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir) {
+        return dir != Direction.DOWN && itemHandler.isItemValid(slot, stack);
+    }
+
+    @Override
+    public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+        return dir != Direction.DOWN || slot == OUTPUT_SLOT;
     }
 }

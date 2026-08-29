@@ -1,25 +1,52 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraftforge.common.ForgeTier;
-import net.minecraftforge.common.TierSortingRegistry;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.util.ModTags;
+import net.minecraft.item.Items;
+import net.minecraft.item.ToolMaterial;
+import net.minecraft.recipe.Ingredient;
 
-import java.util.List;
+import java.util.function.Supplier;
 
 public class ModToolTiers {
-    public static final Tier STEEL = TierSortingRegistry.registerTier(
-            new ForgeTier(2, 500, 7.0F, 3.0F, 12,
-                    ModTags.Blocks.NEEDS_STEEL_TOOL, () -> Ingredient.of(ModItems.STEEL_INGOT.get())),
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "steel_ingot"), List.of(Tiers.IRON), List.of(Tiers.DIAMOND));
+    // Forge's ForgeTier/TierSortingRegistry has no Fabric equivalent; ordering between
+    // vanilla tiers only matters for the mineable/needs_*_tool tags (see ModTags.Blocks),
+    // which already encode the same steel≈iron, copper≈stone placement.
+    public static final ToolMaterial STEEL = new SimpleToolMaterial(
+            3, 500, 7.0F, 3.0F, 12, () -> Ingredient.ofItems(ModItems.STEEL_INGOT));
 
-    public static final Tier COPPER = TierSortingRegistry.registerTier(
-            new ForgeTier(1, 190, 5.0F, 1.0F, 12,
-                    ModTags.Blocks.NEEDS_COPPER_TOOL, () -> Ingredient.of(Items.COPPER_INGOT)),
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "copper_ingot"), List.of(Tiers.STONE), List.of(Tiers.IRON));
+    public static final ToolMaterial COPPER = new SimpleToolMaterial(
+            2, 190, 5.0F, 1.0F, 12, () -> Ingredient.ofItems(Items.COPPER_INGOT));
+
+    private record SimpleToolMaterial(int miningLevel, int durability, float miningSpeed, float attackDamage,
+                                      int enchantability,
+                                      Supplier<Ingredient> repairIngredient) implements ToolMaterial {
+        @Override
+        public int getDurability() {
+            return durability;
+        }
+
+        @Override
+        public float getMiningSpeedMultiplier() {
+            return miningSpeed;
+        }
+
+        @Override
+        public float getAttackDamage() {
+            return attackDamage;
+        }
+
+        @Override
+        public int getMiningLevel() {
+            return miningLevel;
+        }
+
+        @Override
+        public int getEnchantability() {
+            return enchantability;
+        }
+
+        @Override
+        public Ingredient getRepairIngredient() {
+            return repairIngredient.get();
+        }
+    }
 }

@@ -11,39 +11,36 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.CastingRecipe;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 
 public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
 
-    public static final ResourceLocation UID =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "casting");
-    public static final ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/casting_furnace_jei.png");
+    public static final Identifier UID = Overgeared.id("casting");
+    public static final Identifier TEXTURE = Overgeared.id("textures/gui/casting_furnace_jei.png");
 
-    // JEI recipe type — placed under vanilla smelting tab
     public static final RecipeType<CastingRecipe> CASTING_TYPE =
             new RecipeType<>(UID, CastingRecipe.class);
 
     private final IDrawable background;
     private final IDrawable icon;
-    private final int animationTime = 200; // full cycle in ticks
+    private final int animationTime = 200;
     private final IDrawableAnimated arrowAnimated;
     private final IDrawableStatic arrowStatic;
     private final IDrawableAnimated flameAnimated;
@@ -55,7 +52,7 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.CAST_FURNACE.get()));
+                new ItemStack(ModBlocks.CAST_FURNACE));
 
         arrowStatic = helper.drawableBuilder(TEXTURE, 89, 14, 22, 16).setTextureSize(112, 43).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
@@ -63,7 +60,7 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
         flameStatic = helper.drawableBuilder(TEXTURE, 89, 0, 14, 13).setTextureSize(112, 43).build();
         flameAnimated = helper.createAnimatedDrawable(
                 flameStatic,
-                100, // burn time
+                100,
                 IDrawableAnimated.StartDirection.TOP,
                 true
         );
@@ -75,8 +72,8 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatable("gui.overgeared.jei.category.casting");
+    public Text getTitle() {
+        return Text.translatable("gui.overgeared.jei.category.casting");
     }
 
     @Override
@@ -91,12 +88,11 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
 
 
     @Override
-    public void draw(CastingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(CastingRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
         Float exp = recipe.getExperience();
         arrowAnimated.draw(guiGraphics, 29, 9);
         flameAnimated.draw(guiGraphics, 33, 29);
 
-        // Draw experience with formatting to avoid trailing .0
         String expText;
         if (exp == exp.intValue()) {
             expText = exp.intValue() + " XP";
@@ -104,11 +100,10 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
             expText = String.format("%.1f XP", exp);
         }
 
-        // Calculate X position to right-align the text
-        int textWidth = Minecraft.getInstance().font.width(expText);
-        int xPos = this.background.getWidth() - textWidth; // 5 pixels from right edge
+        int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(expText);
+        int xPos = this.background.getWidth() - textWidth;
 
-        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, 35, 0xFFFFFFFF, true);
+        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, expText, xPos, 35, 0xFFFFFFFF, true);
     }
 
     @Override
@@ -117,7 +112,9 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
         // -------------------------
         // MATERIAL INPUT SLOT
         // -------------------------
-        NonNullList<Ingredient> materialIngredients = NonNullList.create();
+        // Yarn's Ingredient has no Ingredient.merge(List<Ingredient>) helper (Forge/NeoForge-only
+        // addition), so the per-material stacks are flattened into one combined stack list instead.
+        List<ItemStack> materialStacks = new ArrayList<>();
 
         Map<String, Double> requiredMaterials = recipe.getRequiredMaterials();
 
@@ -125,51 +122,42 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
             String materialId = entry.getKey();
             double requiredAmount = entry.getValue();
 
-            List<ItemStack> stacksForThisMaterial = new java.util.ArrayList<>();
-
-            // All valid items for this material
             for (Item item : ConfigHelper.getItemListForMaterial(materialId)) {
                 int value = ConfigHelper.getMaterialValue(item);
                 if (value <= 0) continue;
 
                 int count = (int) Math.ceil(requiredAmount / value);
-                stacksForThisMaterial.add(new ItemStack(item, count));
-            }
-
-            if (!stacksForThisMaterial.isEmpty()) {
-                materialIngredients.add(
-                        Ingredient.of(stacksForThisMaterial.toArray(ItemStack[]::new))
-                );
+                materialStacks.add(new ItemStack(item, count));
             }
         }
 
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 1)
-                .addIngredients(Ingredient.merge(materialIngredients));
+                .addItemStacks(materialStacks);
 
         // -------------------------
         // TOOL CAST SLOT
         // -------------------------
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         tag.putString("ToolType", recipe.getToolType());
 
         double total = requiredMaterials.values().stream().mapToDouble(Double::doubleValue).sum();
         tag.putDouble("Amount", total);
         tag.putDouble("MaxAmount", total);
 
-        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST.get());
-        firedCast.setTag(tag.copy());
+        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST);
+        firedCast.setNbt(tag.copy());
 
-        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST.get());
-        netherCast.setTag(tag.copy());
+        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST);
+        netherCast.setNbt(tag.copy());
 
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
-                .addIngredients(Ingredient.of(firedCast, netherCast));
+                .addIngredients(Ingredient.ofStacks(firedCast, netherCast));
 
         // -------------------------
         // OUTPUT
         // -------------------------
         builder.addSlot(RecipeIngredientRole.OUTPUT, 68, 10)
-                .addItemStack(recipe.getResultItem(null));
+                .addItemStack(recipe.getOutput(null));
     }
 
 }

@@ -1,27 +1,123 @@
 package net.stirdrem.overgeared.loot;
 
-import com.mojang.serialization.Codec;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.loot.AddItemModifier;
+import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.condition.RandomChanceLootCondition;
+import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.item.ModItems;
 
 public class ModLootModifiers {
-    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIER_SERIALIZERS =
-            DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, OvergearedMod.MOD_ID);
 
-    public static final RegistryObject<Codec<? extends IGlobalLootModifier>> ADD_ITEM =
-            LOOT_MODIFIER_SERIALIZERS.register("add_item", AddItemModifier.CODEC);
+    private static final Identifier SIMPLE_DUNGEON = Identifier.of("minecraft", "chests/simple_dungeon");
+    private static final Identifier ABANDONED_MINESHAFT = Identifier.of("minecraft", "chests/abandoned_mineshaft");
+    private static final Identifier STRONGHOLD_CORRIDOR = Identifier.of("minecraft", "chests/stronghold_corridor");
+    private static final Identifier STRONGHOLD_CROSSING = Identifier.of("minecraft", "chests/stronghold_crossing");
+    private static final Identifier STRONGHOLD_LIBRARY = Identifier.of("minecraft", "chests/stronghold_library");
+    private static final Identifier DESERT_PYRAMID = Identifier.of("minecraft", "chests/desert_pyramid");
+    private static final Identifier JUNGLE_TEMPLE = Identifier.of("minecraft", "chests/jungle_temple");
+    private static final Identifier JUNGLE_TEMPLE_DISPENSER = Identifier.of("minecraft", "chests/jungle_temple_dispenser");
+    private static final Identifier SHIPWRECK_TREASURE = Identifier.of("minecraft", "chests/shipwreck_treasure");
+    private static final Identifier WOODLAND_MANSION = Identifier.of("minecraft", "chests/woodland_mansion");
+    private static final Identifier ANCIENT_CITY = Identifier.of("minecraft", "chests/ancient_city");
+    private static final Identifier PILLAGER_OUTPOST = Identifier.of("minecraft", "chests/pillager_outpost");
+    private static final Identifier BURIED_TREASURE = Identifier.of("minecraft", "chests/buried_treasure");
 
-    public static final RegistryObject<Codec<QualityLootModifier>> TOOL_QUALITY =
-            LOOT_MODIFIER_SERIALIZERS.register("tool_quality", () -> QualityLootModifier.CODEC);
+    public static void register() {
+        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
+            tableBuilder.apply(QualityLootFunction.INSTANCE);
+            // Check if this is one of our target loot tables
+            for (Identifier dungeon : getOtherDungeons()) {
+                if (id.equals(dungeon)) {
+                    String namePrefix = dungeon.getPath().replace("chests/", "");
 
+                    // Add Steel Ingot (75% chance)
+                    tableBuilder.pool(
+                            LootPool.builder()
+                                    .rolls(ConstantLootNumberProvider.create(1))
+                                    .with(ItemEntry.builder(ModItems.STEEL_INGOT))
+                                    .conditionally(RandomChanceLootCondition.builder(0.75f))
+                                    .build()
+                    );
 
-    public static void register(IEventBus eventBus) {
-        LOOT_MODIFIER_SERIALIZERS.register(eventBus);
+                    // Add Diamond Upgrade Template (50% chance)
+                    tableBuilder.pool(
+                            LootPool.builder()
+                                    .rolls(ConstantLootNumberProvider.create(1))
+                                    .with(ItemEntry.builder(ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE))
+                                    .conditionally(RandomChanceLootCondition.builder(0.50f))
+                                    .build()
+                    );
+                }
+            }
+
+            // Jungle Temple Dispenser
+            if (id.equals(JUNGLE_TEMPLE_DISPENSER)) {
+                tableBuilder.pool(
+                        LootPool.builder()
+                                .rolls(ConstantLootNumberProvider.create(1))
+                                .with(ItemEntry.builder(ModItems.IRON_UPGRADE_ARROW))
+                                .conditionally(RandomChanceLootCondition.builder(0.50f))
+                                .build()
+                );
+            }
+
+            // Less rare dungeons
+            for (Identifier dungeon : getLessRareDungeons()) {
+                if (id.equals(dungeon)) {
+                    String namePrefix = dungeon.getPath().replace("chests/", "");
+
+                    // Steel Ingot (50% chance)
+                    tableBuilder.pool(
+                            LootPool.builder()
+                                    .rolls(ConstantLootNumberProvider.create(1))
+                                    .with(ItemEntry.builder(ModItems.STEEL_INGOT))
+                                    .conditionally(RandomChanceLootCondition.builder(0.5f))
+                                    .build()
+                    );
+
+                    // Steel Ingot second entry (35% chance)
+                    tableBuilder.pool(
+                            LootPool.builder()
+                                    .rolls(ConstantLootNumberProvider.create(1))
+                                    .with(ItemEntry.builder(ModItems.STEEL_INGOT))
+                                    .conditionally(RandomChanceLootCondition.builder(0.35f))
+                                    .build()
+                    );
+
+                    // Diamond Upgrade Template (15% chance)
+                    tableBuilder.pool(
+                            LootPool.builder()
+                                    .rolls(ConstantLootNumberProvider.create(1))
+                                    .with(ItemEntry.builder(ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE))
+                                    .conditionally(RandomChanceLootCondition.builder(0.15f))
+                                    .build()
+                    );
+                }
+            }
+        });
+    }
+
+    private static Identifier[] getOtherDungeons() {
+        return new Identifier[]{
+                STRONGHOLD_CORRIDOR,
+                STRONGHOLD_CROSSING,
+                STRONGHOLD_LIBRARY,
+                DESERT_PYRAMID,
+                SHIPWRECK_TREASURE,
+                WOODLAND_MANSION,
+                JUNGLE_TEMPLE,
+                ANCIENT_CITY,
+                PILLAGER_OUTPOST,
+                BURIED_TREASURE
+        };
+    }
+
+    private static Identifier[] getLessRareDungeons() {
+        return new Identifier[]{
+                ABANDONED_MINESHAFT,
+                SIMPLE_DUNGEON
+        };
     }
 }

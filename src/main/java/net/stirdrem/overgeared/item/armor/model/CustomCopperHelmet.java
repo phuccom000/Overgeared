@@ -1,62 +1,65 @@
-package net.stirdrem.overgeared.item.armor.model;// Made with Blockbench 4.12.5
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
+package net.stirdrem.overgeared.item.armor.model;
 
+import net.minecraft.client.model.Dilation;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.EntityModelLayer;
+import net.stirdrem.overgeared.Overgeared;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.stirdrem.overgeared.OvergearedMod;
+/**
+ * Blockbench-authored custom armor geometry, ported from the Forge original's
+ * {@code EntityModel<T>} subclass. Only the baked-part extraction is needed here -
+ * rendering goes through Fabric's {@code ArmorRenderer.renderPart}, see
+ * {@link net.stirdrem.overgeared.client.CopperArmorRenderer}.
+ */
+public class CustomCopperHelmet {
+    public static final EntityModelLayer LAYER_LOCATION = new EntityModelLayer(Overgeared.id("copper_helmet"), "main");
 
-public class CustomCopperHelmet<T extends Entity> extends EntityModel<T> {
-    // This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "copper_helmet"), "main");
-    public final ModelPart Head;
+    public static TexturedModelData createBodyLayer() {
+        ModelData modelData = new ModelData();
+        ModelPartData partData = modelData.getRoot();
 
-    public CustomCopperHelmet(ModelPart root) {
-        this.Head = root.getChild("Head");
-    }
+        ModelPartData head = partData.addChild("Head", ModelPartBuilder.create()
+                        .uv(0, 0).cuboid(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new Dilation(1.0F))
+                        .uv(34, -15).cuboid(0.0F, -15.0F, -5.0F, 0.0F, 6.0F, 15.0F, Dilation.NONE)
+                        .uv(54, 1).cuboid(0.0F, -9.0F, 5.0F, 0.0F, 2.0F, 5.0F, Dilation.NONE),
+                ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
-    public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshdefinition = new MeshDefinition();
-        PartDefinition partdefinition = meshdefinition.getRoot();
+        head.addChild("cube_r1", ModelPartBuilder.create()
+                        .uv(54, 3).cuboid(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -8.0F, 6.0F, 0.0F, -0.1963F, 0.0F));
 
-        PartDefinition Head = partdefinition.addOrReplaceChild("Head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(1.0F))
-                .texOffs(34, -15).addBox(0.0F, -15.0F, -5.0F, 0.0F, 6.0F, 15.0F, new CubeDeformation(0.0F))
-                .texOffs(54, 1).addBox(0.0F, -9.0F, 5.0F, 0.0F, 2.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+        head.addChild("cube_r2", ModelPartBuilder.create()
+                        .uv(54, 3).cuboid(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -8.0F, 6.0F, 0.0F, -0.3927F, 0.0F));
 
-        PartDefinition cube_r1 = Head.addOrReplaceChild("cube_r1", CubeListBuilder.create().texOffs(54, 3).addBox(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -8.0F, 6.0F, 0.0F, -0.1963F, 0.0F));
+        head.addChild("cube_r3", ModelPartBuilder.create()
+                        .uv(54, 3).cuboid(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -8.0F, 6.0F, 0.0F, 0.1963F, 0.0F));
 
-        PartDefinition cube_r2 = Head.addOrReplaceChild("cube_r2", CubeListBuilder.create().texOffs(54, 3).addBox(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -8.0F, 6.0F, 0.0F, -0.3927F, 0.0F));
+        head.addChild("cube_r4", ModelPartBuilder.create()
+                        .uv(54, 3).cuboid(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -8.0F, 6.0F, 0.0F, 0.3927F, 0.0F));
 
-        PartDefinition cube_r3 = Head.addOrReplaceChild("cube_r3", CubeListBuilder.create().texOffs(54, 3).addBox(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -8.0F, 6.0F, 0.0F, 0.1963F, 0.0F));
+        head.addChild("cube_r5", ModelPartBuilder.create()
+                        .uv(34, -15).cuboid(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, -0.1963F));
 
-        PartDefinition cube_r4 = Head.addOrReplaceChild("cube_r4", CubeListBuilder.create().texOffs(54, 3).addBox(0.0F, -7.0F, -1.0F, 0.0F, 9.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -8.0F, 6.0F, 0.0F, 0.3927F, 0.0F));
+        head.addChild("cube_r6", ModelPartBuilder.create()
+                        .uv(34, -15).cuboid(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, -0.3927F));
 
-        PartDefinition cube_r5 = Head.addOrReplaceChild("cube_r5", CubeListBuilder.create().texOffs(34, -15).addBox(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, -0.1963F));
+        head.addChild("cube_r7", ModelPartBuilder.create()
+                        .uv(34, -15).cuboid(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, 0.1963F));
 
-        PartDefinition cube_r6 = Head.addOrReplaceChild("cube_r6", CubeListBuilder.create().texOffs(34, -15).addBox(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, -0.3927F));
+        head.addChild("cube_r8", ModelPartBuilder.create()
+                        .uv(34, -15).cuboid(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, Dilation.NONE),
+                ModelTransform.of(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, 0.3927F));
 
-        PartDefinition cube_r7 = Head.addOrReplaceChild("cube_r7", CubeListBuilder.create().texOffs(34, -15).addBox(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, 0.1963F));
-
-        PartDefinition cube_r8 = Head.addOrReplaceChild("cube_r8", CubeListBuilder.create().texOffs(34, -15).addBox(0.0F, -5.0F, -5.0F, 0.0F, 5.0F, 15.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -10.0F, 0.0F, 0.0F, 0.0F, 0.3927F));
-
-        return LayerDefinition.create(meshdefinition, 64, 32);
-    }
-
-    @Override
-    public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-
-    }
-
-    @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        Head.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        return TexturedModelData.of(modelData, 64, 32);
     }
 }

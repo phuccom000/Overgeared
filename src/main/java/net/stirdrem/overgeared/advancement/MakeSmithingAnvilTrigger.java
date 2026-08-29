@@ -1,32 +1,31 @@
 package net.stirdrem.overgeared.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.advancement.criterion.AbstractCriterion;
+import net.minecraft.advancement.criterion.AbstractCriterionConditions;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
+import net.minecraft.predicate.entity.LootContextPredicate;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class MakeSmithingAnvilTrigger
-        extends SimpleCriterionTrigger<MakeSmithingAnvilTrigger.TriggerInstance> {
+        extends AbstractCriterion<MakeSmithingAnvilTrigger.Conditions> {
 
-    public static final ResourceLocation ID =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "make_smithing_anvil");
+    public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "make_smithing_anvil");
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return ID;
     }
 
     @Override
-    protected TriggerInstance createInstance(
+    protected Conditions conditionsFromJson(
             JsonObject json,
-            ContextAwarePredicate player,
-            DeserializationContext context
+            LootContextPredicate playerPredicate,
+            AdvancementEntityPredicateDeserializer context
     ) {
         String tier = null;
 
@@ -34,23 +33,23 @@ public class MakeSmithingAnvilTrigger
             tier = json.get("tier").getAsString();
         }
 
-        return new TriggerInstance(player, tier);
+        return new Conditions(playerPredicate, tier);
     }
 
-    public void trigger(ServerPlayer player, String tierUsed) {
+    public void trigger(ServerPlayerEntity player, String tierUsed) {
         this.trigger(player, instance -> instance.matches(tierUsed));
     }
 
-    // ---------------- Trigger Instance ----------------
+    // ---------------- Conditions ----------------
 
-    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+    public static class Conditions extends AbstractCriterionConditions {
 
         @Nullable
         private final String tier;
 
-        public TriggerInstance(ContextAwarePredicate player,
-                               @Nullable String tier) {
-            super(ID, player);
+        public Conditions(LootContextPredicate playerPredicate,
+                           @Nullable String tier) {
+            super(ID, playerPredicate);
             this.tier = tier;
         }
 
@@ -63,4 +62,3 @@ public class MakeSmithingAnvilTrigger
         }
     }
 }
-

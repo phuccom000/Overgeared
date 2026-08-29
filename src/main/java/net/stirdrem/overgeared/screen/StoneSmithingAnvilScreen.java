@@ -1,14 +1,10 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.client.ForgingRecipeBookComponent;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.Text;
 
-public class StoneSmithingAnvilScreen extends AbstractSmithingAnvilScreen<StoneSmithingAnvilMenu> {
-
-    public StoneSmithingAnvilScreen(StoneSmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
-        super(pMenu, pPlayerInventory, pTitle, new ForgingRecipeBookComponent(), false);
+public class StoneSmithingAnvilScreen extends AbstractSmithingAnvilScreen<StoneSmithingAnvilScreenHandler> {
+    public StoneSmithingAnvilScreen(StoneSmithingAnvilScreenHandler handler, PlayerInventory playerInv, Text title) {
+        super(handler, playerInv, title, false);
     }
 }

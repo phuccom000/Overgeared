@@ -1,22 +1,22 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.resource.ResourceType;
 import net.stirdrem.overgeared.datapack.*;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ReloadListenerRegistry {
 
-    @SubscribeEvent
-    public static void onReload(AddReloadListenerEvent event) {
-        event.addListener(new BlueprintTooltypesReloadListener());
-        event.addListener(new GrindingBlacklistReloadListener());
-        event.addListener(new DurabilityBlacklistReloadListener());
-        event.addListener(new CastingToolTypesReloadListener());
-        event.addListener(new MaterialSettingsReloadListener());
-        event.addListener(new KnappingResourceReloadListener());
-        event.addListener(new RockInteractionReloadListener());
-        event.addListener(new QualityAttributeReloadListener());
+    public static void register() {
+        ResourceManagerHelper helper = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+        helper.registerReloadListener(new BlueprintTooltypesReloadListener());
+        helper.registerReloadListener(new GrindingBlacklistReloadListener());
+        helper.registerReloadListener(new DurabilityBlacklistReloadListener());
+        helper.registerReloadListener(new CastingToolTypesReloadListener());
+        helper.registerReloadListener(new MaterialSettingsReloadListener());
+        helper.registerReloadListener(new KnappingResourceReloadListener());
+        helper.registerReloadListener(new RockInteractionReloadListener());
+        helper.registerReloadListener(new QualityAttributeReloadListener());
+        // BreakSystemBlacklistReloadListener is intentionally not registered here,
+        // matching upstream (see its own file for why).
     }
 }

@@ -1,48 +1,48 @@
 package net.stirdrem.overgeared.recipe.nbtcooking;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.CookingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.book.CookingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
 
 public abstract class AbstractNBTCookingRecipe extends AbstractCookingRecipe {
 
-    protected final CompoundTag resultTag;
+    protected final NbtCompound resultTag;
 
     public AbstractNBTCookingRecipe(
             RecipeType<?> type,
-            ResourceLocation id,
+            Identifier id,
             String group,
-            CookingBookCategory category,
+            CookingRecipeCategory category,
             Ingredient ingredient,
             ItemStack result,
             float experience,
             int cookingTime,
-            CompoundTag resultTag
+            NbtCompound resultTag
     ) {
         super(type, id, group, category, ingredient, result, experience, cookingTime);
         this.resultTag = resultTag;
     }
 
     @Override
-    public ItemStack assemble(Container container, RegistryAccess registryAccess) {
-        ItemStack result = super.assemble(container, registryAccess).copy();
+    public ItemStack craft(Inventory inventory, DynamicRegistryManager registryAccess) {
+        ItemStack result = super.craft(inventory, registryAccess).copy();
 
         if (resultTag != null && !resultTag.isEmpty()) {
-            CompoundTag tag = result.getOrCreateTag();
-            tag.merge(resultTag); // merge custom NBT
-            result.setTag(tag);
+            NbtCompound tag = result.getOrCreateNbt();
+            tag.copyFrom(resultTag); // merge custom NBT
+            result.setNbt(tag);
         }
 
         return result;
     }
 
-    public CompoundTag getResultTag() {
+    public NbtCompound getResultTag() {
         return resultTag;
     }
 }

@@ -1,150 +1,245 @@
 package net.stirdrem.overgeared.datagen;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.RequirementsStrategy;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.ItemLike;
+import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.AdvancementRewards;
+import net.minecraft.advancement.CriterionMerger;
+import net.minecraft.advancement.criterion.CriterionConditions;
+import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
+import net.minecraft.data.server.recipe.RecipeJsonBuilder;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.stirdrem.overgeared.recipe.FletchingRecipe;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class FletchingRecipeBuilder implements RecipeBuilder {
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
+
+public class FletchingRecipeBuilder extends RecipeJsonBuilder {
+
     private final Ingredient tip;
     private final Ingredient shaft;
     private final Ingredient feather;
     private final ItemStack result;
+
     private ItemStack resultTipped = ItemStack.EMPTY;
     private String tippedTag = null;
+
     private ItemStack resultLingering = ItemStack.EMPTY;
     private String lingeringTag = null;
-    private final Advancement.Builder advancement = Advancement.Builder.advancement();
+
+    private final Advancement.Builder advancement =
+            Advancement.Builder.createUntelemetered();
+
+    @Nullable
     private String group;
 
-    public FletchingRecipeBuilder(Ingredient tip, Ingredient shaft, Ingredient feather, ItemStack result) {
+    public FletchingRecipeBuilder(
+            Ingredient tip,
+            Ingredient shaft,
+            Ingredient feather,
+            ItemStack result
+    ) {
         this.tip = tip;
         this.shaft = shaft;
         this.feather = feather;
         this.result = result;
     }
 
-    public static FletchingRecipeBuilder fletching(Ingredient tip, Ingredient shaft, Ingredient feather, ItemLike result) {
+    public static FletchingRecipeBuilder fletching(
+            Ingredient tip,
+            Ingredient shaft,
+            Ingredient feather,
+            ItemConvertible result
+    ) {
         return fletching(tip, shaft, feather, result, 1);
     }
 
-    public static FletchingRecipeBuilder fletching(Ingredient tip, Ingredient shaft, Ingredient feather, ItemLike result, int count) {
-        return new FletchingRecipeBuilder(tip, shaft, feather, new ItemStack(result, count));
+    public static FletchingRecipeBuilder fletching(
+            Ingredient tip,
+            Ingredient shaft,
+            Ingredient feather,
+            ItemConvertible result,
+            int count
+    ) {
+        return new FletchingRecipeBuilder(
+                tip,
+                shaft,
+                feather,
+                new ItemStack(result, count)
+        );
     }
 
-    // Basic result methods
-    public FletchingRecipeBuilder withTippedResult(ItemLike result) {
+    public FletchingRecipeBuilder withTippedResult(
+            ItemConvertible result
+    ) {
         return withTippedResult(result, this.result.getCount());
     }
 
-    public FletchingRecipeBuilder withTippedResult(ItemLike result, int count) {
+    public FletchingRecipeBuilder withTippedResult(
+            ItemConvertible result,
+            int count
+    ) {
         return withTippedResult("Potion", result, count);
     }
 
-    public FletchingRecipeBuilder withTippedResult(String tag, ItemLike result, int count) {
+    public FletchingRecipeBuilder withTippedResult(
+            String tag,
+            ItemConvertible result,
+            int count
+    ) {
         this.resultTipped = new ItemStack(result, count);
         this.tippedTag = tag;
         return this;
     }
 
-    public FletchingRecipeBuilder withTippedResult(String tag, ItemLike result) {
-        this.resultLingering = new ItemStack(result, this.result.getCount());
-        this.lingeringTag = tag;
+    public FletchingRecipeBuilder withTippedResult(
+            String tag,
+            ItemConvertible result
+    ) {
+        this.resultTipped = new ItemStack(result, this.result.getCount());
+        this.tippedTag = tag;
         return this;
     }
 
-    public FletchingRecipeBuilder withLingeringResult(ItemLike result) {
+    public FletchingRecipeBuilder withLingeringResult(
+            ItemConvertible result
+    ) {
         return withLingeringResult(result, this.result.getCount());
     }
 
-    public FletchingRecipeBuilder withLingeringResult(ItemLike result, int count) {
+    public FletchingRecipeBuilder withLingeringResult(
+            ItemConvertible result,
+            int count
+    ) {
         return withLingeringResult("LingeringPotion", result, count);
     }
 
-    public FletchingRecipeBuilder withLingeringResult(String tag, ItemLike result, int count) {
+    public FletchingRecipeBuilder withLingeringResult(
+            String tag,
+            ItemConvertible result,
+            int count
+    ) {
         this.resultLingering = new ItemStack(result, count);
         this.lingeringTag = tag;
         return this;
     }
 
-    public FletchingRecipeBuilder withLingeringResult(String tag, ItemLike result) {
+    public FletchingRecipeBuilder withLingeringResult(
+            String tag,
+            ItemConvertible result
+    ) {
         this.resultLingering = new ItemStack(result, this.result.getCount());
         this.lingeringTag = tag;
         return this;
     }
 
-    @Override
-    public RecipeBuilder unlockedBy(String criterionName, CriterionTriggerInstance criterionTrigger) {
-        this.advancement.addCriterion(criterionName, criterionTrigger);
+    public FletchingRecipeBuilder criterion(
+            String name,
+            CriterionConditions conditions
+    ) {
+        this.advancement.criterion(name, conditions);
         return this;
     }
 
-    @Override
-    public RecipeBuilder group(@Nullable String groupName) {
-        this.group = groupName;
+    public FletchingRecipeBuilder group(
+            @Nullable String group
+    ) {
+        this.group = group;
         return this;
     }
 
-    @Override
-    public Item getResult() {
+    public Item getOutputItem() {
         return this.result.getItem();
     }
 
-    @Override
-    public void save(Consumer<FinishedRecipe> finishedRecipeConsumer, ResourceLocation recipeId) {
-        this.ensureValid(recipeId);
-        this.advancement.parent(ROOT_RECIPE_ADVANCEMENT)
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeId))
-                .rewards(AdvancementRewards.Builder.recipe(recipeId))
-                .requirements(RequirementsStrategy.OR);
-
-        finishedRecipeConsumer.accept(new Result(recipeId, this.group == null ? "" : this.group,
-                this.tip, this.shaft, this.feather, this.result,
-                this.resultTipped, this.tippedTag,
-                this.resultLingering, this.lingeringTag,
-                this.advancement, recipeId.withPrefix("recipes/fletching/")));
+    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
+        offerTo(exporter, getItemId(this.getOutputItem()));
     }
 
-    private void ensureValid(ResourceLocation id) {
+    public void offerTo(
+            Consumer<RecipeJsonProvider> exporter,
+            Identifier recipeId
+    ) {
+        ensureValid(recipeId);
+
+        this.advancement
+                .parent(ROOT)
+                .criterion(
+                        "has_the_recipe",
+                        RecipeUnlockedCriterion.create(recipeId)
+                )
+                .rewards(
+                        AdvancementRewards.Builder.recipe(recipeId)
+                )
+                .criteriaMerger(CriterionMerger.OR);
+
+        exporter.accept(new Result(
+                recipeId,
+                this.group == null ? "" : this.group,
+                this.tip,
+                this.shaft,
+                this.feather,
+                this.result,
+                this.resultTipped,
+                this.tippedTag,
+                this.resultLingering,
+                this.lingeringTag,
+                this.advancement,
+                recipeId.withPrefixedPath("recipes/fletching/")
+        ));
+    }
+
+    private void ensureValid(Identifier recipeId) {
         if (this.advancement.getCriteria().isEmpty()) {
-            throw new IllegalStateException("No way of obtaining recipe " + id);
+            throw new IllegalStateException(
+                    "No way of obtaining recipe " + recipeId
+            );
         }
     }
 
-    public static class Result implements FinishedRecipe {
-        private final ResourceLocation id;
+    public static class Result implements RecipeJsonProvider {
+
+        private final Identifier id;
         private final String group;
+
         private final Ingredient tip;
         private final Ingredient shaft;
         private final Ingredient feather;
+
         private final ItemStack result;
+
         private final ItemStack resultTipped;
         private final String tippedTag;
+
         private final ItemStack resultLingering;
         private final String lingeringTag;
-        private final Advancement.Builder advancement;
-        private final ResourceLocation advancementId;
 
-        public Result(ResourceLocation id, String group, Ingredient tip, Ingredient shaft, Ingredient feather,
-                      ItemStack result, ItemStack resultTipped, String tippedTag,
-                      ItemStack resultLingering, String lingeringTag,
-                      Advancement.Builder advancement, ResourceLocation advancementId) {
+        private final Advancement.Builder advancement;
+        private final Identifier advancementId;
+
+        public Result(
+                Identifier id,
+                String group,
+                Ingredient tip,
+                Ingredient shaft,
+                Ingredient feather,
+                ItemStack result,
+                ItemStack resultTipped,
+                String tippedTag,
+                ItemStack resultLingering,
+                String lingeringTag,
+                Advancement.Builder advancement,
+                Identifier advancementId
+        ) {
             this.id = id;
             this.group = group;
             this.tip = tip;
@@ -160,71 +255,114 @@ public class FletchingRecipeBuilder implements RecipeBuilder {
         }
 
         @Override
-        public void serializeRecipeData(JsonObject json) {
+        public void serialize(JsonObject json) {
             if (!this.group.isEmpty()) {
                 json.addProperty("group", this.group);
             }
 
             JsonObject material = new JsonObject();
+
             material.add("tip", this.tip.toJson());
             material.add("shaft", this.shaft.toJson());
             material.add("feather", this.feather.toJson());
+
             json.add("material", material);
 
-            // Main result
             JsonObject resultJson = new JsonObject();
-            resultJson.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result.getItem()).toString());
+
+            resultJson.addProperty(
+                    "item",
+                    Registries.ITEM
+                            .getId(this.result.getItem())
+                            .toString()
+            );
+
             if (this.result.getCount() > 1) {
-                resultJson.addProperty("count", this.result.getCount());
+                resultJson.addProperty(
+                        "count",
+                        this.result.getCount()
+                );
             }
+
             json.add("result", resultJson);
 
-            // Tipped result (optional)
             if (!this.resultTipped.isEmpty()) {
                 JsonObject tippedJson = new JsonObject();
-                tippedJson.addProperty("item", BuiltInRegistries.ITEM.getKey(this.resultTipped.getItem()).toString());
+
+                tippedJson.addProperty(
+                        "item",
+                        Registries.ITEM
+                                .getId(this.resultTipped.getItem())
+                                .toString()
+                );
+
                 if (this.tippedTag != null) {
-                    tippedJson.addProperty("tag", this.tippedTag);
+                    tippedJson.addProperty(
+                            "tag",
+                            this.tippedTag
+                    );
                 }
+
                 if (this.resultTipped.getCount() > 1) {
-                    tippedJson.addProperty("count", this.resultTipped.getCount());
+                    tippedJson.addProperty(
+                            "count",
+                            this.resultTipped.getCount()
+                    );
                 }
+
                 json.add("result_tipped", tippedJson);
             }
 
-            // Lingering result (optional)
             if (!this.resultLingering.isEmpty()) {
                 JsonObject lingeringJson = new JsonObject();
-                lingeringJson.addProperty("item", BuiltInRegistries.ITEM.getKey(this.resultLingering.getItem()).toString());
+
+                lingeringJson.addProperty(
+                        "item",
+                        Registries.ITEM
+                                .getId(this.resultLingering.getItem())
+                                .toString()
+                );
+
                 if (this.lingeringTag != null) {
-                    lingeringJson.addProperty("tag", this.lingeringTag);
+                    lingeringJson.addProperty(
+                            "tag",
+                            this.lingeringTag
+                    );
                 }
+
                 if (this.resultLingering.getCount() > 1) {
-                    lingeringJson.addProperty("count", this.resultLingering.getCount());
+                    lingeringJson.addProperty(
+                            "count",
+                            this.resultLingering.getCount()
+                    );
                 }
-                json.add("result_lingering", lingeringJson);
+
+                json.add(
+                        "result_lingering",
+                        lingeringJson
+                );
             }
         }
 
         @Override
-        public ResourceLocation getId() {
-            return this.id;
-        }
-
-        @Override
-        public RecipeSerializer<?> getType() {
+        public RecipeSerializer<?> getSerializer() {
             return FletchingRecipe.Serializer.INSTANCE;
         }
 
-        @Nullable
         @Override
-        public JsonObject serializeAdvancement() {
-            return this.advancement.serializeToJson();
+        public Identifier getRecipeId() {
+            return this.id;
         }
 
         @Nullable
         @Override
-        public ResourceLocation getAdvancementId() {
+        public JsonObject toAdvancementJson() {
+            return this.advancement.toJson();
+        }
+
+        @Nullable
+        @Override
+        public Identifier getAdvancementId() {
             return this.advancementId;
         }
     }

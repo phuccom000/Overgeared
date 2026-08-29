@@ -2,13 +2,13 @@ package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.collection.DefaultedList;
 import net.stirdrem.overgeared.util.ShapedAlloySerializerUtil;
 
 import java.util.Map;
@@ -16,12 +16,12 @@ import java.util.Map;
 public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe implements IAlloyRecipe {
 
     public ShapedAlloySmeltingRecipe(
-            ResourceLocation id,
+            Identifier id,
             String group,
-            CraftingBookCategory category,
+            CraftingRecipeCategory category,
             int width,
             int height,
-            NonNullList<Ingredient> ingredients,
+            DefaultedList<Ingredient> ingredients,
             ItemStack output,
             float experience,
             int cookingTime
@@ -31,12 +31,12 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.SHAPED_ALLOY_SMELTING.get();
+        return ModRecipes.SHAPED_ALLOY_SMELTING;
     }
 
     @Override
     public RecipeType<?> getType() {
-        return ModRecipeTypes.SHAPED_ALLOY_SMELTING.get();
+        return ModRecipeTypes.SHAPED_ALLOY_SMELTING;
     }
 
     @Override
@@ -54,26 +54,26 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public ShapedAlloySmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
-            String group = GsonHelper.getAsString(json, "group", "");
-            CraftingBookCategory category =
+        public ShapedAlloySmeltingRecipe read(Identifier id, JsonObject json) {
+            String group = JsonHelper.getString(json, "group", "");
+            CraftingRecipeCategory category =
                     json.has("category")
-                            ? CraftingBookCategory.CODEC.byName(
+                            ? CraftingRecipeCategory.CODEC.byId(
                             json.get("category").getAsString(),
-                            CraftingBookCategory.MISC)
-                            : CraftingBookCategory.MISC;
+                            CraftingRecipeCategory.MISC)
+                            : CraftingRecipeCategory.MISC;
 
-            // 1️⃣ Parse & trim pattern
-            JsonArray patternArray = GsonHelper.getAsJsonArray(json, "pattern");
+            // 1) Parse & trim pattern
+            JsonArray patternArray = JsonHelper.getArray(json, "pattern");
             var parsed = ShapedAlloySerializerUtil.parsePattern(patternArray, 2);
 
-            // 2️⃣ Parse key
+            // 2) Parse key
             Map<Character, Ingredient> key =
                     ShapedAlloySerializerUtil.parseKey(
-                            GsonHelper.getAsJsonObject(json, "key"));
+                            JsonHelper.getObject(json, "key"));
 
-            // 3️⃣ Build ingredient list
-            NonNullList<Ingredient> ingredients =
+            // 3) Build ingredient list
+            DefaultedList<Ingredient> ingredients =
                     ShapedAlloySerializerUtil.buildIngredientList(
                             parsed.pattern(),
                             parsed.width(),
@@ -81,13 +81,13 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
                             key
                     );
 
-            // 4️⃣ Output & extras
+            // 4) Output & extras
             ItemStack output =
-                    ShapedRecipe.itemStackFromJson(
-                            GsonHelper.getAsJsonObject(json, "result"));
+                    ShapedRecipe.outputFromJson(
+                            JsonHelper.getObject(json, "result"));
 
-            float experience = GsonHelper.getAsFloat(json, "experience", 0.0F);
-            int cookingTime = GsonHelper.getAsInt(json, "cookingtime", 200);
+            float experience = JsonHelper.getFloat(json, "experience", 0.0F);
+            int cookingTime = JsonHelper.getInt(json, "cookingtime", 200);
 
             return new ShapedAlloySmeltingRecipe(
                     id,
@@ -105,25 +105,25 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
         // ---------------- NETWORK ----------------
 
         @Override
-        public ShapedAlloySmeltingRecipe fromNetwork(
-                ResourceLocation id,
-                FriendlyByteBuf buf
+        public ShapedAlloySmeltingRecipe read(
+                Identifier id,
+                PacketByteBuf buf
         ) {
-            String group = buf.readUtf();
-            CraftingBookCategory category =
-                    buf.readEnum(CraftingBookCategory.class);
+            String group = buf.readString();
+            CraftingRecipeCategory category =
+                    buf.readEnumConstant(CraftingRecipeCategory.class);
 
             int width = buf.readVarInt();
             int height = buf.readVarInt();
 
-            NonNullList<Ingredient> ingredients =
-                    NonNullList.withSize(width * height, Ingredient.EMPTY);
+            DefaultedList<Ingredient> ingredients =
+                    DefaultedList.ofSize(width * height, Ingredient.EMPTY);
 
             for (int i = 0; i < ingredients.size(); i++) {
-                ingredients.set(i, Ingredient.fromNetwork(buf));
+                ingredients.set(i, Ingredient.fromPacket(buf));
             }
 
-            ItemStack output = buf.readItem();
+            ItemStack output = buf.readItemStack();
             float experience = buf.readFloat();
             int cookingTime = buf.readVarInt();
 
@@ -141,21 +141,21 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
         }
 
         @Override
-        public void toNetwork(
-                FriendlyByteBuf buf,
+        public void write(
+                PacketByteBuf buf,
                 ShapedAlloySmeltingRecipe recipe
         ) {
-            buf.writeUtf(recipe.getGroup());
-            buf.writeEnum(recipe.category());
+            buf.writeString(recipe.getGroup());
+            buf.writeEnumConstant(recipe.category());
 
             buf.writeVarInt(recipe.getWidth());
             buf.writeVarInt(recipe.getHeight());
 
             for (Ingredient ingredient : recipe.getIngredientsList()) {
-                ingredient.toNetwork(buf);
+                ingredient.write(buf);
             }
 
-            buf.writeItem(recipe.getResultItem(null));
+            buf.writeItemStack(recipe.getOutput(null));
             buf.writeFloat(recipe.getExperience());
             buf.writeVarInt(recipe.getCookingTime());
         }

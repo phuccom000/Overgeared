@@ -1,47 +1,48 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
+import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public class DynamicToolCastRecipe extends CustomRecipe {
+public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
 
-    public DynamicToolCastRecipe(ResourceLocation id, CraftingBookCategory category) {
+    public DynamicToolCastRecipe(Identifier id, CraftingRecipeCategory category) {
         super(id, category);
     }
 
     @Override
-    public boolean matches(CraftingContainer inv, Level level) {
+    public boolean matches(RecipeInputInventory inv, World world) {
         ItemStack cast = ItemStack.EMPTY;
         int existingAmount = 0;
         int addedAmount = 0;
         int maxAmount = 0;
         boolean foundMaterial = false;
 
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack stack = inv.getItem(i);
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
             if (stack.isEmpty()) continue;
 
             // === CAST ===
-            if (stack.is(ModItems.CLAY_TOOL_CAST.get()) || stack.is(ModItems.NETHER_TOOL_CAST.get())) {
+            if (stack.isOf(ModItems.CLAY_TOOL_CAST) || stack.isOf(ModItems.NETHER_TOOL_CAST)) {
                 if (!cast.isEmpty()) return false; // only one cast allowed
-                if (!stack.hasTag()) return false;
+                if (!stack.hasNbt()) return false;
 
-                CompoundTag tag = stack.getTag();
+                NbtCompound tag = stack.getNbt();
                 String toolType = tag.getString("ToolType");
                 if (toolType.isBlank()) return false;
 
@@ -65,7 +66,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
         if (cast.isEmpty() || !foundMaterial) return false;
 
-        // ❌ Overflow check
+        // Overflow check
         if (maxAmount > 0 && existingAmount + addedAmount > maxAmount) {
             return false;
         }
@@ -75,7 +76,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
 
     @Override
-    public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryAccess) {
         if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
 
         ItemStack cast = ItemStack.EMPTY;
@@ -86,19 +87,18 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         String toolType = "none";
 
         // Scan grid
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack stack = inv.getItem(i);
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
 
             // Find cast
-            if (stack.is(ModItems.CLAY_TOOL_CAST.get()) || stack.is(ModItems.NETHER_TOOL_CAST.get())) {
+            if (stack.isOf(ModItems.CLAY_TOOL_CAST) || stack.isOf(ModItems.NETHER_TOOL_CAST)) {
                 cast = stack.copy();
-                CompoundTag tag = cast.getOrCreateTag();
+                NbtCompound tag = cast.getOrCreateNbt();
                 toolType = tag.getString("ToolType");
                 maxAmount = ConfigHelper.getMaxMaterialAmount(toolType);
             }
             // Process materials
             else if (!stack.isEmpty()) {
-                String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
                 String material = ConfigHelper.getMaterialForItem(stack);
                 if (!material.equals("none")) {
                     int value = ConfigHelper.getMaterialValue(stack);
@@ -116,29 +116,29 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         if (cast.isEmpty()) return ItemStack.EMPTY;
 
         // === Load existing values ===
-        CompoundTag castTag = cast.getOrCreateTag();
-        CompoundTag existingMatTag = castTag.getCompound("Materials");
+        NbtCompound castTag = cast.getOrCreateNbt();
+        NbtCompound existingMatTag = castTag.getCompound("Materials");
         int existingAmount = castTag.getInt("Amount");
 
         // Sum total after adding
         int totalAmount = existingAmount + newAmount;
 
-        // ❌ Block if exceeds
+        // Block if exceeds
         if (maxAmount > 0 && totalAmount > maxAmount) return ItemStack.EMPTY;
 
-        // ✅ Merge materials
-        for (String mat : existingMatTag.getAllKeys()) {
+        // Merge materials
+        for (String mat : existingMatTag.getKeys()) {
             int oldVal = existingMatTag.getInt(mat);
             materialTotals.put(mat, materialTotals.getOrDefault(mat, 0) + oldVal);
         }
 
-        // ✅ Write merged data back
-        CompoundTag newMatTag = new CompoundTag();
+        // Write merged data back
+        NbtCompound newMatTag = new NbtCompound();
         for (var entry : materialTotals.entrySet()) {
             newMatTag.putInt(entry.getKey(), entry.getValue());
         }
 
-        // ✅ Add complete item data to the "input" list, merging duplicates
+        // Add complete item data to the "input" list, merging duplicates
         addItemStacksToInputList(castTag, inputItems);
 
         castTag.put("Materials", newMatTag);
@@ -151,20 +151,20 @@ public class DynamicToolCastRecipe extends CustomRecipe {
     /**
      * Adds complete item stack data to the "input" NBT list, merging duplicates
      */
-    private void addItemStacksToInputList(CompoundTag castTag, List<ItemStack> newInputItems) {
+    private void addItemStacksToInputList(NbtCompound castTag, List<ItemStack> newInputItems) {
         // Get or create the "input" list
-        ListTag inputList;
-        if (castTag.contains("input", Tag.TAG_LIST)) {
-            inputList = castTag.getList("input", Tag.TAG_COMPOUND);
+        NbtList inputList;
+        if (castTag.contains("input", NbtElement.LIST_TYPE)) {
+            inputList = castTag.getList("input", NbtElement.COMPOUND_TYPE);
         } else {
-            inputList = new ListTag();
+            inputList = new NbtList();
         }
 
         // Convert existing input list to a list of ItemStacks for comparison
         List<ItemStack> existingItems = new ArrayList<>();
-        for (Tag inputTag : inputList) {
-            if (inputTag instanceof CompoundTag) {
-                ItemStack existingItem = ItemStack.of((CompoundTag) inputTag);
+        for (NbtElement inputTag : inputList) {
+            if (inputTag instanceof NbtCompound compound) {
+                ItemStack existingItem = ItemStack.fromNbt(compound);
                 if (!existingItem.isEmpty()) {
                     existingItems.add(existingItem);
                 }
@@ -195,10 +195,10 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         }
 
         // Convert back to NBT list
-        ListTag mergedInputList = new ListTag();
+        NbtList mergedInputList = new NbtList();
         for (ItemStack item : existingItems) {
-            CompoundTag itemTag = new CompoundTag();
-            item.save(itemTag); // Save with updated count
+            NbtCompound itemTag = new NbtCompound();
+            item.writeNbt(itemTag); // Save with updated count
             mergedInputList.add(itemTag);
         }
 
@@ -211,13 +211,13 @@ public class DynamicToolCastRecipe extends CustomRecipe {
      */
     private boolean areItemStacksIdentical(ItemStack stack1, ItemStack stack2) {
         // Check if items are the same
-        if (!ItemStack.isSameItem(stack1, stack2)) {
+        if (!ItemStack.areItemsEqual(stack1, stack2)) {
             return false;
         }
 
         // Check if NBT tags are the same
-        CompoundTag tag1 = stack1.getTag();
-        CompoundTag tag2 = stack2.getTag();
+        NbtCompound tag1 = stack1.getNbt();
+        NbtCompound tag2 = stack2.getNbt();
 
         if (tag1 == null && tag2 == null) {
             return true;
@@ -230,72 +230,13 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         return tag1.equals(tag2);
     }
 
-    /**
-     * Alternative: More efficient version that works directly with NBT
-     */
-    private void addItemStacksToInputListEfficient(CompoundTag castTag, List<ItemStack> newInputItems) {
-        // Get or create the "input" list
-        ListTag inputList;
-        if (castTag.contains("input", Tag.TAG_LIST)) {
-            inputList = castTag.getList("input", Tag.TAG_COMPOUND);
-        } else {
-            inputList = new ListTag();
-        }
-
-        // Create a map to track items by their NBT signature
-        HashMap<String, CompoundTag> itemMap = new HashMap<>();
-
-        // Process existing items
-        for (Tag inputTag : inputList) {
-            if (inputTag instanceof CompoundTag) {
-                CompoundTag itemTag = (CompoundTag) inputTag;
-                String signature = getItemSignature(itemTag);
-                itemMap.put(signature, itemTag);
-            }
-        }
-
-        // Process new items
-        for (ItemStack newItem : newInputItems) {
-            CompoundTag newItemTag = new CompoundTag();
-            newItem.save(newItemTag);
-            String signature = getItemSignature(newItemTag);
-
-            if (itemMap.containsKey(signature)) {
-                // Merge with existing item
-                CompoundTag existingTag = itemMap.get(signature);
-                int existingCount = existingTag.getByte("Count") & 0xFF; // Minecraft stores count as byte
-                int newCount = newItemTag.getByte("Count") & 0xFF;
-                existingTag.putByte("Count", (byte) Math.min(existingCount + newCount, 64)); // Cap at stack size
-            } else {
-                // Add as new item
-                itemMap.put(signature, newItemTag);
-            }
-        }
-
-        // Convert map back to list
-        ListTag mergedInputList = new ListTag();
-        mergedInputList.addAll(itemMap.values());
-
-        // Save the updated list back to the cast
-        castTag.put("input", mergedInputList);
-    }
-
-    /**
-     * Creates a unique signature for an item based on its ID and NBT
-     */
-    private String getItemSignature(CompoundTag itemTag) {
-        String itemId = itemTag.getString("id");
-        CompoundTag tag = itemTag.getCompound("tag");
-        return itemId + "#" + tag.toString(); // Use NBT string as part of signature
-    }
-
     @Override
-    public boolean canCraftInDimensions(int width, int height) {
+    public boolean fits(int width, int height) {
         return width * height >= 2;
     }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.CRAFTING_DYNAMIC_TOOL_CAST.get();
+        return ModRecipes.CRAFTING_DYNAMIC_TOOL_CAST;
     }
 }

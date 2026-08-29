@@ -1,20 +1,22 @@
 package net.stirdrem.overgeared;
 
-import net.minecraft.ChatFormatting;
+import net.minecraft.util.Formatting;
 import net.stirdrem.overgeared.config.ServerConfig;
 
+import java.util.Locale;
+
 public enum BlueprintQuality {
-    POOR("poor", ServerConfig.POOR_MAX_USE.get(), ChatFormatting.RED),
-    WELL("well", ServerConfig.WELL_MAX_USE.get(), ChatFormatting.YELLOW),
-    EXPERT("expert", ServerConfig.EXPERT_MAX_USE.get(), ChatFormatting.BLUE),
-    PERFECT("perfect", 0, ChatFormatting.GOLD),
-    MASTER("master", 0, ChatFormatting.LIGHT_PURPLE); // Final tier
+    POOR("poor", ServerConfig.POOR_MAX_USE.get(), Formatting.RED),
+    WELL("well", ServerConfig.WELL_MAX_USE.get(), Formatting.YELLOW),
+    EXPERT("expert", ServerConfig.EXPERT_MAX_USE.get(), Formatting.BLUE),
+    PERFECT("perfect", 0, Formatting.GOLD),
+    MASTER("master", 0, Formatting.LIGHT_PURPLE); // Final tier
 
     private final String id;
     private final int use;
-    private final ChatFormatting color;
+    private final Formatting color;
 
-    BlueprintQuality(String id, int use, ChatFormatting color) {
+    BlueprintQuality(String id, int use, Formatting color) {
         this.id = id;
         this.use = use;
         this.color = color;
@@ -58,13 +60,13 @@ public enum BlueprintQuality {
         return null; // Already at lowest
     }
 
-    public static ChatFormatting getColor(String qualityName) {
+    public static Formatting getColor(String qualityName) {
         for (BlueprintQuality q : values()) {
             if (q.name().equalsIgnoreCase(qualityName)) {
-                return q.color; // assuming the color field exists in your enum
+                return q.color;
             }
         }
-        return ChatFormatting.GRAY;
+        return Formatting.GRAY;
     }
 
     public String getDisplayName() {
@@ -75,12 +77,12 @@ public enum BlueprintQuality {
         return use;
     }
 
-    public ChatFormatting getColor() {
+    public Formatting getColor() {
         return color;
     }
 
     public String getTranslationKey() {
-        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase(java.util.Locale.ROOT);
+        return "tooltip.overgeared.blueprint.quality." + name().toLowerCase(Locale.ROOT);
     }
 
     public String getId() {

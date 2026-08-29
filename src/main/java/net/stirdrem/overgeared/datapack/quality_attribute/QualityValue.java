@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.datapack.quality_attribute;
 
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 
 public record QualityValue(
-        AttributeModifier.Operation operation,
+        EntityAttributeModifier.Operation operation,
         double amount
 ) {
 }

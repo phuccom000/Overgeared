@@ -1,16 +1,16 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.math.random.Random;
 import net.stirdrem.overgeared.ForgingQuality;
 
 public class ForgingQualityHelper {
 
     public static final String QUALITY_TAG = "ForgingQuality";
 
-    public static ForgingQuality rollQuality(RandomSource rand, int villagerLevel) {
+    public static ForgingQuality rollQuality(Random rand, int villagerLevel) {
         float roll = rand.nextFloat();
 
         // =========================
@@ -41,7 +41,7 @@ public class ForgingQualityHelper {
 
 
     public static int getBasePrice(Item item) {
-        String id = BuiltInRegistries.ITEM.getKey(item).getPath();
+        String id = Registries.ITEM.getId(item).getPath();
 
         if (id.startsWith("stone_")) return 4;
         if (id.startsWith("copper_")) return 8;
@@ -68,7 +68,7 @@ public class ForgingQualityHelper {
     }
 
     public static void applyQuality(ItemStack stack, ForgingQuality quality) {
-        stack.getOrCreateTag().putString(QUALITY_TAG, quality.getDisplayName());
+        stack.getOrCreateNbt().putString(QUALITY_TAG, quality.getDisplayName());
     }
 
     public static int priceForQuality(ForgingQuality quality) {
@@ -82,4 +82,3 @@ public class ForgingQualityHelper {
         };
     }
 }
-

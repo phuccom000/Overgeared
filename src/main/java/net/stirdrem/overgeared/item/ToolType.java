@@ -1,15 +1,13 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 
 import java.util.Locale;
-import java.util.Set;
 
 public class ToolType {
 
     // Vanilla known types (minecraft lang keys)
-
 
     public static final ToolType SWORD = new ToolType("SWORD");
     public static final ToolType AXE = new ToolType("AXE");
@@ -30,25 +28,16 @@ public class ToolType {
         if (!id.matches("^[A-Za-z0-9_]+$"))
             throw new IllegalArgumentException("Tool type ID must be alphanumeric with underscores");
 
-        this.id = id.toLowerCase(Locale.ROOT); // ✅ internal canonical form
-
-        // ✅ Translation always uses lowercase
+        this.id = id.toLowerCase(Locale.ROOT); // internal canonical form
         this.translationKey = "tooltype.overgeared." + this.id;
-
     }
 
     public String getId() {
-        return id.toLowerCase(java.util.Locale.ROOT);
+        return id.toLowerCase(Locale.ROOT);
     }
 
-    public MutableComponent getDisplayName() {
-        Component trans = Component.translatable(translationKey);
-    /*    // If untranslated, fallback to literal ID
-        if (trans.getString().equals(translationKey)) {
-            return Component.literal(id);
-        }
-*/
-        return trans.copy();
+    public MutableText getDisplayName() {
+        return Text.translatable(translationKey).copy();
     }
 
     public static ToolType of(String id) {

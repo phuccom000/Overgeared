@@ -1,38 +1,35 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.*;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.village.TradeOffer;
+import net.minecraft.village.TradeOffers;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.util.ForgingQualityHelper;
 import net.stirdrem.overgeared.util.ModTags;
 
-public class QualityWrappedTrade implements VillagerTrades.ItemListing {
+public class QualityWrappedTrade implements TradeOffers.Factory {
 
-    private final VillagerTrades.ItemListing original;
+    private final TradeOffers.Factory original;
     private final int villagerLevel;
 
-    public QualityWrappedTrade(VillagerTrades.ItemListing original, int villagerLevel) {
+    public QualityWrappedTrade(TradeOffers.Factory original, int villagerLevel) {
         this.original = original;
         this.villagerLevel = villagerLevel;
     }
 
     @Override
-    public MerchantOffer getOffer(Entity trader, RandomSource rand) {
-        MerchantOffer offer = original.getOffer(trader, rand);
+    public TradeOffer create(Entity trader, Random rand) {
+        TradeOffer offer = original.create(trader, rand);
         if (offer == null) return null;
 
-        ItemStack result = offer.getResult().copy();
+        ItemStack result = offer.getSellItem().copy();
 
         // Only tools, armor, or forgeable tool heads
-        if (!(result.getItem() instanceof TieredItem
+        if (!(result.getItem() instanceof ToolItem
                 || result.getItem() instanceof ArmorItem
-                || result.is(ModTags.Items.TOOL_PARTS))) {
+                || result.isIn(ModTags.Items.TOOL_PARTS))) {
             return offer;
         }
         int maxUses = offer.getMaxUses();
@@ -56,15 +53,14 @@ public class QualityWrappedTrade implements VillagerTrades.ItemListing {
 
         ItemStack emeraldCost = new ItemStack(Items.EMERALD, finalPrice);
 
-        return new MerchantOffer(
+        return new TradeOffer(
                 emeraldCost,
-                offer.getCostB(),
+                offer.getSecondBuyItem(),
                 result,
                 maxUses,
-                offer.getXp(),
+                offer.getMerchantExperience(),
                 offer.getPriceMultiplier()
         );
     }
 
 }
-

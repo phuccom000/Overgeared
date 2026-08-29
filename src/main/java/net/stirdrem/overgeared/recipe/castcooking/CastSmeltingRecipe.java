@@ -1,26 +1,26 @@
 package net.stirdrem.overgeared.recipe.castcooking;
 
 import com.google.gson.JsonObject;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.Level;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.CookingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class CastSmeltingRecipe extends SmeltingRecipe {
@@ -29,23 +29,23 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     private final String toolType;
     private final boolean needPolishing;
 
-    public CastSmeltingRecipe(ResourceLocation id, String group, CookingBookCategory category,
-                              ItemStack result, float xp, int time,
-                              Map<String, Double> reqMaterials, String toolType, boolean needPolishing) {
+    public CastSmeltingRecipe(Identifier id, String group, CookingRecipeCategory category,
+                               ItemStack result, float xp, int time,
+                               Map<String, Double> reqMaterials, String toolType, boolean needPolishing) {
         super(id, group, category,
-                Ingredient.of(ModItems.CLAY_TOOL_CAST.get(), ModItems.NETHER_TOOL_CAST.get()),
+                Ingredient.ofItems(ModItems.CLAY_TOOL_CAST, ModItems.NETHER_TOOL_CAST),
                 result, xp, time);
         this.requiredMaterials = reqMaterials;
         this.toolType = toolType;
         this.needPolishing = needPolishing;
     }
 
-    public static Map<String, Double> readMaterials(CompoundTag tag) {
+    public static Map<String, Double> readMaterials(NbtCompound tag) {
         Map<String, Double> map = new HashMap<>();
-        for (String key : tag.getAllKeys()) {
-            if (tag.contains(key, Tag.TAG_DOUBLE)) {
+        for (String key : tag.getKeys()) {
+            if (tag.contains(key, NbtElement.DOUBLE_TYPE)) {
                 map.put(key, tag.getDouble(key));
-            } else if (tag.contains(key, Tag.TAG_INT)) {
+            } else if (tag.contains(key, NbtElement.INT_TYPE)) {
                 map.put(key, (double) tag.getInt(key));
             }
         }
@@ -53,14 +53,14 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     }
 
     @Override
-    public @NotNull NonNullList<Ingredient> getIngredients() {
-        NonNullList<Ingredient> list = NonNullList.create();
+    public @NotNull DefaultedList<Ingredient> getIngredients() {
+        DefaultedList<Ingredient> list = DefaultedList.of();
 
         // Build the same NBT tag JEI uses
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         tag.putString("ToolType", toolType);
 
-        CompoundTag mats = new CompoundTag();
+        NbtCompound mats = new NbtCompound();
         double total = 0;
         for (var entry : requiredMaterials.entrySet()) {
             String mat = entry.getKey();
@@ -74,32 +74,32 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
         tag.putDouble("MaxAmount", total);
 
         // Create cast stacks with NBT
-        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST.get());
-        firedCast.setTag(tag.copy());
+        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST);
+        firedCast.setNbt(tag.copy());
 
-        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST.get());
-        netherCast.setTag(tag.copy());
+        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST);
+        netherCast.setNbt(tag.copy());
 
         // Report them as the recipe input
-        list.add(Ingredient.of(firedCast, netherCast));
+        list.add(Ingredient.ofStacks(firedCast, netherCast));
 
         return list;
     }
 
     @Override
-    public boolean matches(Container inv, Level level) {
-        ItemStack input = inv.getItem(0);
+    public boolean matches(Inventory inv, World world) {
+        ItemStack input = inv.getStack(0);
         if (!(input.getItem() instanceof ToolCastItem)) return false;
-        CompoundTag tag = input.getTag();
+        NbtCompound tag = input.getNbt();
         if (tag == null || !tag.contains("Materials")) return false;
-        if (!toolType.equals(tag.getString("ToolType").toLowerCase(java.util.Locale.ROOT))) return false;
+        if (!toolType.equals(tag.getString("ToolType").toLowerCase(Locale.ROOT))) return false;
         if (tag.contains("Amount") && tag.getFloat("Amount") <= 0) return false;
         if (!tag.contains("Amount")) return false;
 
         Map<String, Double> materials = readMaterials(tag.getCompound("Materials"));
 
         for (var entry : requiredMaterials.entrySet()) {
-            String material = entry.getKey().toLowerCase(java.util.Locale.ROOT);
+            String material = entry.getKey().toLowerCase(Locale.ROOT);
             double needed = entry.getValue();
             double available = materials.getOrDefault(material, 0.0);
             if (available < needed) return false;
@@ -109,22 +109,22 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     }
 
     @Override
-    public ItemStack assemble(Container inv, RegistryAccess registryAccess) {
-        ItemStack input = inv.getItem(0);
+    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
+        ItemStack input = inv.getStack(0);
 
         // Copy the cast itself
         ItemStack cast = input.copy();
-        CompoundTag castTag = cast.getOrCreateTag();
+        NbtCompound castTag = cast.getOrCreateNbt();
 
 
         // Build the real result item
-        ItemStack result = super.assemble(inv, registryAccess);
+        ItemStack result = super.craft(inv, registryAccess);
 
-        CompoundTag resultTag = result.getOrCreateTag();
+        NbtCompound resultTag = result.getOrCreateNbt();
 
         // Transfer quality
-        if (input.hasTag() && input.getTag().contains("Quality")) {
-            String q = input.getTag().getString("Quality");
+        if (input.hasNbt() && input.getNbt().contains("Quality")) {
+            String q = input.getNbt().getString("Quality");
             if (!q.equals("none")) {
                 resultTag.putString("ForgingQuality", q);
             }
@@ -139,89 +139,24 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
         resultTag.putBoolean("Heated", true);
 
         // Creator
-        if (input.hasCustomHoverName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
-            resultTag.putString("Creator", input.getHoverName().getString());
+        if (input.hasCustomName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+            resultTag.putString("Creator", input.getName().getString());
         }
 
         // Store output INSIDE the cast
-        castTag.put("Output", result.save(new CompoundTag()));
-        castTag.put("Materials", new CompoundTag());
+        castTag.put("Output", result.writeNbt(new NbtCompound()));
+        castTag.put("Materials", new NbtCompound());
         // Mark cast as filled / heated
         castTag.putBoolean("Heated", true);
-        if (cast.isDamageableItem()) {
-            if (cast.getDamageValue() + 1 >= cast.getMaxDamage()) {
-                cast.shrink(1);
+        if (cast.isDamageable()) {
+            if (cast.getDamage() + 1 >= cast.getMaxDamage()) {
+                cast.decrement(1);
                 return result;
             } else {
-                cast.setDamageValue(cast.getDamageValue() + 1);
+                cast.setDamage(cast.getDamage() + 1);
             }
         }
         return cast;
-    }
-
-
-    /*@Override
-    public @NotNull NonNullList<ItemStack> getRemainingItems(Container inv) {
-        NonNullList<ItemStack> remains = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
-        ItemStack input = inv.getItem(0);
-
-        if (!(input.getItem() instanceof ToolCastItem) || !input.hasTag()) {
-            return remains;
-        }
-
-        ItemStack castCopy = input.copy();
-        CompoundTag tag = getCompoundTag(castCopy);
-
-        // Optional: damage cast OR destroy on empty
-        if (castCopy.isDamageableItem()) {
-            castCopy.setDamageValue(castCopy.getDamageValue() + 1);
-            if (castCopy.getDamageValue() >= castCopy.getMaxDamage()) {
-                remains.set(0, ItemStack.EMPTY);
-                return remains;
-            }
-        }
-
-        remains.set(0, castCopy);
-
-        return remains;
-    }*/
-
-    private @NotNull CompoundTag getCompoundTag(ItemStack castCopy) {
-        CompoundTag tag = castCopy.getOrCreateTag();
-        if (tag.contains("input")) {
-            tag.remove("input");
-        }
-        if (tag.contains("Materials")) {
-            CompoundTag mats = tag.getCompound("Materials");
-            List<String> toRemove = new ArrayList<>();
-
-            // Reduce materials based on recipe JSON
-            for (var entry : requiredMaterials.entrySet()) {
-                String mat = entry.getKey().toLowerCase(java.util.Locale.ROOT);
-                double cost = entry.getValue();
-
-                if (mats.contains(mat)) {
-                    double current = mats.getDouble(mat);
-                    double newAmount = Math.max(0, current - cost);
-
-                    if (newAmount <= 0) {
-                        toRemove.add(mat);
-                    } else {
-                        mats.putDouble(mat, newAmount);
-                    }
-                }
-            }
-
-            // Remove empty materials
-            for (String r : toRemove) {
-                mats.remove(r);
-            }
-
-            tag.putDouble("Amount", 0);
-
-            tag.put("Materials", new CompoundTag());
-        }
-        return tag;
     }
 
     public Map<String, Double> getMaterialInputs() {
@@ -247,63 +182,62 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.CAST_SMELTING.get();
+        return ModRecipes.CAST_SMELTING;
     }
 
     public static class Serializer implements RecipeSerializer<CastSmeltingRecipe> {
         public static final CastSmeltingRecipe.Serializer INSTANCE = new CastSmeltingRecipe.Serializer();
 
         @Override
-        public CastSmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
-            String group = GsonHelper.getAsString(json, "group", "");
-            CookingBookCategory category = CookingBookCategory.MISC;
+        public CastSmeltingRecipe read(Identifier id, JsonObject json) {
+            String group = JsonHelper.getString(json, "group", "");
+            CookingRecipeCategory category = CookingRecipeCategory.MISC;
 
-            JsonObject inputObj = GsonHelper.getAsJsonObject(json, "input");
+            JsonObject inputObj = JsonHelper.getObject(json, "input");
             Map<String, Double> reqMaterials = new HashMap<>();
             inputObj.entrySet().forEach(e -> reqMaterials.put(e.getKey(), e.getValue().getAsDouble()));
 
-            ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
-            float xp = GsonHelper.getAsFloat(json, "experience", 0f);
-            int time = GsonHelper.getAsInt(json, "cookingtime", 200);
+            ItemStack result = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
+            float xp = JsonHelper.getFloat(json, "experience", 0f);
+            int time = JsonHelper.getInt(json, "cookingtime", 200);
 
-            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase(java.util.Locale.ROOT);
+            String toolType = JsonHelper.getString(json, "tool_type").toLowerCase(Locale.ROOT);
 
-            // ✅ New polishing flag from JSON (default = false)
-            boolean needPolishing = GsonHelper.getAsBoolean(json, "need_polishing", false);
+            boolean needPolishing = JsonHelper.getBoolean(json, "need_polishing", false);
 
             return new CastSmeltingRecipe(id, group, category, result, xp, time, reqMaterials, toolType, needPolishing);
         }
 
         @Override
-        public CastSmeltingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-            String group = buf.readUtf();
-            CookingBookCategory category = CookingBookCategory.MISC;
+        public CastSmeltingRecipe read(Identifier id, PacketByteBuf buf) {
+            String group = buf.readString();
+            CookingRecipeCategory category = CookingRecipeCategory.MISC;
             int size = buf.readInt();
             Map<String, Double> reqMaterials = new HashMap<>();
             for (int i = 0; i < size; i++) {
-                reqMaterials.put(buf.readUtf(), buf.readDouble());
+                reqMaterials.put(buf.readString(), buf.readDouble());
             }
-            ItemStack result = buf.readItem();
+            ItemStack result = buf.readItemStack();
             float xp = buf.readFloat();
             int time = buf.readVarInt();
-            String toolType = buf.readUtf();
+            String toolType = buf.readString();
             boolean needPolish = buf.readBoolean();
 
             return new CastSmeltingRecipe(id, group, category, result, xp, time, reqMaterials, toolType, needPolish);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buf, CastSmeltingRecipe recipe) {
-            buf.writeUtf(recipe.getGroup());
+        public void write(PacketByteBuf buf, CastSmeltingRecipe recipe) {
+            buf.writeString(recipe.getGroup());
             buf.writeInt(recipe.requiredMaterials.size());
             recipe.requiredMaterials.forEach((k, v) -> {
-                buf.writeUtf(k);
+                buf.writeString(k);
                 buf.writeDouble(v);
             });
-            buf.writeItem(recipe.getResultItem(null));
+            buf.writeItemStack(recipe.getOutput(null));
             buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookingTime());
-            buf.writeUtf(recipe.toolType);
+            buf.writeVarInt(recipe.getCookTime());
+            buf.writeString(recipe.toolType);
             buf.writeBoolean(recipe.needPolishing);
         }
     }

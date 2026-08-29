@@ -1,37 +1,27 @@
 package net.stirdrem.overgeared.compat.valkyrienskies;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
-import org.joml.Vector3d;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
-import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
-
+/**
+ * The original Forge version compiles directly against Valkyrien Skies' API jar
+ * (org.valkyrienskies.mod.common.VSGameUtilsKt) to transform a block position by the ship's
+ * transform if it sits on a moving ship. That dependency isn't wired into this Fabric project
+ * (no VS Fabric artifact/repository configured), so this is a stub that always returns the
+ * vanilla block-center position. Callers already gate on
+ * FabricLoader.getInstance().isModLoaded("valkyrienskies") before reaching here, so this only
+ * affects anvil-distance checks for players with Valkyrien Skies installed who build on a ship -
+ * the check still runs, it just measures against the ship's local coordinate instead of its
+ * transformed world position. Wiring up real ship-transform support needs the VS Fabric API
+ * dependency added to build.gradle plus the equivalent of VSGameUtilsKt.getShipManagingPos.
+ */
 public final class ValkyrienSkiesCompat {
 
     private ValkyrienSkiesCompat() {
     }
 
-    /**
-     * Returns a world position for the given block position, transformed by Valkyrien Skies if the
-     * block is on a ship. If the position isn't on a ship or Valkyrien Skies API isn't available,
-     * this just returns the original block position as a Vec3.
-     */
-    public static Vec3 getActualWorldPos(ServerLevel level, BlockPos blockPos) {
-        // Try to get the ship managing this block
-        var ship = VSGameUtilsKt.getShipManagingPos(level, blockPos);
-        if (ship == null) {
-            // Not on a ship — return vanilla block position
-            return Vec3.atCenterOf(blockPos);
-        }
-
-        // On a ship — convert local blockpos to JOML vec
-        var localJoml = VectorConversionsMCKt.toJOML(Vec3.atCenterOf(blockPos));
-        var transform = ship.getTransform().getShipToWorld();
-
-        // Transform ship-local coordinate to world coordinate
-        var worldJoml = transform.transformPosition(localJoml, new Vector3d());
-        return VectorConversionsMCKt.toMinecraft(worldJoml);
+    public static Vec3d getActualWorldPos(ServerWorld world, BlockPos blockPos) {
+        return Vec3d.ofCenter(blockPos);
     }
 }

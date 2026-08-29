@@ -2,27 +2,28 @@ package net.stirdrem.overgeared.mixin;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
@@ -38,39 +39,37 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
-import static net.stirdrem.overgeared.OvergearedMod.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
-@Mixin(ItemStack.class)
+/**
+ * Priority 2000 (default is 1000) so this mixin's getAttributeModifiers RETURN injection runs
+ * after ItemStackAttributeMixin's - broken tools should discard the quality attribute bonus
+ * along with everything else, not have it computed and left in place.
+ */
+@Mixin(value = ItemStack.class, priority = 2000)
 public abstract class ItemStackMixin {
-    @Inject(
-            method = "getDestroySpeed",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private void modifyMiningSpeed(BlockState state, CallbackInfoReturnable<Float> cir) {
+
+    @Inject(method = "getMiningSpeedMultiplier", at = @At("RETURN"), cancellable = true)
+    private void overgeared$modifyMiningSpeed(BlockState state, CallbackInfoReturnable<Float> cir) {
         ItemStack stack = (ItemStack) (Object) this;
         if (isBroken(stack)) {
             cir.setReturnValue(0.0F);
             return;
         }
-        if (!stack.isCorrectToolForDrops(state)) {
+        if (!stack.isSuitableFor(state)) {
             return;
         }
-        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
-            float baseSpeed = cir.getReturnValueF();
+        NbtCompound tag = stack.getNbt();
+        if (tag != null && tag.contains("ForgingQuality")) {
+            float baseSpeed = cir.getReturnValue();
             float multiplier = QualityHelper.getMiningSpeedMultiplier(stack);
             cir.setReturnValue(baseSpeed * multiplier);
         }
     }
 
-
-    @Inject(
-            method = "getMaxDamage()I",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private void modifyDurabilityBasedOnQuality(CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "getMaxDamage", at = @At("RETURN"), cancellable = true)
+    private void overgeared$modifyDurabilityBasedOnQuality(CallbackInfoReturnable<Integer> cir) {
         ItemStack stack = (ItemStack) (Object) this;
         int originalDurability = cir.getReturnValue();
 
@@ -78,20 +77,19 @@ public abstract class ItemStackMixin {
             return;
         }
 
-        boolean blacklisted = OvergearedMod.isDurabilityBlacklisted(stack);
+        boolean blacklisted = Overgeared.isDurabilityBlacklisted(stack);
 
         float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
         int newBaseDurability = blacklisted ? originalDurability : (int) (originalDurability * baseMultiplier);
 
-        // Apply quality multiplier
-        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
+        NbtCompound tag = stack.getNbt();
+        if (tag != null && tag.contains("ForgingQuality")) {
             float multiplier = QualityHelper.getDurabilityMultiplier(stack);
             newBaseDurability = (int) (newBaseDurability * multiplier);
         }
 
-        // Apply durability reductions
-        if (stack.hasTag() && stack.getTag().contains("ReducedMaxDurability")) {
-            int reductions = stack.getTag().getInt("ReducedMaxDurability");
+        if (tag != null && tag.contains("ReducedMaxDurability")) {
+            int reductions = tag.getInt("ReducedMaxDurability");
             float durabilityPenaltyMultiplier = 1.0f - (reductions * ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue());
             durabilityPenaltyMultiplier = Math.max(0.1f, durabilityPenaltyMultiplier);
             newBaseDurability = (int) (newBaseDurability * durabilityPenaltyMultiplier);
@@ -99,120 +97,120 @@ public abstract class ItemStackMixin {
         cir.setReturnValue(newBaseDurability);
     }
 
+    @Unique
+    private static final Map<UUID, Long> overgeared$lastTongsHit = new WeakHashMap<>();
 
-    // Per-player last-hit tick
-    private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
-
+    @Unique
     private static final String HEATED_TIME_TAG = "HeatedSince";
-    private static final String HEATED_TAG = "Heated";
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))
-    private void onInventoryTick(Level level, Entity entity, int slot, boolean selected, CallbackInfo ci) {
-        if (level.isClientSide) return;
-        if (!(entity instanceof Player player)) return;
-        //if (slot != 0) return; // Only process once per player per tick
-        if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+    private void overgeared$onInventoryTick(World world, Entity entity, int slot, boolean selected, CallbackInfo ci) {
+        if (world.isClient()) return;
+        if (!(entity instanceof PlayerEntity player)) return;
+        if (player.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             return;
         }
 
-        long tick = level.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get(); // add to your config
+        long tick = world.getTime();
+        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
 
-        for (ItemStack stack : player.getInventory().items) {
+        for (ItemStack stack : player.getInventory().main) {
             if (stack.isEmpty()) continue;
-            if (!stack.is(ModTags.Items.HEATED_METALS) && !(stack.hasTag() && stack.getTag().contains("Heated")))
+            NbtCompound stackTag = stack.getNbt();
+            if (!stack.isIn(ModTags.Items.HEATED_METALS) && !(stackTag != null && stackTag.contains("Heated")))
                 continue;
 
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateNbt();
             long heatedSince = tag.getLong(HEATED_TIME_TAG);
             if (heatedSince == 0L) {
-                tag.putLong(HEATED_TIME_TAG, tick); // Initialize the timestamp
+                tag.putLong(HEATED_TIME_TAG, tick);
             } else if (tick - heatedSince >= cooldownTicks) {
-                Item cooled = getCooledItem(stack.getItem(), level);
+                Item cooled = getCooledItem(stack.getItem(), world);
                 if (cooled != null) {
                     ItemStack newStack = new ItemStack(cooled, stack.getCount());
-                    if (stack.hasTag()) {
-                        CompoundTag newtag = stack.getTag().copy();
-
-                        // Remove heated-related tags
-                        newtag.remove("Heated");
-                        newtag.remove(HEATED_TIME_TAG);
-
-                        if (!newtag.isEmpty()) {
-                            newStack.setTag(newtag);
+                    NbtCompound currentTag = stack.getNbt();
+                    if (currentTag != null) {
+                        NbtCompound newTag = currentTag.copy();
+                        newTag.remove("Heated");
+                        newTag.remove(HEATED_TIME_TAG);
+                        if (!newTag.isEmpty()) {
+                            newStack.setNbt(newTag);
                         }
                     }
-                    boolean isMain = stack == player.getMainHandItem();
-                    boolean isOff = stack == player.getOffhandItem();
+                    boolean isMain = stack == player.getMainHandStack();
+                    boolean isOff = stack == player.getOffHandStack();
 
-                    stack.shrink(stack.getCount()); // Remove old heated item
+                    stack.decrement(stack.getCount());
 
                     if (isMain) {
-                        player.setItemInHand(InteractionHand.MAIN_HAND, newStack);
+                        player.setStackInHand(Hand.MAIN_HAND, newStack);
                     } else if (isOff) {
-                        player.setItemInHand(InteractionHand.OFF_HAND, newStack);
-                    } else if (!player.getInventory().add(newStack)) {
-                        player.drop(newStack, false); // Drop if inventory is full
+                        player.setStackInHand(Hand.OFF_HAND, newStack);
+                    } else if (!player.getInventory().insertStack(newStack)) {
+                        player.dropItem(newStack, false);
                     }
 
-                    level.playSound(null, player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7f, 1.0f);
+                    world.playSound(null, player.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.7f, 1.0f);
                 }
             }
         }
 
-        boolean hasHotItem = player.getInventory().items.stream()
-                .anyMatch(s -> !s.isEmpty() && (s.is(ModTags.Items.HEATED_METALS) || s.is(ModTags.Items.HOT_ITEMS))
-                        || (s.hasTag() && s.getTag().contains("Heated")))
-                || player.getMainHandItem().is(ModTags.Items.HEATED_METALS) || player.getMainHandItem().is(ModTags.Items.HOT_ITEMS)
-                || player.getOffhandItem().is(ModTags.Items.HEATED_METALS) || player.getOffhandItem().is(ModTags.Items.HOT_ITEMS);
+        boolean hasHotItem = false;
+        for (ItemStack s : player.getInventory().main) {
+            if (s.isEmpty()) continue;
+            NbtCompound sTag = s.getNbt();
+            if (s.isIn(ModTags.Items.HEATED_METALS) || s.isIn(ModTags.Items.HOT_ITEMS) || (sTag != null && sTag.contains("Heated"))) {
+                hasHotItem = true;
+                break;
+            }
+        }
+        ItemStack mainCheck = player.getMainHandStack();
+        ItemStack offCheck = player.getOffHandStack();
+        hasHotItem = hasHotItem
+                || mainCheck.isIn(ModTags.Items.HEATED_METALS) || mainCheck.isIn(ModTags.Items.HOT_ITEMS)
+                || offCheck.isIn(ModTags.Items.HEATED_METALS) || offCheck.isIn(ModTags.Items.HOT_ITEMS);
 
         if (!hasHotItem) return;
 
+        UUID uuid = player.getUuid();
+        ItemStack main = player.getMainHandStack();
+        ItemStack off = player.getOffHandStack();
 
-        UUID uuid = player.getUUID();
-        ItemStack main = player.getMainHandItem();
-        ItemStack off = player.getOffhandItem();
-
-        // Check for tongs in either hand
         ItemStack tongsStack;
-        if (!main.isEmpty() && main.getItem().builtInRegistryHolder().is(ModTags.Items.TONGS)) {
+        if (!main.isEmpty() && main.isIn(ModTags.Items.TONGS)) {
             tongsStack = main;
-        } else if (!off.isEmpty() && off.getItem().builtInRegistryHolder().is(ModTags.Items.TONGS)) {
+        } else if (!off.isEmpty() && off.isIn(ModTags.Items.TONGS)) {
             tongsStack = off;
         } else {
             tongsStack = ItemStack.EMPTY;
         }
 
-        if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+        if (player.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             return;
         }
 
         if (!tongsStack.isEmpty()) {
             if (tick % 40 != 0) return;
-            long last = lastTongsHit.getOrDefault(uuid, -1L);
+            long last = overgeared$lastTongsHit.getOrDefault(uuid, -1L);
             if (last != tick) {
-                tongsStack.hurtAndBreak(1, player, p -> {
-                    // Determine correct hand
-                    InteractionHand hand = tongsStack == player.getMainHandItem() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-                    p.broadcastBreakEvent(hand);
-                });
-                lastTongsHit.put(uuid, tick);
+                Hand hand = tongsStack == player.getMainHandStack() ? Hand.MAIN_HAND : Hand.OFF_HAND;
+                tongsStack.damage(1, player, p -> p.sendToolBreakStatus(hand));
+                overgeared$lastTongsHit.put(uuid, tick);
             }
         } else {
-            player.hurt(player.damageSources().hotFloor(), 1.0f);
+            player.damage(world.getDamageSources().hotFloor(), 1.0f);
         }
     }
 
-    @Inject(method = "getBarWidth", at = @At("HEAD"), cancellable = true)
-    private void fixDurabilityBar(CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "getItemBarStep", at = @At("HEAD"), cancellable = true)
+    private void overgeared$fixDurabilityBar(CallbackInfoReturnable<Integer> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
-        if (!stack.isDamageableItem()) return;
+        if (!stack.isDamageable()) return;
 
-        int maxDamage = stack.getMaxDamage(); // this already includes your mixin override
-        int damage = stack.getDamageValue();
+        int maxDamage = stack.getMaxDamage();
+        int damage = stack.getDamage();
 
-        // Clamp to valid range
         if (damage >= maxDamage) {
             cir.setReturnValue(0);
             return;
@@ -222,34 +220,32 @@ public abstract class ItemStackMixin {
         cir.setReturnValue(width);
     }
 
-    @Inject(method = "getBarColor", at = @At("HEAD"), cancellable = true)
-    private void fixDurabilityBarColor(CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "getItemBarColor", at = @At("HEAD"), cancellable = true)
+    private void overgeared$fixDurabilityBarColor(CallbackInfoReturnable<Integer> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
-        if (!stack.isDamageableItem()) return;
+        if (!stack.isDamageable()) return;
 
-        int max = stack.getMaxDamage(); // Includes quality/durability changes
-        int damage = stack.getDamageValue();
+        int max = stack.getMaxDamage();
+        int damage = stack.getDamage();
 
         if (max <= 0) {
-            cir.setReturnValue(0xFFFFFF); // fallback white
+            cir.setReturnValue(0xFFFFFF);
             return;
         }
 
         float ratio = Math.max(0.0F, 1.0F - (float) damage / (float) max);
+        float hue = ratio / 3.0F;
 
-        // Vanilla bar color: hue from red (0.0) to green (0.333...)
-        float hue = ratio / 3.0F; // [0, 0.33]
-
-        int color = Mth.hsvToRgb(hue, 1.0F, 1.0F);
+        int color = MathHelper.hsvToRgb(hue, 1.0F, 1.0F);
 
         cir.setReturnValue(color);
     }
 
-    @Inject(method = "hurtAndBreak", at = @At("HEAD"), cancellable = true)
-    private void qualityBasedBreak(int amount, LivingEntity entity, Consumer<LivingEntity> onBreak, CallbackInfo ci) {
+    @Inject(method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V", at = @At("HEAD"), cancellable = true)
+    private void overgeared$qualityBasedBreak(int amount, LivingEntity entity, Consumer<LivingEntity> onBreak, CallbackInfo ci) {
         ItemStack stack = (ItemStack) (Object) this;
-        int currentDamage = stack.getDamageValue();
+        int currentDamage = stack.getDamage();
         int newDamage = currentDamage + amount;
         int max = stack.getMaxDamage();
 
@@ -258,37 +254,32 @@ public abstract class ItemStackMixin {
                 return;
             }
 
-            float breakChance = getBreakChance(stack);
+            float breakChance = overgeared$getBreakChance(stack);
 
             if (entity.getRandom().nextFloat() < breakChance) {
                 return;
             }
 
-            stack.setDamageValue(max);
+            stack.setDamage(max);
             ForgingQuality.downgradeDamageableItems(stack);
 
-            if (stack.getDamageValue() < 0) {
-                stack.setDamageValue(0);
-            } else if (stack.getDamageValue() > stack.getMaxDamage()) {
-                stack.setDamageValue(stack.getMaxDamage());
+            if (stack.getDamage() < 0) {
+                stack.setDamage(0);
+            } else if (stack.getDamage() > stack.getMaxDamage()) {
+                stack.setDamage(stack.getMaxDamage());
             }
 
-            if (entity instanceof Player player) {
-                InteractionHand hand = player.getMainHandItem() == stack
-                        ? InteractionHand.MAIN_HAND
-                        : InteractionHand.OFF_HAND;
-
-                player.broadcastBreakEvent(hand);
+            if (entity instanceof PlayerEntity player) {
+                Hand hand = player.getMainHandStack() == stack ? Hand.MAIN_HAND : Hand.OFF_HAND;
+                player.sendToolBreakStatus(hand);
             } else {
-                entity.level().playSound(
+                entity.getWorld().playSound(
                         null,
-                        entity.getX(),
-                        entity.getY(),
-                        entity.getZ(),
-                        SoundEvents.ITEM_BREAK,
-                        SoundSource.PLAYERS,
+                        entity.getX(), entity.getY(), entity.getZ(),
+                        SoundEvents.ENTITY_ITEM_BREAK,
+                        SoundCategory.PLAYERS,
                         0.8F,
-                        0.8F + entity.level().random.nextFloat() * 0.4F
+                        0.8F + entity.getWorld().random.nextFloat() * 0.4F
                 );
             }
 
@@ -297,12 +288,13 @@ public abstract class ItemStackMixin {
     }
 
     @Unique
-    private float getBreakChance(ItemStack stack) {
-        if (!stack.hasTag() || !stack.getTag().contains("ForgingQuality")) {
+    private static float overgeared$getBreakChance(ItemStack stack) {
+        NbtCompound tag = stack.getNbt();
+        if (tag == null || !tag.contains("ForgingQuality")) {
             return ServerConfig.BREAK_CHANCE_WELL.get().floatValue();
         }
 
-        ForgingQuality quality = ForgingQuality.fromString(stack.getTag().getString("ForgingQuality"));
+        ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
 
         return switch (quality) {
             case POOR -> ServerConfig.BREAK_CHANCE_POOR.get().floatValue();
@@ -313,47 +305,48 @@ public abstract class ItemStackMixin {
         };
     }
 
-    @Inject(method = "getAttributeModifiers", at = @At("HEAD"), cancellable = true)
-    private void brokenToolAttributes(EquipmentSlot slot, CallbackInfoReturnable<Multimap<Attribute, AttributeModifier>> cir) {
+    /**
+     * Runs after ItemStackAttributeMixin's RETURN injection (see the priority=2000 class
+     * annotation) so a broken tool's quality attribute bonus gets discarded along with
+     * everything else, keeping only attack speed - matching a vanilla broken tool.
+     */
+    @Inject(method = "getAttributeModifiers", at = @At("RETURN"), cancellable = true)
+    private void overgeared$brokenToolAttributes(EquipmentSlot slot, CallbackInfoReturnable<Multimap<EntityAttribute, EntityAttributeModifier>> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
-        if (!stack.isDamageableItem() || stack.getDamageValue() < stack.getMaxDamage()) {
+        if (!stack.isDamageable() || stack.getDamage() < stack.getMaxDamage()) {
             return;
         }
 
-        // Get original modifiers (IMPORTANT: don't call cir yet)
-        Multimap<Attribute, AttributeModifier> original =
-                ((ItemStack) (Object) this).getItem().getAttributeModifiers(slot, stack);
+        Multimap<EntityAttribute, EntityAttributeModifier> original = cir.getReturnValue();
 
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
 
-        // Keep ONLY attack speed
-        if (original.containsKey(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED)) {
-            for (AttributeModifier mod : original.get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED)) {
-                builder.put(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED, mod);
+        if (original.containsKey(EntityAttributes.GENERIC_ATTACK_SPEED)) {
+            for (EntityAttributeModifier mod : original.get(EntityAttributes.GENERIC_ATTACK_SPEED)) {
+                builder.put(EntityAttributes.GENERIC_ATTACK_SPEED, mod);
             }
         }
 
         cir.setReturnValue(builder.build());
     }
 
-    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
-    private void disableUseOn(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
+    @Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
+    private void overgeared$disableUseOn(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
         if (isBroken(stack)) {
-            cir.setReturnValue(InteractionResult.FAIL);
+            cir.setReturnValue(ActionResult.FAIL);
         }
     }
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    private void disableUse(Level level, Player player, InteractionHand hand,
-                            CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+    private void overgeared$disableUse(World world, PlayerEntity player, Hand hand,
+                                        CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         ItemStack stack = (ItemStack) (Object) this;
 
         if (isBroken(stack)) {
-            cir.setReturnValue(InteractionResultHolder.fail(stack));
+            cir.setReturnValue(TypedActionResult.fail(stack));
         }
     }
 }
-

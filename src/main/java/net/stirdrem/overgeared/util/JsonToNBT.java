@@ -5,8 +5,8 @@ import net.minecraft.nbt.*;
 
 public class JsonToNBT {
 
-    public static CompoundTag parseCompound(JsonObject json) {
-        CompoundTag tag = new CompoundTag();
+    public static NbtCompound parseCompound(JsonObject json) {
+        NbtCompound tag = new NbtCompound();
 
         for (String key : json.keySet()) {
             tag.put(key, parseElement(json.get(key)));
@@ -15,14 +15,14 @@ public class JsonToNBT {
         return tag;
     }
 
-    private static Tag parseElement(JsonElement element) {
+    private static NbtElement parseElement(JsonElement element) {
         if (element.isJsonObject()) {
             return parseCompound(element.getAsJsonObject());
         }
 
         if (element.isJsonArray()) {
             JsonArray array = element.getAsJsonArray();
-            ListTag list = new ListTag();
+            NbtList list = new NbtList();
 
             for (JsonElement e : array) {
                 list.add(parseElement(e));
@@ -35,7 +35,7 @@ public class JsonToNBT {
             JsonPrimitive primitive = element.getAsJsonPrimitive();
 
             if (primitive.isBoolean()) {
-                return ByteTag.valueOf(primitive.getAsBoolean());
+                return NbtByte.of(primitive.getAsBoolean());
             }
 
             if (primitive.isNumber()) {
@@ -43,27 +43,27 @@ public class JsonToNBT {
             }
 
             if (primitive.isString()) {
-                return StringTag.valueOf(primitive.getAsString());
+                return NbtString.of(primitive.getAsString());
             }
         }
 
         throw new JsonParseException("Invalid NBT element: " + element);
     }
 
-    private static Tag parseNumber(JsonPrimitive primitive) {
+    private static NbtElement parseNumber(JsonPrimitive primitive) {
         String raw = primitive.getAsString();
 
         try {
-            if (raw.endsWith("b")) return ByteTag.valueOf(Byte.parseByte(raw.substring(0, raw.length() - 1)));
-            if (raw.endsWith("s")) return ShortTag.valueOf(Short.parseShort(raw.substring(0, raw.length() - 1)));
-            if (raw.endsWith("l")) return LongTag.valueOf(Long.parseLong(raw.substring(0, raw.length() - 1)));
-            if (raw.endsWith("f")) return FloatTag.valueOf(Float.parseFloat(raw.substring(0, raw.length() - 1)));
-            if (raw.endsWith("d")) return DoubleTag.valueOf(Double.parseDouble(raw.substring(0, raw.length() - 1)));
+            if (raw.endsWith("b")) return NbtByte.of(Byte.parseByte(raw.substring(0, raw.length() - 1)));
+            if (raw.endsWith("s")) return NbtShort.of(Short.parseShort(raw.substring(0, raw.length() - 1)));
+            if (raw.endsWith("l")) return NbtLong.of(Long.parseLong(raw.substring(0, raw.length() - 1)));
+            if (raw.endsWith("f")) return NbtFloat.of(Float.parseFloat(raw.substring(0, raw.length() - 1)));
+            if (raw.endsWith("d")) return NbtDouble.of(Double.parseDouble(raw.substring(0, raw.length() - 1)));
 
             // default = int
-            return IntTag.valueOf(Integer.parseInt(raw));
+            return NbtInt.of(Integer.parseInt(raw));
         } catch (NumberFormatException e) {
-            return DoubleTag.valueOf(primitive.getAsDouble());
+            return NbtDouble.of(primitive.getAsDouble());
         }
     }
 }

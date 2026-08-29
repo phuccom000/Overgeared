@@ -1,27 +1,37 @@
 package net.stirdrem.overgeared.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.stirdrem.overgeared.config.ClientConfig;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
-@OnlyIn(Dist.CLIENT)
+import java.util.List;
+
+/**
+ * Draws the floating "hit rating" popup text (perfect/good/miss) that appears during forging.
+ */
 public class PopupOverlay {
 
     private static final float POPUP_DURATION_MS = 10000f;
 
-    public static final IGuiOverlay POPUP_OVERLAY = ((gui, guiGraphics, partialTick, screenWidth, screenHeight) -> {
+    public static void register() {
+        HudRenderCallback.EVENT.register(PopupOverlay::render);
+    }
+
+    private static void render(DrawContext context, float tickDelta) {
         if (!ClientConfig.POP_UP_TOGGLE.get()) return;
-        // Always render popups regardless of game state
-        var popups = AnvilMinigameEvents.getPopups();
+
+        List<AnvilMinigameEvents.Popup> popups = AnvilMinigameEvents.getPopups();
         if (popups.isEmpty()) return;
-        int y = screenHeight + 20
-                - ClientConfig.MINIGAME_OVERLAY_HEIGHT.get();
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
+        TextRenderer font = client.textRenderer;
+
         for (int i = 0; i < popups.size(); i++) {
-            var popup = popups.get(i);
+            AnvilMinigameEvents.Popup popup = popups.get(i);
 
             float progress = popup.age / POPUP_DURATION_MS;
             progress = Math.min(progress, 1f);
@@ -32,24 +42,17 @@ public class PopupOverlay {
 
             int color = ((int) (alpha * 255) << 24) | 0xFFFFFF;
 
-            var font = Minecraft.getInstance().font;
-            int textWidth = font.width(popup.text);
+            int textWidth = font.getWidth(popup.text);
 
-            // Slight vertical offset per popup so they overlap naturally
             float yOffset = i * 6f;
 
-            // Always position in center of screen for popups
             float popupY = screenHeight / 2f - 40 - floatUp - yOffset;
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(
-                    screenWidth / 2f,
-                    popupY,
-                    0
-            );
-            guiGraphics.pose().scale(scale, scale, 1f);
+            context.getMatrices().push();
+            context.getMatrices().translate(screenWidth / 2f, popupY, 0);
+            context.getMatrices().scale(scale, scale, 1f);
 
-            guiGraphics.drawString(
+            context.drawText(
                     font,
                     popup.text,
                     -textWidth / 2,
@@ -58,7 +61,7 @@ public class PopupOverlay {
                     false
             );
 
-            guiGraphics.pose().popPose();
+            context.getMatrices().pop();
         }
-    });
+    }
 }

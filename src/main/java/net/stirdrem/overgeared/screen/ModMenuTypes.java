@@ -1,61 +1,100 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.network.IContainerFactory;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.screen.ArrayPropertyDelegate;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.math.BlockPos;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.block.entity.AlloySmelterBlockEntity;
+import net.stirdrem.overgeared.block.entity.CastFurnaceBlockEntity;
+import net.stirdrem.overgeared.block.entity.NetherAlloySmelterBlockEntity;
+import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.TierASmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.TierBSmithingAnvilBlockEntity;
 
+/**
+ * The anvil and furnace-style screen handlers are registered "extended" (Fabric's equivalent of
+ * Forge's IContainerFactory) since the client needs the BlockPos to look up the real block
+ * entity - its inventory/progress data already syncs via the block entity's own NBT sync
+ * (Overgeared.java relies on the default toInitialChunkDataNbt/toUpdatePacket), so the client
+ * screen handler just reads straight from it. The furnace-style handlers still get a fresh
+ * ArrayPropertyDelegate client-side rather than the block entity's own delegate, matching
+ * vanilla's furnace convention, so their live progress bars sync via the screen handler's own
+ * per-tick property sync instead of only updating whenever the block entity's NBT syncs.
+ */
 public class ModMenuTypes {
-    public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(ForgeRegistries.MENU_TYPES, OvergearedMod.MOD_ID);
 
-    private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> registerMenuType(String name, IContainerFactory<T> factory) {
-        return MENUS.register(name, () -> IForgeMenuType.create(factory));
+    public static final ScreenHandlerType<SteelSmithingAnvilScreenHandler> STEEL_SMITHING_ANVIL_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("smithing_anvil_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        SteelSmithingAnvilBlockEntity be = (SteelSmithingAnvilBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new SteelSmithingAnvilScreenHandler(syncId, inv, be, be.getContainerData());
+                    });
+
+    public static final ScreenHandlerType<TierASmithingAnvilScreenHandler> TIER_A_SMITHING_ANVIL_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("tier_a_smithing_anvil_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        TierASmithingAnvilBlockEntity be = (TierASmithingAnvilBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new TierASmithingAnvilScreenHandler(syncId, inv, be, be.getContainerData());
+                    });
+
+    public static final ScreenHandlerType<TierBSmithingAnvilScreenHandler> TIER_B_SMITHING_ANVIL_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("tier_b_smithing_anvil_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        TierBSmithingAnvilBlockEntity be = (TierBSmithingAnvilBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new TierBSmithingAnvilScreenHandler(syncId, inv, be, be.getContainerData());
+                    });
+
+    public static final ScreenHandlerType<StoneSmithingAnvilScreenHandler> STONE_SMITHING_ANVIL_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("stone_smithing_anvil_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        StoneSmithingAnvilBlockEntity be = (StoneSmithingAnvilBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new StoneSmithingAnvilScreenHandler(syncId, inv, be, be.getContainerData());
+                    });
+
+    public static final ScreenHandlerType<AlloySmelterScreenHandler> ALLOY_SMELTER_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("alloy_smelter_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        AlloySmelterBlockEntity be = (AlloySmelterBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new AlloySmelterScreenHandler(syncId, inv, be, new ArrayPropertyDelegate(4));
+                    });
+
+    public static final ScreenHandlerType<NetherAlloySmelterScreenHandler> NETHER_ALLOY_SMELTER_MENU =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("nether_alloy_smelter_menu"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        NetherAlloySmelterBlockEntity be = (NetherAlloySmelterBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new NetherAlloySmelterScreenHandler(syncId, inv, be, new ArrayPropertyDelegate(4));
+                    });
+
+    public static final ScreenHandlerType<CastFurnaceScreenHandler> CAST_FURNACE =
+            ScreenHandlerRegistry.registerExtended(
+                    Overgeared.id("casting_furnace"), (syncId, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        CastFurnaceBlockEntity be = (CastFurnaceBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos);
+                        return new CastFurnaceScreenHandler(syncId, inv, be, new ArrayPropertyDelegate(4));
+                    });
+
+    public static final ScreenHandlerType<RockKnappingScreenHandler> ROCK_KNAPPING_MENU =
+            ScreenHandlerRegistry.registerSimple(
+                    Overgeared.id("rock_knapping_menu"), (syncId, inv) ->
+                            new RockKnappingScreenHandler(syncId, inv, MinecraftClient.getInstance().world.getRecipeManager()));
+
+    public static final ScreenHandlerType<BlueprintWorkbenchScreenHandler> BLUEPRINT_WORKBENCH_MENU =
+            ScreenHandlerRegistry.registerSimple(
+                    Overgeared.id("blueprint_workbench"), BlueprintWorkbenchScreenHandler::new);
+
+    public static final ScreenHandlerType<FletchingStationScreenHandler> FLETCHING_STATION_MENU =
+            ScreenHandlerRegistry.registerSimple(
+                    Overgeared.id("fletching_station"), FletchingStationScreenHandler::new);
+
+    public static void register() {
     }
-
-    public static void register(IEventBus eventBus) {
-        MENUS.register(eventBus);
-    }
-
-    public static final RegistryObject<MenuType<SteelSmithingAnvilMenu>> STEEL_SMITHING_ANVIL_MENU =
-            registerMenuType("smithing_anvil_menu", SteelSmithingAnvilMenu::new);
-
-
-    public static final RegistryObject<MenuType<TierASmithingAnvilMenu>> TIER_A_SMITHING_ANVIL_MENU =
-            registerMenuType("tier_a_smithing_anvil_menu", TierASmithingAnvilMenu::new);
-
-
-    public static final RegistryObject<MenuType<TierBSmithingAnvilMenu>> TIER_B_SMITHING_ANVIL_MENU =
-            registerMenuType("tier_b_smithing_anvil_menu", TierBSmithingAnvilMenu::new);
-
-    public static final RegistryObject<MenuType<StoneSmithingAnvilMenu>> STONE_SMITHING_ANVIL_MENU =
-            registerMenuType("stone_smithing_anvil_menu", StoneSmithingAnvilMenu::new);
-
-    public static final RegistryObject<MenuType<RockKnappingMenu>> ROCK_KNAPPING_MENU =
-            registerMenuType("rock_knapping_menu", RockKnappingMenu::new);
-
-    public static final RegistryObject<MenuType<BlueprintWorkbenchMenu>> BLUEPRINT_WORKBENCH_MENU =
-            MENUS.register("blueprint_workbench",
-                    () -> new MenuType<>(BlueprintWorkbenchMenu::new, FeatureFlagSet.of()));
-
-    public static final RegistryObject<MenuType<FletchingStationMenu>> FLETCHING_STATION_MENU =
-            MENUS.register("fletching_station",
-                    () -> new MenuType<>(FletchingStationMenu::new, FeatureFlagSet.of()));
-
-    public static final RegistryObject<MenuType<AlloySmelterMenu>> ALLOY_SMELTER_MENU =
-            registerMenuType("alloy_smelter_menu", AlloySmelterMenu::new);
-
-    public static final RegistryObject<MenuType<NetherAlloySmelterMenu>> NETHER_ALLOY_SMELTER_MENU =
-            registerMenuType("nether_alloy_smelter_menu", NetherAlloySmelterMenu::new);
-
-    public static final RegistryObject<MenuType<CastFurnaceMenu>> CAST_FURNACE =
-            registerMenuType("casting_furnace", CastFurnaceMenu::new);
-
-
 }

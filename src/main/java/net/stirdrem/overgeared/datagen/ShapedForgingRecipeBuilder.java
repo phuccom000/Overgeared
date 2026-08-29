@@ -3,73 +3,89 @@ package net.stirdrem.overgeared.datagen;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.RequirementsStrategy;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.ItemLike;
+import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.AdvancementRewards;
+import net.minecraft.advancement.CriterionMerger;
+import net.minecraft.advancement.criterion.CriterionConditions;
+import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
+import net.minecraft.data.server.recipe.RecipeJsonBuilder;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.item.*;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.client.ForgingBookCategory;
+import net.stirdrem.overgeared.recipe.ForgingBookCategory;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ShapedForgingRecipeBuilder implements RecipeBuilder {
-    private ForgingBookCategory category;
-    private final Item result;
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
 
+public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
+
+    private final ForgingBookCategory category;
+    private final Item result;
     private final int count;
     private final int hammering;
+
     private final List<String> rows = Lists.newArrayList();
     private final Map<Character, Ingredient> key = new LinkedHashMap<>();
-    private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
+    private final Advancement.Builder advancement =
+            Advancement.Builder.createUntelemetered();
+
+    private final List<String> blueprintTypes = new ArrayList<>();
 
     @Nullable
-    private final List<String> blueprintTypes = new java.util.ArrayList<>();
-    @Nullable
     private Boolean requiresBlueprint;
+
     @Nullable
     private Boolean hasQuality;
+
     @Nullable
     private Boolean hasPolishing;
+
     @Nullable
     private Boolean needQuenching;
+
     @Nullable
     private Boolean needsMinigame;
+
     @Nullable
     private String group;
+
     @Nullable
     private String tier;
+
     @Nullable
     private Item failedResult;
-    @Nullable
+
     private int failedResultCount;
 
     @Nullable
     private ForgingQuality minimumQuality;
+
     @Nullable
     private ForgingQuality qualityDifficulty;
 
     private boolean showNotification = true;
 
-
-    public ShapedForgingRecipeBuilder(ForgingBookCategory category, ItemLike result, int count, int hammering) {
+    public ShapedForgingRecipeBuilder(
+            ForgingBookCategory category,
+            ItemConvertible result,
+            int count,
+            int hammering
+    ) {
         this.category = category;
         this.result = result.asItem();
         this.count = count;
@@ -77,239 +93,382 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
     private static boolean isTools(Item item) {
-        return item instanceof SwordItem ||
-                item instanceof DiggerItem ||
-                item instanceof ProjectileWeaponItem;
+        return item instanceof SwordItem
+                || item instanceof MiningToolItem
+                || item instanceof RangedWeaponItem;
     }
 
     public static boolean isToolPart(ItemStack stack) {
-        return !stack.isEmpty() && stack.is(ModTags.Items.TOOL_PARTS);
+        return !stack.isEmpty() && stack.isIn(ModTags.Items.TOOL_PARTS);
     }
 
     public static boolean isToolPart(Item item) {
-        return item.builtInRegistryHolder().is(ModTags.Items.TOOL_PARTS);
+        return item.getDefaultStack().isIn(ModTags.Items.TOOL_PARTS);
     }
 
-    private static ForgingBookCategory determineWeaponRecipeCategory(ItemLike pResult) {
-        if (isTools(pResult.asItem()) || isToolPart(pResult.asItem())) {
+    private static ForgingBookCategory determineWeaponRecipeCategory(
+            ItemConvertible result
+    ) {
+        Item item = result.asItem();
+
+        if (isTools(item) || isToolPart(item)) {
             return ForgingBookCategory.TOOL_HEADS;
-        } else {
-            return pResult.asItem() instanceof ArmorItem ? ForgingBookCategory.ARMORS : ForgingBookCategory.MISC;
         }
+
+        return item instanceof ArmorItem
+                ? ForgingBookCategory.ARMORS
+                : ForgingBookCategory.MISC;
     }
 
-
-    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int hammering) {
-        return new ShapedForgingRecipeBuilder(category, result, 1, hammering);
+    public static ShapedForgingRecipeBuilder create(
+            ForgingBookCategory category,
+            ItemConvertible result,
+            int hammering
+    ) {
+        return new ShapedForgingRecipeBuilder(
+                category,
+                result,
+                1,
+                hammering
+        );
     }
 
-    public static ShapedForgingRecipeBuilder shaped(ForgingBookCategory category, ItemLike result, int count, int hammering) {
-        return new ShapedForgingRecipeBuilder(category, result, count, hammering);
+    public static ShapedForgingRecipeBuilder create(
+            ForgingBookCategory category,
+            ItemConvertible result,
+            int count,
+            int hammering
+    ) {
+        return new ShapedForgingRecipeBuilder(
+                category,
+                result,
+                count,
+                hammering
+        );
     }
 
-    public ShapedForgingRecipeBuilder define(Character pSymbol, TagKey<Item> pTag) {
-        return this.define(pSymbol, Ingredient.of(pTag));
+    public ShapedForgingRecipeBuilder input(
+            Character symbol,
+            TagKey<Item> tag
+    ) {
+        return input(symbol, Ingredient.fromTag(tag));
     }
 
-    public ShapedForgingRecipeBuilder define(Character symbol, ItemLike item) {
-        return this.define(symbol, Ingredient.of(item));
+    public ShapedForgingRecipeBuilder input(
+            Character symbol,
+            ItemConvertible item
+    ) {
+        return input(symbol, Ingredient.ofItems(item));
     }
 
-    public ShapedForgingRecipeBuilder define(Character pSymbol, Ingredient pIngredient) {
-        if (this.key.containsKey(pSymbol)) {
-            throw new IllegalArgumentException("Symbol '" + pSymbol + "' is already defined!");
-        } else if (pSymbol == ' ') {
-            throw new IllegalArgumentException("Symbol ' ' (whitespace) is reserved and cannot be defined");
-        } else {
-            this.key.put(pSymbol, pIngredient);
-            return this;
+    public ShapedForgingRecipeBuilder input(
+            Character symbol,
+            Ingredient ingredient
+    ) {
+        if (key.containsKey(symbol)) {
+            throw new IllegalArgumentException(
+                    "Symbol '" + symbol + "' is already defined!"
+            );
         }
-    }
 
-    public ShapedForgingRecipeBuilder pattern(String pPattern) {
-        if (!this.rows.isEmpty() && pPattern.length() != this.rows.get(0).length()) {
-            throw new IllegalArgumentException("Pattern must be the same width on every line!");
-        } else {
-            this.rows.add(pPattern);
-            return this;
+        if (symbol == ' ') {
+            throw new IllegalArgumentException(
+                    "Symbol ' ' (whitespace) is reserved and cannot be defined"
+            );
         }
-    }
 
-    public ShapedForgingRecipeBuilder unlockedBy(String pCriterionName, CriterionTriggerInstance pCriterionTrigger) {
-        this.advancement.addCriterion(pCriterionName, pCriterionTrigger);
+        key.put(symbol, ingredient);
         return this;
     }
 
-    public ShapedForgingRecipeBuilder group(@Nullable String pGroupName) {
-        this.group = pGroupName;
+    public ShapedForgingRecipeBuilder pattern(String pattern) {
+        if (!rows.isEmpty()
+                && pattern.length() != rows.get(0).length()) {
+            throw new IllegalArgumentException(
+                    "Pattern must be the same width on every line!"
+            );
+        }
+
+        rows.add(pattern);
         return this;
     }
 
-    public ShapedForgingRecipeBuilder tier(@Nullable AnvilTier pTier) {
-        this.tier = pTier.getDisplayName();
+    public ShapedForgingRecipeBuilder criterion(
+            String name,
+            CriterionConditions conditions
+    ) {
+        advancement.criterion(name, conditions);
         return this;
     }
 
-    public ShapedForgingRecipeBuilder setQuality(@Nullable boolean hasQuality) {
+    public ShapedForgingRecipeBuilder group(
+            @Nullable String group
+    ) {
+        this.group = group;
+        return this;
+    }
+
+    public ShapedForgingRecipeBuilder tier(
+            @Nullable AnvilTier tier
+    ) {
+        this.tier = tier == null
+                ? null
+                : tier.getDisplayName();
+
+        return this;
+    }
+
+    public ShapedForgingRecipeBuilder setQuality(
+            @Nullable boolean hasQuality
+    ) {
         this.hasQuality = hasQuality;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder requiresBlueprint(@Nullable boolean requiresBlueprint) {
+    public ShapedForgingRecipeBuilder requiresBlueprint(
+            @Nullable boolean requiresBlueprint
+    ) {
         this.requiresBlueprint = requiresBlueprint;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder needsMinigame(@Nullable boolean needsMinigame) {
+    public ShapedForgingRecipeBuilder needsMinigame(
+            @Nullable boolean needsMinigame
+    ) {
         this.needsMinigame = needsMinigame;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder failedResult(ItemLike result) {
+    public ShapedForgingRecipeBuilder failedResult(
+            ItemConvertible result
+    ) {
         this.failedResult = result.asItem();
         this.failedResultCount = 1;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder failedResult(ItemLike result, int count) {
+    public ShapedForgingRecipeBuilder failedResult(
+            ItemConvertible result,
+            int count
+    ) {
         this.failedResult = result.asItem();
         this.failedResultCount = count;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder setBlueprint(String blueprintType) {
+    public ShapedForgingRecipeBuilder setBlueprint(
+            String blueprintType
+    ) {
         if (blueprintType != null && !blueprintType.isBlank()) {
-            this.blueprintTypes.add(blueprintType.toLowerCase(java.util.Locale.ROOT));
+            blueprintTypes.add(
+                    blueprintType.toLowerCase(java.util.Locale.ROOT)
+            );
         }
+
         return this;
     }
 
-    public ShapedForgingRecipeBuilder minimumQuality(@Nullable ForgingQuality minimumQuality) {
+    public ShapedForgingRecipeBuilder minimumQuality(
+            @Nullable ForgingQuality minimumQuality
+    ) {
         this.minimumQuality = minimumQuality;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder qualityDifficulty(@Nullable ForgingQuality qualityDifficulty) {
+    public ShapedForgingRecipeBuilder qualityDifficulty(
+            @Nullable ForgingQuality qualityDifficulty
+    ) {
         this.qualityDifficulty = qualityDifficulty;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder setPolishing(@Nullable boolean hasPolishing) {
+    public ShapedForgingRecipeBuilder setPolishing(
+            @Nullable boolean hasPolishing
+    ) {
         this.hasPolishing = hasPolishing;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder showNotification(boolean pShowNotification) {
-        this.showNotification = pShowNotification;
+    public ShapedForgingRecipeBuilder showNotification(
+            boolean showNotification
+    ) {
+        this.showNotification = showNotification;
         return this;
     }
 
-    public ShapedForgingRecipeBuilder setNeedQuenching(@Nullable boolean needQuenching) {
+    public ShapedForgingRecipeBuilder setNeedQuenching(
+            @Nullable boolean needQuenching
+    ) {
         this.needQuenching = needQuenching;
         return this;
     }
 
-    @Override
-    public Item getResult() {
-        return this.result;
+    public Item getOutputItem() {
+        return result;
     }
 
     public Item getFailedResult() {
-        return this.failedResult;
+        return failedResult;
     }
 
-    @Override
-    public void save(Consumer<FinishedRecipe> pRecipeOutput, ResourceLocation pRecipeId) {
-        this.ensureValid(pRecipeId);
-
-        int width = this.rows.get(0).length();
-        int height = this.rows.size();
-        NonNullList<Ingredient> ingredients = NonNullList.withSize(width * height, Ingredient.EMPTY);
-
-        for (int i = 0; i < height; ++i) {
-            String patternLine = this.rows.get(i);
-            for (int j = 0; j < width; ++j) {
-                char symbol = patternLine.charAt(j);
-                Ingredient ingredient = this.key.getOrDefault(symbol, Ingredient.EMPTY);
-                ingredients.set(i * width + j, ingredient);
-            }
-        }
-
-        this.advancement.parent(ROOT_RECIPE_ADVANCEMENT)
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(pRecipeId))
-                .rewards(AdvancementRewards.Builder.recipe(pRecipeId))
-                .requirements(RequirementsStrategy.OR);
-
-        pRecipeOutput.accept(new Result(
-                ingredients,
-                this.hammering,
-                new ItemStack(this.result, this.count),
-                pRecipeId,
-                this.failedResult != null ? new ItemStack(this.failedResult, this.failedResultCount) : ItemStack.EMPTY,
-                this.group == null ? "" : this.group,
-                this.category,
-                this.rows,
-                this.key,
-                this.advancement,
-                pRecipeId.withPrefix("recipes/" + this.category.getFolderName() + "/"),
-                this.showNotification,
-                this.blueprintTypes,
-                this.hasQuality != null && !this.hasQuality ? null : (this.requiresBlueprint != null ? this.requiresBlueprint : false),
-                this.hasQuality == null || this.hasQuality,
-                this.hasQuality != null && !this.hasQuality ? null : (this.hasPolishing != null ? this.hasPolishing : true),
-                this.hasQuality != null && this.hasQuality ? null : (this.needsMinigame != null && this.needsMinigame),
-                this.hasQuality != null && !this.hasQuality ? "" : (this.minimumQuality != null ? this.minimumQuality.getDisplayName() : ForgingQuality.POOR.getDisplayName()),
-                this.qualityDifficulty != null ? this.qualityDifficulty.getDisplayName() : ForgingQuality.NONE.getDisplayName(),
-                this.tier == null ? "" : this.tier,
-                this.needQuenching == null || this.needQuenching
-        ));
+    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
+        offerTo(exporter, getItemId(this.getOutputItem()));
     }
 
+    public void offerTo(
+            Consumer<RecipeJsonProvider> exporter,
+            Identifier recipeId
+    ) {
+        validate(recipeId);
 
-    private void ensureValid(ResourceLocation pRecipeId) {
-        if (this.rows.isEmpty()) {
-            throw new IllegalStateException("No pattern is defined for shaped forging recipe " + pRecipeId + "!");
+        advancement
+                .parent(ROOT)
+                .criterion(
+                        "has_the_recipe",
+                        RecipeUnlockedCriterion.create(recipeId)
+                )
+                .rewards(
+                        AdvancementRewards.Builder.recipe(recipeId)
+                )
+                .criteriaMerger(CriterionMerger.OR);
+
+        exporter.accept(
+                new Result(
+                        recipeId,
+                        hammering,
+                        new ItemStack(result, count),
+                        failedResult != null
+                                ? new ItemStack(
+                                failedResult,
+                                failedResultCount
+                        )
+                                : ItemStack.EMPTY,
+                        group == null ? "" : group,
+                        category,
+                        rows,
+                        key,
+                        advancement,
+                        recipeId.withPrefixedPath(
+                                "recipes/"
+                                        + category.getFolderName()
+                                        + "/"
+                        ),
+                        showNotification,
+                        blueprintTypes,
+
+                        hasQuality != null && !hasQuality
+                                ? null
+                                : requiresBlueprint != null
+                                ? requiresBlueprint
+                                : false,
+
+                        hasQuality == null || hasQuality,
+
+                        hasQuality != null && !hasQuality
+                                ? null
+                                : hasPolishing != null
+                                ? hasPolishing
+                                : true,
+
+                        hasQuality != null && hasQuality
+                                ? null
+                                : needsMinigame != null
+                                && needsMinigame,
+
+                        hasQuality != null && !hasQuality
+                                ? ""
+                                : minimumQuality != null
+                                ? minimumQuality.getDisplayName()
+                                : ForgingQuality.POOR.getDisplayName(),
+
+                        qualityDifficulty != null
+                                ? qualityDifficulty.getDisplayName()
+                                : ForgingQuality.NONE.getDisplayName(),
+
+                        tier == null ? "" : tier,
+
+                        needQuenching == null || needQuenching
+                )
+        );
+    }
+
+    private void validate(Identifier recipeId) {
+        if (rows.isEmpty()) {
+            throw new IllegalStateException(
+                    "No pattern is defined for shaped forging recipe "
+                            + recipeId + "!"
+            );
         }
-        int width = this.rows.get(0).length();
-        for (String row : this.rows) {
+
+        int width = rows.get(0).length();
+
+        for (String row : rows) {
             if (row.length() != width) {
-                throw new IllegalStateException("Pattern must be the same width on every line!");
+                throw new IllegalStateException(
+                        "Pattern must be the same width on every line!"
+                );
             }
         }
     }
 
+    static class Result implements RecipeJsonProvider {
 
-    static class Result implements FinishedRecipe {
-        private final ResourceLocation id;
-        private final NonNullList<Ingredient> ingredients;
+        private final Identifier id;
         private final int hammering;
         private final ItemStack result;
         private final ItemStack failedResult;
+
         private final List<String> pattern;
         private final Map<Character, Ingredient> key;
+
         private final Advancement.Builder advancement;
-        private final ResourceLocation advancementId;
+        private final Identifier advancementId;
+
         private final boolean showNotification;
         private final String group;
+
         private final List<String> blueprintTypes;
         private final ForgingBookCategory category;
+
         private final Boolean requiresBlueprint;
         private final Boolean hasQuality;
         private final Boolean hasPolishing;
         private final Boolean needsMinigame;
+
         private final String minimumQuality;
-        private final String tier;
-        private final Boolean needQuenching;
         private final String qualityDifficulty;
 
-        public Result(NonNullList<Ingredient> ingredients, int hammering, ItemStack result, ResourceLocation id, ItemStack failedResult, String group, ForgingBookCategory category, List<String> pattern, Map<Character, Ingredient> key, Advancement.Builder advancement, ResourceLocation advancementId, boolean showNotification, List<String> blueprintTypes, Boolean requiresBlueprint, Boolean hasQuality, Boolean hasPolishing, Boolean needsMinigame, String minimumQuality, String qualityDifficulty, String tier, Boolean needQuenching) {
-            this.ingredients = ingredients;
+        private final String tier;
+        private final Boolean needQuenching;
+
+        public Result(
+                Identifier id,
+                int hammering,
+                ItemStack result,
+                ItemStack failedResult,
+                String group,
+                ForgingBookCategory category,
+                List<String> pattern,
+                Map<Character, Ingredient> key,
+                Advancement.Builder advancement,
+                Identifier advancementId,
+                boolean showNotification,
+                List<String> blueprintTypes,
+                Boolean requiresBlueprint,
+                Boolean hasQuality,
+                Boolean hasPolishing,
+                Boolean needsMinigame,
+                String minimumQuality,
+                String qualityDifficulty,
+                String tier,
+                Boolean needQuenching
+        ) {
+            this.id = id;
             this.hammering = hammering;
             this.result = result;
             this.failedResult = failedResult;
-            this.category = category;
-            this.id = id;
             this.group = group;
+            this.category = category;
             this.pattern = pattern;
             this.key = key;
             this.advancement = advancement;
@@ -327,108 +486,173 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         }
 
         @Override
-        public void serializeRecipeData(JsonObject json) {
-            if (!this.group.isEmpty()) {
-                json.addProperty("group", this.group);
+        public void serialize(JsonObject json) {
+
+            if (!group.isEmpty()) {
+                json.addProperty("group", group);
             }
 
-            if (this.requiresBlueprint != null) {
-                json.addProperty("requires_blueprint", this.requiresBlueprint);
+            if (requiresBlueprint != null) {
+                json.addProperty(
+                        "requires_blueprint",
+                        requiresBlueprint
+                );
             }
 
-            if (!this.blueprintTypes.isEmpty()) {
+            if (!blueprintTypes.isEmpty()) {
                 JsonArray blueprintArray = new JsonArray();
-                for (String type : this.blueprintTypes) {
+
+                for (String type : blueprintTypes) {
                     blueprintArray.add(type);
                 }
+
                 json.add("blueprint", blueprintArray);
             }
-            if (this.category != null) {
-                json.addProperty("category", this.category.name().toLowerCase(java.util.Locale.ROOT));
+
+            if (category != null) {
+                json.addProperty(
+                        "category",
+                        category.name()
+                                .toLowerCase(
+                                        java.util.Locale.ROOT
+                                )
+                );
             }
 
-            json.addProperty("group", this.group);
+            if (!tier.isBlank()) {
+                json.addProperty("tier", tier);
+            }
+
+            json.addProperty("hammering", hammering);
+
+            if (hasQuality != null) {
+                json.addProperty(
+                        "has_quality",
+                        hasQuality
+                );
+            }
+
+            if (!minimumQuality.isEmpty()) {
+                json.addProperty(
+                        "minimum_quality",
+                        minimumQuality
+                );
+            }
+
+            if (!qualityDifficulty.isEmpty()) {
+                json.addProperty(
+                        "quality_difficulty",
+                        qualityDifficulty
+                );
+            }
+
+            if (needsMinigame != null) {
+                json.addProperty(
+                        "needs_minigame",
+                        needsMinigame
+                );
+            }
+
+            if (needQuenching != null) {
+                json.addProperty(
+                        "need_quenching",
+                        needQuenching
+                );
+            }
+
+            if (hasPolishing != null) {
+                json.addProperty(
+                        "has_polishing",
+                        hasPolishing
+                );
+            }
 
             JsonArray patternArray = new JsonArray();
-            for (String s : this.pattern) {
-                patternArray.add(s);
+
+            for (String row : pattern) {
+                patternArray.add(row);
             }
+
             json.add("pattern", patternArray);
 
-            if (!this.tier.isBlank()) {
-                json.addProperty("tier", this.tier);
+            JsonObject keyObject = new JsonObject();
+
+            for (Map.Entry<Character, Ingredient> entry : key.entrySet()) {
+                keyObject.add(
+                        String.valueOf(entry.getKey()),
+                        entry.getValue().toJson()
+                );
             }
 
-            json.addProperty("hammering", this.hammering);
+            json.add("key", keyObject);
 
-            if (this.hasQuality != null) {
-                json.addProperty("has_quality", this.hasQuality);
-            }
-            if (!this.minimumQuality.isEmpty()) {
-                json.addProperty("minimum_quality", this.minimumQuality);
-            }
-            if (!this.qualityDifficulty.isEmpty()) {
-                json.addProperty("quality_difficulty", this.qualityDifficulty);
-            }
-            if (this.needsMinigame != null) {
-                json.addProperty("needs_minigame", this.needsMinigame);
-            }
-            if (this.needQuenching != null) {
-                json.addProperty("need_quenching", this.needQuenching);
-            }
-            if (this.hasPolishing != null) {
-                json.addProperty("has_polishing", this.hasPolishing);
+            JsonObject resultObject = new JsonObject();
+
+            resultObject.addProperty(
+                    "item",
+                    Registries.ITEM
+                            .getId(result.getItem())
+                            .toString()
+            );
+
+            if (result.getCount() > 1) {
+                resultObject.addProperty(
+                        "count",
+                        result.getCount()
+                );
             }
 
-            JsonObject keyObj = new JsonObject();
-            for (Map.Entry<Character, Ingredient> entry : this.key.entrySet()) {
-                keyObj.add(String.valueOf(entry.getKey()), entry.getValue().toJson());
-            }
-            json.add("key", keyObj);
+            json.add("result", resultObject);
 
-            JsonObject resultObj = new JsonObject();
-            resultObj.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result.getItem()).toString());
-            if (this.result.getCount() > 1) {
-                resultObj.addProperty("count", this.result.getCount());
-            }
-            json.add("result", resultObj);
+            if (!failedResult.isEmpty()) {
+                JsonObject failedResultObject = new JsonObject();
 
-            if (!this.failedResult.isEmpty() && this.failedResult.getItem() != Items.AIR) {
-                JsonObject failedResultObj = new JsonObject();
-                failedResultObj.addProperty("item", BuiltInRegistries.ITEM.getKey(this.failedResult.getItem()).toString());
-                if (this.failedResult.getCount() > 1) {
-                    failedResultObj.addProperty("count", this.failedResult.getCount());
+                failedResultObject.addProperty(
+                        "item",
+                        Registries.ITEM
+                                .getId(failedResult.getItem())
+                                .toString()
+                );
+
+                if (failedResult.getCount() > 1) {
+                    failedResultObject.addProperty(
+                            "count",
+                            failedResult.getCount()
+                    );
                 }
-                json.add("result_failed", failedResultObj);
+
+                json.add(
+                        "result_failed",
+                        failedResultObject
+                );
             }
 
-            json.addProperty("show_notification", this.showNotification);
-        }
-
-
-        @Override
-        public ResourceLocation getId() {
-            return this.id;
+            json.addProperty(
+                    "show_notification",
+                    showNotification
+            );
         }
 
         @Override
-        public RecipeSerializer<?> getType() {
-            return ForgingRecipe.Serializer.INSTANCE; // Replace with your actual serializer instance
+        public Identifier getRecipeId() {
+            return id;
+        }
+
+        @Override
+        public RecipeSerializer<?> getSerializer() {
+            return ForgingRecipe.Serializer.INSTANCE;
         }
 
         @Nullable
         @Override
-        public JsonObject serializeAdvancement() {
-            return this.advancement.serializeToJson();
+        public JsonObject toAdvancementJson() {
+            return advancement.toJson();
         }
 
         @Nullable
         @Override
-        public ResourceLocation getAdvancementId() {
-            {
-                return this.advancementId;
-            }
+        public Identifier getAdvancementId() {
+            return advancementId;
         }
-
     }
 }

@@ -1,32 +1,34 @@
 package net.stirdrem.overgeared.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ClientConfig;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
-@OnlyIn(Dist.CLIENT)
+/**
+ * Draws the QTE bar (zones, progress, and moving arrow) during anvil forging. Registered as a
+ * HudRenderCallback (Fabric's equivalent of Forge's IGuiOverlay/RegisterGuiOverlaysEvent).
+ */
 public class AnvilMinigameOverlay {
 
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil_minigame.png");
+    private static final Identifier TEXTURE =
+            new Identifier(Overgeared.MOD_ID, "textures/gui/smithing_anvil_minigame.png");
 
-    // UI dimensions
-    public static final int barTotalWidth = 184;
     private static final int ARROW_WIDTH = 8;
     private static final int ARROW_HEIGHT = 16;
 
-    public static final IGuiOverlay ANVIL_MG = ((gui, guiGraphics, partialTick, screenWidth, screenHeight) -> {
+    public static void register() {
+        HudRenderCallback.EVENT.register(AnvilMinigameOverlay::render);
+    }
 
-        boolean showMainOverlay = AnvilMinigameEvents.isIsVisible();
-        if (!showMainOverlay) return; // Early return if not visible
+    private static void render(DrawContext context, float partialTick) {
+        if (!AnvilMinigameEvents.isIsVisible()) return;
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
 
         int imageWidth = 238;
         int imageHeight = 37;
@@ -34,26 +36,15 @@ public class AnvilMinigameOverlay {
         int textureHeight = 128;
 
         int x = (screenWidth - imageWidth) / 2;
-        int y = (screenHeight - imageHeight)
-                - ClientConfig.MINIGAME_OVERLAY_HEIGHT.get();
+        int y = (screenHeight - imageHeight) - ClientConfig.MINIGAME_OVERLAY_HEIGHT.get();
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, TEXTURE);
-
-        // Draw the main overlay
-        guiGraphics.blit(TEXTURE, x, y,
-                0, 0, imageWidth, imageHeight,
-                textureWidth, textureHeight);
+        context.drawTexture(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, textureWidth, textureHeight);
 
         int barX = x + 9;
         int barY = y + 21;
         int barWidth = 220;
         int barHeight = 10;
 
-        // Zones
         int perfectZoneStart = AnvilMinigameEvents.getPerfectZoneStart();
         int perfectZoneEnd = AnvilMinigameEvents.getPerfectZoneEnd();
         int goodZoneStart = AnvilMinigameEvents.getGoodZoneStart();
@@ -64,7 +55,7 @@ public class AnvilMinigameOverlay {
         int goodEndPx = (int) (barWidth * goodZoneEnd / 100f);
 
         if (goodEndPx > goodStartPx) {
-            guiGraphics.blit(TEXTURE,
+            context.drawTexture(TEXTURE,
                     barX + goodStartPx, barY,
                     9, 94,
                     goodEndPx - goodStartPx, barHeight,
@@ -75,46 +66,26 @@ public class AnvilMinigameOverlay {
         int perfectEndPx = (int) (barWidth * perfectZoneEnd / 100f);
 
         if (perfectEndPx > perfectStartPx) {
-            guiGraphics.blit(TEXTURE,
+            context.drawTexture(TEXTURE,
                     barX + perfectStartPx, barY,
                     9, 72,
                     perfectEndPx - perfectStartPx, barHeight,
                     textureWidth, textureHeight);
         }
-        // Progress bar
+
         int progressLengthPx = (int) (222 * (1 - ((float) AnvilMinigameEvents.getHitsRemaining() / AnvilMinigameEvents.getMaxHits())));
 
-        guiGraphics.blit(TEXTURE,
+        context.drawTexture(TEXTURE,
                 x + 8, y + 12,
                 8, 62,
                 progressLengthPx, 5,
                 textureWidth, textureHeight);
 
         int arrowX = barX + (int) (barWidth * arrowPosition / 100f) - 5;
-        guiGraphics.blit(TEXTURE,
+        context.drawTexture(TEXTURE,
                 arrowX, barY - 3,
                 9, 41,
                 ARROW_WIDTH, ARROW_HEIGHT,
                 textureWidth, textureHeight);
-
-        // Stats
-        int hitsRemain = AnvilMinigameEvents.getHitsRemaining();
-        int perfect = AnvilMinigameEvents.getPerfectHits();
-        int good = AnvilMinigameEvents.getGoodHits();
-        int miss = AnvilMinigameEvents.getMissedHits();
-
-        Component stats = Component.translatable(
-                "gui.overgeared.forging_stats",
-                hitsRemain, perfect, good, miss
-        );
-
-        /*guiGraphics.drawString(
-                Minecraft.getInstance().font,
-                stats,
-                x + 10,
-                y + 10,
-                0x404040,
-                false
-        );*/
-    });
+    }
 }

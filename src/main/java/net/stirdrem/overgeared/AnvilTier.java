@@ -39,4 +39,3 @@ public enum AnvilTier {
         return this.ordinal() >= other.ordinal();
     }
 }
-

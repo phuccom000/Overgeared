@@ -1,55 +1,56 @@
 package net.stirdrem.overgeared.recipe.nbtcooking;
 
 import com.google.gson.JsonObject;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.CookingRecipeCategory;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.util.JsonToNBT;
 
 public class NBTBlastingRecipe extends AbstractNBTCookingRecipe {
 
-    public NBTBlastingRecipe(ResourceLocation id, String group, CookingBookCategory category,
-                             Ingredient ingredient, ItemStack result,
-                             float xp, int time, CompoundTag tag) {
+    public NBTBlastingRecipe(Identifier id, String group, CookingRecipeCategory category,
+                              Ingredient ingredient, ItemStack result,
+                              float xp, int time, NbtCompound tag) {
         super(RecipeType.BLASTING, id, group, category, ingredient, result, xp, time, tag);
     }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.NBT_ADD_BLASTING.get();
+        return ModRecipes.NBT_ADD_BLASTING;
     }
 
     public static class Serializer implements RecipeSerializer<NBTBlastingRecipe> {
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public NBTBlastingRecipe fromJson(ResourceLocation id, JsonObject json) {
-            String group = GsonHelper.getAsString(json, "group", "");
+        public NBTBlastingRecipe read(Identifier id, JsonObject json) {
+            String group = JsonHelper.getString(json, "group", "");
 
-            CookingBookCategory category = CookingBookCategory.CODEC.byName(
-                    GsonHelper.getAsString(json, "category", "misc"),
-                    CookingBookCategory.MISC
+            CookingRecipeCategory category = CookingRecipeCategory.CODEC.byId(
+                    JsonHelper.getString(json, "category", "misc"),
+                    CookingRecipeCategory.MISC
             );
 
             Ingredient ingredient = Ingredient.fromJson(
-                    GsonHelper.getAsJsonObject(json, "ingredient")
+                    JsonHelper.getObject(json, "ingredient")
             );
 
-            ItemStack result = ShapedRecipe.itemStackFromJson(
-                    GsonHelper.getAsJsonObject(json, "result")
+            ItemStack result = ShapedRecipe.outputFromJson(
+                    JsonHelper.getObject(json, "result")
             );
 
-            float xp = GsonHelper.getAsFloat(json, "experience", 0.0f);
-            int time = GsonHelper.getAsInt(json, "cookingtime", 200);
+            float xp = JsonHelper.getFloat(json, "experience", 0.0f);
+            int time = JsonHelper.getInt(json, "cookingtime", 200);
 
-            CompoundTag tag = new CompoundTag();
+            NbtCompound tag = new NbtCompound();
             if (json.has("nbt")) {
                 tag = JsonToNBT.parseCompound(
-                        GsonHelper.getAsJsonObject(json, "nbt")
+                        JsonHelper.getObject(json, "nbt")
                 );
             }
 
@@ -57,26 +58,26 @@ public class NBTBlastingRecipe extends AbstractNBTCookingRecipe {
         }
 
         @Override
-        public NBTBlastingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-            String group = buf.readUtf();
-            CookingBookCategory category = buf.readEnum(CookingBookCategory.class);
-            Ingredient ingredient = Ingredient.fromNetwork(buf);
-            ItemStack result = buf.readItem();
+        public NBTBlastingRecipe read(Identifier id, PacketByteBuf buf) {
+            String group = buf.readString();
+            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
+            Ingredient ingredient = Ingredient.fromPacket(buf);
+            ItemStack result = buf.readItemStack();
             float xp = buf.readFloat();
             int time = buf.readVarInt();
-            CompoundTag tag = buf.readNbt();
+            NbtCompound tag = buf.readNbt();
 
             return new NBTBlastingRecipe(id, group, category, ingredient, result, xp, time, tag);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buf, NBTBlastingRecipe recipe) {
-            buf.writeUtf(recipe.getGroup());
-            buf.writeEnum(recipe.category());
-            recipe.getIngredients().get(0).toNetwork(buf);
-            buf.writeItem(recipe.getResultItem(null));
+        public void write(PacketByteBuf buf, NBTBlastingRecipe recipe) {
+            buf.writeString(recipe.getGroup());
+            buf.writeEnumConstant(recipe.getCategory());
+            recipe.getIngredients().get(0).write(buf);
+            buf.writeItemStack(recipe.getOutput(null));
             buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookingTime());
+            buf.writeVarInt(recipe.getCookTime());
             buf.writeNbt(recipe.getResultTag());
         }
     }

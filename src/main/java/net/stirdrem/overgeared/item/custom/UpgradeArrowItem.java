@@ -1,42 +1,36 @@
 package net.stirdrem.overgeared.item.custom;
 
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.AreaEffectCloud;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.ArrowItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
+import net.minecraft.text.Text;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class UpgradeArrowItem extends ArrowItem {
     private final ArrowTier tier;
 
-    public UpgradeArrowItem(Properties properties, ArrowTier tier) {
-        super(properties);
+    public UpgradeArrowItem(Settings settings, ArrowTier tier) {
+        super(settings);
         this.tier = tier;
     }
 
     @Override
-    public AbstractArrow createArrow(Level level, ItemStack stack, LivingEntity shooter) {
-        UpgradeArrowEntity arrow = new UpgradeArrowEntity(tier, level, shooter, stack);
-        //arrow.setEffectsFromItem(stack);
-        return arrow;
+    public PersistentProjectileEntity createArrow(World world, ItemStack stack, LivingEntity shooter) {
+        return new UpgradeArrowEntity(tier, world, shooter, stack);
     }
 
     public ArrowTier getTier() {
@@ -44,26 +38,20 @@ public class UpgradeArrowItem extends ArrowItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, @Nullable Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
-        CompoundTag tag = pStack.getTag();
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        NbtCompound tag = stack.getNbt();
         if (tag != null && (tag.contains("Potion") || tag.contains("CustomPotionEffects"))) {
-            PotionUtils.addPotionTooltip(pStack, pTooltip, 0.125F);
-
-
+            PotionUtil.buildTooltip(stack, tooltip, 0.125F);
         }
-        if (tag != null && (tag.contains("LingeringPotion", 8))) {
-            PotionUtils.addPotionTooltip(getMobEffects(pStack), pTooltip, 0.125F);
+        if (tag != null && (tag.contains("LingeringPotion", NbtElement.STRING_TYPE))) {
+            PotionUtil.buildTooltip(getMobEffects(stack), tooltip, 0.125F);
         }
-
     }
 
     @Override
-    public String getDescriptionId(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+    public String getTranslationKey(ItemStack stack) {
+        NbtCompound tag = stack.getNbt();
         if (tag != null) {
-            // Use getAllEffects to check for both regular potions and custom effects
-            List<MobEffectInstance> effects = getMobEffects(stack);
-
             String tierName = switch (this.tier) {
                 case IRON -> "item.overgeared.iron_arrow";
                 case STEEL -> "item.overgeared.steel_arrow";
@@ -71,72 +59,67 @@ public class UpgradeArrowItem extends ArrowItem {
                 default -> "item.overgeared.arrow";
             };
 
-            if (tag.contains("LingeringPotion", 1) && tag.getBoolean("LingeringPotion")) {
+            if (tag.contains("LingeringPotion", NbtElement.BYTE_TYPE) && tag.getBoolean("LingeringPotion")) {
                 return tierName + ".lingering_named";
-            } else if (tag.contains("LingeringPotion", 8)) {
+            } else if (tag.contains("LingeringPotion", NbtElement.STRING_TYPE)) {
                 return tierName + ".lingering_named";
-            } else if (tag.contains("Potion", 8) || tag.contains("CustomPotionEffects", 9)) {
+            } else if (tag.contains("Potion", NbtElement.STRING_TYPE) || tag.contains("CustomPotionEffects", NbtElement.LIST_TYPE)) {
                 return tierName + ".tipped_named";
             }
         }
 
-
-        return super.
-
-                getDescriptionId(stack);
+        return super.getTranslationKey(stack);
     }
 
 
-    public static List<MobEffectInstance> getMobEffects(ItemStack pStack) {
-        return getAllEffects(pStack.getTag());
+    public static List<StatusEffectInstance> getMobEffects(ItemStack stack) {
+        return getAllEffects(stack.getNbt());
     }
 
-    public static Potion getPotion(@Nullable CompoundTag tag) {
+    public static Potion getPotion(@Nullable NbtCompound tag) {
         if (tag == null) return Potions.EMPTY;
 
         // Prioritize "LingeringPotion" if present
-        if (tag.contains("LingeringPotion", 8)) { // 8 = string type
-            return Potion.byName(tag.getString("LingeringPotion"));
+        if (tag.contains("LingeringPotion", NbtElement.STRING_TYPE)) {
+            return Potion.byId(tag.getString("LingeringPotion"));
         }
-        if (tag.contains("LingeringPotion") && tag.getBoolean("LingeringPotion")) { // 8 = string type
-            return Potion.byName(tag.getString("Potion"));
+        if (tag.contains("LingeringPotion") && tag.getBoolean("LingeringPotion")) {
+            return Potion.byId(tag.getString("Potion"));
         }
-        if (tag.contains("Potion", 8)) {
-            return Potion.byName(tag.getString("Potion"));
+        if (tag.contains("Potion", NbtElement.STRING_TYPE)) {
+            return Potion.byId(tag.getString("Potion"));
         }
 
         return Potions.EMPTY;
     }
 
-    public static List<MobEffectInstance> getAllEffects(@Nullable CompoundTag pCompoundTag) {
-        List<MobEffectInstance> list = Lists.newArrayList();
-        list.addAll(getPotion(pCompoundTag).getEffects());
-        PotionUtils.getCustomEffects(pCompoundTag, list);
+    public static List<StatusEffectInstance> getAllEffects(@Nullable NbtCompound compound) {
+        List<StatusEffectInstance> list = Lists.newArrayList();
+        list.addAll(getPotion(compound).getEffects());
+        PotionUtil.getCustomPotionEffects(compound, list);
         return list;
     }
 
     @Override
-    public Component getName(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+    public Text getName(ItemStack stack) {
+        NbtCompound tag = stack.getNbt();
         if (tag != null && !tag.isEmpty()) {
             Potion potion = getPotion(tag);
             if (potion != Potions.EMPTY) {
-                String potionId = potion.getName("").replace("effect.minecraft.", "");
-                //String potionId = potion.getName("");
+                String potionId = potion.finishTranslationKey("").replace("effect.minecraft.", "");
 
                 boolean isNoEffectPotion = potionId.equals("mundane") || potionId.equals("awkward") || potionId.equals("thick");
 
                 if (!isNoEffectPotion) {
                     String effectKey = "item.overgeared.arrow.effect." + potionId;
-                    //String effectKey = "effect.minecraft." + potionId;
-                    Component effectComponent = Component.translatable(effectKey);
+                    Text effectComponent = Text.translatable(effectKey);
 
                     // Determine if it's a Lingering or regular tipped arrow
-                    return Component.translatable(getDescriptionId(stack), effectComponent);
+                    return Text.translatable(getTranslationKey(stack), effectComponent);
                 }
             }
-            return Component.translatable(getDescriptionId(stack) + ".no_effect");
+            return Text.translatable(getTranslationKey(stack) + ".no_effect");
         }
-        return Component.translatable(getDescriptionId(stack));
+        return Text.translatable(getTranslationKey(stack));
     }
 }

@@ -1,16 +1,17 @@
 package net.stirdrem.overgeared.mixin;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.stats.Stats;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PotionItem;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.PotionItem;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.stat.Stats;
+import net.minecraft.text.Text;
+import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,9 +19,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
+/**
+ * A potion that has been used to tip arrows by hand (see ModItemInteractEvents' "TippedUsed"
+ * writes) has weaker effects the more it's been tipped from - this scales the drunk effect
+ * durations and the tooltip down to match, based on the "TippedUsed" count.
+ */
 @Mixin(PotionItem.class)
 public abstract class PotionItemMixin {
 
@@ -30,87 +35,80 @@ public abstract class PotionItemMixin {
     @Unique
     private static final float MIN_DURATION_SCALE = 0.1f;
 
-    /**
-     * Modifies the effects applied when drinking a potion
-     */
     @Inject(
-            method = "finishUsingItem",
+            method = "finishUsing",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/alchemy/PotionUtils;getMobEffects(Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;"
+                    target = "Lnet/minecraft/potion/PotionUtil;getPotionEffects(Lnet/minecraft/item/ItemStack;)Ljava/util/List;"
             ),
             cancellable = true
     )
-    private void onFinishUsing(ItemStack stack, Level level, LivingEntity entity, CallbackInfoReturnable<ItemStack> cir) {
-        if (stack.isEmpty() || !stack.hasTag() || !stack.getTag().contains(TIPPED_USED_TAG)) {
-            return; // Skip if no TippedUsed tag
+    private void overgeared$onFinishUsing(ItemStack stack, World world, LivingEntity entity, CallbackInfoReturnable<ItemStack> cir) {
+        NbtCompound tag = stack.getNbt();
+        if (stack.isEmpty() || tag == null || !tag.contains(TIPPED_USED_TAG)) {
+            return;
         }
 
-        Player player = entity instanceof Player ? (Player) entity : null;
-        int tippedUsed = stack.getTag().getInt(TIPPED_USED_TAG);
-        float scale = calculateDurationScale(tippedUsed);
+        PlayerEntity player = entity instanceof PlayerEntity ? (PlayerEntity) entity : null;
+        int tippedUsed = tag.getInt(TIPPED_USED_TAG);
+        float scale = overgeared$calculateDurationScale(tippedUsed);
 
-        // Apply scaled effects
-        if (!level.isClientSide) {
-            for (MobEffectInstance effect : PotionUtils.getMobEffects(stack)) {
-                if (effect.getEffect().isInstantenous()) {
-                    effect.getEffect().applyInstantenousEffect(player, player, entity, effect.getAmplifier(), 1.0D);
+        if (!world.isClient()) {
+            for (StatusEffectInstance effect : PotionUtil.getPotionEffects(stack)) {
+                if (effect.getEffectType().isInstant()) {
+                    effect.getEffectType().applyInstantEffect(player, player, entity, effect.getAmplifier(), 1.0D);
                 } else {
-                    entity.addEffect(createScaledEffect(effect, scale));
+                    entity.addStatusEffect(overgeared$createScaledEffect(effect, scale));
                 }
             }
         }
 
-        // Handle item consumption and bottle return
         if (player != null) {
-            player.awardStat(Stats.ITEM_USED.get((PotionItem) (Object) this));
-            if (!player.getAbilities().instabuild) {
-                stack.shrink(1);
+            player.incrementStat(Stats.USED.getOrCreateStat((PotionItem) (Object) this));
+            if (!player.getAbilities().creativeMode) {
+                stack.decrement(1);
             }
         }
 
         ItemStack resultStack = stack.isEmpty() ? new ItemStack(Items.GLASS_BOTTLE) : stack;
-        if (player != null && !player.getAbilities().instabuild && stack.isEmpty()) {
-            player.getInventory().add(new ItemStack(Items.GLASS_BOTTLE));
+        if (player != null && !player.getAbilities().creativeMode && stack.isEmpty()) {
+            player.getInventory().insertStack(new ItemStack(Items.GLASS_BOTTLE));
         }
 
-        entity.gameEvent(GameEvent.DRINK);
+        entity.emitGameEvent(GameEvent.DRINK);
         cir.setReturnValue(resultStack);
     }
 
-    /**
-     * Modifies the tooltip to show scaled durations
-     */
     @ModifyArg(
-            method = "appendHoverText",
+            method = "appendTooltip",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/alchemy/PotionUtils;addPotionTooltip(Lnet/minecraft/world/item/ItemStack;Ljava/util/List;F)V"
+                    target = "Lnet/minecraft/potion/PotionUtil;buildTooltip(Lnet/minecraft/item/ItemStack;Ljava/util/List;F)V"
             ),
             index = 2
     )
-    private float modifyTooltipDurationScale(ItemStack stack, List<Component> tooltip, float originalScale) {
-        if (stack.hasTag() && stack.getTag().contains(TIPPED_USED_TAG)) {
-            int tippedUsed = stack.getTag().getInt(TIPPED_USED_TAG);
-            return calculateDurationScale(tippedUsed);
+    private float overgeared$modifyTooltipDurationScale(ItemStack stack, List<Text> tooltip, float originalScale) {
+        NbtCompound tag = stack.getNbt();
+        if (tag != null && tag.contains(TIPPED_USED_TAG)) {
+            return overgeared$calculateDurationScale(tag.getInt(TIPPED_USED_TAG));
         }
         return originalScale;
     }
 
     @Unique
-    private static float calculateDurationScale(int tippedUsed) {
+    private static float overgeared$calculateDurationScale(int tippedUsed) {
         return Math.max(MIN_DURATION_SCALE, 1.0f - (tippedUsed / 8.0f));
     }
 
     @Unique
-    private static MobEffectInstance createScaledEffect(MobEffectInstance original, float scale) {
-        return new MobEffectInstance(
-                original.getEffect(),
+    private static StatusEffectInstance overgeared$createScaledEffect(StatusEffectInstance original, float scale) {
+        return new StatusEffectInstance(
+                original.getEffectType(),
                 Math.max(1, (int) (original.getDuration() * scale)),
                 original.getAmplifier(),
                 original.isAmbient(),
-                original.isVisible(),
-                original.showIcon()
+                original.shouldShowParticles(),
+                original.shouldShowIcon()
         );
     }
 }

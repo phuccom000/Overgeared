@@ -1,0 +1,8 @@
+// 1.20.1	2026-08-29T22:08:28.3386119	Overgeared: A Blacksmith Mod/Tags for minecraft:block
+2e7a41b3e62354f93f08ccacbbd0ab65477a440c data\overgeared\tags\blocks\iron_anvil_bases.json
+f0fd5d2973258009f879a5860b0287d5cdb1671c data\minecraft\tags\blocks\needs_iron_tool.json
+835dc00461a89c974c37936827b705e714e730eb data\c\tags\blocks\storage_blocks\steel.json
+fa6d0bf4b6807e43879386030f4551e759e97293 data\minecraft\tags\blocks\mineable\pickaxe.json
+0f4a6d268d2c2c2dcd80ce7a9d778b39dad6dccc data\overgeared\tags\blocks\stone_anvil_bases.json
+551c9c5ca1387cccad597fe9f09cfda62ae2b654 data\minecraft\tags\blocks\needs_diamond_tool.json
+06355b1735d477912f04943234875a14597d8379 data\overgeared\tags\blocks\smithing_anvil.json

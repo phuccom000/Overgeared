@@ -2,49 +2,64 @@ package net.stirdrem.overgeared.datagen;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.RequirementsStrategy;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.ItemLike;
-import org.jetbrains.annotations.Nullable;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.AdvancementRewards;
+import net.minecraft.advancement.CriterionMerger;
+import net.minecraft.advancement.criterion.CriterionConditions;
+import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
+import net.minecraft.data.server.recipe.RecipeJsonBuilder;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.stirdrem.overgeared.recipe.ModRecipes;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
+import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
 
-    private final ItemLike result;
+public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
+
+    private final ItemConvertible result;
     private final float experience;
     private final int cookTime;
 
     private final Map<String, Integer> materialInput = new HashMap<>();
-    private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
+    private final Advancement.Builder advancement =
+            Advancement.Builder.createUntelemetered();
+
     private String toolType;
+
     @Nullable
     private Boolean needPolishing = null;
+
     @Nullable
     private String group = "misc";
+
     @Nullable
     private String category = "misc";
 
-    public ToolCastSmeltingRecipeBuilder(ItemLike result, float experience, int cookTime) {
+    public ToolCastSmeltingRecipeBuilder(
+            ItemConvertible result,
+            float experience,
+            int cookTime
+    ) {
         this.result = result;
         this.experience = experience;
         this.cookTime = cookTime;
     }
 
-    public static ToolCastSmeltingRecipeBuilder cast(ItemLike result, float xp, int time) {
+    public static ToolCastSmeltingRecipeBuilder cast(
+            ItemConvertible result,
+            float xp,
+            int time
+    ) {
         return new ToolCastSmeltingRecipeBuilder(result, xp, time);
     }
 
@@ -53,7 +68,10 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
         return this;
     }
 
-    public ToolCastSmeltingRecipeBuilder material(String material, int amount) {
+    public ToolCastSmeltingRecipeBuilder material(
+            String material,
+            int amount
+    ) {
         this.materialInput.put(material, amount);
         return this;
     }
@@ -63,14 +81,15 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
         return this;
     }
 
-    @Override
-    public RecipeBuilder unlockedBy(String name, CriterionTriggerInstance trigger) {
-        this.advancement.addCriterion(name, trigger);
+    public ToolCastSmeltingRecipeBuilder criterion(
+            String name,
+            CriterionConditions conditions
+    ) {
+        this.advancement.criterion(name, conditions);
         return this;
     }
 
-    @Override
-    public RecipeBuilder group(@Nullable String group) {
+    public ToolCastSmeltingRecipeBuilder group(@Nullable String group) {
         this.group = group;
         return this;
     }
@@ -80,22 +99,38 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
         return this;
     }
 
-    @Override
-    public Item getResult() {
+    public Item getOutputItem() {
         return result.asItem();
     }
 
-    @Override
-    public void save(Consumer<FinishedRecipe> out, ResourceLocation id) {
+    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
+        offerTo(exporter, getItemId(this.getOutputItem()));
+    }
+
+    public void offerTo(
+            Consumer<RecipeJsonProvider> exporter,
+            Identifier id
+    ) {
         ensureValid(id);
 
-        this.advancement.parent(ROOT_RECIPE_ADVANCEMENT)
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id))
-                .requirements(RequirementsStrategy.OR);
+        Identifier recipeId = new Identifier(
+                id.getNamespace(),
+                id.getPath() + "_from_cast_smelting"
+        );
 
-        out.accept(new Result(
-                id,
+        this.advancement
+                .parent(ROOT)
+                .criterion(
+                        "has_the_recipe",
+                        RecipeUnlockedCriterion.create(id)
+                )
+                .rewards(
+                        AdvancementRewards.Builder.recipe(id)
+                )
+                .criteriaMerger(CriterionMerger.OR);
+
+        exporter.accept(new Result(
+                recipeId,
                 result,
                 group,
                 category,
@@ -105,24 +140,34 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
                 cookTime,
                 needPolishing,
                 advancement,
-                id.withPrefix("recipes/misc/")
+                recipeId.withPrefixedPath("recipes/misc/")
         ));
     }
 
-    private void ensureValid(ResourceLocation id) {
-        if (toolType == null)
-            throw new IllegalStateException("Tool type missing for " + id);
+    private void ensureValid(Identifier id) {
+        if (toolType == null) {
+            throw new IllegalStateException(
+                    "Tool type missing for " + id
+            );
+        }
 
-        if (materialInput.isEmpty())
-            throw new IllegalStateException("No material input for " + id);
+        if (materialInput.isEmpty()) {
+            throw new IllegalStateException(
+                    "No material input for " + id
+            );
+        }
 
-        if (advancement.getCriteria().isEmpty())
-            throw new IllegalStateException("No unlock criteria for " + id);
+        if (advancement.getCriteria().isEmpty()) {
+            throw new IllegalStateException(
+                    "No unlock criteria for " + id
+            );
+        }
     }
 
-    public static class Result implements FinishedRecipe {
-        private final ResourceLocation id;
-        private final ItemLike result;
+    public static class Result implements RecipeJsonProvider {
+
+        private final Identifier id;
+        private final ItemConvertible result;
         private final String group;
         private final String category;
         private final String toolType;
@@ -131,12 +176,21 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
         private final int time;
         private final Boolean needPolishing;
         private final Advancement.Builder advancement;
-        private final ResourceLocation advancementId;
+        private final Identifier advancementId;
 
-        public Result(ResourceLocation id, ItemLike result, String group, String category,
-                      String toolType, Map<String, Integer> input, float xp, int time,
-                      Boolean needPolishing, Advancement.Builder adv, ResourceLocation advId) {
-
+        public Result(
+                Identifier id,
+                ItemConvertible result,
+                String group,
+                String category,
+                String toolType,
+                Map<String, Integer> input,
+                float xp,
+                int time,
+                Boolean needPolishing,
+                Advancement.Builder advancement,
+                Identifier advancementId
+        ) {
             this.id = id;
             this.result = result;
             this.group = group;
@@ -146,52 +200,68 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
             this.xp = xp;
             this.time = time;
             this.needPolishing = needPolishing;
-            this.advancement = adv;
-            this.advancementId = advId;
+            this.advancement = advancement;
+            this.advancementId = advancementId;
         }
 
         @Override
-        public void serializeRecipeData(JsonObject json) {
-            if (!this.group.isEmpty()) {
-                json.addProperty("group", this.group);
+        public void serialize(JsonObject json) {
+            if (group != null && !group.isEmpty()) {
+                json.addProperty("group", group);
             }
-            json.addProperty("category", category);
+
+            if (category != null) {
+                json.addProperty("category", category);
+            }
+
             json.addProperty("tool_type", toolType);
 
             JsonObject inputObj = new JsonObject();
-            input.forEach((mat, amt) -> inputObj.add(mat, new JsonPrimitive(amt)));
+
+            input.forEach((material, amount) ->
+                    inputObj.add(material, new JsonPrimitive(amount))
+            );
+
             json.add("input", inputObj);
 
             JsonObject resultObj = new JsonObject();
-            resultObj.addProperty("item", BuiltInRegistries.ITEM.getKey(result.asItem()).toString());
+            resultObj.addProperty(
+                    "item",
+                    Registries.ITEM.getId(result.asItem()).toString()
+            );
+
             json.add("result", resultObj);
 
-            if (needPolishing != null)
-                json.addProperty("need_polishing", needPolishing);
+            if (needPolishing != null) {
+                json.addProperty(
+                        "need_polishing",
+                        needPolishing
+                );
+            }
 
             json.addProperty("experience", xp);
             json.addProperty("cookingtime", time);
         }
 
         @Override
-        public ResourceLocation getId() {
-            return new ResourceLocation(id.getNamespace(), id.getPath() + "_from_cast_smelting");
+        public RecipeSerializer<?> getSerializer() {
+            return ModRecipes.CAST_SMELTING;
         }
 
         @Override
-        public RecipeSerializer<?> getType() {
-            return ModRecipes.CAST_SMELTING.get();
-        }
-
-        @Nullable
-        @Override
-        public JsonObject serializeAdvancement() {
-            return advancement.serializeToJson();
+        public Identifier getRecipeId() {
+            return id;
         }
 
         @Nullable
         @Override
-        public ResourceLocation getAdvancementId() {
+        public JsonObject toAdvancementJson() {
+            return advancement.toJson();
+        }
+
+        @Nullable
+        @Override
+        public Identifier getAdvancementId() {
             return advancementId;
         }
     }

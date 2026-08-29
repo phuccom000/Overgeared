@@ -1,15 +1,11 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-
-import java.util.function.Supplier;
-
-import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerMinigameVisibility;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.math.BlockPos;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
+import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 public class ToggleMinigameS2CPacket {
 
@@ -21,25 +17,20 @@ public class ToggleMinigameS2CPacket {
         this.visible = visible;
     }
 
-    public ToggleMinigameS2CPacket(FriendlyByteBuf friendlyByteBuf) {
-        this.pos = friendlyByteBuf.readBlockPos();
-        this.visible = friendlyByteBuf.readBoolean();
+    public static void encode(ToggleMinigameS2CPacket msg, PacketByteBuf buf) {
+        buf.writeBlockPos(msg.pos);
+        buf.writeBoolean(msg.visible);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(this.pos);
-        buf.writeBoolean(this.visible);
+    public static ToggleMinigameS2CPacket decode(PacketByteBuf buf) {
+        return new ToggleMinigameS2CPacket(buf.readBlockPos(), buf.readBoolean());
     }
 
-    public static void handle(ToggleMinigameS2CPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null) return;
+    public static void handle(ToggleMinigameS2CPacket msg) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
 
-            AnvilMinigameEvents.setIsVisible(msg.pos, msg.visible);
-            playerMinigameVisibility.put(player.getUUID(), msg.visible);
-        });
-
-        ctx.get().setPacketHandled(true);
+        AnvilMinigameEvents.setIsVisible(msg.pos, msg.visible);
+        ModItemInteractEvents.playerMinigameVisibility.put(player.getUuid(), msg.visible);
     }
 }

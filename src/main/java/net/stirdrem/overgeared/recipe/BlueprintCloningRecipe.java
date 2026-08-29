@@ -1,36 +1,36 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.level.Level;
+import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
+import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ModItems;
 
-public class BlueprintCloningRecipe extends CustomRecipe {
-    public BlueprintCloningRecipe(ResourceLocation pId, CraftingBookCategory pCategory) {
-        super(pId, pCategory);
+public class BlueprintCloningRecipe extends SpecialCraftingRecipe {
+    public BlueprintCloningRecipe(Identifier id, CraftingRecipeCategory category) {
+        super(id, category);
     }
 
     @Override
-    public boolean matches(CraftingContainer pInv, Level pLevel) {
+    public boolean matches(RecipeInputInventory inv, World world) {
         int blueprintCount = 0;
         ItemStack emptyBlueprint = ItemStack.EMPTY;
 
-        for (int j = 0; j < pInv.getContainerSize(); ++j) {
-            ItemStack stack = pInv.getItem(j);
+        for (int j = 0; j < inv.size(); ++j) {
+            ItemStack stack = inv.getStack(j);
             if (!stack.isEmpty()) {
-                if (stack.is(ModItems.EMPTY_BLUEPRINT.get())) {
+                if (stack.isOf(ModItems.EMPTY_BLUEPRINT)) {
                     if (!emptyBlueprint.isEmpty()) {
                         return false; // Only 1 empty blueprint allowed
                     }
                     emptyBlueprint = stack;
                 } else {
-                    if (!stack.is(ModItems.BLUEPRINT.get())) {
+                    if (!stack.isOf(ModItems.BLUEPRINT)) {
                         return false;
                     }
 
@@ -44,12 +44,12 @@ public class BlueprintCloningRecipe extends CustomRecipe {
 
 
     @Override
-    public ItemStack assemble(CraftingContainer pContainer, RegistryAccess pRegistryAccess) {
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryAccess) {
         ItemStack source = ItemStack.EMPTY;
 
-        for (int j = 0; j < pContainer.getContainerSize(); ++j) {
-            ItemStack stack = pContainer.getItem(j);
-            if (!stack.isEmpty() && stack.is(ModItems.BLUEPRINT.get())) {
+        for (int j = 0; j < inv.size(); ++j) {
+            ItemStack stack = inv.getStack(j);
+            if (!stack.isEmpty() && stack.isOf(ModItems.BLUEPRINT)) {
                 if (!source.isEmpty()) return ItemStack.EMPTY; // only 1 blueprint source allowed
                 source = stack;
             }
@@ -60,13 +60,13 @@ public class BlueprintCloningRecipe extends CustomRecipe {
         ItemStack result = source.copyWithCount(2);
 
         // Reduce quality
-        if (source.hasTag() && source.getTag().contains("Quality")) {
-            String currentId = source.getTag().getString("Quality");
+        if (source.hasNbt() && source.getNbt().contains("Quality")) {
+            String currentId = source.getNbt().getString("Quality");
             BlueprintQuality current = BlueprintQuality.fromString(currentId);
             BlueprintQuality downgraded = BlueprintQuality.getPrevious(current);
 
             if (downgraded != null) {
-                result.getOrCreateTag().putString("Quality", downgraded.getId());
+                result.getOrCreateNbt().putString("Quality", downgraded.getId());
             }
         }
 
@@ -75,13 +75,13 @@ public class BlueprintCloningRecipe extends CustomRecipe {
 
 
     @Override
-    public boolean canCraftInDimensions(int pWidth, int pHeight) {
-        return pWidth >= 3 && pHeight >= 3;
+    public boolean fits(int width, int height) {
+        return width >= 3 && height >= 3;
     }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.CRAFTING_BLUEPRINTCLONING.get();
+        return ModRecipes.CRAFTING_BLUEPRINTCLONING;
     }
 
 }

@@ -1,12 +1,10 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
-
-import java.util.function.Supplier;
 
 public class PacketSendCounterC2SPacket {
     private final String quality;
@@ -17,29 +15,24 @@ public class PacketSendCounterC2SPacket {
         this.pos = pos;
     }
 
-    public static void encode(PacketSendCounterC2SPacket pkt, FriendlyByteBuf buf) {
+    public static void encode(PacketSendCounterC2SPacket pkt, PacketByteBuf buf) {
         buf.writeBlockPos(pkt.pos);
-        buf.writeUtf(pkt.quality);
+        buf.writeString(pkt.quality);
     }
 
-    public static PacketSendCounterC2SPacket decode(FriendlyByteBuf buf) {
-        return new PacketSendCounterC2SPacket(buf.readBlockPos(), buf.readUtf());
+    public static PacketSendCounterC2SPacket decode(PacketByteBuf buf) {
+        return new PacketSendCounterC2SPacket(buf.readBlockPos(), buf.readString());
     }
 
     public String getCounter() {
         return quality;
     }
 
-    public static void handle(PacketSendCounterC2SPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer sender = ctx.get().getSender();
-            if (sender != null && sender.level().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
-                //sender.sendSystemMessage(Component.literal("Server Quality: " + msg.getCounter()));
-
-                // Call the static setter directly
+    public static void handle(PacketSendCounterC2SPacket msg, MinecraftServer server, ServerPlayerEntity sender) {
+        server.execute(() -> {
+            if (sender.getWorld().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
                 AbstractSmithingAnvil.setQuality(msg.getCounter());
             }
         });
-        ctx.get().setPacketHandled(true);
     }
 }

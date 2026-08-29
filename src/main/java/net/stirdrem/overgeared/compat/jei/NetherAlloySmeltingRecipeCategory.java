@@ -11,13 +11,13 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.recipe.INetherAlloyRecipe;
 
@@ -26,18 +26,15 @@ import java.util.List;
 
 public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INetherAlloyRecipe> {
 
-    public static final ResourceLocation UID =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "nether_alloy_smelting");
-    public static final ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/nether_furnace_jei.png");
+    public static final Identifier UID = Overgeared.id("nether_alloy_smelting");
+    public static final Identifier TEXTURE = Overgeared.id("textures/gui/nether_furnace_jei.png");
 
-    // JEI recipe type — placed under vanilla smelting tab
     public static final RecipeType<INetherAlloyRecipe> ALLOY_SMELTING_TYPE =
             new RecipeType<>(UID, INetherAlloyRecipe.class);
 
     private final IDrawable background;
     private final IDrawable icon;
-    private final int animationTime = 100; // full cycle in ticks
+    private final int animationTime = 100;
     private final IDrawableAnimated arrowAnimated;
     private final IDrawableStatic arrowStatic;
     private final IDrawableAnimated flameAnimated;
@@ -51,7 +48,7 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE.get()));
+                new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE));
 
         arrowStatic = helper.drawableBuilder(TEXTURE, 120, 14, 23, 16).setTextureSize(textureWidth, textureHeight).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
@@ -59,7 +56,7 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
         flameStatic = helper.drawableBuilder(TEXTURE, 120, 0, 14, 13).setTextureSize(textureWidth, textureHeight).build();
         flameAnimated = helper.createAnimatedDrawable(
                 flameStatic,
-                50, // burn time
+                50,
                 IDrawableAnimated.StartDirection.TOP,
                 true
         );
@@ -71,8 +68,8 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatable("gui.overgeared.jei.category.nether_alloy_smelting");
+    public Text getTitle() {
+        return Text.translatable("gui.overgeared.jei.category.nether_alloy_smelting");
     }
 
     @Override
@@ -86,12 +83,11 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
         Float exp = recipe.getExperience();
         arrowAnimated.draw(guiGraphics, 60, 19);
         flameAnimated.draw(guiGraphics, 64, 39);
 
-        // Draw experience with formatting to avoid trailing .0
         String expText;
         if (exp == exp.intValue()) {
             expText = exp.intValue() + " XP";
@@ -99,11 +95,10 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
             expText = String.format("%.1f XP", exp);
         }
 
-        // Calculate X position to right-align the text
-        int textWidth = Minecraft.getInstance().font.width(expText);
-        int xPos = this.background.getWidth() - textWidth; // 5 pixels from right edge
+        int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(expText);
+        int xPos = this.background.getWidth() - textWidth;
 
-        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, textureHeight - 9, 0xFFFFFFFF, true);
+        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, expText, xPos, textureHeight - 9, 0xFFFFFFFF, true);
     }
 
     @Override
@@ -119,13 +114,9 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
             int gridWidth = 3;
             int gridHeight = 3;
 
-            // --- Horizontal offset (always centered) ---
             int offsetX = (gridWidth - width) / 2;
-
-            // --- Vertical offset (bottom anchor if height == 2) ---
             int offsetY = getOffsetY(gridHeight, gridWidth, height, width);
 
-            // Fill 3x3 grid
             for (int gridRow = 0; gridRow < 3; gridRow++) {
                 for (int gridCol = 0; gridCol < 3; gridCol++) {
 
@@ -176,9 +167,9 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
                 }
             }
         }
-        // Output slot
+
         builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20)
-                .addItemStack(recipe.getResultItem(null));
+                .addItemStack(recipe.getOutput(null));
     }
 
     private static int getOffsetY(int gridHeight, int gridWidth, int recipeHeight, int recipeWidth) {
@@ -190,7 +181,6 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
             else if (recipeWidth == 3)
                 offsetY = gridHeight - recipeHeight;
         } else if (recipeHeight == 2 && recipeWidth == 3) {
-            // Anchor to bottom
             offsetY = gridHeight - recipeHeight;
         }
 

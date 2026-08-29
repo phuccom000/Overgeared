@@ -1,359 +1,64 @@
 plugins {
-    id 'eclipse'
-    id 'idea'
+    id 'fabric-loom' version '1.7.4'
     id 'maven-publish'
-    id 'net.neoforged.moddev.legacyforge' version '2.0.91'
 }
 
-version = mod_version
-group = mod_group_id
+version = project.mod_version
+group = project.maven_group
 
-base {
-    archivesName = mod_id
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-
-mixin {
-    add(sourceSets.main, "${mod_id}.refmap.json")
-
-    config("mixins.${mod_id}.json")
-}
-
-legacyForge {
-    version = "${minecraft_version}-${forge_version}"
-
-    parchment {
-        minecraftVersion = parchment_minecraft
-        mappingsVersion = parchment_version
-    }
-
-    runs {
-        client {
-            client()
-            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        server {
-            server()
-            programArgument '--nogui'
-            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            data()
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-        }
-
-        configureEach {
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-
-            logLevel = org.slf4j.event.Level.DEBUG
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet sourceSets.main
-        }
-    }
-}
-
-sourceSets.main.resources.srcDir 'src/generated/resources'
-
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
-}
-obfuscation {
-    createRemappingConfiguration(configurations.localRuntime)
-}
+base { archivesName = project.archives_base_name }
 
 repositories {
-    flatDir {
-        dir 'libs'
-    }
-    maven {
-        name = "Sleeping Town"
-        url = "https://repo.sleeping.town/"
-    }
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven {
-        url "https://maven.theillusivec4.top/"
-    }
-    maven {
-        // location of the maven that hosts JEI files before January 2023
-        name = "Progwml6's maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        name = "DaPorkchop_"
-        url = "https://maven.daporkchop.net/"
-    }
-    maven {
-        name = "Valkyrien Skies Internal"
-        url = "https://maven.valkyrienskies.org"
-        content {
-            excludeGroup("org.spongepowered")
-        }
-    }
-    maven {
-        // location of the maven that hosts JEI files since January 2023
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "https://modmaven.dev"
-    }
-    maven {
-        name 'Jitpack'
-        url 'https://jitpack.io'
-    }
-    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
-    maven { url = "https://maven.ithundxr.dev/mirror" } // Registrate
-    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
-    maven {
-        // Shedaniel's maven (Architectury API)
-        url = "https://maven.architectury.dev"
-        content {
-            includeGroup "dev.architectury"
-        }
-    }
-    maven { url "https://maven.shedaniel.me/" }
-    maven {
-        // saps.dev Maven (KubeJS and Rhino)
-        url = "https://maven.saps.dev/minecraft"
-        content {
-            includeGroup "dev.latvian.mods"
-        }
-    }
-    maven {
-        url "https://maven.latvian.dev/releases"
-        content {
-            includeGroup "dev.latvian.mods"
-            includeGroup "dev.latvian.apps"
-        }
-    }
-
-    maven {
-        url 'https://jitpack.io'
-        content {
-            includeGroup "com.github.rtyley"
-        }
-    }
-
-
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
-    }
-    maven { url 'https://maven.wispforest.io/releases' }
-    maven { url 'https://maven.su5ed.dev/releases' }
-    maven { url 'https://maven.fabricmc.net' }
-    maven {
-        name = "Kotlin for Forge"
-        url = "https://thedarkcolour.github.io/KotlinForForge/"
-//		content {
-//			includeModule("thedarkcolour", "kotlinforforge")
-//		}
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
+    mavenCentral()
+    maven { url 'https://maven.wispforest.io/releases' }     // Accessories
+    maven { url 'https://maven.shedaniel.me/' }               // Cloth Config (Accessories transitive dep)
+    maven { url 'https://maven.blamejared.com/' }             // JEI
+    maven { url 'https://maven.terraformersmc.com/releases/' } // Mod Menu
+    // maven { url 'https://maven.valkyrienskies.org' }        // Valkyrien Skies - not yet integrated
 }
 
 dependencies {
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    compileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
-    //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
-    modRuntimeOnly("curse.maven:tmrv-1194921:8145843")
-    compileOnly("dev.emi:emi-forge:1.1.24+1.20.1:api")
-    modRuntimeOnly("dev.emi:emi-forge:1.1.23+1.20.1")
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modRuntimeOnly("curse.maven:curios-309927:6418456")
-    modRuntimeOnly("curse.maven:lionfish-api-1001614:5922047")
+    modImplementation "io.wispforest:accessories-fabric:${project.accessories_version}"
 
-    modRuntimeOnly("curse.maven:lendercataclysm-551586:6906993")
+    // Mod Menu / Cloth Config are optional - OvergearedConfigScreen is only classloaded when Mod
+    // Menu calls the "modmenu" entrypoint, so the mod must still run without either installed.
+    modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
+    modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    modLocalRuntime "com.terraformersmc:modmenu:${project.mod_menu_version}"
+    modLocalRuntime "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 
-    modRuntimeOnly("curse.maven:v-tweaks-238048:7119159")
-    modRuntimeOnly("curse.maven:spartan-weaponry-278141:6842571")
-    modRuntimeOnly("curse.maven:bookling-gear-1122766:7317926")
-    modRuntimeOnly("curse.maven:lit-it-up-916334:7239006")
-    modRuntimeOnly("curse.maven:cupboard-326652:5470032")
-    modRuntimeOnly("curse.maven:recipe-essentials-forge-fabric-907856:6165709")
+    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
+    modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
 
-    modRuntimeOnly("curse.maven:caelus-308989:5281700")
-    modRuntimeOnly("curse.maven:attribute-setter-1064034:7196879")
-
-    modRuntimeOnly("curse.maven:geckolib-388172:7025129")
-
-    // region Valkyrien Skies
-    implementation("org.valkyrienskies.core:api:${vs_core_version}") {
-        transitive = false
-        exclude group: 'org.joml', module: ''
-    }
-    implementation("org.valkyrienskies.core:internal:${vs_core_version}") {
-        transitive = false
-        exclude group: 'org.joml', module: ''
-    }
-    implementation("org.valkyrienskies.core:util:${vs_core_version}") {
-        transitive = false
-        exclude group: 'org.joml', module: ''
-    }
-    implementation("org.valkyrienskies.core:impl:${vs_core_version}") {
-        transitive = false
-        exclude group: 'org.joml', module: ''
-    }
-    modImplementation("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {
-        transitive = false
-        exclude group: 'org.valkyrienskies.core', module: ''
-    }
-    // endregion
-
-    // region VS deps
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
-    compileOnly("org.joml:joml:1.10.4")
-    compileOnly("org.joml:joml-primitives:1.10.0")
-    modImplementation("thedarkcolour:kotlinforforge:4.11.0")
-
-    // endregion
-    // Compile against only the API artifact
-    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
-    // Use the full Curios API jar at runtime
-    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
-
-    modRuntimeOnly("curse.maven:selene-499980:6983934")
-    modRuntimeOnly("curse.maven:owo-lib-532610:4749199")
-    compileOnly("curse.maven:accessories-938917:7164863")
-
-    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-api-base:0.4.31+ef105b4977")
-
-    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-data-attachment-api-v1:1.0.0+30ef839e77")
-    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-entity-events-v1:1.6.0+6274ab9d77")
-    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-object-builder-api-v1:11.1.3+2174fc8477")
-
-    modRuntimeOnly("curse.maven:immersive-armors-580681:6851704")
-    modRuntimeOnly("curse.maven:jade-324717:6855440")
-
-    modRuntimeOnly("curse.maven:cloth-config-348521:5729105")
-    modRuntimeOnly("curse.maven:architectury-api-419699:5137938")
-
-    modImplementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
-    compileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
-    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
-    modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
-
-    modImplementation("curse.maven:puzzles-lib-495476:6918565")
-    modImplementation("curse.maven:easy-anvils-682567:5156621")
-
-    modImplementation("curse.maven:endremastered-404183:5598990")
-    compileOnly 'org.jetbrains:annotations:26.0.2-1'
-
-    modImplementation("curse.maven:supermartijn642s-config-lib-438332:4715408")
-    modImplementation("curse.maven:durability-tooltip-511040:6833215")
-    modImplementation("curse.maven:bots-lib-1062753:7283906")
-    modImplementation("curse.maven:watering-cans-dew-drop-1062863:5550049")
-    // Mixin
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    compileOnly "io.github.llamalad7:mixinextras-common:0.3.5"
-    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.3.5"))
-    annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+    // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
+    // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
+    // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is
+    // designed to support multiple mods each embedding a copy safely.
+    include(modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.4"))
 }
 
-// This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-// When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
-// See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version       : forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors         : mod_authors, mod_description: mod_description,
-            bucketlib           : bucketlib_version, bucketlib_version_range: bucketlib_version_range,
-            magitu              : magitu, magitu_addon: magitu_addon, slavic: slavic
-    ]
-    inputs.properties replaceProperties
-
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
+fabricApi {
+    configureDataGeneration()
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title'     : mod_id,
-                'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1', // We are version 1 of ourselves
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
-
-    // This is the preferred method to reobfuscate your jar file
-    finalizedBy 'reobfJar'
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") { expand "version": project.version }
 }
 
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:
-// tasks.named('publish').configure {
-//     dependsOn 'reobfJar'
-// }
+tasks.withType(JavaCompile).configureEach { it.options.release = 17 }
 
-// Example configuration to allow publishing using the maven-publish plugin
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
-        }
-    }
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
-    }
-}
-
-jar {
-    finalizedBy('reobfJar')
-    manifest.attributes([
-            "MixinConfigs": "mixins.${mod_id}.json"
-    ])
+loom {
+    accessWidenerPath = file("src/main/resources/overgeared.accesswidener")
 }

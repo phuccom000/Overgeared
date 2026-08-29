@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "overgeared",
+  "version": "${version}",
+  "name": "Overgeared: A Blacksmith Mod",
+  "description": "An upgrade to Minecraft's basic tools crafting system. Naming based on a Korean novel called Overgeared. Heavily inspired by the mod Hot Iron and Terrafirmacraft.\n\nFabric port of the original Forge/NeoForge mod by StirDrem (https://github.com/phuccom000/Overgeared).",
+  "authors": [
+    "StirDrem"
+  ],
+  "contact": {
+    "sources": "https://github.com/phuccom000/Overgeared"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.stirdrem.overgeared.Overgeared"
+    ],
+    "client": [
+      "net.stirdrem.overgeared.client.OvergearedClient"
+    ],
+    "modmenu": [
+      "net.stirdrem.overgeared.client.config.OvergearedConfigScreen"
+    ],
+    "fabric-datagen": [
+      "net.stirdrem.overgeared.OvergearedDataGenerator"
+    ]
+  },
+  "mixins": [
+    "overgeared.mixins.json"
+  ],
+  "accessWidener": "overgeared.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "~1.20.1",
+    "java": ">=17"
+  }
+}

@@ -1,12 +1,12 @@
 package net.stirdrem.overgeared.item.custom;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.world.World;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
@@ -16,14 +16,14 @@ import java.util.List;
 
 public class BlueprintItem extends Item {
 
-    public BlueprintItem(Properties properties) {
-        super(properties);
+    public BlueprintItem(Settings settings) {
+        super(settings);
     }
 
     @Override
-    public ItemStack getDefaultInstance() {
-        ItemStack stack = super.getDefaultInstance();
-        CompoundTag tag = stack.getOrCreateTag();
+    public ItemStack getDefaultStack() {
+        ItemStack stack = super.getDefaultStack();
+        NbtCompound tag = stack.getOrCreateNbt();
 
         // Set default quality to POOR
         tag.putString("Quality", BlueprintQuality.POOR.name());
@@ -37,24 +37,24 @@ public class BlueprintItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level,
-                                List<Component> tooltip, TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+    public void appendTooltip(ItemStack stack, @Nullable World world,
+                               List<Text> tooltip, TooltipContext context) {
+        super.appendTooltip(stack, world, tooltip, context);
 
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
         if (tag == null) return;
 
         // Only show quality/progress if both tags are present
         if (tag.contains("Quality")) {
             BlueprintQuality quality = getQuality(stack);
 
-            tooltip.add(Component.translatable("tooltip.overgeared.blueprint.quality")
-                    .withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable(quality.getTranslationKey()).withStyle(quality.getColor())));
+            tooltip.add(Text.translatable("tooltip.overgeared.blueprint.quality")
+                    .formatted(Formatting.GRAY)
+                    .append(Text.translatable(quality.getTranslationKey()).formatted(quality.getColor())));
 
             if (quality == BlueprintQuality.PERFECT || quality == BlueprintQuality.MASTER) {
-                tooltip.add(Component.translatable("tooltip.overgeared.blueprint.maxlevel")
-                        .withStyle(ChatFormatting.LIGHT_PURPLE));
+                tooltip.add(Text.translatable("tooltip.overgeared.blueprint.maxlevel")
+                        .formatted(Formatting.LIGHT_PURPLE));
             }
         }
 
@@ -63,32 +63,32 @@ public class BlueprintItem extends Item {
             int usesToLevel = getUsesToNextLevel(stack);
 
             if (!tag.contains("Quality") || (getQuality(stack) != BlueprintQuality.PERFECT && getQuality(stack) != BlueprintQuality.MASTER)) {
-                tooltip.add(Component.translatable("tooltip.overgeared.blueprint.progress", uses, usesToLevel)
-                        .withStyle(ChatFormatting.GRAY));
+                tooltip.add(Text.translatable("tooltip.overgeared.blueprint.progress", uses, usesToLevel)
+                        .formatted(Formatting.GRAY));
             }
         }
 
         // ToolType line only if present
         if (tag.contains("ToolType")) {
             String toolType = tag.getString("ToolType");
-            tooltip.add(Component.translatable("tooltip.overgeared.blueprint.tool_type").withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable("tooltype.overgeared." + toolType).withStyle(ChatFormatting.BLUE)));
+            tooltip.add(Text.translatable("tooltip.overgeared.blueprint.tool_type").formatted(Formatting.GRAY)
+                    .append(Text.translatable("tooltype.overgeared." + toolType).formatted(Formatting.BLUE)));
         }
 
         if (tag.contains("Required")) {
             boolean required = tag.getBoolean("Required");
 
-            tooltip.add(Component.translatable(
+            tooltip.add(Text.translatable(
                     required
                             ? "tooltip.overgeared.blueprint.required"
                             : "tooltip.overgeared.blueprint.optional"
-            ).withStyle(required ? ChatFormatting.RED : ChatFormatting.GRAY));
+            ).formatted(required ? Formatting.RED : Formatting.GRAY));
         }
     }
 
 
     public static BlueprintQuality getQuality(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
         if (tag == null || !tag.contains("Quality")) {
             return BlueprintQuality.POOR; // Default to POOR if not set
         }
@@ -100,7 +100,7 @@ public class BlueprintItem extends Item {
     }
 
     public static int getUses(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
         return tag != null ? tag.getInt("Uses") : 0; // Default to 0 uses
     }
 
@@ -109,10 +109,10 @@ public class BlueprintItem extends Item {
     }
 
     public static ToolType getToolType(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
         String id = tag.getString("ToolType");
 
-        // ✅ Create-or-fetch instead of defaulting
+        // Create-or-fetch instead of defaulting
         return ToolType.of(id);
     }
 
@@ -125,14 +125,4 @@ public class BlueprintItem extends Item {
             case MASTER -> BlueprintQuality.MASTER.getUse();
         };
     }
-
-   /* @Override
-    public boolean hasCraftingRemainingItem(ItemStack stack) {
-        return true;
-    }
-
-    @Override
-    public ItemStack getCraftingRemainingItem(ItemStack itemStack) {
-        return itemStack.copy();
-    }*/
 }

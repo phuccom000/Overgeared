@@ -1,58 +1,51 @@
 package net.stirdrem.overgeared.block.entity;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.recipe.ForgingRecipe;
-import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
+import net.stirdrem.overgeared.screen.StoneSmithingAnvilScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
+import java.util.Locale;
 
 public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;
 
-    public StoneSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super((StoneSmithingAnvil) pBlockState.getBlock(), AnvilTier.STONE, ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
+    public StoneSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
+        super((StoneSmithingAnvil) state.getBlock(), AnvilTier.STONE, ModBlockEntities.STONE_SMITHING_ANVIL_BE, pos, state);
     }
 
-
     @Override
-    public Component getDisplayName() {
-        return Component.translatable("gui.overgeared.smithing_anvil");
+    public Text getDisplayName() {
+        return Text.translatable("gui.overgeared.smithing_anvil");
     }
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        if (!pPlayer.isCrouching()) {
-            return new StoneSmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
+    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+        if (!player.isSneaking()) {
+            return new StoneSmithingAnvilScreenHandler(syncId, playerInventory, this, this.data);
         } else return null;
-
     }
-
 
     @Override
     protected String determineForgingQuality() {
-        // Get quality from anvil or use default if null
         String quality = anvilBlock.getQuality();
         if (quality == null) {
-            return ForgingQuality.POOR.getDisplayName(); // Default quality
+            return ForgingQuality.POOR.getDisplayName();
         }
 
-        // Use switch expression for better null safety
-        return switch (quality.toLowerCase(java.util.Locale.ROOT)) {
+        return switch (quality.toLowerCase(Locale.ROOT)) {
             case "poor" -> ForgingQuality.POOR.getDisplayName();
-            default -> ForgingQuality.WELL.getDisplayName();// Fallback
+            default -> ForgingQuality.WELL.getDisplayName();
         };
     }
 
@@ -63,7 +56,7 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
 
     @Override
     protected void craftItem() {
-        super.craftItem(); // Perform regular crafting logic
+        super.craftItem();
         if (ServerConfig.STONE_ANVIL_MAX_USES.get() == 0) return;
         craftCount++;
 
@@ -73,8 +66,8 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     }
 
     private void breakAnvil() {
-        if (level != null && !level.isClientSide) {
-            level.destroyBlock(worldPosition, true);
+        if (world != null && !world.isClient) {
+            world.breakBlock(pos, true, null, 512);
         }
     }
 }

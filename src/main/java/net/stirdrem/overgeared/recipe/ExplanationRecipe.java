@@ -1,6 +1,6 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
 
 public class ExplanationRecipe {
 

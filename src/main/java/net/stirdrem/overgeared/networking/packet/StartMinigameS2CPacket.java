@@ -1,13 +1,10 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-
-import java.util.function.Supplier;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.math.BlockPos;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 
 public class StartMinigameS2CPacket {
 
@@ -21,30 +18,24 @@ public class StartMinigameS2CPacket {
         this.quality = quality;
     }
 
-    public StartMinigameS2CPacket(FriendlyByteBuf friendlyByteBuf) {
-        this.pos = friendlyByteBuf.readBlockPos();
-        this.hits = friendlyByteBuf.readInt();
-        this.quality = friendlyByteBuf.readUtf();
+    public static void encode(StartMinigameS2CPacket msg, PacketByteBuf buf) {
+        buf.writeBlockPos(msg.pos);
+        buf.writeInt(msg.hits);
+        buf.writeString(msg.quality);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(this.pos);
-        buf.writeInt(this.hits);
-        buf.writeUtf(this.quality);
+    public static StartMinigameS2CPacket decode(PacketByteBuf buf) {
+        return new StartMinigameS2CPacket(buf.readBlockPos(), buf.readInt(), buf.readString());
     }
 
-    public static void handle(StartMinigameS2CPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null) return;
+    public static void handle(StartMinigameS2CPacket msg) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
 
-            AnvilMinigameEvents.reset(msg.quality);
-            AnvilMinigameEvents.setHitsRemaining(msg.hits);
-            AnvilMinigameEvents.setAnvilPos(player.getUUID(), msg.pos);
-            AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
-            AnvilMinigameEvents.setIsVisible(msg.pos, true);
-        });
-
-        ctx.get().setPacketHandled(true);
+        AnvilMinigameEvents.reset(msg.quality);
+        AnvilMinigameEvents.setHitsRemaining(msg.hits);
+        AnvilMinigameEvents.setAnvilPos(player.getUuid(), msg.pos);
+        AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
+        AnvilMinigameEvents.setIsVisible(msg.pos, true);
     }
 }

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "overgeared:lingering_arrow",
+    "overgeared:iron_arrow",
+    "overgeared:steel_arrow",
+    "overgeared:diamond_arrow"
+  ]
+}

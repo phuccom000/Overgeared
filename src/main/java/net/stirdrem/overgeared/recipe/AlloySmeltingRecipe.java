@@ -3,27 +3,28 @@ package net.stirdrem.overgeared.recipe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.Level;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.*;
+import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecipe {
-    private final ResourceLocation id;
+public class AlloySmeltingRecipe implements Recipe<SimpleInventory>, IAlloyRecipe {
+    private final Identifier id;
     private final String group;
-    private final CraftingBookCategory category;
+    private final CraftingRecipeCategory category;
     private final List<Ingredient> inputs;
     private final ItemStack output;
     private final float experience;
     private final int cookingTime;
 
-    public AlloySmeltingRecipe(ResourceLocation id, String group, CraftingBookCategory category, List<Ingredient> inputs, ItemStack output, float experience, int cookingTime) {
+    public AlloySmeltingRecipe(Identifier id, String group, CraftingRecipeCategory category, List<Ingredient> inputs, ItemStack output, float experience, int cookingTime) {
         this.id = id;
         this.group = group;
         this.category = category;
@@ -34,9 +35,9 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
     }
 
     @Override
-    public boolean matches(SimpleContainer inv, Level level) {
+    public boolean matches(SimpleInventory inv, World world) {
         // Don't bother checking on client side for performance reasons
-        if (level.isClientSide) return false;
+        if (world.isClient) return false;
 
         // Create a list of non-empty ingredient-item pairs to match
         List<Ingredient> remainingIngredients = new ArrayList<>();
@@ -51,7 +52,7 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
 
         // Collect all non-empty items from the input slots
         for (int i = 0; i < 4; i++) {
-            ItemStack stack = inv.getItem(i);
+            ItemStack stack = inv.getStack(i);
             if (!stack.isEmpty()) {
                 remainingItems.add(stack);
             }
@@ -85,43 +86,45 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
 
 
     @Override
-    public ItemStack assemble(SimpleContainer container, net.minecraft.core.RegistryAccess registryAccess) {
+    public ItemStack craft(SimpleInventory container, DynamicRegistryManager registryAccess) {
         return output.copy();
     }
 
     @Override
-    public boolean canCraftInDimensions(int w, int h) {
+    public boolean fits(int w, int h) {
         return true;
     }
 
     @Override
-    public ItemStack getResultItem(net.minecraft.core.RegistryAccess registryAccess) {
+    public ItemStack getOutput(DynamicRegistryManager registryAccess) {
         return output;
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.ALLOY_SMELTING.get();
+        return ModRecipes.ALLOY_SMELTING;
     }
 
     @Override
     public RecipeType<?> getType() {
-        return ModRecipeTypes.ALLOY_SMELTING.get();
+        return ModRecipeTypes.ALLOY_SMELTING;
     }
 
+    @Override
     public String getGroup() {
         return group;
     }
 
-    public CraftingBookCategory category() {
+    public CraftingRecipeCategory category() {
         return category;
     }
 
+    @Override
     public float getExperience() {
         return experience;
     }
@@ -145,6 +148,7 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
         return cookingTime;
     }
 
+    @Override
     public List<Ingredient> getIngredientsList() {
         return inputs;
     }
@@ -161,11 +165,11 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public AlloySmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
+        public AlloySmeltingRecipe read(Identifier id, JsonObject json) {
             String group = json.has("group") ? json.get("group").getAsString() : "";
-            CraftingBookCategory category = json.has("category")
-                    ? CraftingBookCategory.CODEC.byName(json.get("category").getAsString(), CraftingBookCategory.MISC)
-                    : CraftingBookCategory.MISC;
+            CraftingRecipeCategory category = json.has("category")
+                    ? CraftingRecipeCategory.CODEC.byId(json.get("category").getAsString(), CraftingRecipeCategory.MISC)
+                    : CraftingRecipeCategory.MISC;
 
             JsonArray ingredients = json.getAsJsonArray("ingredients");
 
@@ -179,7 +183,7 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
                 inputList.add(Ingredient.fromJson(ingredients.get(i)));
             }
 
-            ItemStack result = ShapedRecipe.itemStackFromJson(json.getAsJsonObject("result"));
+            ItemStack result = ShapedRecipe.outputFromJson(json.getAsJsonObject("result"));
             float experience = json.has("experience") ? json.get("experience").getAsFloat() : 0.0F;
             int cookingTime = json.has("cookingtime") ? json.get("cookingtime").getAsInt() : 200;
 
@@ -188,15 +192,15 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
 
 
         @Override
-        public AlloySmeltingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-            String group = buf.readUtf();
-            CraftingBookCategory category = buf.readEnum(CraftingBookCategory.class);
+        public AlloySmeltingRecipe read(Identifier id, PacketByteBuf buf) {
+            String group = buf.readString();
+            CraftingRecipeCategory category = buf.readEnumConstant(CraftingRecipeCategory.class);
 
             int count = buf.readVarInt();
             List<Ingredient> inputs = new ArrayList<>();
-            for (int i = 0; i < count; i++) inputs.add(Ingredient.fromNetwork(buf));
+            for (int i = 0; i < count; i++) inputs.add(Ingredient.fromPacket(buf));
 
-            ItemStack result = buf.readItem();
+            ItemStack result = buf.readItemStack();
             float experience = buf.readFloat();
             int cookingTime = buf.readVarInt();
 
@@ -204,12 +208,12 @@ public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecip
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buf, AlloySmeltingRecipe recipe) {
-            buf.writeUtf(recipe.group);
-            buf.writeEnum(recipe.category);
+        public void write(PacketByteBuf buf, AlloySmeltingRecipe recipe) {
+            buf.writeString(recipe.group);
+            buf.writeEnumConstant(recipe.category);
             buf.writeVarInt(recipe.inputs.size());
-            recipe.inputs.forEach(i -> i.toNetwork(buf));
-            buf.writeItem(recipe.output);
+            recipe.inputs.forEach(i -> i.write(buf));
+            buf.writeItemStack(recipe.output);
             buf.writeFloat(recipe.experience);
             buf.writeVarInt(recipe.cookingTime);
         }

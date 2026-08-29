@@ -1,12 +1,8 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-
-import java.util.function.Supplier;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.math.BlockPos;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 
 public class MinigameSetStartedS2CPacket {
     private final BlockPos pos;
@@ -15,20 +11,16 @@ public class MinigameSetStartedS2CPacket {
         this.pos = pos;
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(this.pos);
+    public static void encode(MinigameSetStartedS2CPacket msg, PacketByteBuf buf) {
+        buf.writeBlockPos(msg.pos);
     }
 
-    public MinigameSetStartedS2CPacket(FriendlyByteBuf buf) {
-        this.pos = buf.readBlockPos();
+    public static MinigameSetStartedS2CPacket decode(PacketByteBuf buf) {
+        return new MinigameSetStartedS2CPacket(buf.readBlockPos());
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            AnvilMinigameEvents.setMinigameStarted(pos, true);
-            AnvilMinigameEvents.setIsVisible(pos, true);
-        });
-        ctx.get().setPacketHandled(true);
-        return true;
+    public static void handle(MinigameSetStartedS2CPacket msg) {
+        AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
+        AnvilMinigameEvents.setIsVisible(msg.pos, true);
     }
 }

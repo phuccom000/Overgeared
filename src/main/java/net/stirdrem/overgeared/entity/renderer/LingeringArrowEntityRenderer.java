@@ -1,19 +1,20 @@
 package net.stirdrem.overgeared.entity.renderer;
 
-import net.minecraft.client.renderer.entity.ArrowRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.entity.ArrowTier;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.ProjectileEntityRenderer;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
-import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 
-public class LingeringArrowEntityRenderer extends ArrowRenderer<LingeringArrowEntity> {
-    public LingeringArrowEntityRenderer(EntityRendererProvider.Context context) {
+public class LingeringArrowEntityRenderer extends ProjectileEntityRenderer<LingeringArrowEntity> {
+    private static final Identifier TEXTURE = Overgeared.id("textures/entity/projectiles/arrows/flint.png");
+
+    public LingeringArrowEntityRenderer(EntityRendererFactory.Context context) {
         super(context);
     }
 
-    public ResourceLocation getTextureLocation(LingeringArrowEntity entity) {
-        return ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/entity/projectiles/arrows/flint.png");
+    @Override
+    public Identifier getTexture(LingeringArrowEntity entity) {
+        return TEXTURE;
     }
 }

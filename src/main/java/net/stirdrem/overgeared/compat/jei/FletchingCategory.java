@@ -8,18 +8,17 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.recipe.FletchingRecipe;
 
 public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
 
-    public static final ResourceLocation UID = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "fletching");
-    public static final ResourceLocation TEXTURE =
-            ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/fletching_table_jei.png"); // match your actual texture
+    public static final Identifier UID = Overgeared.id("fletching");
+    public static final Identifier TEXTURE = Overgeared.id("textures/gui/fletching_table_jei.png");
 
     public static final RecipeType<FletchingRecipe> FLETCHING_RECIPE_TYPE =
             new RecipeType<>(UID, FletchingRecipe.class);
@@ -28,12 +27,9 @@ public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
     private final IDrawable icon;
 
     public FletchingCategory(IGuiHelper helper) {
-        // width & height should match the area where recipe is displayed in JEI
         this.background = helper.createDrawable(TEXTURE, 29, 16, 118, 54);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(Blocks.FLETCHING_TABLE)); // Or the block item for the station
+        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(Blocks.FLETCHING_TABLE));
     }
-
 
     @Override
     public RecipeType<FletchingRecipe> getRecipeType() {
@@ -41,8 +37,8 @@ public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatable("gui.overgeared.jei.category.fletching");
+    public Text getTitle() {
+        return Text.translatable("gui.overgeared.jei.category.fletching");
     }
 
     @Override
@@ -62,10 +58,7 @@ public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 37).addIngredients(recipe.getFeather());
         builder.addSlot(RecipeIngredientRole.INPUT, 63, 37).addIngredients(recipe.getPotion());
 
-
-        // If no focus (viewing all recipes), show the default output
         builder.addSlot(RecipeIngredientRole.OUTPUT, 97, 19)
                 .addItemStack(recipe.getDefaultResult());
-
     }
 }

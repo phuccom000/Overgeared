@@ -1,116 +1,66 @@
 package net.stirdrem.overgeared.networking;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.networking.packet.*;
 
+/**
+ * Fabric has no equivalent of Forge's SimpleChannel (auto-incrementing numeric packet IDs on
+ * one shared channel); each payload gets its own named Identifier channel instead, sent via
+ * ServerPlayNetworking/ClientPlayNetworking. Server-bound (C2S) receivers are registered here;
+ * client-bound (S2C) receivers are registered from OvergearedClient (client-only code can't
+ * live in common).
+ */
 public class ModMessages {
-    private static SimpleChannel INSTANCE;
-
-    private static int packetId = 0;
-
-    private static int id() {
-        return packetId++;
-    }
+    public static final Identifier MINIGAME_SYNC = Overgeared.id("minigame_sync");
+    public static final Identifier KNAPPING_CHIP = Overgeared.id("knapping_chip");
+    public static final Identifier SELECT_TOOL_TYPE = Overgeared.id("select_tool_type");
+    public static final Identifier SEND_COUNTER = Overgeared.id("send_counter");
+    public static final Identifier SET_MINIGAME_VISIBLE = Overgeared.id("set_minigame_visible");
+    public static final Identifier MINIGAME_SET_STARTED = Overgeared.id("minigame_set_started");
+    public static final Identifier MINIGAME_SET_STARTED_ACK = Overgeared.id("minigame_set_started_ack");
+    public static final Identifier START_MINIGAME = Overgeared.id("start_minigame");
+    public static final Identifier TOGGLE_MINIGAME = Overgeared.id("toggle_minigame");
+    public static final Identifier HIDE_MINIGAME = Overgeared.id("hide_minigame");
+    public static final Identifier RESET_MINIGAME = Overgeared.id("reset_minigame");
+    public static final Identifier ONLY_RESET_MINIGAME = Overgeared.id("only_reset_minigame");
 
     public static void register() {
-        SimpleChannel net = NetworkRegistry.ChannelBuilder
-                .named(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "messages"))
-                .networkProtocolVersion(() -> "1.0")
-                .clientAcceptedVersions(s -> true)
-                .serverAcceptedVersions(s -> true)
-                .simpleChannel();
+        ServerPlayNetworking.registerGlobalReceiver(KNAPPING_CHIP, (server, player, handler, buf, responseSender) ->
+                KnappingChipC2SPacket.handle(KnappingChipC2SPacket.decode(buf), server, player));
 
-        INSTANCE = net;
+        ServerPlayNetworking.registerGlobalReceiver(SELECT_TOOL_TYPE, (server, player, handler, buf, responseSender) ->
+                SelectToolTypeC2SPacket.handle(SelectToolTypeC2SPacket.decode(buf), server, player));
 
-        net.messageBuilder(MinigameSyncS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(MinigameSyncS2CPacket::new)
-                .encoder(MinigameSyncS2CPacket::toBytes)
-                .consumerMainThread(MinigameSyncS2CPacket::handle)
-                .add();
+        ServerPlayNetworking.registerGlobalReceiver(SEND_COUNTER, (server, player, handler, buf, responseSender) ->
+                PacketSendCounterC2SPacket.handle(PacketSendCounterC2SPacket.decode(buf), server, player));
 
+        ServerPlayNetworking.registerGlobalReceiver(SET_MINIGAME_VISIBLE, (server, player, handler, buf, responseSender) ->
+                SetMinigameVisibleC2SPacket.handle(SetMinigameVisibleC2SPacket.decode(buf), server, player));
 
-        net.messageBuilder(KnappingChipC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(KnappingChipC2SPacket::encode)
-                .decoder(KnappingChipC2SPacket::decode)
-                .consumerMainThread(KnappingChipC2SPacket::handle)
-                .add();
-
-        net.messageBuilder(SelectToolTypeC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(SelectToolTypeC2SPacket::toBytes)
-                .decoder(SelectToolTypeC2SPacket::new)
-                .consumerMainThread(SelectToolTypeC2SPacket::handle)
-                .add();
-
-        net.messageBuilder(PacketSendCounterC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(PacketSendCounterC2SPacket::encode)
-                .decoder(PacketSendCounterC2SPacket::decode)
-                .consumerMainThread(PacketSendCounterC2SPacket::handle)
-                .add();
-
-        net.messageBuilder(SetMinigameVisibleC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(SetMinigameVisibleC2SPacket::encode)
-                .decoder(SetMinigameVisibleC2SPacket::decode)
-                .consumerMainThread(SetMinigameVisibleC2SPacket::handle)
-                .add();
-
-        net.messageBuilder(MinigameSetStartedC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(MinigameSetStartedC2SPacket::encode)
-                .decoder(MinigameSetStartedC2SPacket::decode)
-                .consumerMainThread(MinigameSetStartedC2SPacket::handle)
-                .add();
-
-        net.messageBuilder(MinigameSetStartedS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(MinigameSetStartedS2CPacket::new)
-                .encoder(MinigameSetStartedS2CPacket::toBytes)
-                .consumerMainThread(MinigameSetStartedS2CPacket::handle)
-                .add();
-
-        net.messageBuilder(StartMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(StartMinigameS2CPacket::new)
-                .encoder(StartMinigameS2CPacket::toBytes)
-                .consumerMainThread(StartMinigameS2CPacket::handle)
-                .add();
-
-        net.messageBuilder(ToggleMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ToggleMinigameS2CPacket::new)
-                .encoder(ToggleMinigameS2CPacket::toBytes)
-                .consumerMainThread(ToggleMinigameS2CPacket::handle)
-                .add();
-
-        net.messageBuilder(HideMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(HideMinigameS2CPacket::new)
-                .encoder(HideMinigameS2CPacket::toBytes)
-                .consumerMainThread(HideMinigameS2CPacket::handle)
-                .add();
-
-        net.messageBuilder(ResetMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ResetMinigameS2CPacket::new)
-                .encoder(ResetMinigameS2CPacket::toBytes)
-                .consumerMainThread(ResetMinigameS2CPacket::handle)
-                .add();
-
-        net.messageBuilder(OnlyResetMinigameS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(OnlyResetMinigameS2CPacket::new)
-                .encoder(OnlyResetMinigameS2CPacket::toBytes)
-                .consumerMainThread(OnlyResetMinigameS2CPacket::handle)
-                .add();
+        ServerPlayNetworking.registerGlobalReceiver(MINIGAME_SET_STARTED, (server, player, handler, buf, responseSender) ->
+                MinigameSetStartedC2SPacket.handle(MinigameSetStartedC2SPacket.decode(buf), server, player));
     }
 
-    public static <MSG> void sendToServer(MSG message) {
-        INSTANCE.sendToServer(message);
+    // sendToServer intentionally lives in the client package (ClientModMessages), not here -
+    // ClientPlayNetworking is a client-only class, and this class is loaded on both sides.
+
+    public static void sendToPlayer(Identifier channel, PacketByteBuf buf, ServerPlayerEntity player) {
+        ServerPlayNetworking.send(player, channel, buf);
     }
 
-    public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
-        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), message);
+    public static void sendToAll(Identifier channel, PacketByteBuf buf, MinecraftServer server) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            ServerPlayNetworking.send(player, channel, buf);
+        }
     }
 
-    public static <MSG> void sendToAll(MSG message) {
-        INSTANCE.send(PacketDistributor.ALL.noArg(), message);
+    public static PacketByteBuf buf() {
+        return PacketByteBufs.create();
     }
 }

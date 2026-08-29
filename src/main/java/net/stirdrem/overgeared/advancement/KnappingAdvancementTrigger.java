@@ -1,45 +1,44 @@
 package net.stirdrem.overgeared.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.stirdrem.overgeared.OvergearedMod;
+import net.minecraft.advancement.criterion.AbstractCriterion;
+import net.minecraft.advancement.criterion.AbstractCriterionConditions;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
+import net.minecraft.predicate.entity.LootContextPredicate;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.Overgeared;
 
-public class KnappingAdvancementTrigger extends SimpleCriterionTrigger<KnappingAdvancementTrigger.TriggerInstance> {
+public class KnappingAdvancementTrigger extends AbstractCriterion<KnappingAdvancementTrigger.Conditions> {
 
-    public static final ResourceLocation ID =
-            new ResourceLocation(OvergearedMod.MOD_ID, "finished_knapping");
+    public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "finished_knapping");
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return ID;
     }
 
     @Override
-    protected TriggerInstance createInstance(JsonObject json,
-                                             ContextAwarePredicate player,
-                                             DeserializationContext context) {
-        return new TriggerInstance(player);
+    protected Conditions conditionsFromJson(JsonObject json,
+                                             LootContextPredicate playerPredicate,
+                                             AdvancementEntityPredicateDeserializer context) {
+        return new Conditions(playerPredicate);
     }
 
-    public void trigger(ServerPlayer player) {
+    public void trigger(ServerPlayerEntity player) {
         this.trigger(player, instance -> true);
     }
 
-    // ---------------- Trigger Instance ----------------
+    // ---------------- Conditions ----------------
 
-    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+    public static class Conditions extends AbstractCriterionConditions {
 
-        public TriggerInstance(ContextAwarePredicate player) {
-            super(ID, player);
+        public Conditions(LootContextPredicate playerPredicate) {
+            super(ID, playerPredicate);
         }
 
-        public static TriggerInstance instance() {
-            return new TriggerInstance(ContextAwarePredicate.ANY);
+        public static Conditions instance() {
+            return new Conditions(LootContextPredicate.EMPTY);
         }
     }
 }
