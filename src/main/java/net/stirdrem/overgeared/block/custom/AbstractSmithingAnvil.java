@@ -2,39 +2,39 @@ package net.stirdrem.overgeared.block.custom;
 
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.FallingBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
@@ -59,14 +59,14 @@ import java.util.UUID;
  * fires for every removal path (break, explosion, or otherwise) and resets the minigame for
  * whichever player was using this anvil.
  */
-public abstract class AbstractSmithingAnvil extends BlockWithEntity {
-    public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+public abstract class AbstractSmithingAnvil extends BaseEntityBlock {
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     protected static String quality = null;
     protected static AnvilTier tier;
 
-    public AbstractSmithingAnvil(AnvilTier anvilTier, AbstractBlock.Settings settings) {
+    public AbstractSmithingAnvil(AnvilTier anvilTier, BlockBehaviour.Properties settings) {
         super(settings);
         tier = anvilTier;
     }
@@ -81,7 +81,7 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
     }
 
     @Override
-    public abstract VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context);
+    public abstract VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context);
 
     /**
      * BlockWithEntity defaults to INVISIBLE (relying entirely on a block entity renderer) - the
@@ -90,43 +90,43 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
      * unrelated to getRenderType) but vanishes entirely once placed in the world.
      */
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
         if (state.getBlock() != newState.getBlock()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof AbstractSmithingAnvilBlockEntity anvilBe) {
                 anvilBe.drops();
 
-                if (!world.isClient()) {
+                if (!world.isClientSide()) {
                     ModEvents.resetMinigameForAnvil(world, pos);
                 }
             }
         }
-        super.onStateReplaced(state, world, pos, newState, moved);
+        super.onRemove(state, world, pos, newState, moved);
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos,
-                               PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack held = player.getStackInHand(hand);
-        boolean isHammer = held.isIn(ModTags.Items.SMITHING_HAMMERS);
+    public InteractionResult use(BlockState state, Level world, BlockPos pos,
+                               Player player, InteractionHand hand, BlockHitResult hit) {
+        ItemStack held = player.getItemInHand(hand);
+        boolean isHammer = held.is(ModTags.Items.SMITHING_HAMMERS);
         BlockEntity be = world.getBlockEntity(pos);
         if (!(be instanceof AbstractSmithingAnvilBlockEntity anvil)) {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
-        if (world.isClient()) {
-            if (player.isSneaking()) return ActionResult.SUCCESS;
+        if (world.isClientSide()) {
+            if (player.isShiftKeyDown()) return InteractionResult.SUCCESS;
             if (anvil.hasRecipe() && isHammer) {
                 AnvilMinigameEvents.resetPopUps();
-                if (!pos.equals(AnvilMinigameEvents.getAnvilPos(player.getUuid()))) {
-                    return ActionResult.SUCCESS;
+                if (!pos.equals(AnvilMinigameEvents.getAnvilPos(player.getUUID()))) {
+                    return InteractionResult.SUCCESS;
                 }
                 if (!AnvilMinigameEvents.isIsVisible())
-                    return ActionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 // Read the current counter at the moment of right-click:
                 String currentQuality = AnvilMinigameEvents.handleHit();
                 var buf = ModMessages.buf();
@@ -134,82 +134,82 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
                 ClientModMessages.sendToServer(ModMessages.SEND_COUNTER, buf);
                 AnvilMinigameEvents.speedUp();
 
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             } else
                 AnvilMinigameEvents.setIsVisible(pos, false);
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
 
         }
 
-        long now = world.getTime();
+        long now = world.getGameTime();
 
         if (anvil.hasRecipe()) {
             UUID currentOwner = anvil.getOwnerUUID();
-            if (currentOwner != null && !currentOwner.equals(player.getUuid()) && player instanceof ServerPlayerEntity serverPlayer) {
-                PlayerEntity ownerPlayer = world.getPlayerByUuid(currentOwner);
+            if (currentOwner != null && !currentOwner.equals(player.getUUID()) && player instanceof ServerPlayer serverPlayer) {
+                Player ownerPlayer = world.getPlayerByUUID(currentOwner);
                 String ownerName;
 
                 if (ownerPlayer != null) {
                     ownerName = ownerPlayer.getName().getString();
                 } else {
-                    GameProfile ownerProfile = world.getServer().getUserCache().getByUuid(currentOwner).orElse(null);
+                    GameProfile ownerProfile = world.getServer().getProfileCache().get(currentOwner).orElse(null);
                     ownerName = ownerProfile != null ? ownerProfile.getName() : "Another player";
                 }
 
-                serverPlayer.sendMessage(
-                        Text.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
-                                .formatted(Formatting.RED),
+                serverPlayer.displayClientMessage(
+                        Component.translatable("message.overgeared.anvil_in_use_by_another", ownerName)
+                                .withStyle(ChatFormatting.RED),
                         true
                 );
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
 
             if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
-                BlockPos pos1 = ModItemInteractEvents.playerAnvilPositions.get(player.getUuid());
-                if (pos1 != null && !pos.equals(ModItemInteractEvents.playerAnvilPositions.get(player.getUuid()))) {
-                    ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-                    serverPlayer.sendMessage(Text.translatable("message.overgeared.another_anvil_in_use").formatted(Formatting.RED), true);
-                    return ActionResult.FAIL;
+                BlockPos pos1 = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
+                if (pos1 != null && !pos.equals(ModItemInteractEvents.playerAnvilPositions.get(player.getUUID()))) {
+                    ServerPlayer serverPlayer = (ServerPlayer) player;
+                    serverPlayer.displayClientMessage(Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED), true);
+                    return InteractionResult.FAIL;
                 }
-                Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUuid());
+                Boolean visible = ModItemInteractEvents.playerMinigameVisibility.get(player.getUUID());
 
                 if (visible == null && anvil.isMinigameOn()) {
-                    ModItemInteractEvents.hideMinigame((ServerPlayerEntity) player);
-                    player.openHandledScreen(anvil);
-                    return ActionResult.success(world.isClient());
+                    ModItemInteractEvents.hideMinigame((ServerPlayer) player);
+                    player.openMenu(anvil);
+                    return InteractionResult.sidedSuccess(world.isClientSide());
                 }
                 if (!ServerConfig.ENABLE_MINIGAME.get())
                     anvil.setBusyUntil(now + HAMMER_SOUND_DURATION_TICKS);
 
-                EquipmentSlot slot = hand == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-                held.damage(1, player, p -> {
-                    p.sendEquipmentBreakStatus(slot);
-                    ModEvents.resetMinigameForPlayer((ServerPlayerEntity) p);
+                EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+                held.hurtAndBreak(1, player, p -> {
+                    p.broadcastBreakEvent(slot);
+                    ModEvents.resetMinigameForPlayer((ServerPlayer) p);
                 });
 
                 spawnAnvilParticles(world, pos);
                 anvil.increaseForgingProgress(world, pos, state);
                 if (anvil.getHitsRemaining() == 0) {
                     if (anvil.isFailedResult()) {
-                        world.playSound(null, pos, ModSounds.FORGING_FAILED, SoundCategory.BLOCKS, 1f, 1f);
+                        world.playSound(null, pos, ModSounds.FORGING_FAILED, SoundSource.BLOCKS, 1f, 1f);
                     } else
-                        world.playSound(null, pos, ModSounds.FORGING_COMPLETE, SoundCategory.BLOCKS, 1f, 1f);
-                } else world.playSound(null, pos, ModSounds.ANVIL_HIT, SoundCategory.BLOCKS, 1f, 1f);
-                return ActionResult.success(world.isClient());
+                        world.playSound(null, pos, ModSounds.FORGING_COMPLETE, SoundSource.BLOCKS, 1f, 1f);
+                } else world.playSound(null, pos, ModSounds.ANVIL_HIT, SoundSource.BLOCKS, 1f, 1f);
+                return InteractionResult.sidedSuccess(world.isClientSide());
             }
-            ModItemInteractEvents.hideMinigame((ServerPlayerEntity) player);
-            player.openHandledScreen(anvil);
+            ModItemInteractEvents.hideMinigame((ServerPlayer) player);
+            player.openMenu(anvil);
         } else {
-            ModItemInteractEvents.releaseAnvil((ServerPlayerEntity) player, pos);
-            player.openHandledScreen(anvil);
+            ModItemInteractEvents.releaseAnvil((ServerPlayer) player, pos);
+            player.openMenu(anvil);
         }
-        return ActionResult.success(world.isClient());
+        return InteractionResult.sidedSuccess(world.isClientSide());
     }
 
-    protected void spawnAnvilParticles(World world, BlockPos pos) {
-        if (world instanceof ServerWorld serverWorld) {
+    protected void spawnAnvilParticles(Level world, BlockPos pos) {
+        if (world instanceof ServerLevel serverWorld) {
 
-            Random random = world.random;
+            RandomSource random = world.random;
             for (int i = 0; i < 6; i++) {
                 double offsetX = 0.5 + (random.nextFloat() - 0.5);
                 double offsetY = 1.0 + random.nextFloat() * 0.5;
@@ -218,10 +218,10 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
                 double velocityY = random.nextFloat() * 0.1;
                 double velocityZ = (random.nextFloat() - 0.5) * 0.1;
 
-                serverWorld.spawnParticles(new DustParticleEffect(new Vector3f(1.0f, 0.5f, 0.0f), 1.0f),
+                serverWorld.sendParticles(new DustParticleOptions(new Vector3f(1.0f, 0.5f, 0.0f), 1.0f),
                         pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
                         velocityX, velocityY, velocityZ, 1);
-                serverWorld.spawnParticles(ParticleTypes.CRIT,
+                serverWorld.sendParticles(ParticleTypes.CRIT,
                         pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
                         velocityX, velocityY, velocityZ, 1);
             }
@@ -230,37 +230,37 @@ public abstract class AbstractSmithingAnvil extends BlockWithEntity {
 
     @Nullable
     @Override
-    public abstract BlockEntity createBlockEntity(BlockPos pos, BlockState state);
+    public abstract BlockEntity newBlockEntity(BlockPos pos, BlockState state);
 
     public static String getTier() {
         return tier.getDisplayName();
     }
 
     @Override
-    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        super.onBlockAdded(state, world, pos, oldState, notify);
-        world.scheduleBlockTick(pos, this, 2); // Schedule an immediate fall check
+    public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean notify) {
+        super.onPlace(state, world, pos, oldState, notify);
+        world.scheduleTick(pos, this, 2); // Schedule an immediate fall check
     }
 
     @Override
-    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        BlockPos below = pos.down();
+    public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
+        BlockPos below = pos.below();
         BlockState stateBelow = world.getBlockState(below);
-        if (FallingBlock.canFallThrough(stateBelow)) {
-            FallingBlockEntity falling = FallingBlockEntity.spawnFromBlock(world, pos, state);
+        if (FallingBlock.isFree(stateBelow)) {
+            FallingBlockEntity falling = FallingBlockEntity.fall(world, pos, state);
             customizeFallingEntity(falling, world);
         }
     }
 
-    protected void customizeFallingEntity(FallingBlockEntity entity, World world) {
-        entity.setHurtEntities(2.0F, 40);
+    protected void customizeFallingEntity(FallingBlockEntity entity, Level world) {
+        entity.setHurtsEntities(2.0F, 40);
         entity.dropItem = true; // drop as item on breaking
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        world.scheduleBlockTick(pos, this, 2);
-        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        world.scheduleTick(pos, this, 2);
+        return super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     /**

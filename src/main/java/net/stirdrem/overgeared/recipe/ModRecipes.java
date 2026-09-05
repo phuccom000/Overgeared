@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialRecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.recipe.castcooking.CastBlastingRecipe;
 import net.stirdrem.overgeared.recipe.castcooking.CastSmeltingRecipe;
@@ -20,11 +20,11 @@ public class ModRecipes {
     public static final RecipeSerializer<OvergearedShapelessRecipe> CRAFTING_SHAPELESS =
             register("crafting_shapeless", OvergearedShapelessRecipe.Serializer.INSTANCE);
     public static final RecipeSerializer<BlueprintCloningRecipe> CRAFTING_BLUEPRINTCLONING =
-            register("crafting_cloning", new SpecialRecipeSerializer<>(BlueprintCloningRecipe::new));
+            register("crafting_cloning", new SimpleCraftingRecipeSerializer<>(BlueprintCloningRecipe::new));
     public static final RecipeSerializer<DynamicToolCastRecipe> CRAFTING_DYNAMIC_TOOL_CAST =
-            register("crafting_cast", new SpecialRecipeSerializer<>(DynamicToolCastRecipe::new));
+            register("crafting_cast", new SimpleCraftingRecipeSerializer<>(DynamicToolCastRecipe::new));
     public static final RecipeSerializer<ClayToolCastRecipe> CLAY_TOOL_CAST =
-            register("crafting_initial_cast", new SpecialRecipeSerializer<>(ClayToolCastRecipe::new));
+            register("crafting_initial_cast", new SimpleCraftingRecipeSerializer<>(ClayToolCastRecipe::new));
     public static final RecipeSerializer<FletchingRecipe> FLETCHING_SERIALIZER =
             register("fletching", FletchingRecipe.Serializer.INSTANCE);
     public static final RecipeSerializer<NBTKeepingSmeltingRecipe> NBT_SMELTING =
@@ -58,8 +58,8 @@ public class ModRecipes {
     public static final RecipeSerializer<NBTCampfireRecipe> NBT_ADD_CAMPFIRE =
             register("nbt_add_campfire_cooking", NBTCampfireRecipe.Serializer.INSTANCE);
 
-    private static <T extends net.minecraft.recipe.Recipe<?>> RecipeSerializer<T> register(String name, RecipeSerializer<T> serializer) {
-        return Registry.register(Registries.RECIPE_SERIALIZER, Overgeared.id(name), serializer);
+    private static <T extends net.minecraft.world.item.crafting.Recipe<?>> RecipeSerializer<T> register(String name, RecipeSerializer<T> serializer) {
+        return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, Overgeared.id(name), serializer);
     }
 
     public static void register() {

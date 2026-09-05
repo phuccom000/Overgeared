@@ -2,10 +2,10 @@ package net.stirdrem.overgeared.networking;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.networking.packet.*;
 
@@ -17,18 +17,18 @@ import net.stirdrem.overgeared.networking.packet.*;
  * live in common).
  */
 public class ModMessages {
-    public static final Identifier MINIGAME_SYNC = Overgeared.id("minigame_sync");
-    public static final Identifier KNAPPING_CHIP = Overgeared.id("knapping_chip");
-    public static final Identifier SELECT_TOOL_TYPE = Overgeared.id("select_tool_type");
-    public static final Identifier SEND_COUNTER = Overgeared.id("send_counter");
-    public static final Identifier SET_MINIGAME_VISIBLE = Overgeared.id("set_minigame_visible");
-    public static final Identifier MINIGAME_SET_STARTED = Overgeared.id("minigame_set_started");
-    public static final Identifier MINIGAME_SET_STARTED_ACK = Overgeared.id("minigame_set_started_ack");
-    public static final Identifier START_MINIGAME = Overgeared.id("start_minigame");
-    public static final Identifier TOGGLE_MINIGAME = Overgeared.id("toggle_minigame");
-    public static final Identifier HIDE_MINIGAME = Overgeared.id("hide_minigame");
-    public static final Identifier RESET_MINIGAME = Overgeared.id("reset_minigame");
-    public static final Identifier ONLY_RESET_MINIGAME = Overgeared.id("only_reset_minigame");
+    public static final ResourceLocation MINIGAME_SYNC = Overgeared.id("minigame_sync");
+    public static final ResourceLocation KNAPPING_CHIP = Overgeared.id("knapping_chip");
+    public static final ResourceLocation SELECT_TOOL_TYPE = Overgeared.id("select_tool_type");
+    public static final ResourceLocation SEND_COUNTER = Overgeared.id("send_counter");
+    public static final ResourceLocation SET_MINIGAME_VISIBLE = Overgeared.id("set_minigame_visible");
+    public static final ResourceLocation MINIGAME_SET_STARTED = Overgeared.id("minigame_set_started");
+    public static final ResourceLocation MINIGAME_SET_STARTED_ACK = Overgeared.id("minigame_set_started_ack");
+    public static final ResourceLocation START_MINIGAME = Overgeared.id("start_minigame");
+    public static final ResourceLocation TOGGLE_MINIGAME = Overgeared.id("toggle_minigame");
+    public static final ResourceLocation HIDE_MINIGAME = Overgeared.id("hide_minigame");
+    public static final ResourceLocation RESET_MINIGAME = Overgeared.id("reset_minigame");
+    public static final ResourceLocation ONLY_RESET_MINIGAME = Overgeared.id("only_reset_minigame");
 
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(KNAPPING_CHIP, (server, player, handler, buf, responseSender) ->
@@ -50,17 +50,17 @@ public class ModMessages {
     // sendToServer intentionally lives in the client package (ClientModMessages), not here -
     // ClientPlayNetworking is a client-only class, and this class is loaded on both sides.
 
-    public static void sendToPlayer(Identifier channel, PacketByteBuf buf, ServerPlayerEntity player) {
+    public static void sendToPlayer(ResourceLocation channel, FriendlyByteBuf buf, ServerPlayer player) {
         ServerPlayNetworking.send(player, channel, buf);
     }
 
-    public static void sendToAll(Identifier channel, PacketByteBuf buf, MinecraftServer server) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+    public static void sendToAll(ResourceLocation channel, FriendlyByteBuf buf, MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             ServerPlayNetworking.send(player, channel, buf);
         }
     }
 
-    public static PacketByteBuf buf() {
+    public static FriendlyByteBuf buf() {
         return PacketByteBufs.create();
     }
 }

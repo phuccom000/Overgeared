@@ -1,22 +1,22 @@
 package net.stirdrem.overgeared;
 
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 import java.util.Locale;
 
 public enum BlueprintQuality {
-    POOR("poor", ServerConfig.POOR_MAX_USE.get(), Formatting.RED),
-    WELL("well", ServerConfig.WELL_MAX_USE.get(), Formatting.YELLOW),
-    EXPERT("expert", ServerConfig.EXPERT_MAX_USE.get(), Formatting.BLUE),
-    PERFECT("perfect", 0, Formatting.GOLD),
-    MASTER("master", 0, Formatting.LIGHT_PURPLE); // Final tier
+    POOR("poor", ServerConfig.POOR_MAX_USE.get(), ChatFormatting.RED),
+    WELL("well", ServerConfig.WELL_MAX_USE.get(), ChatFormatting.YELLOW),
+    EXPERT("expert", ServerConfig.EXPERT_MAX_USE.get(), ChatFormatting.BLUE),
+    PERFECT("perfect", 0, ChatFormatting.GOLD),
+    MASTER("master", 0, ChatFormatting.LIGHT_PURPLE); // Final tier
 
     private final String id;
     private final int use;
-    private final Formatting color;
+    private final ChatFormatting color;
 
-    BlueprintQuality(String id, int use, Formatting color) {
+    BlueprintQuality(String id, int use, ChatFormatting color) {
         this.id = id;
         this.use = use;
         this.color = color;
@@ -60,13 +60,13 @@ public enum BlueprintQuality {
         return null; // Already at lowest
     }
 
-    public static Formatting getColor(String qualityName) {
+    public static ChatFormatting getColor(String qualityName) {
         for (BlueprintQuality q : values()) {
             if (q.name().equalsIgnoreCase(qualityName)) {
                 return q.color;
             }
         }
-        return Formatting.GRAY;
+        return ChatFormatting.GRAY;
     }
 
     public String getDisplayName() {
@@ -77,7 +77,7 @@ public enum BlueprintQuality {
         return use;
     }
 
-    public Formatting getColor() {
+    public ChatFormatting getColor() {
         return color;
     }
 

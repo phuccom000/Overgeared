@@ -1,41 +1,44 @@
 package net.stirdrem.overgeared.recipe.nbtcooking;
 
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
+import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.util.JsonToNBT;
 
 public class NBTCampfireRecipe extends CampfireCookingRecipe {
 
-    private final NbtCompound resultTag;
+    private final CompoundTag resultTag;
 
-    public NBTCampfireRecipe(Identifier id, String group, CookingRecipeCategory category,
+    public NBTCampfireRecipe(ResourceLocation id, String group, CookingBookCategory category,
                               Ingredient ingredient, ItemStack result,
-                              float xp, int time, NbtCompound tag) {
+                              float xp, int time, CompoundTag tag) {
         super(id, group, category, ingredient, result, xp, time);
         this.resultTag = tag;
     }
 
     @Override
-    public ItemStack craft(Inventory inventory, DynamicRegistryManager registryAccess) {
-        ItemStack result = super.craft(inventory, registryAccess).copy();
+    public ItemStack assemble(Container inventory, RegistryAccess registryAccess) {
+        ItemStack result = super.assemble(inventory, registryAccess).copy();
 
         if (resultTag != null && !resultTag.isEmpty()) {
-            result.getOrCreateNbt().copyFrom(resultTag);
+            result.getOrCreateTag().merge(resultTag);
         }
 
         return result;
     }
 
-    public NbtCompound getResultTag() {
+    public CompoundTag getResultTag() {
         return resultTag;
     }
 
@@ -48,29 +51,29 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public NBTCampfireRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
+        public NBTCampfireRecipe fromJson(ResourceLocation id, JsonObject json) {
+            String group = GsonHelper.getAsString(json, "group", "");
 
-            CookingRecipeCategory category = CookingRecipeCategory.CODEC.byId(
-                    JsonHelper.getString(json, "category", "misc"),
-                    CookingRecipeCategory.MISC
+            CookingBookCategory category = CookingBookCategory.CODEC.byName(
+                    GsonHelper.getAsString(json, "category", "misc"),
+                    CookingBookCategory.MISC
             );
 
             Ingredient ingredient = Ingredient.fromJson(
-                    JsonHelper.getObject(json, "ingredient")
+                    GsonHelper.getAsJsonObject(json, "ingredient")
             );
 
-            ItemStack result = ShapedRecipe.outputFromJson(
-                    JsonHelper.getObject(json, "result")
+            ItemStack result = ShapedRecipe.itemStackFromJson(
+                    GsonHelper.getAsJsonObject(json, "result")
             );
 
-            float xp = JsonHelper.getFloat(json, "experience", 0.0f);
-            int time = JsonHelper.getInt(json, "cookingtime", 200);
+            float xp = GsonHelper.getAsFloat(json, "experience", 0.0f);
+            int time = GsonHelper.getAsInt(json, "cookingtime", 200);
 
-            NbtCompound tag = new NbtCompound();
+            CompoundTag tag = new CompoundTag();
             if (json.has("nbt")) {
                 tag = JsonToNBT.parseCompound(
-                        JsonHelper.getObject(json, "nbt")
+                        GsonHelper.getAsJsonObject(json, "nbt")
                 );
             }
 
@@ -78,26 +81,26 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
         }
 
         @Override
-        public NBTCampfireRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
-            Ingredient ingredient = Ingredient.fromPacket(buf);
-            ItemStack result = buf.readItemStack();
+        public NBTCampfireRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
+            String group = buf.readUtf();
+            CookingBookCategory category = buf.readEnum(CookingBookCategory.class);
+            Ingredient ingredient = Ingredient.fromNetwork(buf);
+            ItemStack result = buf.readItem();
             float xp = buf.readFloat();
             int time = buf.readVarInt();
-            NbtCompound tag = buf.readNbt();
+            CompoundTag tag = buf.readNbt();
 
             return new NBTCampfireRecipe(id, group, category, ingredient, result, xp, time, tag);
         }
 
         @Override
-        public void write(PacketByteBuf buf, NBTCampfireRecipe recipe) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.getCategory());
-            recipe.getIngredients().get(0).write(buf);
-            buf.writeItemStack(recipe.getOutput(null));
+        public void toNetwork(FriendlyByteBuf buf, NBTCampfireRecipe recipe) {
+            buf.writeUtf(recipe.getGroup());
+            buf.writeEnum(recipe.category());
+            recipe.getIngredients().get(0).toNetwork(buf);
+            buf.writeItem(recipe.getResultItem(null));
             buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookTime());
+            buf.writeVarInt(recipe.getCookingTime());
             buf.writeNbt(recipe.getResultTag());
         }
     }

@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 
 public class PacketSendCounterC2SPacket {
@@ -15,22 +15,22 @@ public class PacketSendCounterC2SPacket {
         this.pos = pos;
     }
 
-    public static void encode(PacketSendCounterC2SPacket pkt, PacketByteBuf buf) {
+    public static void encode(PacketSendCounterC2SPacket pkt, FriendlyByteBuf buf) {
         buf.writeBlockPos(pkt.pos);
-        buf.writeString(pkt.quality);
+        buf.writeUtf(pkt.quality);
     }
 
-    public static PacketSendCounterC2SPacket decode(PacketByteBuf buf) {
-        return new PacketSendCounterC2SPacket(buf.readBlockPos(), buf.readString());
+    public static PacketSendCounterC2SPacket decode(FriendlyByteBuf buf) {
+        return new PacketSendCounterC2SPacket(buf.readBlockPos(), buf.readUtf());
     }
 
     public String getCounter() {
         return quality;
     }
 
-    public static void handle(PacketSendCounterC2SPacket msg, MinecraftServer server, ServerPlayerEntity sender) {
+    public static void handle(PacketSendCounterC2SPacket msg, MinecraftServer server, ServerPlayer sender) {
         server.execute(() -> {
-            if (sender.getWorld().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
+            if (sender.level().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
                 AbstractSmithingAnvil.setQuality(msg.getCounter());
             }
         });

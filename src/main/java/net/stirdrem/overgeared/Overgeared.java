@@ -3,17 +3,16 @@ package net.stirdrem.overgeared;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-import net.minecraft.block.DispenserBlock;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
@@ -46,8 +45,8 @@ public class Overgeared implements ModInitializer {
     @Nullable
     private static MinecraftServer server;
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 
     /**
@@ -104,19 +103,26 @@ public class Overgeared implements ModInitializer {
             LOGGER.info("Accessories mod not present - skipping AttributeModifierHandler registration");
         }
 
+        if (FabricLoader.getInstance().isModLoaded("polymorph")) {
+            net.stirdrem.overgeared.compat.polymorph.PolymorphIntegration.register();
+            LOGGER.info("Polymorph mod detected - anvil recipe-choice integration registered");
+        } else {
+            LOGGER.info("Polymorph mod not present - skipping anvil recipe-choice integration");
+        }
+
         ModLootModifiers.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 ModCommands.register(dispatcher));
     }
 
     @Nullable
-    public static Item getCooledItem(@Nullable Item heatedItem, World world) {
+    public static Item getCooledItem(@Nullable Item heatedItem, Level world) {
         if (heatedItem == null || world == null) return null;
 
-        SimpleInventory container = new SimpleInventory(new ItemStack(heatedItem));
+        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
 
         Optional<CoolingRecipe> recipeOpt = world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.COOLING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE)
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
@@ -126,21 +132,21 @@ public class Overgeared implements ModInitializer {
         }
 
         CoolingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getOutput(world.getRegistryManager());
+        ItemStack result = recipe.getResultItem(world.registryAccess());
         return result.isEmpty() ? heatedItem : result.getItem();
     }
 
     public static boolean isDurabilityBlacklisted(ItemStack stack) {
-        Identifier itemId = Registries.ITEM.getId(stack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
 
         for (String entry : blacklist) {
             if (entry.startsWith("#")) {
-                Identifier tagId = Identifier.tryParse(entry.substring(1));
-                TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
-                if (stack.isIn(tag)) return true;
+                ResourceLocation tagId = ResourceLocation.tryParse(entry.substring(1));
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
+                if (stack.is(tag)) return true;
             } else {
-                if (itemId != null && itemId.equals(Identifier.tryParse(entry))) return true;
+                if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
             }
         }
         return net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener.isBlacklisted(stack);

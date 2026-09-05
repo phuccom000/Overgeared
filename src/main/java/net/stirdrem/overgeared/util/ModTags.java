@@ -1,25 +1,25 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.stirdrem.overgeared.Overgeared;
 
 public class ModTags {
     public static class Blocks {
-        public static final TagKey<net.minecraft.block.Block> NEEDS_STEEL_TOOL = tag("needs_steel_tool");
-        public static final TagKey<net.minecraft.block.Block> NEEDS_COPPER_TOOL = tag("needs_copper_tool");
-        public static final TagKey<net.minecraft.block.Block> SMITHING = tag("smithing");
-        public static final TagKey<net.minecraft.block.Block> SMITHING_ANVIL = tag("smithing_anvil");
-        public static final TagKey<net.minecraft.block.Block> STONE_ANVIL_BASES = tag("stone_anvil_bases");
-        public static final TagKey<net.minecraft.block.Block> IRON_ANVIL_BASES = tag("iron_anvil_bases");
-        public static final TagKey<net.minecraft.block.Block> TIER_A_ANVIL_BASES = tag("tier_a_anvil_bases");
-        public static final TagKey<net.minecraft.block.Block> TIER_B_ANVIL_BASES = tag("tier_b_anvil_bases");
-        public static final TagKey<net.minecraft.block.Block> GRINDSTONES = tag("grindstones");
+        public static final TagKey<net.minecraft.world.level.block.Block> NEEDS_STEEL_TOOL = tag("needs_steel_tool");
+        public static final TagKey<net.minecraft.world.level.block.Block> NEEDS_COPPER_TOOL = tag("needs_copper_tool");
+        public static final TagKey<net.minecraft.world.level.block.Block> SMITHING = tag("smithing");
+        public static final TagKey<net.minecraft.world.level.block.Block> SMITHING_ANVIL = tag("smithing_anvil");
+        public static final TagKey<net.minecraft.world.level.block.Block> STONE_ANVIL_BASES = tag("stone_anvil_bases");
+        public static final TagKey<net.minecraft.world.level.block.Block> IRON_ANVIL_BASES = tag("iron_anvil_bases");
+        public static final TagKey<net.minecraft.world.level.block.Block> TIER_A_ANVIL_BASES = tag("tier_a_anvil_bases");
+        public static final TagKey<net.minecraft.world.level.block.Block> TIER_B_ANVIL_BASES = tag("tier_b_anvil_bases");
+        public static final TagKey<net.minecraft.world.level.block.Block> GRINDSTONES = tag("grindstones");
 
-        private static TagKey<net.minecraft.block.Block> tag(String name) {
-            return TagKey.of(RegistryKeys.BLOCK, new Identifier(Overgeared.MOD_ID, name));
+        private static TagKey<net.minecraft.world.level.block.Block> tag(String name) {
+            return TagKey.create(Registries.BLOCK, new ResourceLocation(Overgeared.MOD_ID, name));
         }
     }
 
@@ -36,7 +36,7 @@ public class ModTags {
         public static final TagKey<Item> QUALITY_BLACKLIST = tag("quality_blacklist");
 
         private static TagKey<Item> tag(String name) {
-            return TagKey.of(RegistryKeys.ITEM, new Identifier(Overgeared.MOD_ID, name));
+            return TagKey.create(Registries.ITEM, new ResourceLocation(Overgeared.MOD_ID, name));
         }
     }
 }

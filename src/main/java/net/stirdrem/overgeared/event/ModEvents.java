@@ -7,29 +7,29 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.ToolItem;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOffers;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerTrades;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
@@ -74,22 +74,22 @@ public class ModEvents {
         serverTick++;
         if (serverTick % HEATED_ITEM_CHECK_INTERVAL != 0) return;
 
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            handleAnvilDistance(player, player.getWorld());
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            handleAnvilDistance(player, player.level());
         }
     }
 
-    private static void handleAnvilDistance(ServerPlayerEntity player, World world) {
+    private static void handleAnvilDistance(ServerPlayer player, Level world) {
         if (FabricLoader.getInstance().isModLoaded("valkyrienskies")) {
-            if (world instanceof ServerWorld serverWorld) {
-                BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUuid());
+            if (world instanceof ServerLevel serverWorld) {
+                BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (anvilPos != null) {
                     BlockEntity be = serverWorld.getBlockEntity(anvilPos);
                     if (be instanceof AbstractSmithingAnvilBlockEntity) {
-                        Vec3d anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverWorld, anvilPos);
-                        Vec3d playerWorldPos = player.getPos();
+                        Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverWorld, anvilPos);
+                        Vec3 playerWorldPos = player.position();
 
-                        double distSq = playerWorldPos.squaredDistanceTo(anvilWorldPos);
+                        double distSq = playerWorldPos.distanceToSqr(anvilWorldPos);
                         int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
 
                         if (distSq > (double) maxDist * maxDist) {
@@ -102,11 +102,11 @@ public class ModEvents {
         }
 
         // Fallback: vanilla behavior when Valkyrien Skies is not loaded
-        BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUuid());
+        BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
         if (anvilPos != null) {
             BlockEntity be = world.getBlockEntity(anvilPos);
             if (be instanceof AbstractSmithingAnvilBlockEntity) {
-                double distSq = player.getBlockPos().getSquaredDistance(anvilPos);
+                double distSq = player.blockPosition().distSqr(anvilPos);
                 int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
                 if (distSq > (double) maxDist * maxDist) {
                     resetMinigameForPlayer(player);
@@ -119,10 +119,10 @@ public class ModEvents {
      * Called from ItemStackAttributeMixin - Fabric has no ItemAttributeModifierEvent equivalent,
      * so the quality attribute bonus is injected directly into ItemStack.getAttributeModifiers.
      */
-    public static void applyQualityAttributeModifiers(ItemStack stack, Multimap<EntityAttribute, EntityAttributeModifier> modifiers) {
+    public static void applyQualityAttributeModifiers(ItemStack stack, Multimap<Attribute, AttributeModifier> modifiers) {
         if (isBroken(stack)) return;
-        if (!stack.hasNbt()) return;
-        String quality = stack.getNbt().getString("ForgingQuality");
+        if (!stack.hasTag()) return;
+        String quality = stack.getTag().getString("ForgingQuality");
         if (quality.isEmpty()) return;
 
         for (QualityAttributeDefinition def : QualityAttributeReloadListener.INSTANCE.getAll()) {
@@ -130,7 +130,7 @@ public class ModEvents {
 
             QualityValue value = def.qualities().get(quality);
             if (value == null || value.amount() == 0) continue;
-            EntityAttribute attribute = Registries.ATTRIBUTE.get(def.attribute());
+            Attribute attribute = BuiltInRegistries.ATTRIBUTE.get(def.attribute());
             if (attribute == null) continue;
             modifyAttribute(modifiers, attribute, value.amount(), value.operation(), quality);
         }
@@ -142,7 +142,7 @@ public class ModEvents {
         for (QualityTarget target : targets) {
             switch (target.type()) {
                 case WEAPON -> {
-                    if (item instanceof ToolItem || item instanceof RangedWeaponItem) {
+                    if (item instanceof TieredItem || item instanceof ProjectileWeaponItem) {
                         return true;
                     }
                 }
@@ -154,7 +154,7 @@ public class ModEvents {
                 }
 
                 case ITEM -> {
-                    Identifier itemId = Registries.ITEM.getId(item);
+                    ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
                     if (itemId != null && itemId.equals(target.id())) {
                         return true;
                     }
@@ -163,8 +163,8 @@ public class ModEvents {
                 case ITEM_TAG -> {
                     if (target.id() == null) break;
 
-                    TagKey<Item> itemTag = TagKey.of(RegistryKeys.ITEM, target.id());
-                    if (stack.isIn(itemTag)) {
+                    TagKey<Item> itemTag = TagKey.create(Registries.ITEM, target.id());
+                    if (stack.is(itemTag)) {
                         return true;
                     }
                 }
@@ -176,35 +176,35 @@ public class ModEvents {
         return false;
     }
 
-    private static void modifyAttribute(Multimap<EntityAttribute, EntityAttributeModifier> modifiers, EntityAttribute attribute, double bonus, EntityAttributeModifier.Operation operation, String quality) {
+    private static void modifyAttribute(Multimap<Attribute, AttributeModifier> modifiers, Attribute attribute, double bonus, AttributeModifier.Operation operation, String quality) {
         if (!modifiers.containsKey(attribute)) return;
 
-        List<EntityAttributeModifier> existing = List.copyOf(modifiers.get(attribute));
+        List<AttributeModifier> existing = List.copyOf(modifiers.get(attribute));
 
-        for (EntityAttributeModifier modifier : existing) {
-            if (operation == EntityAttributeModifier.Operation.ADDITION) modifiers.remove(attribute, modifier);
+        for (AttributeModifier modifier : existing) {
+            if (operation == AttributeModifier.Operation.ADDITION) modifiers.remove(attribute, modifier);
             modifiers.put(attribute, createModifiedAttribute(modifier, bonus, operation, quality));
         }
     }
 
-    public static EntityAttributeModifier createModifiedAttribute(EntityAttributeModifier original,
+    public static AttributeModifier createModifiedAttribute(AttributeModifier original,
                                                                     double bonus,
-                                                                    EntityAttributeModifier.Operation operation,
+                                                                    AttributeModifier.Operation operation,
                                                                     String quality) {
 
         UUID id;
         String key = original.getId() + "_overgeared_" + quality + "_" + operation + bonus;
         double amount;
 
-        if (operation == EntityAttributeModifier.Operation.ADDITION) {
-            amount = original.getValue() + bonus;
+        if (operation == AttributeModifier.Operation.ADDITION) {
+            amount = original.getAmount() + bonus;
             id = original.getId();
         } else {
             amount = bonus;
             id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
         }
 
-        return new EntityAttributeModifier(
+        return new AttributeModifier(
                 id,
                 "Overgeared",
                 amount,
@@ -213,24 +213,24 @@ public class ModEvents {
     }
 
     private static void onServerStopping(MinecraftServer server) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             resetMinigameForPlayer(player);
         }
         Overgeared.LOGGER.info("Reset all minigames on server stop.");
     }
 
-    public static void resetMinigameForPlayer(ServerPlayerEntity player) {
+    public static void resetMinigameForPlayer(ServerPlayer player) {
         if (player == null) return;
-        UUID playerId = player.getUuid();
+        UUID playerId = player.getUUID();
         ModMessages.sendToPlayer(ModMessages.ONLY_RESET_MINIGAME, ModMessages.buf(), player);
 
         if (ModItemInteractEvents.playerAnvilPositions.containsKey(playerId)) {
             BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(playerId);
-            BlockEntity be = player.getWorld().getBlockEntity(anvilPos);
+            BlockEntity be = player.level().getBlockEntity(anvilPos);
 
             if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
-                anvil.markDirty();
+                anvil.setChanged();
                 anvil.setMinigameOn(false);
 
                 var buf = ModMessages.buf();
@@ -247,33 +247,33 @@ public class ModEvents {
         // packets sent above already trigger the equivalent client-side reset.
     }
 
-    public static void resetMinigameForPlayer(ServerPlayerEntity player, BlockPos anvilPos) {
+    public static void resetMinigameForPlayer(ServerPlayer player, BlockPos anvilPos) {
         if (player == null) return;
         ModMessages.sendToPlayer(ModMessages.ONLY_RESET_MINIGAME, ModMessages.buf(), player);
 
-        BlockEntity be = player.getWorld().getBlockEntity(anvilPos);
+        BlockEntity be = player.level().getBlockEntity(anvilPos);
         if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
-            anvil.markDirty();
+            anvil.setChanged();
             anvil.setMinigameOn(false);
         }
 
-        ModItemInteractEvents.playerAnvilPositions.remove(player.getUuid());
-        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUuid());
+        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
+        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
     }
 
-    public static void resetMinigameForAnvil(World world, BlockPos anvilPos) {
+    public static void resetMinigameForAnvil(Level world, BlockPos anvilPos) {
         BlockEntity be = world.getBlockEntity(anvilPos);
         if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
-            anvil.markDirty();
+            anvil.setChanged();
             anvil.setMinigameOn(false);
             anvil.clearOwner();
         }
 
-        if (world instanceof ServerWorld serverWorld) {
-            for (ServerPlayerEntity player : serverWorld.getServer().getPlayerManager().getPlayerList()) {
-                UUID playerId = player.getUuid();
+        if (world instanceof ServerLevel serverWorld) {
+            for (ServerPlayer player : serverWorld.getServer().getPlayerList().getPlayers()) {
+                UUID playerId = player.getUUID();
                 var buf = ModMessages.buf();
                 ResetMinigameS2CPacket.encode(new ResetMinigameS2CPacket(anvilPos), buf);
                 ModMessages.sendToPlayer(ModMessages.RESET_MINIGAME, buf, player);
@@ -307,16 +307,16 @@ public class ModEvents {
                 int finalLevel = level;
                 TradeOfferHelper.registerVillagerOffers(profession, level, trades -> {
                     for (int i = 0; i < trades.size(); i++) {
-                        TradeOffers.Factory original = trades.get(i);
+                        VillagerTrades.ItemListing original = trades.get(i);
                         trades.set(i, (entity, random) -> {
-                            TradeOffer offer = original.create(entity, random);
+                            MerchantOffer offer = original.getOffer(entity, random);
                             if (offer == null) return null;
 
-                            if (isStoneTool(offer.getSellItem())) {
+                            if (isStoneTool(offer.getResult())) {
                                 return offer;
                             }
 
-                            return new QualityWrappedTrade(original, finalLevel).create(entity, random);
+                            return new QualityWrappedTrade(original, finalLevel).getOffer(entity, random);
                         });
                     }
                 });
@@ -383,7 +383,7 @@ public class ModEvents {
 
     private static void addForgedTrades(VillagerProfession profession, List<Item> items) {
         for (Item item : items) {
-            String id = Registries.ITEM.getId(item).getPath();
+            String id = BuiltInRegistries.ITEM.getKey(item).getPath();
 
             int level;
             int maxUses;
@@ -403,8 +403,8 @@ public class ModEvents {
                 xp = 10;
             }
 
-            TradeOffers.Factory baseTrade = new ForgedItemTrade(item, level, maxUses, xp);
-            TradeOffers.Factory wrappedTrade = new QualityWrappedTrade(baseTrade, level);
+            VillagerTrades.ItemListing baseTrade = new ForgedItemTrade(item, level, maxUses, xp);
+            VillagerTrades.ItemListing wrappedTrade = new QualityWrappedTrade(baseTrade, level);
 
             TradeOfferHelper.registerVillagerOffers(profession, level, trades -> trades.add(wrappedTrade));
         }

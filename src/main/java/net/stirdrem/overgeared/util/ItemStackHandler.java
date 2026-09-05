@@ -1,10 +1,10 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -14,18 +14,18 @@ import org.jetbrains.annotations.NotNull;
  * need only mechanical type substitutions.
  */
 public class ItemStackHandler {
-    protected DefaultedList<ItemStack> stacks;
+    protected NonNullList<ItemStack> stacks;
 
     public ItemStackHandler() {
         this(1);
     }
 
     public ItemStackHandler(int size) {
-        stacks = DefaultedList.ofSize(size, ItemStack.EMPTY);
+        stacks = NonNullList.withSize(size, ItemStack.EMPTY);
     }
 
     public void setSize(int size) {
-        stacks = DefaultedList.ofSize(size, ItemStack.EMPTY);
+        stacks = NonNullList.withSize(size, ItemStack.EMPTY);
     }
 
     protected void onContentsChanged(int slot) {
@@ -35,7 +35,7 @@ public class ItemStackHandler {
     }
 
     protected int getStackLimit(int slot, @NotNull ItemStack stack) {
-        return Math.min(getSlotLimit(slot), stack.getMaxCount());
+        return Math.min(getSlotLimit(slot), stack.getMaxStackSize());
     }
 
     protected void validateSlotIndex(int slot) {
@@ -75,7 +75,7 @@ public class ItemStackHandler {
         int limit = getStackLimit(slot, stack);
 
         if (!existing.isEmpty()) {
-            if (!ItemStack.canCombine(stack, existing)) {
+            if (!ItemStack.isSameItemSameTags(stack, existing)) {
                 return stack;
             }
             limit -= existing.getCount();
@@ -89,7 +89,7 @@ public class ItemStackHandler {
             if (existing.isEmpty()) {
                 stacks.set(slot, reachedLimit ? stack.copyWithCount(limit) : stack.copy());
             } else {
-                existing.increment(reachedLimit ? limit : stack.getCount());
+                existing.grow(reachedLimit ? limit : stack.getCount());
             }
             onContentsChanged(slot);
         }
@@ -128,31 +128,31 @@ public class ItemStackHandler {
         return 64;
     }
 
-    public NbtCompound serializeNBT() {
-        NbtList nbtTagList = new NbtList();
+    public CompoundTag serializeNBT() {
+        ListTag nbtTagList = new ListTag();
         for (int i = 0; i < stacks.size(); i++) {
             if (!stacks.get(i).isEmpty()) {
-                NbtCompound itemTag = new NbtCompound();
+                CompoundTag itemTag = new CompoundTag();
                 itemTag.putInt("Slot", i);
-                stacks.get(i).writeNbt(itemTag);
+                stacks.get(i).save(itemTag);
                 nbtTagList.add(itemTag);
             }
         }
-        NbtCompound nbt = new NbtCompound();
+        CompoundTag nbt = new CompoundTag();
         nbt.put("Items", nbtTagList);
         nbt.putInt("Size", stacks.size());
         return nbt;
     }
 
-    public void deserializeNBT(NbtCompound nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         int size = nbt.contains("Size") ? nbt.getInt("Size") : stacks.size();
         setSize(size);
-        NbtList tagList = nbt.getList("Items", NbtElement.COMPOUND_TYPE);
+        ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
         for (int i = 0; i < tagList.size(); i++) {
-            NbtCompound itemTags = tagList.getCompound(i);
+            CompoundTag itemTags = tagList.getCompound(i);
             int slot = itemTags.getInt("Slot");
             if (slot >= 0 && slot < stacks.size()) {
-                stacks.set(slot, ItemStack.fromNbt(itemTags));
+                stacks.set(slot, ItemStack.of(itemTags));
             }
         }
         onLoad();

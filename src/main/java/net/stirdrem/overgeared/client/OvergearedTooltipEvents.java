@@ -1,14 +1,13 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
@@ -27,18 +26,18 @@ public class OvergearedTooltipEvents {
         ItemTooltipCallback.EVENT.register(OvergearedTooltipEvents::onTooltip);
     }
 
-    private static void onTooltip(ItemStack stack, net.minecraft.client.item.TooltipContext context, List<Text> tooltip) {
+    private static void onTooltip(ItemStack stack, net.minecraft.world.item.TooltipFlag context, List<Component> tooltip) {
         int insertOffset = 1;
 
         // Add Forging Quality
-        if (stack.hasNbt() && stack.getNbt().contains("ForgingQuality")) {
-            String quality = stack.getNbt().getString("ForgingQuality");
-            Text qualityComponent = switch (quality) {
-                case "poor" -> Text.translatable("tooltip.overgeared.poor").formatted(Formatting.RED);
-                case "well" -> Text.translatable("tooltip.overgeared.well").formatted(Formatting.YELLOW);
-                case "expert" -> Text.translatable("tooltip.overgeared.expert").formatted(Formatting.BLUE);
-                case "perfect" -> Text.translatable("tooltip.overgeared.perfect").formatted(Formatting.GOLD);
-                case "master" -> Text.translatable("tooltip.overgeared.master").formatted(Formatting.LIGHT_PURPLE);
+        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
+            String quality = stack.getTag().getString("ForgingQuality");
+            Component qualityComponent = switch (quality) {
+                case "poor" -> Component.translatable("tooltip.overgeared.poor").withStyle(ChatFormatting.RED);
+                case "well" -> Component.translatable("tooltip.overgeared.well").withStyle(ChatFormatting.YELLOW);
+                case "expert" -> Component.translatable("tooltip.overgeared.expert").withStyle(ChatFormatting.BLUE);
+                case "perfect" -> Component.translatable("tooltip.overgeared.perfect").withStyle(ChatFormatting.GOLD);
+                case "master" -> Component.translatable("tooltip.overgeared.master").withStyle(ChatFormatting.LIGHT_PURPLE);
                 default -> null;
             };
             if (qualityComponent != null) {
@@ -47,82 +46,82 @@ public class OvergearedTooltipEvents {
         }
         if (isBroken(stack) && ServerConfig.ENABLE_MOD_TOOLTIPS.get()) {
             tooltip.add(insertOffset++,
-                    Text.translatable("tooltip.overgeared.item_broken").formatted(Formatting.RED)
+                    Component.translatable("tooltip.overgeared.item_broken").withStyle(ChatFormatting.RED)
             );
         }
-        if (stack.hasNbt() && stack.getNbt().contains("Heated")) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.heated").formatted(Formatting.RED, Formatting.ITALIC));
+        if (stack.hasTag() && stack.getTag().contains("Heated")) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         }
         // Add Polish status
-        if (stack.hasNbt() && stack.getNbt().contains("Polished")) {
-            boolean isPolished = stack.getNbt().getBoolean("Polished");
-            Text polishComponent = isPolished
-                    ? Text.translatable("tooltip.overgeared.polished").formatted(Formatting.BLUE, Formatting.ITALIC)
-                    : Text.translatable("tooltip.overgeared.unpolished").formatted(Formatting.RED, Formatting.ITALIC);
+        if (stack.hasTag() && stack.getTag().contains("Polished")) {
+            boolean isPolished = stack.getTag().getBoolean("Polished");
+            Component polishComponent = isPolished
+                    ? Component.translatable("tooltip.overgeared.polished").withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC)
+                    : Component.translatable("tooltip.overgeared.unpolished").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
             tooltip.add(insertOffset++, polishComponent);
         }
-        if (stack.hasNbt() && stack.getNbt().contains("failedResult")) {
-            tooltip.add(insertOffset, Text.translatable("tooltip.overgeared.failedResult").formatted(Formatting.RED));
+        if (stack.hasTag() && stack.getTag().contains("failedResult")) {
+            tooltip.add(insertOffset, Component.translatable("tooltip.overgeared.failedResult").withStyle(ChatFormatting.RED));
         }
 
         // Smithing Hammer special tooltip
-        if (stack.isIn(ModTags.Items.SMITHING_HAMMERS)) {
+        if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
             if (!Screen.hasShiftDown()) {
-                tooltip.add(insertOffset, Text.translatable("tooltip.overgeared.smithing_hammer.hold_shift")
-                        .formatted(Formatting.GRAY, Formatting.ITALIC));
+                tooltip.add(insertOffset, Component.translatable("tooltip.overgeared.smithing_hammer.hold_shift")
+                        .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             } else {
-                tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line1")
-                        .formatted(Formatting.GRAY));
-                tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line2")
-                        .formatted(Formatting.GRAY));
+                tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line1")
+                        .withStyle(ChatFormatting.GRAY));
+                tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line2")
+                        .withStyle(ChatFormatting.GRAY));
                 if (ServerConfig.ENABLE_STONE_TO_ANVIL.get())
-                    tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line3")
-                            .formatted(Formatting.GRAY));
+                    tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line3")
+                            .withStyle(ChatFormatting.GRAY));
                 if (ServerConfig.ENABLE_ANVIL_TO_SMITHING.get())
-                    tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line4")
-                            .formatted(Formatting.GRAY));
+                    tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line4")
+                            .withStyle(ChatFormatting.GRAY));
             }
         }
 
-        if (stack.isOf(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
-            NbtCompound tag = stack.getNbt();
+        if (stack.is(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
+            CompoundTag tag = stack.getTag();
             int maxUses = ServerConfig.MAX_POTION_TIPPING_USE.get();
             int used = 0;
 
-            if (tag != null && tag.contains("TippedUsed", NbtElement.INT_TYPE)) {
+            if (tag != null && tag.contains("TippedUsed", Tag.TAG_INT)) {
                 used = tag.getInt("TippedUsed");
             }
 
             int left = Math.max(0, maxUses - used);
-            tooltip.add(Text.translatable("tooltip.overgeared.potion_uses", left, maxUses).formatted(Formatting.GRAY));
+            tooltip.add(Component.translatable("tooltip.overgeared.potion_uses", left, maxUses).withStyle(ChatFormatting.GRAY));
         }
         if (!ServerConfig.ENABLE_MOD_TOOLTIPS.get()) return;
 
-        if (stack.isOf(Items.FLINT) && ServerConfig.GET_ROCK_USING_FLINT.get()) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.flint_flavor").formatted(Formatting.GRAY));
+        if (stack.is(Items.FLINT) && ServerConfig.GET_ROCK_USING_FLINT.get()) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.flint_flavor").withStyle(ChatFormatting.GRAY));
         }
-        if (stack.isOf(ModItems.DIAMOND_SHARD)) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.diamond_shard").formatted(Formatting.GRAY));
+        if (stack.is(ModItems.DIAMOND_SHARD)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.diamond_shard").withStyle(ChatFormatting.GRAY));
         }
-        if (stack.isOf(ModItems.STONE_HAMMER_HEAD)) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.stone_hammer_head").formatted(Formatting.GRAY));
+        if (stack.is(ModItems.STONE_HAMMER_HEAD)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.stone_hammer_head").withStyle(ChatFormatting.GRAY));
         }
-        if (stack.isIn(ModTags.Items.KNAPPABLE)) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.knappable").formatted(Formatting.DARK_GRAY));
+        if (stack.is(ModTags.Items.KNAPPABLE)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.knappable").withStyle(ChatFormatting.DARK_GRAY));
         }
-        if (stack.isIn(ModTags.Items.HEATED_METALS)) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.heatedingots.tooltip").formatted(Formatting.RED));
+        if (stack.is(ModTags.Items.HEATED_METALS)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heatedingots.tooltip").withStyle(ChatFormatting.RED));
         }
-        if (stack.isIn(ModTags.Items.HOT_ITEMS)) {
-            tooltip.add(insertOffset++, Text.translatable("tooltip.overgeared.hotitems.tooltip").formatted(Formatting.RED));
+        if (stack.is(ModTags.Items.HOT_ITEMS)) {
+            tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.hotitems.tooltip").withStyle(ChatFormatting.RED));
         }
 
-        if (stack.hasNbt() && stack.getNbt().contains("Creator")) {
-            String creatorName = stack.getNbt().getString("Creator");
-            Text creatorComponent = Text.translatable("tooltip.overgeared.made_by")
+        if (stack.hasTag() && stack.getTag().contains("Creator")) {
+            String creatorName = stack.getTag().getString("Creator");
+            Component creatorComponent = Component.translatable("tooltip.overgeared.made_by")
                     .append(" ")
                     .append(creatorName)
-                    .formatted(Formatting.GRAY);
+                    .withStyle(ChatFormatting.GRAY);
             tooltip.add(insertOffset++, creatorComponent);
         }
     }

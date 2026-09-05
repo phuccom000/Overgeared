@@ -3,25 +3,26 @@ package net.stirdrem.overgeared.compat.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
 import mezz.jei.api.registration.*;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.ToolItem;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -51,12 +52,12 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     // SAFER CATEGORY LOGIC
     // ----------------------------
     private static String categorizeRecipe(ForgingRecipe recipe) {
-        ItemStack output = recipe.getOutput(null);
+        ItemStack output = recipe.getResultItem(null);
         Item item = output.getItem();
 
         if (item instanceof ArmorItem) return "armor";
-        if (output.isIn(ModTags.Items.TOOL_PARTS)) return "tool_head";
-        if (item instanceof ToolItem || item instanceof RangedWeaponItem) return "tools";
+        if (output.is(ModTags.Items.TOOL_PARTS)) return "tool_head";
+        if (item instanceof TieredItem || item instanceof ProjectileWeaponItem) return "tools";
 
         if (item == ModItems.IRON_PLATE
                 || item == ModItems.STEEL_PLATE
@@ -68,7 +69,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     }
 
     @Override
-    public Identifier getPluginUid() {
+    public ResourceLocation getPluginUid() {
         return Overgeared.id("jei_plugin");
     }
 
@@ -78,10 +79,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         var gui = registration.getJeiHelpers().getGuiHelper();
-        MinecraftClient mc = MinecraftClient.getInstance();
-        DynamicRegistryManager registryManager = mc.getNetworkHandler() != null
-                ? mc.getNetworkHandler().getRegistryManager()
-                : DynamicRegistryManager.EMPTY;
+        Minecraft mc = Minecraft.getInstance();
+        RegistryAccess registryManager = mc.getConnection() != null
+                ? mc.getConnection().registryAccess()
+                : RegistryAccess.EMPTY;
 
         registration.addRecipeCategories(new ForgingRecipeCategory(gui));
         registration.addRecipeCategories(new KnappingRecipeCategory(gui));
@@ -102,18 +103,18 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        ClientWorld world = mc.world;
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel world = mc.level;
 
-        if (world == null || mc.getNetworkHandler() == null) return;
+        if (world == null || mc.getConnection() == null) return;
 
         RecipeManager manager = world.getRecipeManager();
-        DynamicRegistryManager registryManager = world.getRegistryManager();
+        RegistryAccess registryManager = world.registryAccess();
 
         // ----------------------------
         // FORGING RECIPES
         // ----------------------------
-        List<ForgingRecipe> all = manager.listAllOfType(ForgingRecipe.Type.INSTANCE);
+        List<ForgingRecipe> all = manager.getAllRecipesFor(ForgingRecipe.Type.INSTANCE);
 
         List<ForgingRecipe> combined = new ArrayList<>();
         combined.addAll(filterByTier(all, AnvilTier.STONE));
@@ -133,10 +134,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // ----------------------------
         registration.addRecipes(
                 CastingRecipeCategory.CASTING_TYPE,
-                manager.listAllOfType(CastingRecipe.Type.INSTANCE).stream()
+                manager.getAllRecipesFor(CastingRecipe.Type.INSTANCE).stream()
                         .sorted(Comparator.comparing(r ->
-                                Registries.ITEM.getId(
-                                        r.getOutput(registryManager).getItem()
+                                BuiltInRegistries.ITEM.getKey(
+                                        r.getResultItem(registryManager).getItem()
                                 ).toString()
                         ))
                         .toList()
@@ -147,15 +148,15 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // ----------------------------
         registration.addRecipes(
                 KnappingRecipeCategory.KNAPPING_RECIPE_TYPE,
-                manager.listAllOfType(RockKnappingRecipe.Type.INSTANCE)
+                manager.getAllRecipesFor(RockKnappingRecipe.Type.INSTANCE)
         );
 
         // ----------------------------
         // ALLOY
         // ----------------------------
         List<IAlloyRecipe> alloy = new ArrayList<>();
-        alloy.addAll(manager.listAllOfType(AlloySmeltingRecipe.Type.INSTANCE));
-        alloy.addAll(manager.listAllOfType(ShapedAlloySmeltingRecipe.Type.INSTANCE));
+        alloy.addAll(manager.getAllRecipesFor(AlloySmeltingRecipe.Type.INSTANCE));
+        alloy.addAll(manager.getAllRecipesFor(ShapedAlloySmeltingRecipe.Type.INSTANCE));
 
         registration.addRecipes(AlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE, alloy);
 
@@ -163,8 +164,8 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // NETHER ALLOY
         // ----------------------------
         List<INetherAlloyRecipe> nether = new ArrayList<>();
-        nether.addAll(manager.listAllOfType(NetherAlloySmeltingRecipe.Type.INSTANCE));
-        nether.addAll(manager.listAllOfType(ShapedNetherAlloySmeltingRecipe.Type.INSTANCE));
+        nether.addAll(manager.getAllRecipesFor(NetherAlloySmeltingRecipe.Type.INSTANCE));
+        nether.addAll(manager.getAllRecipesFor(ShapedNetherAlloySmeltingRecipe.Type.INSTANCE));
 
         registration.addRecipes(NetherAlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE, nether);
 
@@ -172,10 +173,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // COOLING + GRINDING
         // ----------------------------
         registration.addRecipes(CoolingRecipeCategory.TYPE,
-                manager.listAllOfType(CoolingRecipe.Type.INSTANCE));
+                manager.getAllRecipesFor(CoolingRecipe.Type.INSTANCE));
 
         registration.addRecipes(GrindingRecipeCategory.TYPE,
-                manager.listAllOfType(GrindingRecipe.Type.INSTANCE));
+                manager.getAllRecipesFor(GrindingRecipe.Type.INSTANCE));
 
         // ----------------------------
         // BREWING FIXED
@@ -188,7 +189,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // FLETCHING
         // ----------------------------
         if (ServerConfig.ENABLE_FLETCHING_RECIPES.get()) {
-            List<FletchingRecipe> base = manager.listAllOfType(FletchingRecipe.Type.INSTANCE);
+            List<FletchingRecipe> base = manager.getAllRecipesFor(FletchingRecipe.Type.INSTANCE);
 
             registration.addRecipes(FletchingCategory.FLETCHING_RECIPE_TYPE, base);
 
@@ -210,15 +211,15 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                 .toList();
     }
 
-    private String safeName(ForgingRecipe r, DynamicRegistryManager registryManager) {
-        return r.getOutput(registryManager).getName().getString();
+    private String safeName(ForgingRecipe r, RegistryAccess registryManager) {
+        return r.getResultItem(registryManager).getHoverName().getString();
     }
 
     // ----------------------------
     // BREWING RECIPE
     // ----------------------------
     private List<IJeiBrewingRecipe> dragonBreathRecipe() {
-        ItemStack input = PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.THICK).copy();
+        ItemStack input = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.THICK).copy();
         ItemStack ingredient = new ItemStack(Items.CHORUS_FRUIT);
         ItemStack output = new ItemStack(Items.DRAGON_BREATH);
 
@@ -244,7 +245,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                 new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW)
         };
 
-        List<Potion> potions = Registries.POTION.stream()
+        List<Potion> potions = BuiltInRegistries.POTION.stream()
                 .filter(p -> p != Potions.EMPTY)
                 .toList();
 
@@ -253,29 +254,29 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         for (ItemStack arrow : arrows) {
             for (Potion potion : potions) {
 
-                ItemStack potionStack = PotionUtil.setPotion(
+                ItemStack potionStack = PotionUtils.setPotion(
                         new ItemStack(Items.POTION),
                         potion
                 ).copy();
 
                 ItemStack output;
 
-                if (arrow.isOf(Items.ARROW)) {
-                    output = PotionUtil.setPotion(
+                if (arrow.is(Items.ARROW)) {
+                    output = PotionUtils.setPotion(
                             new ItemStack(Items.TIPPED_ARROW),
                             potion
                     );
                 } else {
                     output = arrow.copy();
-                    PotionUtil.setPotion(output, potion);
+                    PotionUtils.setPotion(output, potion);
                 }
 
                 list.add(new FletchingRecipe(
                         Overgeared.id("potion_conv_" + (id++)),
                         Ingredient.EMPTY,
-                        Ingredient.ofStacks(arrow),
+                        Ingredient.of(arrow),
                         Ingredient.EMPTY,
-                        Ingredient.ofStacks(potionStack),
+                        Ingredient.of(potionStack),
                         output,
                         ItemStack.EMPTY,
                         ItemStack.EMPTY,

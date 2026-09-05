@@ -1,29 +1,29 @@
 package net.stirdrem.overgeared.screen;
 
 import net.fabricmc.fabric.api.registry.FuelRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.FurnaceOutputSlot;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.FurnaceResultSlot;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.block.entity.CastFurnaceBlockEntity;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import net.stirdrem.overgeared.util.ModTags;
 
-public class CastFurnaceScreenHandler extends ScreenHandler {
+public class CastFurnaceScreenHandler extends AbstractContainerMenu {
 
     private final CastFurnaceBlockEntity blockEntity;
-    private final PropertyDelegate data;
+    private final ContainerData data;
 
-    public CastFurnaceScreenHandler(int syncId, PlayerInventory playerInv, CastFurnaceBlockEntity be, PropertyDelegate data) {
+    public CastFurnaceScreenHandler(int syncId, Inventory playerInv, CastFurnaceBlockEntity be, ContainerData data) {
         super(ModMenuTypes.CAST_FURNACE, syncId);
         this.blockEntity = be;
         this.data = data;
 
-        checkSize(be, 4);
-        addProperties(data);
+        checkContainerSize(be, 4);
+        addDataSlots(data);
 
         // Input
         this.addSlot(new Slot(be, CastFurnaceBlockEntity.SLOT_INPUT, 56, 24));
@@ -32,7 +32,7 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
         this.addSlot(new Slot(be, CastFurnaceBlockEntity.SLOT_FUEL, 8, 53));
 
         // Output
-        this.addSlot(new FurnaceOutputSlot(
+        this.addSlot(new FurnaceResultSlot(
                 playerInv.player,
                 be,
                 CastFurnaceBlockEntity.SLOT_OUTPUT,
@@ -40,8 +40,8 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
                 35
         ) {
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
-                super.onTakeItem(player, stack);
+            public void onTake(Player player, ItemStack stack) {
+                super.onTake(player, stack);
                 be.awardStoredExperience(player);
             }
         });
@@ -87,25 +87,25 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
     /* ---------- Shift-click ---------- */
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack original;
         Slot slot = this.slots.get(index);
 
-        if (slot == null || !slot.hasStack()) {
+        if (slot == null || !slot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack stack = slot.getStack();
+        ItemStack stack = slot.getItem();
         original = stack.copy();
 
         if (index == CastFurnaceBlockEntity.SLOT_OUTPUT) {
-            if (!this.insertItem(stack, 4, 40, true)) {
+            if (!this.moveItemStackTo(stack, 4, 40, true)) {
                 return ItemStack.EMPTY;
             }
-            slot.onQuickTransfer(stack, original);
+            slot.onQuickCraft(stack, original);
         } else if (index >= 4) {
-            if (stack.isIn(ModTags.Items.TOOL_CAST)) {
-                if (!this.insertItem(
+            if (stack.is(ModTags.Items.TOOL_CAST)) {
+                if (!this.moveItemStackTo(
                         stack,
                         CastFurnaceBlockEntity.SLOT_CAST,
                         CastFurnaceBlockEntity.SLOT_CAST + 1,
@@ -116,7 +116,7 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
             } else {
                 Integer fuelTime = FuelRegistry.INSTANCE.get(stack.getItem());
                 if (fuelTime != null && fuelTime > 0) {
-                    if (!this.insertItem(
+                    if (!this.moveItemStackTo(
                             stack,
                             CastFurnaceBlockEntity.SLOT_FUEL,
                             CastFurnaceBlockEntity.SLOT_FUEL + 1,
@@ -125,7 +125,7 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
                         return ItemStack.EMPTY;
                     }
                 } else if (ConfigHelper.isValidMaterial(stack)) {
-                    if (!this.insertItem(
+                    if (!this.moveItemStackTo(
                             stack,
                             CastFurnaceBlockEntity.SLOT_INPUT,
                             CastFurnaceBlockEntity.SLOT_INPUT + 1,
@@ -134,37 +134,37 @@ public class CastFurnaceScreenHandler extends ScreenHandler {
                         return ItemStack.EMPTY;
                     }
                 } else if (index >= 31 && index < 40) {
-                    if (!this.insertItem(stack, 4, 31, false)) {
+                    if (!this.moveItemStackTo(stack, 4, 31, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else {
-                    if (!this.insertItem(stack, 31, 40, false)) {
+                    if (!this.moveItemStackTo(stack, 31, 40, false)) {
                         return ItemStack.EMPTY;
                     }
                 }
             }
         } else {
-            if (!this.insertItem(stack, 4, 40, false)) {
+            if (!this.moveItemStackTo(stack, 4, 40, false)) {
                 return ItemStack.EMPTY;
             }
         }
 
         if (stack.isEmpty()) {
-            slot.setStack(ItemStack.EMPTY);
+            slot.setByPlayer(ItemStack.EMPTY);
         } else {
-            slot.markDirty();
+            slot.setChanged();
         }
 
         if (stack.getCount() == original.getCount()) {
             return ItemStack.EMPTY;
         }
 
-        slot.onTakeItem(player, stack);
+        slot.onTake(player, stack);
         return original;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return blockEntity.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return blockEntity.stillValid(player);
     }
 }

@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.client;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 import java.util.Collections;
@@ -181,11 +181,11 @@ public class ClientAnvilMinigameData {
         return ClientAnvilMinigameData.zoneShiftAmount;
     }
 
-    public static void loadFromNbt(NbtCompound nbt) {
+    public static void loadFromNbt(CompoundTag nbt) {
         isVisible = nbt.contains("isVisible") && nbt.getBoolean("isVisible");
 
-        if (nbt.containsUuid("ownerUUID")) {
-            ownerUUID = nbt.getUuid("ownerUUID");
+        if (nbt.hasUUID("ownerUUID")) {
+            ownerUUID = nbt.getUUID("ownerUUID");
         } else {
             ownerUUID = null;
         }
@@ -193,7 +193,7 @@ public class ClientAnvilMinigameData {
         minigameStarted = nbt.contains("minigameStarted") && nbt.getBoolean("minigameStarted");
 
         if (nbt.contains("resultItem")) {
-            resultItem = ItemStack.fromNbt(nbt.getCompound("resultItem"));
+            resultItem = ItemStack.of(nbt.getCompound("resultItem"));
         } else {
             resultItem = ItemStack.EMPTY;
         }
@@ -213,8 +213,8 @@ public class ClientAnvilMinigameData {
 
         perfectZoneStart = nbt.contains("perfectZoneStart") ? nbt.getInt("perfectZoneStart") : (100 - ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2;
         perfectZoneEnd = nbt.contains("perfectZoneEnd") ? nbt.getInt("perfectZoneEnd") : (100 + ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2;
-        goodZoneStart = nbt.contains("goodZoneStart") ? nbt.getInt("goodZoneStart") : MathHelper.clamp(perfectZoneStart - 20, 0, 100);
-        goodZoneEnd = nbt.contains("goodZoneEnd") ? nbt.getInt("goodZoneEnd") : MathHelper.clamp(perfectZoneEnd + 20, goodZoneStart, 100);
+        goodZoneStart = nbt.contains("goodZoneStart") ? nbt.getInt("goodZoneStart") : Mth.clamp(perfectZoneStart - 20, 0, 100);
+        goodZoneEnd = nbt.contains("goodZoneEnd") ? nbt.getInt("goodZoneEnd") : Mth.clamp(perfectZoneEnd + 20, goodZoneStart, 100);
 
         if (nbt.contains("zoneShrinkFactor")) {
             zoneShrinkFactor = nbt.getFloat("zoneShrinkFactor");
@@ -225,11 +225,11 @@ public class ClientAnvilMinigameData {
 
         // Clamp values
         arrowSpeed = Math.min(arrowSpeed, maxArrowSpeed);
-        arrowPosition = MathHelper.clamp(arrowPosition, 0f, 100f);
-        perfectZoneStart = MathHelper.clamp(perfectZoneStart, 0, 100);
-        perfectZoneEnd = MathHelper.clamp(perfectZoneEnd, perfectZoneStart, 100);
-        goodZoneStart = MathHelper.clamp(goodZoneStart, 0, 100);
-        goodZoneEnd = MathHelper.clamp(goodZoneEnd, goodZoneStart, 100);
+        arrowPosition = Mth.clamp(arrowPosition, 0f, 100f);
+        perfectZoneStart = Mth.clamp(perfectZoneStart, 0, 100);
+        perfectZoneEnd = Mth.clamp(perfectZoneEnd, perfectZoneStart, 100);
+        goodZoneStart = Mth.clamp(goodZoneStart, 0, 100);
+        goodZoneEnd = Mth.clamp(goodZoneEnd, goodZoneStart, 100);
     }
 
     public static UUID getOccupiedAnvil(BlockPos pos) {

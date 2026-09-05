@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
@@ -19,27 +19,27 @@ public class SelectToolTypeC2SPacket {
         this.containerId = containerId;
     }
 
-    public void toBytes(PacketByteBuf buf) {
-        buf.writeString(toolTypeId);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeUtf(toolTypeId);
         buf.writeInt(containerId);
     }
 
-    public static SelectToolTypeC2SPacket decode(PacketByteBuf buf) {
-        return new SelectToolTypeC2SPacket(buf.readString(), buf.readInt());
+    public static SelectToolTypeC2SPacket decode(FriendlyByteBuf buf) {
+        return new SelectToolTypeC2SPacket(buf.readUtf(), buf.readInt());
     }
 
-    public static void handle(SelectToolTypeC2SPacket msg, MinecraftServer server, ServerPlayerEntity player) {
+    public static void handle(SelectToolTypeC2SPacket msg, MinecraftServer server, ServerPlayer player) {
         server.execute(() -> {
             Optional<ToolType> optional = ToolTypeRegistry.byId(msg.toolTypeId);
             if (optional.isPresent()) {
                 Overgeared.LOGGER.debug("ToolType '{}' found. Proceeding to create blueprint.", msg.toolTypeId);
-                if (player.currentScreenHandler instanceof BlueprintWorkbenchScreenHandler menu) {
+                if (player.containerMenu instanceof BlueprintWorkbenchScreenHandler menu) {
                     menu.createBlueprint(optional.get());
-                    menu.sendContentUpdates(); // ensure client sync
+                    menu.broadcastChanges(); // ensure client sync
                 } else {
                     Overgeared.LOGGER.warn("Player '{}' is not in BlueprintWorkbenchScreenHandler, but in {}",
                             player.getGameProfile().getName(),
-                            player.currentScreenHandler.getClass().getSimpleName());
+                            player.containerMenu.getClass().getSimpleName());
                 }
             } else {
                 Overgeared.LOGGER.error("ToolTypeRegistry.byId('{}') returned empty; cannot create blueprint.", msg.toolTypeId);

@@ -7,10 +7,10 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
 
@@ -18,18 +18,18 @@ public class GrindingRecipeCategory implements IRecipeCategory<GrindingRecipe> {
     public static final RecipeType<GrindingRecipe> TYPE =
             RecipeType.create(Overgeared.MOD_ID, "grinding", GrindingRecipe.class);
 
-    public static final Identifier UID = Overgeared.id("grinding");
+    public static final ResourceLocation UID = Overgeared.id("grinding");
 
-    private static final Identifier TEXTURE = Overgeared.id("textures/gui/grinding_jei.png");
+    private static final ResourceLocation TEXTURE = Overgeared.id("textures/gui/grinding_jei.png");
 
     private final IDrawable background;
     private final IDrawable icon;
-    private final Text title;
+    private final Component title;
 
     public GrindingRecipeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.drawableBuilder(TEXTURE, 0, 0, 76, 18).setTextureSize(76, 18).build();
         this.icon = guiHelper.createDrawableItemStack(new ItemStack(Blocks.GRINDSTONE));
-        this.title = Text.translatable("gui.overgeared.jei.category.grinding");
+        this.title = Component.translatable("gui.overgeared.jei.category.grinding");
     }
 
     @Override
@@ -38,7 +38,7 @@ public class GrindingRecipeCategory implements IRecipeCategory<GrindingRecipe> {
     }
 
     @Override
-    public Text getTitle() {
+    public Component getTitle() {
         return title;
     }
 

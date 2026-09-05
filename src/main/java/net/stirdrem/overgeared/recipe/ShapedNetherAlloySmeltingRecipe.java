@@ -1,26 +1,29 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonObject;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.stirdrem.overgeared.util.ShapedAlloySerializerUtil;
-
+import net.stirdrem.overgeared.util.ShapedAlloySerializerUtil.ParsedPattern;
 import java.util.Map;
 
 public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe implements INetherAlloyRecipe {
 
     public ShapedNetherAlloySmeltingRecipe(
-            Identifier id,
+            ResourceLocation id,
             String group,
-            CraftingRecipeCategory category,
+            CraftingBookCategory category,
             int width,
             int height,
-            DefaultedList<Ingredient> ingredients,
+            NonNullList<Ingredient> ingredients,
             ItemStack output,
             float experience,
             int cookingTime
@@ -53,29 +56,29 @@ public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe i
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public ShapedNetherAlloySmeltingRecipe read(
-                Identifier id,
+        public ShapedNetherAlloySmeltingRecipe fromJson(
+                ResourceLocation id,
                 JsonObject json
         ) {
-            String group = JsonHelper.getString(json, "group", "");
-            CraftingRecipeCategory category =
+            String group = GsonHelper.getAsString(json, "group", "");
+            CraftingBookCategory category =
                     json.has("category")
-                            ? CraftingRecipeCategory.CODEC.byId(
+                            ? CraftingBookCategory.CODEC.byName(
                             json.get("category").getAsString(),
-                            CraftingRecipeCategory.MISC)
-                            : CraftingRecipeCategory.MISC;
+                            CraftingBookCategory.MISC)
+                            : CraftingBookCategory.MISC;
 
             var parsed =
                     ShapedAlloySerializerUtil.parsePattern(
-                            JsonHelper.getArray(json, "pattern"),
+                            GsonHelper.getAsJsonArray(json, "pattern"),
                             3
                     );
 
             Map<Character, Ingredient> key =
                     ShapedAlloySerializerUtil.parseKey(
-                            JsonHelper.getObject(json, "key"));
+                            GsonHelper.getAsJsonObject(json, "key"));
 
-            DefaultedList<Ingredient> ingredients =
+            NonNullList<Ingredient> ingredients =
                     ShapedAlloySerializerUtil.buildIngredientList(
                             parsed.pattern(),
                             parsed.width(),
@@ -84,11 +87,11 @@ public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe i
                     );
 
             ItemStack output =
-                    ShapedRecipe.outputFromJson(
-                            JsonHelper.getObject(json, "result"));
+                    ShapedRecipe.itemStackFromJson(
+                            GsonHelper.getAsJsonObject(json, "result"));
 
-            float experience = JsonHelper.getFloat(json, "experience", 0.0F);
-            int cookingTime = JsonHelper.getInt(json, "cookingtime", 200);
+            float experience = GsonHelper.getAsFloat(json, "experience", 0.0F);
+            int cookingTime = GsonHelper.getAsInt(json, "cookingtime", 200);
 
             return new ShapedNetherAlloySmeltingRecipe(
                     id,
@@ -104,25 +107,25 @@ public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe i
         }
 
         @Override
-        public ShapedNetherAlloySmeltingRecipe read(
-                Identifier id,
-                PacketByteBuf buf
+        public ShapedNetherAlloySmeltingRecipe fromNetwork(
+                ResourceLocation id,
+                FriendlyByteBuf buf
         ) {
-            String group = buf.readString();
-            CraftingRecipeCategory category =
-                    buf.readEnumConstant(CraftingRecipeCategory.class);
+            String group = buf.readUtf();
+            CraftingBookCategory category =
+                    buf.readEnum(CraftingBookCategory.class);
 
             int width = buf.readVarInt();
             int height = buf.readVarInt();
 
-            DefaultedList<Ingredient> ingredients =
-                    DefaultedList.ofSize(width * height, Ingredient.EMPTY);
+            NonNullList<Ingredient> ingredients =
+                    NonNullList.withSize(width * height, Ingredient.EMPTY);
 
             for (int i = 0; i < ingredients.size(); i++) {
-                ingredients.set(i, Ingredient.fromPacket(buf));
+                ingredients.set(i, Ingredient.fromNetwork(buf));
             }
 
-            ItemStack output = buf.readItemStack();
+            ItemStack output = buf.readItem();
             float experience = buf.readFloat();
             int cookingTime = buf.readVarInt();
 
@@ -140,21 +143,21 @@ public class ShapedNetherAlloySmeltingRecipe extends AbstractShapedAlloyRecipe i
         }
 
         @Override
-        public void write(
-                PacketByteBuf buf,
+        public void toNetwork(
+                FriendlyByteBuf buf,
                 ShapedNetherAlloySmeltingRecipe recipe
         ) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.category());
+            buf.writeUtf(recipe.getGroup());
+            buf.writeEnum(recipe.category());
 
             buf.writeVarInt(recipe.getWidth());
             buf.writeVarInt(recipe.getHeight());
 
             for (Ingredient ingredient : recipe.getIngredientsList()) {
-                ingredient.write(buf);
+                ingredient.toNetwork(buf);
             }
 
-            buf.writeItemStack(recipe.getOutput(null));
+            buf.writeItem(recipe.getResultItem(null));
             buf.writeFloat(recipe.getExperience());
             buf.writeVarInt(recipe.getCookingTime());
         }

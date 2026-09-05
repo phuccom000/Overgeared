@@ -1,46 +1,45 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-
 import java.util.function.Supplier;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class ModToolTiers {
     // Forge's ForgeTier/TierSortingRegistry has no Fabric equivalent; ordering between
     // vanilla tiers only matters for the mineable/needs_*_tool tags (see ModTags.Blocks),
     // which already encode the same steel≈iron, copper≈stone placement.
-    public static final ToolMaterial STEEL = new SimpleToolMaterial(
-            2, 500, 7.0F, 3.0F, 12, () -> Ingredient.ofItems(ModItems.STEEL_INGOT));
+    public static final Tier STEEL = new SimpleToolMaterial(
+            2, 500, 7.0F, 3.0F, 12, () -> Ingredient.of(ModItems.STEEL_INGOT));
 
-    public static final ToolMaterial COPPER = new SimpleToolMaterial(
-            1, 190, 5.0F, 1.0F, 12, () -> Ingredient.ofItems(Items.COPPER_INGOT));
+    public static final Tier COPPER = new SimpleToolMaterial(
+            1, 190, 5.0F, 1.0F, 12, () -> Ingredient.of(Items.COPPER_INGOT));
 
     private record SimpleToolMaterial(int miningLevel, int durability, float miningSpeed, float attackDamage,
                                        int enchantability,
-                                       Supplier<Ingredient> repairIngredient) implements ToolMaterial {
+                                       Supplier<Ingredient> repairIngredient) implements Tier {
         @Override
-        public int getDurability() {
+        public int getUses() {
             return durability;
         }
 
         @Override
-        public float getMiningSpeedMultiplier() {
+        public float getSpeed() {
             return miningSpeed;
         }
 
         @Override
-        public float getAttackDamage() {
+        public float getAttackDamageBonus() {
             return attackDamage;
         }
 
         @Override
-        public int getMiningLevel() {
+        public int getLevel() {
             return miningLevel;
         }
 
         @Override
-        public int getEnchantability() {
+        public int getEnchantmentValue() {
             return enchantability;
         }
 

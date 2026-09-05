@@ -1,22 +1,22 @@
 package net.stirdrem.overgeared.block.custom;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
@@ -33,69 +33,69 @@ import org.jetbrains.annotations.Nullable;
 public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     public static VoxelShape rotateShape(Direction from, Direction to, VoxelShape shape) {
-        VoxelShape[] buffer = new VoxelShape[]{shape, VoxelShapes.empty()};
-        int times = (to.getHorizontal() - from.getHorizontal() + 4) % 4;
+        VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};
+        int times = (to.get2DDataValue() - from.get2DDataValue() + 4) % 4;
         for (int i = 0; i < times; i++) {
-            buffer[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> {
-                buffer[1] = VoxelShapes.union(buffer[1],
-                        VoxelShapes.cuboid(1 - maxZ, minY, minX, 1 - minZ, maxY, maxX));
+            buffer[0].forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
+                buffer[1] = Shapes.or(buffer[1],
+                        Shapes.box(1 - maxZ, minY, minX, 1 - minZ, maxY, maxX));
             });
             buffer[0] = buffer[1];
-            buffer[1] = VoxelShapes.empty();
+            buffer[1] = Shapes.empty();
         }
         return buffer[0];
     }
 
-    private static final VoxelShape Z1 = Block.createCuboidShape(2, 2, 0, 14, 16, 16);
-    private static final VoxelShape Z2 = Block.createCuboidShape(1, 0, 0, 15, 2, 16);
+    private static final VoxelShape Z1 = Block.box(2, 2, 0, 14, 16, 16);
+    private static final VoxelShape Z2 = Block.box(1, 0, 0, 15, 2, 16);
     // X-axis oriented shape
     private static final VoxelShape X1 = rotateShape(Direction.NORTH, Direction.EAST, Z1);
     private static final VoxelShape X2 = rotateShape(Direction.NORTH, Direction.EAST, Z2);
 
     // Combined composite shapes
-    private static final VoxelShape SHAPE_Z = VoxelShapes.union(Z1, Z2);
-    private static final VoxelShape SHAPE_X = VoxelShapes.union(X1, X2);
+    private static final VoxelShape SHAPE_Z = Shapes.or(Z1, Z2);
+    private static final VoxelShape SHAPE_X = Shapes.or(X1, X2);
 
-    public StoneSmithingAnvil(AbstractBlock.Settings settings) {
+    public StoneSmithingAnvil(BlockBehaviour.Properties settings) {
         super(AnvilTier.STONE, settings);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        Direction direction = state.get(FACING);
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        Direction direction = state.getValue(FACING);
         return direction.getAxis() == Direction.Axis.X ? SHAPE_X : SHAPE_Z;
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().rotateYClockwise());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getClockWise());
     }
 
     @Override
-    public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StoneSmithingAnvilBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        if (!world.isClient) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        if (!world.isClientSide) {
             return validateTicker(type, ModBlockEntities.STONE_SMITHING_ANVIL_BE,
                     (lvl, pos, st, be) -> be.tick(lvl, pos, st));
         }

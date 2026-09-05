@@ -1,9 +1,10 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
@@ -16,19 +17,19 @@ public class ResetMinigameS2CPacket {
         this.anvilPos = anvilPos;
     }
 
-    public static void encode(ResetMinigameS2CPacket msg, PacketByteBuf buf) {
+    public static void encode(ResetMinigameS2CPacket msg, FriendlyByteBuf buf) {
         buf.writeBlockPos(msg.anvilPos);
     }
 
-    public static ResetMinigameS2CPacket decode(PacketByteBuf buf) {
+    public static ResetMinigameS2CPacket decode(FriendlyByteBuf buf) {
         return new ResetMinigameS2CPacket(buf.readBlockPos());
     }
 
     public static void handle(ResetMinigameS2CPacket msg) {
         try {
-            var player = MinecraftClient.getInstance().player;
+            var player = Minecraft.getInstance().player;
             if (player != null) {
-                BlockEntity be = player.getWorld().getBlockEntity(msg.anvilPos);
+                BlockEntity be = player.level().getBlockEntity(msg.anvilPos);
                 if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                     String quality = anvil.minigameQuality();
                     Overgeared.LOGGER.info(
@@ -38,10 +39,10 @@ public class ResetMinigameS2CPacket {
 
                     // Only reset if the player's tracked anvil matches
                     if (ModItemInteractEvents.playerAnvilPositions
-                            .getOrDefault(player.getUuid(), BlockPos.ORIGIN)
+                            .getOrDefault(player.getUUID(), BlockPos.ZERO)
                             .equals(msg.anvilPos)) {
-                        ModItemInteractEvents.playerAnvilPositions.remove(player.getUuid());
-                        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUuid());
+                        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
+                        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
                         AnvilMinigameEvents.reset(quality);
                     }
                 }

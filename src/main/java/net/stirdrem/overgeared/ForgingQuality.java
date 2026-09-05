@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 
 public enum ForgingQuality {
@@ -42,8 +42,8 @@ public enum ForgingQuality {
 
     public static void downgradeDamageableItems(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return;
-        if (!stack.isDamageable()) return;
-        NbtCompound tag = stack.getNbt();
+        if (!stack.isDamageableItem()) return;
+        CompoundTag tag = stack.getTag();
 
         String current = tag != null ? tag.getString("ForgingQuality") : "";
         ForgingQuality quality;
@@ -65,8 +65,8 @@ public enum ForgingQuality {
         ForgingQuality lower = quality.getLowerQuality();
 
         if (tag == null) {
-            tag = new NbtCompound();
-            stack.setNbt(tag);
+            tag = new CompoundTag();
+            stack.setTag(tag);
         }
 
         tag.putString("ForgingQuality", lower.getDisplayName());

@@ -1,17 +1,17 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SmithingTemplateItem;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
@@ -29,20 +29,20 @@ import java.util.Optional;
  * is dropped here. Everything else (slots, quick-move, hammer/blueprint filtering, crafting
  * rewards on take) is preserved.
  */
-public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
+public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
     public final AbstractSmithingAnvilBlockEntity blockEntity;
-    private final World world;
-    private final PropertyDelegate data;
+    private final Level world;
+    private final ContainerData data;
     private final Slot resultSlot;
-    private final PlayerEntity player;
+    private final Player player;
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
     private final boolean blueprintEnabled;
 
-    public AbstractSmithingAnvilScreenHandler(ScreenHandlerType<?> type, int syncId, PlayerInventory inv, AbstractSmithingAnvilBlockEntity entity, PropertyDelegate data, boolean hasBlueprint) {
+    public AbstractSmithingAnvilScreenHandler(MenuType<?> type, int syncId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
         super(type, syncId);
-        checkSize(entity, 12);
+        checkContainerSize(entity, 12);
         this.blockEntity = entity;
-        this.world = inv.player.getWorld();
+        this.world = inv.player.level();
         this.data = data;
         this.player = inv.player;
         this.blueprintEnabled = hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
@@ -50,31 +50,31 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         // hammer slot
         this.addSlot(new Slot(entity, 9, 152, 61) {
             @Override
-            public boolean canInsert(ItemStack stack) {
-                return stack.isIn(ModTags.Items.SMITHING_HAMMERS);
+            public boolean mayPlace(ItemStack stack) {
+                return stack.is(ModTags.Items.SMITHING_HAMMERS);
             }
         });
 
         if (blueprintEnabled) {
             this.addSlot(new Slot(entity, 11, 95, 53) {
                 @Override
-                public boolean canInsert(ItemStack stack) {
-                    return stack.isOf(ModItems.BLUEPRINT) || stack.getItem() instanceof SmithingTemplateItem;
+                public boolean mayPlace(ItemStack stack) {
+                    return stack.is(ModItems.BLUEPRINT) || stack.getItem() instanceof SmithingTemplateItem;
                 }
 
                 @Override
-                public int getMaxItemCount() {
+                public int getMaxStackSize() {
                     return 1;
                 }
 
                 @Override
-                public int getMaxItemCount(ItemStack stack) {
+                public int getMaxStackSize(ItemStack stack) {
                     return 1;
                 }
 
                 @Override
-                public void setStack(ItemStack stack) {
-                    super.setStack(stack.copyWithCount(1));
+                public void setByPlayer(ItemStack stack) {
+                    super.setByPlayer(stack.copyWithCount(1));
                 }
             });
         }
@@ -83,7 +83,7 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 Slot slot = this.addSlot(new Slot(entity, j + i * 3, 30 + j * 18, 17 + i * 18));
-                craftingSlotIndices.add(slot.id);
+                craftingSlotIndices.add(slot.index);
             }
         }
 
@@ -93,7 +93,7 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
-        addProperties(data);
+        addDataSlots(data);
     }
 
     public List<Integer> getInputSlots() {
@@ -105,59 +105,59 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         Slot clickedSlot = this.slots.get(index);
-        if (clickedSlot == null || !clickedSlot.hasStack()) {
+        if (clickedSlot == null || !clickedSlot.hasItem()) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack stack = clickedSlot.getStack();
+        ItemStack stack = clickedSlot.getItem();
         ItemStack copy = stack.copy();
 
         int totalSlots = this.slots.size();
-        int firstPlayerSlot = this.resultSlot.id + 1;
+        int firstPlayerSlot = this.resultSlot.index + 1;
 
         Slot hammerSlot = this.slots.get(0);
         Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
 
         if (clickedSlot == hammerSlot || (blueprintEnabled && clickedSlot == blueprintSlot)) {
-            if (!insertItem(stack, firstPlayerSlot, totalSlots, true)) {
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, true)) {
                 return ItemStack.EMPTY;
             }
 
             if (stack.isEmpty()) {
-                clickedSlot.setStack(ItemStack.EMPTY);
+                clickedSlot.setByPlayer(ItemStack.EMPTY);
             } else {
-                clickedSlot.markDirty();
+                clickedSlot.setChanged();
             }
 
-            clickedSlot.onTakeItem(player, stack);
+            clickedSlot.onTake(player, stack);
             return copy;
         }
 
         // Clicking a block-entity slot
         if (index < firstPlayerSlot) {
-            if (!insertItem(stack, firstPlayerSlot, totalSlots, false)) {
+            if (!moveItemStackTo(stack, firstPlayerSlot, totalSlots, false)) {
                 return ItemStack.EMPTY;
             }
         }
         // Clicking player inventory
         else {
-            if (stack.isIn(ModTags.Items.SMITHING_HAMMERS)) {
-                if (!insertItem(stack, hammerSlot.id, hammerSlot.id + 1, true)) {
+            if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
+                if (!moveItemStackTo(stack, hammerSlot.index, hammerSlot.index + 1, true)) {
                     return ItemStack.EMPTY;
                 }
             } else if (blueprintEnabled &&
-                    (stack.isOf(ModItems.BLUEPRINT) || stack.getItem() instanceof SmithingTemplateItem)) {
+                    (stack.is(ModItems.BLUEPRINT) || stack.getItem() instanceof SmithingTemplateItem)) {
 
-                if (!insertItem(stack, blueprintSlot.id, blueprintSlot.id + 1, true)) {
+                if (!moveItemStackTo(stack, blueprintSlot.index, blueprintSlot.index + 1, true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
                 boolean moved = false;
 
                 for (int gridId : craftingSlotIndices) {
-                    if (insertItem(stack, gridId, gridId + 1, false)) {
+                    if (moveItemStackTo(stack, gridId, gridId + 1, false)) {
                         moved = true;
                         break;
                     }
@@ -170,12 +170,12 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         }
 
         if (stack.isEmpty()) {
-            clickedSlot.setStack(ItemStack.EMPTY);
+            clickedSlot.setByPlayer(ItemStack.EMPTY);
         } else {
-            clickedSlot.markDirty();
+            clickedSlot.setChanged();
         }
 
-        clickedSlot.onTakeItem(player, stack);
+        clickedSlot.onTake(player, stack);
 
         return copy;
     }
@@ -193,20 +193,20 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        BlockState state = player.getWorld().getBlockState(blockEntity.getPos());
+    public boolean stillValid(Player player) {
+        BlockState state = player.level().getBlockState(blockEntity.getBlockPos());
         Block block = state.getBlock();
 
-        boolean isValid = state.isIn(ModTags.Blocks.SMITHING_ANVIL);
+        boolean isValid = state.is(ModTags.Blocks.SMITHING_ANVIL);
 
-        return ScreenHandler.canUse(
-                ScreenHandlerContext.create(world, blockEntity.getPos()),
+        return AbstractContainerMenu.stillValid(
+                ContainerLevelAccess.create(world, blockEntity.getBlockPos()),
                 player,
                 block
         ) && isValid;
     }
 
-    private void addPlayerInventory(PlayerInventory playerInventory) {
+    private void addPlayerInventory(Inventory playerInventory) {
         for (int i = 0; i < 3; ++i) {
             for (int l = 0; l < 9; ++l) {
                 this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
@@ -214,7 +214,7 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         }
     }
 
-    private void addPlayerHotbar(PlayerInventory playerInventory) {
+    private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
@@ -228,7 +228,7 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
 
     public ItemStack getResultItem() {
         if (blockEntity != null) {
-            return blockEntity.getStack(10).copy();
+            return blockEntity.getItem(10).copy();
         }
         return ItemStack.EMPTY;
     }
@@ -238,7 +238,7 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
         if (recipeOptional.isPresent()) {
             ForgingRecipe recipe = recipeOptional.get();
             if (blockEntity.hasRecipe()) {
-                return recipe.getOutput(world.getRegistryManager()).copy();
+                return recipe.getResultItem(world.registryAccess()).copy();
             }
         }
         return ItemStack.EMPTY;
@@ -256,40 +256,40 @@ public class AbstractSmithingAnvilScreenHandler extends ScreenHandler {
     private class AnvilResultSlot extends Slot {
         private int removeCount;
 
-        public AnvilResultSlot(AbstractSmithingAnvilBlockEntity inventory, int index, int x, int y, PlayerEntity player) {
+        public AnvilResultSlot(AbstractSmithingAnvilBlockEntity inventory, int index, int x, int y, Player player) {
             super(inventory, index, x, y);
         }
 
         @Override
-        public boolean canInsert(ItemStack stack) {
+        public boolean mayPlace(ItemStack stack) {
             return false;
         }
 
         @Override
-        public ItemStack takeStack(int amount) {
-            if (this.hasStack()) {
-                this.removeCount += Math.min(amount, this.getStack().getCount());
+        public ItemStack remove(int amount) {
+            if (this.hasItem()) {
+                this.removeCount += Math.min(amount, this.getItem().getCount());
             }
-            return super.takeStack(amount);
+            return super.remove(amount);
         }
 
         @Override
-        protected void onCrafted(ItemStack stack, int amount) {
+        protected void onQuickCraft(ItemStack stack, int amount) {
             this.removeCount += amount;
             this.checkTakeAchievements(stack);
         }
 
         protected void checkTakeAchievements(ItemStack stack) {
             if (this.removeCount > 0) {
-                stack.onCraft(AbstractSmithingAnvilScreenHandler.this.player.getWorld(), AbstractSmithingAnvilScreenHandler.this.player, this.removeCount);
+                stack.onCraftedBy(AbstractSmithingAnvilScreenHandler.this.player.level(), AbstractSmithingAnvilScreenHandler.this.player, this.removeCount);
             }
             this.removeCount = 0;
         }
 
         @Override
-        public void onTakeItem(PlayerEntity player, ItemStack stack) {
+        public void onTake(Player player, ItemStack stack) {
             this.checkTakeAchievements(stack);
-            super.onTakeItem(player, stack);
+            super.onTake(player, stack);
         }
     }
 }

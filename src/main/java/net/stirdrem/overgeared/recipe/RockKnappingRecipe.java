@@ -2,19 +2,23 @@ package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.Overgeared;
 
-public class RockKnappingRecipe implements Recipe<Inventory> {
+public class RockKnappingRecipe implements Recipe<Container> {
 
-    private final Identifier id;
+    private final ResourceLocation id;
     private final ItemStack output;
     private final Ingredient ingredient;
 
@@ -27,7 +31,7 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
     /* ---------------- CONSTRUCTOR ---------------- */
 
     public RockKnappingRecipe(
-            Identifier id,
+            ResourceLocation id,
             ItemStack output,
             Ingredient ingredient,
             boolean[][] pattern,
@@ -47,12 +51,12 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
     /* ---------------- MATCHING LOGIC ---------------- */
 
     @Override
-    public boolean matches(Inventory inv, World world) {
-        if (inv.size() != 9) return false;
+    public boolean matches(Container inv, Level world) {
+        if (inv.getContainerSize() != 9) return false;
 
         // Validate ingredient
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = inv.getStack(i);
+            ItemStack stack = inv.getItem(i);
             if (!stack.isEmpty() && !ingredient.test(stack)) {
                 return false;
             }
@@ -60,7 +64,7 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
 
         boolean[][] input = new boolean[3][3];
         for (int i = 0; i < 9; i++) {
-            input[i / 3][i % 3] = inv.getStack(i).isEmpty(); // true = chipped
+            input[i / 3][i % 3] = inv.getItem(i).isEmpty(); // true = chipped
         }
 
         for (int y = 0; y <= 3 - height; y++) {
@@ -102,17 +106,17 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
     /* ---------------- RECIPE OUTPUT ---------------- */
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager access) {
+    public ItemStack assemble(Container inv, RegistryAccess access) {
         return output.copy();
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager access) {
+    public ItemStack getResultItem(RegistryAccess access) {
         return output;
     }
 
     @Override
-    public boolean fits(int w, int h) {
+    public boolean canCraftInDimensions(int w, int h) {
         return w == 3 && h == 3;
     }
 
@@ -129,7 +133,7 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
     /* ---------------- RECIPE META ---------------- */
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -155,25 +159,25 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
     public static class Serializer implements RecipeSerializer<RockKnappingRecipe> {
 
         public static final Serializer INSTANCE = new Serializer();
-        public static final Identifier ID =
-                new Identifier(Overgeared.MOD_ID, "rock_knapping");
+        public static final ResourceLocation ID =
+                new ResourceLocation(Overgeared.MOD_ID, "rock_knapping");
 
         @Override
-        public RockKnappingRecipe read(Identifier id, JsonObject json) {
+        public RockKnappingRecipe fromJson(ResourceLocation id, JsonObject json) {
             ItemStack result =
-                    ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
+                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
 
             Ingredient ingredient =
-                    Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"));
+                    Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "ingredient"));
 
-            JsonArray patternArray = JsonHelper.getArray(json, "pattern");
+            JsonArray patternArray = GsonHelper.getAsJsonArray(json, "pattern");
             int height = patternArray.size();
             int width = patternArray.get(0).getAsString().length();
 
             boolean[][] pattern = new boolean[height][width];
 
             for (int y = 0; y < height; y++) {
-                String row = JsonHelper.asString(patternArray.get(y), "pattern row");
+                String row = GsonHelper.convertToString(patternArray.get(y), "pattern row");
                 if (row.length() != width) {
                     throw new IllegalArgumentException("Pattern rows must be same width");
                 }
@@ -183,7 +187,7 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
                 }
             }
 
-            boolean mirrored = JsonHelper.getBoolean(json, "mirrored", false);
+            boolean mirrored = GsonHelper.getAsBoolean(json, "mirrored", false);
 
             return new RockKnappingRecipe(
                     id, result, ingredient, pattern,
@@ -192,9 +196,9 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public void write(PacketByteBuf buf, RockKnappingRecipe r) {
-            buf.writeItemStack(r.output);
-            r.ingredient.write(buf);
+        public void toNetwork(FriendlyByteBuf buf, RockKnappingRecipe r) {
+            buf.writeItem(r.output);
+            r.ingredient.toNetwork(buf);
 
             buf.writeVarInt(r.width);
             buf.writeVarInt(r.height);
@@ -209,9 +213,9 @@ public class RockKnappingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public RockKnappingRecipe read(Identifier id, PacketByteBuf buf) {
-            ItemStack output = buf.readItemStack();
-            Ingredient ingredient = Ingredient.fromPacket(buf);
+        public RockKnappingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
+            ItemStack output = buf.readItem();
+            Ingredient ingredient = Ingredient.fromNetwork(buf);
 
             int width = buf.readVarInt();
             int height = buf.readVarInt();

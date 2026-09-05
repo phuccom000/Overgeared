@@ -6,11 +6,11 @@ import io.wispforest.accessories.api.attributes.AttributeModificationData;
 import io.wispforest.accessories.api.events.AdjustAttributeModifierCallback;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.utils.AttributeUtils;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
@@ -35,9 +35,9 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
     @Override
     public void adjustAttributes(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
         if (isBroken(stack)) return;
-        if (!stack.hasNbt()) return;
+        if (!stack.hasTag()) return;
 
-        String quality = stack.getNbt().getString("ForgingQuality");
+        String quality = stack.getTag().getString("ForgingQuality");
         if (quality.isEmpty()) return;
 
         for (QualityAttributeDefinition def : QualityAttributeReloadListener.INSTANCE.getAll()) {
@@ -46,43 +46,43 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
             QualityValue value = def.qualities().get(quality);
             if (value == null || value.amount() == 0) continue;
 
-            EntityAttribute attribute = Registries.ATTRIBUTE.get(def.attribute());
+            Attribute attribute = BuiltInRegistries.ATTRIBUTE.get(def.attribute());
             if (attribute == null) continue;
 
             modifyAttribute(builder, attribute, value.amount(), value.operation(), quality);
         }
     }
 
-    private void modifyAttribute(AccessoryAttributeBuilder builder, EntityAttribute attribute, double bonus, EntityAttributeModifier.Operation operation, String quality) {
+    private void modifyAttribute(AccessoryAttributeBuilder builder, Attribute attribute, double bonus, AttributeModifier.Operation operation, String quality) {
         if (bonus == 0) return;
 
-        Multimap<EntityAttribute, EntityAttributeModifier> originalModifiers = builder.getAttributeModifiers(false);
+        Multimap<Attribute, AttributeModifier> originalModifiers = builder.getAttributeModifiers(false);
         if (!originalModifiers.containsKey(attribute)) return;
 
-        List<EntityAttributeModifier> modifiers = List.copyOf(originalModifiers.get(attribute));
+        List<AttributeModifier> modifiers = List.copyOf(originalModifiers.get(attribute));
 
-        for (EntityAttributeModifier modifier : modifiers) {
-            Identifier location = AttributeUtils.getLocation(modifier.getName());
+        for (AttributeModifier modifier : modifiers) {
+            ResourceLocation location = AttributeUtils.getLocation(modifier.getName());
 
             AttributeModificationData exclusiveData = builder.getExclusive(attribute, location);
 
             if (exclusiveData != null) {
-                if (operation == EntityAttributeModifier.Operation.ADDITION) builder.removeExclusive(attribute, location);
+                if (operation == AttributeModifier.Operation.ADDITION) builder.removeExclusive(attribute, location);
 
-                EntityAttributeModifier modified = createModifiedAttribute(modifier, bonus, operation, quality);
+                AttributeModifier modified = createModifiedAttribute(modifier, bonus, operation, quality);
 
                 builder.addExclusive(attribute, modified);
             } else {
                 Collection<AttributeModificationData> stackableData = builder.getStacks(attribute, location);
 
                 if (!stackableData.isEmpty()) {
-                    if (operation == EntityAttributeModifier.Operation.ADDITION) builder.removeStacks(attribute, location);
+                    if (operation == AttributeModifier.Operation.ADDITION) builder.removeStacks(attribute, location);
 
                     for (AttributeModificationData data : stackableData) {
-                        EntityAttributeModifier originalStackMod = data.modifier();
-                        EntityAttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus, operation, quality);
+                        AttributeModifier originalStackMod = data.modifier();
+                        AttributeModifier modifiedStack = createModifiedAttribute(originalStackMod, bonus, operation, quality);
 
-                        builder.addStackable(attribute, location, modifiedStack.getValue(), modifiedStack.getOperation());
+                        builder.addStackable(attribute, location, modifiedStack.getAmount(), modifiedStack.getOperation());
                     }
                 }
             }

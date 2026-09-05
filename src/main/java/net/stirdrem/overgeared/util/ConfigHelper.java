@@ -1,13 +1,14 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.CastingToolTypesReloadListener;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
@@ -68,9 +69,9 @@ public class ConfigHelper {
     // -----------------------
     // Tool Head → Tool Type
     // -----------------------
-    public static String getToolTypeForItem(World world, ItemStack stack) {
+    public static String getToolTypeForItem(Level world, ItemStack stack) {
         return world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.ITEM_TO_TOOLTYPE)
+                .getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE)
                 .stream()
                 .filter(r -> r.getInput().test(stack))
                 .map(ItemToToolTypeRecipe::getToolType)
@@ -202,26 +203,26 @@ public class ConfigHelper {
     private static boolean matchesItemOrTag(Item item, String key) {
 
         // Direct item match
-        Identifier itemId = Registries.ITEM.getId(item);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
         if (itemId != null && itemId.toString().equals(key)) {
             return true;
         }
 
         // Tag match
         if (key.startsWith("#")) {
-            Identifier tagId = new Identifier(key.substring(1));
+            ResourceLocation tagId = new ResourceLocation(key.substring(1));
 
             // ---- Item tag check ----
-            TagKey<Item> itemTag = TagKey.of(RegistryKeys.ITEM, tagId);
-            if (Registries.ITEM.getEntry(item).isIn(itemTag)) {
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
+            if (BuiltInRegistries.ITEM.wrapAsHolder(item).is(itemTag)) {
                 return true;
             }
 
             // ---- Block tag check (for BlockItems) ----
             if (item instanceof BlockItem blockItem) {
-                TagKey<net.minecraft.block.Block> blockTag = TagKey.of(RegistryKeys.BLOCK, tagId);
+                TagKey<net.minecraft.world.level.block.Block> blockTag = TagKey.create(Registries.BLOCK, tagId);
 
-                return Registries.BLOCK.getEntry(blockItem.getBlock()).isIn(blockTag);
+                return BuiltInRegistries.BLOCK.wrapAsHolder(blockItem.getBlock()).is(blockTag);
             }
         }
 
@@ -297,21 +298,21 @@ public class ConfigHelper {
 
         // Tag
         if (key.startsWith("#")) {
-            Identifier tagId = new Identifier(key.substring(1));
+            ResourceLocation tagId = new ResourceLocation(key.substring(1));
 
             // ---- Item tag ----
-            TagKey<Item> itemTag = TagKey.of(RegistryKeys.ITEM, tagId);
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
 
-            for (var entry : Registries.ITEM.iterateEntries(itemTag)) {
+            for (var entry : BuiltInRegistries.ITEM.getTagOrEmpty(itemTag)) {
                 out.add(entry.value());
             }
 
             // ---- Block tag → BlockItem ----
-            TagKey<net.minecraft.block.Block> blockTag = TagKey.of(RegistryKeys.BLOCK, tagId);
+            TagKey<net.minecraft.world.level.block.Block> blockTag = TagKey.create(Registries.BLOCK, tagId);
 
-            for (var entry : Registries.BLOCK.iterateEntries(blockTag)) {
+            for (var entry : BuiltInRegistries.BLOCK.getTagOrEmpty(blockTag)) {
                 Item item = entry.value().asItem();
-                if (item != net.minecraft.item.Items.AIR) {
+                if (item != net.minecraft.world.item.Items.AIR) {
                     out.add(item);
                 }
             }
@@ -320,8 +321,8 @@ public class ConfigHelper {
         }
 
         // Direct item
-        Item item = Registries.ITEM.get(new Identifier(key));
-        if (item != net.minecraft.item.Items.AIR) {
+        Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(key));
+        if (item != net.minecraft.world.item.Items.AIR) {
             out.add(item);
         }
     }

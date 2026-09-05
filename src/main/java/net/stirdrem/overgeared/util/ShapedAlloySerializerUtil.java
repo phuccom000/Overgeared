@@ -3,13 +3,13 @@ package net.stirdrem.overgeared.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.util.collection.DefaultedList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public final class ShapedAlloySerializerUtil {
 
@@ -72,13 +72,13 @@ public final class ShapedAlloySerializerUtil {
         return map;
     }
 
-    public static DefaultedList<Ingredient> buildIngredientList(
+    public static NonNullList<Ingredient> buildIngredientList(
             String[] pattern,
             int width,
             int height,
             Map<Character, Ingredient> key
     ) {
-        DefaultedList<Ingredient> list = DefaultedList.ofSize(width * height, Ingredient.EMPTY);
+        NonNullList<Ingredient> list = NonNullList.withSize(width * height, Ingredient.EMPTY);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

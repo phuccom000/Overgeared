@@ -5,45 +5,46 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.LeveledCauldronBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
@@ -84,7 +85,7 @@ public class ModItemInteractEvents {
     public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
 
     private static final ConcurrentMap<ItemEntity, Long> trackedSinceMs = new ConcurrentHashMap<>();
-    private static final Map<ServerWorld, List<ItemEntity>> trackedEntitiesPerWorld = new HashMap<>();
+    private static final Map<ServerLevel, List<ItemEntity>> trackedEntitiesPerWorld = new HashMap<>();
     private static final Map<Item, Boolean> COOLING_CACHE = new HashMap<>();
 
     public static void register() {
@@ -98,10 +99,10 @@ public class ModItemInteractEvents {
         UseItemCallback.EVENT.register(ModItemInteractEvents::onArrowTipping);
 
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-            if (!world.isClient && player instanceof ServerPlayerEntity serverPlayer) {
+            if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
 
         // Fabric API has no "entity joined world" event; new heated item entities are picked
@@ -113,34 +114,34 @@ public class ModItemInteractEvents {
     // Cauldron cooling
     // =========================
 
-    private static ActionResult onRightClickBlock(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-        ItemStack heldStack = player.getStackInHand(hand);
+    private static InteractionResult onRightClickBlock(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+        ItemStack heldStack = player.getItemInHand(hand);
         BlockPos pos = hit.getBlockPos();
         BlockState state = world.getBlockState(pos);
 
-        boolean isHeatedItem = heldStack.isIn(ModTags.Items.HEATED_METALS)
-                || (heldStack.hasNbt() && heldStack.getNbt().getBoolean("Heated"));
+        boolean isHeatedItem = heldStack.is(ModTags.Items.HEATED_METALS)
+                || (heldStack.hasTag() && heldStack.getTag().getBoolean("Heated"));
 
-        if (!isHeatedItem) return ActionResult.PASS;
+        if (!isHeatedItem) return InteractionResult.PASS;
 
-        if (state.isOf(Blocks.WATER_CAULDRON)) {
+        if (state.is(Blocks.WATER_CAULDRON)) {
             handleCauldronInteraction(world, pos, player, heldStack, state);
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     // =========================
     // Smithing hammer: anvil conversion + minigame open/toggle
     // =========================
 
-    private static ActionResult onUseSmithingHammer(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
+    private static InteractionResult onUseSmithingHammer(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
-        ItemStack heldItem = player.getStackInHand(hand);
+        ItemStack heldItem = player.getItemInHand(hand);
 
-        if (!heldItem.isIn(ModTags.Items.SMITHING_HAMMERS)) return ActionResult.PASS;
-        if (hand != Hand.MAIN_HAND) return ActionResult.PASS;
+        if (!heldItem.is(ModTags.Items.SMITHING_HAMMERS)) return InteractionResult.PASS;
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
         BlockEntity be = world.getBlockEntity(pos);
         BlockState clickedState = world.getBlockState(pos);
@@ -149,126 +150,126 @@ public class ModItemInteractEvents {
         // Convert blocks to anvils
         // =========================
 
-        if (!world.isClient && player.isSneaking() && clickedState.isIn(ModTags.Blocks.STONE_ANVIL_BASES)
+        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
                 && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL
-                    .getDefaultState()
-                    .with(AbstractSmithingAnvil.FACING, player.getHorizontalFacing().rotateYClockwise());
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
-            world.setBlockState(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.BLOCK_STONE_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
+            world.setBlock(pos, newState, 3);
+            world.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
 
-            if (player instanceof ServerPlayerEntity serverPlayer) {
+            if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "stone");
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        if (!world.isClient && player.isSneaking() && clickedState.isIn(ModTags.Blocks.IRON_ANVIL_BASES)
+        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
                 && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL
-                    .getDefaultState()
-                    .with(AbstractSmithingAnvil.FACING, player.getHorizontalFacing().rotateYClockwise());
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
-            world.setBlockState(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1.0f, 1.0f);
+            world.setBlock(pos, newState, 3);
+            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
 
-            if (player instanceof ServerPlayerEntity serverPlayer) {
+            if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "iron");
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        if (!world.isClient && player.isSneaking() && clickedState.isIn(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.getDefaultState().with(AbstractSmithingAnvil.FACING, player.getHorizontalFacing().rotateYClockwise());
-            world.setBlockState(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1.0f, 1.0f);
-            if (player instanceof ServerPlayerEntity serverPlayer) {
+        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            world.setBlock(pos, newState, 3);
+            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_a");
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        if (!world.isClient && player.isSneaking() && clickedState.isIn(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
+        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL
-                    .getDefaultState()
-                    .with(AbstractSmithingAnvil.FACING, player.getHorizontalFacing().rotateYClockwise());
-            world.setBlockState(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1.0f, 1.0f);
-            if (player instanceof ServerPlayerEntity serverPlayer) {
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            world.setBlock(pos, newState, 3);
+            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
                 ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_b");
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
-            if (!world.isClient && player instanceof ServerPlayerEntity serverPlayer) {
+            if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
-        if (!player.isSneaking()) return ActionResult.PASS;
+        if (!player.isShiftKeyDown()) return InteractionResult.PASS;
 
         // =========================
         // SERVER LOGIC ONLY
         // =========================
 
-        if (world.isClient) return ActionResult.PASS;
-        if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
+        if (world.isClientSide) return InteractionResult.PASS;
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
 
-        UUID playerUUID = player.getUuid();
+        UUID playerUUID = player.getUUID();
 
         if (!anvilBE.hasRecipe()) {
-            serverPlayer.sendMessage(
-                    Text.translatable("message.overgeared.no_recipe").formatted(Formatting.RED),
+            serverPlayer.displayClientMessage(
+                    Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED),
                     true
             );
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
         if (!anvilBE.hasQuality() && !anvilBE.needsMinigame()) {
-            serverPlayer.sendMessage(
-                    Text.translatable("message.overgeared.item_has_no_quality").formatted(Formatting.RED),
+            serverPlayer.displayClientMessage(
+                    Component.translatable("message.overgeared.item_has_no_quality").withStyle(ChatFormatting.RED),
                     true
             );
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
         UUID currentOwner = anvilBE.getOwnerUUID();
 
         if (currentOwner != null && !currentOwner.equals(playerUUID)) {
-            serverPlayer.sendMessage(
-                    Text.translatable("message.overgeared.anvil_in_use_by_another").formatted(Formatting.RED),
+            serverPlayer.displayClientMessage(
+                    Component.translatable("message.overgeared.anvil_in_use_by_another").withStyle(ChatFormatting.RED),
                     true
             );
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
         if (playerAnvilPositions.containsKey(playerUUID)
                 && !pos.equals(playerAnvilPositions.get(playerUUID))) {
 
-            serverPlayer.sendMessage(
-                    Text.translatable("message.overgeared.another_anvil_in_use").formatted(Formatting.RED),
+            serverPlayer.displayClientMessage(
+                    Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED),
                     true
             );
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
 
         Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
         ForgingRecipe recipe = recipeOpt.get();
 
-        if (world.getGameRules().getBoolean(GameRules.DO_LIMITED_CRAFTING)) {
+        if (world.getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING)) {
             if (!serverPlayer.getRecipeBook().contains(recipe)) {
-                serverPlayer.sendMessage(
-                        Text.translatable("message.overgeared.no_recipe").formatted(Formatting.RED),
+                serverPlayer.displayClientMessage(
+                        Component.translatable("message.overgeared.no_recipe").withStyle(ChatFormatting.RED),
                         true
                 );
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
         }
 
@@ -288,44 +289,44 @@ public class ModItemInteractEvents {
             int hitsRequired = anvilBE.getRequiredProgress();
             String quality = anvilBE.minigameQuality();
 
-            NbtCompound sync = new NbtCompound();
-            sync.putUuid("anvilOwner", playerUUID);
+            CompoundTag sync = new CompoundTag();
+            sync.putUUID("anvilOwner", playerUUID);
             sync.putLong("anvilPos", pos.asLong());
-            PacketByteBuf syncBuf = ModMessages.buf();
+            FriendlyByteBuf syncBuf = ModMessages.buf();
             MinigameSyncS2CPacket.encode(new MinigameSyncS2CPacket(sync), syncBuf);
             ModMessages.sendToAll(ModMessages.MINIGAME_SYNC, syncBuf, world.getServer());
 
-            PacketByteBuf startBuf = ModMessages.buf();
+            FriendlyByteBuf startBuf = ModMessages.buf();
             StartMinigameS2CPacket.encode(new StartMinigameS2CPacket(pos, hitsRequired, quality), startBuf);
             ModMessages.sendToPlayer(ModMessages.START_MINIGAME, startBuf, serverPlayer);
         } else if (currentOwner.equals(playerUUID)) {
             boolean visible = playerMinigameVisibility.get(playerUUID);
             playerMinigameVisibility.put(playerUUID, !visible);
-            PacketByteBuf toggleBuf = ModMessages.buf();
+            FriendlyByteBuf toggleBuf = ModMessages.buf();
             ToggleMinigameS2CPacket.encode(new ToggleMinigameS2CPacket(pos, !visible), toggleBuf);
             ModMessages.sendToPlayer(ModMessages.TOGGLE_MINIGAME, toggleBuf, serverPlayer);
         }
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
-    public static void handleAnvilOwnershipSync(NbtCompound syncData) {
+    public static void handleAnvilOwnershipSync(CompoundTag syncData) {
         UUID owner = null;
         if (syncData.contains("anvilOwner")) {
-            owner = syncData.getUuid("anvilOwner");
+            owner = syncData.getUUID("anvilOwner");
             if (owner.getMostSignificantBits() == 0 && owner.getLeastSignificantBits() == 0) {
                 owner = null;
             }
         }
-        BlockPos pos = BlockPos.fromLong(syncData.getLong("anvilPos"));
+        BlockPos pos = BlockPos.of(syncData.getLong("anvilPos"));
         ClientAnvilMinigameData.putOccupiedAnvil(pos, owner);
 
-        var client = net.minecraft.client.MinecraftClient.getInstance();
+        var client = net.minecraft.client.Minecraft.getInstance();
         if (client.player != null
-                && client.player.getUuid().equals(owner)
+                && client.player.getUUID().equals(owner)
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
-            BlockEntity be = client.world.getBlockEntity(pos);
+            BlockEntity be = client.level.getBlockEntity(pos);
             if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
                 Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> ClientAnvilMinigameData.clearPendingMinigame());
@@ -333,8 +334,8 @@ public class ModItemInteractEvents {
         }
     }
 
-    public static void releaseAnvil(ServerPlayerEntity player, BlockPos pos) {
-        UUID playerId = player.getUuid();
+    public static void releaseAnvil(ServerPlayer player, BlockPos pos) {
+        UUID playerId = player.getUUID();
         if (playerMinigameVisibility.get(playerId) != null)
             playerMinigameVisibility.remove(playerId);
         if (playerAnvilPositions.get(playerId) != null
@@ -342,7 +343,7 @@ public class ModItemInteractEvents {
         ) {
             playerAnvilPositions.remove(playerId);
 
-            BlockEntity be = player.getWorld().getBlockEntity(pos);
+            BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
             if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
@@ -352,22 +353,22 @@ public class ModItemInteractEvents {
             // AnvilMinigameEvents.reset(quality) intentionally not called here - it's a
             // client-only class and this method also runs on dedicated servers; the sync
             // packet below drives the same client-side reset safely.
-            NbtCompound syncData = new NbtCompound();
+            CompoundTag syncData = new CompoundTag();
             syncData.putLong("anvilPos", pos.asLong());
-            syncData.putUuid("anvilOwner", new UUID(0, 0));
-            PacketByteBuf buf = ModMessages.buf();
+            syncData.putUUID("anvilOwner", new UUID(0, 0));
+            FriendlyByteBuf buf = ModMessages.buf();
             MinigameSyncS2CPacket.encode(new MinigameSyncS2CPacket(syncData), buf);
             ModMessages.sendToAll(ModMessages.MINIGAME_SYNC, buf, player.getServer());
         }
 
     }
 
-    public static ServerPlayerEntity getUsingPlayer(BlockPos pos) {
+    public static ServerPlayer getUsingPlayer(BlockPos pos) {
         MinecraftServer server = Overgeared.getServer();
         if (server == null) return null;
 
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            UUID playerId = player.getUuid();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            UUID playerId = player.getUUID();
 
             if (playerAnvilPositions.containsKey(playerId) &&
                     playerAnvilPositions.get(playerId).equals(pos)) {
@@ -378,8 +379,8 @@ public class ModItemInteractEvents {
         return null;
     }
 
-    public static void hideMinigame(ServerPlayerEntity player) {
-        PacketByteBuf buf = ModMessages.buf();
+    public static void hideMinigame(ServerPlayer player) {
+        FriendlyByteBuf buf = ModMessages.buf();
         HideMinigameS2CPacket.encode(new HideMinigameS2CPacket(), buf);
         ModMessages.sendToPlayer(ModMessages.HIDE_MINIGAME, buf, player);
     }
@@ -388,28 +389,28 @@ public class ModItemInteractEvents {
     // Right-click item: cooling, grinding, polishing, durability repair, cleanup
     // =========================
 
-    private static TypedActionResult<ItemStack> onRightClickItem(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand) {
-        if (world.isClient) return TypedActionResult.pass(player.getStackInHand(hand));
-        if (hand != Hand.MAIN_HAND) return TypedActionResult.pass(player.getStackInHand(hand));
+    private static InteractionResultHolder<ItemStack> onRightClickItem(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand) {
+        if (world.isClientSide) return InteractionResultHolder.pass(player.getItemInHand(hand));
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResultHolder.pass(player.getItemInHand(hand));
 
-        ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = player.getItemInHand(hand);
 
-        if (handleCooling(player, stack, world)) return TypedActionResult.success(stack);
-        if (handleGrinding(player, stack, world)) return TypedActionResult.success(stack);
+        if (handleCooling(player, stack, world)) return InteractionResultHolder.success(stack);
+        if (handleGrinding(player, stack, world)) return InteractionResultHolder.success(stack);
         handleMinigameCleanup(player, world);
-        return TypedActionResult.pass(stack);
+        return InteractionResultHolder.pass(stack);
     }
 
-    private static boolean handleCooling(net.minecraft.entity.player.PlayerEntity player, ItemStack stack, World world) {
-        if (!stack.isIn(ModTags.Items.HEATED_METALS)) return false;
+    private static boolean handleCooling(net.minecraft.world.entity.player.Player player, ItemStack stack, Level world) {
+        if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
 
-        HitResult hit = player.raycast(5.0D, 0.0F, false);
+        HitResult hit = player.pick(5.0D, 0.0F, false);
         if (hit.getType() != HitResult.Type.BLOCK) return false;
 
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
         BlockState state = world.getBlockState(pos);
 
-        if (state.getFluidState().isStill() && state.getBlock() == Blocks.WATER) {
+        if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
             coolItem(player, stack);
             return true;
         }
@@ -417,24 +418,24 @@ public class ModItemInteractEvents {
         return false;
     }
 
-    private static boolean handleGrinding(net.minecraft.entity.player.PlayerEntity player, ItemStack stack, World world) {
-        if (!player.isSneaking()) return false;
+    private static boolean handleGrinding(net.minecraft.world.entity.player.Player player, ItemStack stack, Level world) {
+        if (!player.isShiftKeyDown()) return false;
 
-        HitResult hit = player.raycast(5.0D, 0.0F, false);
+        HitResult hit = player.pick(5.0D, 0.0F, false);
         if (hit.getType() != HitResult.Type.BLOCK) return false;
 
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
         BlockState state = world.getBlockState(pos);
 
-        if (!state.isIn(ModTags.Blocks.GRINDSTONES)) return false;
-        if (player.getMainHandStack() != stack) return false;
+        if (!state.is(ModTags.Blocks.GRINDSTONES)) return false;
+        if (player.getMainHandItem() != stack) return false;
 
         if (handleGrindingRecipe(player, stack, world, pos)) return true;
         if (handlePolishing(player, stack, world, pos)) return true;
         return handleDurabilityGrinding(stack, world, pos);
     }
 
-    private static boolean handleGrindingRecipe(net.minecraft.entity.player.PlayerEntity player, ItemStack stack, World world, BlockPos pos) {
+    private static boolean handleGrindingRecipe(net.minecraft.world.entity.player.Player player, ItemStack stack, Level world, BlockPos pos) {
         if (!hasGrindingRecipe(stack.getItem(), world)) return false;
 
         grindItem(player, stack);
@@ -442,8 +443,8 @@ public class ModItemInteractEvents {
         return true;
     }
 
-    private static boolean handlePolishing(net.minecraft.entity.player.PlayerEntity player, ItemStack stack, World world, BlockPos pos) {
-        NbtCompound tag = stack.getNbt();
+    private static boolean handlePolishing(net.minecraft.world.entity.player.Player player, ItemStack stack, Level world, BlockPos pos) {
+        CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains("Polished") || tag.getBoolean("Polished")) return false;
 
         ItemStack resultItem;
@@ -451,12 +452,12 @@ public class ModItemInteractEvents {
         if (stack.getCount() > 1) {
             resultItem = stack.copy();
             resultItem.setCount(1);
-            stack.decrement(1);
+            stack.shrink(1);
         } else {
             resultItem = stack;
         }
 
-        NbtCompound resultTag = resultItem.getOrCreateNbt();
+        CompoundTag resultTag = resultItem.getOrCreateTag();
         resultTag.putBoolean("Polished", true);
 
         if (tag.getBoolean("Heated") && tag.contains("ForgingQuality")) {
@@ -465,16 +466,16 @@ public class ModItemInteractEvents {
             resultTag.putString("ForgingQuality", downgraded.getDisplayName());
         }
 
-        if (resultItem != stack && !player.getInventory().insertStack(resultItem)) {
-            player.dropItem(resultItem, false);
+        if (resultItem != stack && !player.getInventory().add(resultItem)) {
+            player.drop(resultItem, false);
         }
 
         playGrindEffects(world, pos);
         return true;
     }
 
-    private static boolean handleDurabilityGrinding(ItemStack stack, World world, BlockPos pos) {
-        if (!stack.isDamageable() || stack.getDamage() <= 0) return false;
+    private static boolean handleDurabilityGrinding(ItemStack stack, Level world, BlockPos pos) {
+        if (!stack.isDamageableItem() || stack.getDamageValue() <= 0) return false;
 
         if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
             return true;
@@ -491,13 +492,13 @@ public class ModItemInteractEvents {
 
     private static boolean isBlacklisted(ItemStack stack) {
         Item item = stack.getItem();
-        Identifier itemId = Registries.ITEM.getId(item);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
 
         for (String entry : ServerConfig.GRINDING_BLACKLIST.get()) {
             if (entry.startsWith("#")) {
-                TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, Identifier.tryParse(entry.substring(1)));
-                if (stack.isIn(tag)) return true;
-            } else if (itemId != null && itemId.equals(Identifier.tryParse(entry))) {
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.tryParse(entry.substring(1)));
+                if (stack.is(tag)) return true;
+            } else if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) {
                 return true;
             }
         }
@@ -506,7 +507,7 @@ public class ModItemInteractEvents {
     }
 
     private static void applyDurabilityRepair(ItemStack stack) {
-        NbtCompound tag = stack.getOrCreateNbt();
+        CompoundTag tag = stack.getOrCreateTag();
 
         int reducedCount = tag.getInt("ReducedMaxDurability");
         int originalDurability = stack.getItem().getMaxDamage();
@@ -523,11 +524,11 @@ public class ModItemInteractEvents {
         float penalty = Math.max(0.1f, 1.0f - (reducedCount * reduction));
         int effectiveMax = Math.max(1, (int) (adjustedMax * penalty));
 
-        int currentDamage = stack.getDamage();
+        int currentDamage = stack.getDamageValue();
 
         if (currentDamage <= (adjustedMax - effectiveMax)) {
             tag.putInt("ReducedMaxDurability", reducedCount + 1);
-            stack.setDamage(0);
+            stack.setDamageValue(0);
             return;
         }
 
@@ -536,20 +537,20 @@ public class ModItemInteractEvents {
 
         int newDamage = Math.max(adjustedMax - effectiveMax, currentDamage - repairAmount);
 
-        stack.setDamage(newDamage);
+        stack.setDamageValue(newDamage);
         tag.putInt("ReducedMaxDurability", reducedCount + 1);
     }
 
-    private static void playGrindEffects(World world, BlockPos pos) {
-        world.playSound(null, pos, SoundEvents.BLOCK_GRINDSTONE_USE, SoundCategory.BLOCKS, 1.0f, 1.2f);
+    private static void playGrindEffects(Level world, BlockPos pos) {
+        world.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.2f);
         spawnGrindParticles(world, pos);
     }
 
-    private static void handleMinigameCleanup(net.minecraft.entity.player.PlayerEntity player, World world) {
-        if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
+    private static void handleMinigameCleanup(net.minecraft.world.entity.player.Player player, Level world) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
 
-        ItemStack mainHand = player.getMainHandStack();
-        HitResult hit = player.raycast(5.0D, 0.0F, false);
+        ItemStack mainHand = player.getMainHandItem();
+        HitResult hit = player.pick(5.0D, 0.0F, false);
 
         if (hit.getType() != HitResult.Type.BLOCK) {
             hideMinigame(serverPlayer);
@@ -559,8 +560,8 @@ public class ModItemInteractEvents {
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
         BlockState state = world.getBlockState(pos);
 
-        if (!mainHand.isIn(ModTags.Items.SMITHING_HAMMERS) ||
-                !state.isIn(ModTags.Blocks.SMITHING_ANVIL)) {
+        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) ||
+                !state.is(ModTags.Blocks.SMITHING_ANVIL)) {
             hideMinigame(serverPlayer);
         }
     }
@@ -569,179 +570,179 @@ public class ModItemInteractEvents {
     // Knapping (both hands)
     // =========================
 
-    private static TypedActionResult<ItemStack> onUsingKnappable(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand) {
-        ItemStack usedStack = player.getStackInHand(hand);
+    private static InteractionResultHolder<ItemStack> onUsingKnappable(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand) {
+        ItemStack usedStack = player.getItemInHand(hand);
 
-        if (!usedStack.isIn(ModTags.Items.KNAPPABLE)) return TypedActionResult.pass(usedStack);
+        if (!usedStack.is(ModTags.Items.KNAPPABLE)) return InteractionResultHolder.pass(usedStack);
 
-        ItemStack mainHand = player.getMainHandStack();
-        ItemStack offHand = player.getOffHandStack();
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
 
-        if (!(mainHand.isIn(ModTags.Items.KNAPPABLE) && offHand.isIn(ModTags.Items.KNAPPABLE))) {
-            return TypedActionResult.pass(usedStack);
+        if (!(mainHand.is(ModTags.Items.KNAPPABLE) && offHand.is(ModTags.Items.KNAPPABLE))) {
+            return InteractionResultHolder.pass(usedStack);
         }
 
-        if (!world.isClient && player instanceof ServerPlayerEntity serverPlayer) {
+        if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
 
             world.playSound(
                     null,
-                    player.getBlockPos(),
-                    SoundEvents.BLOCK_STONE_PLACE,
-                    SoundCategory.PLAYERS,
+                    player.blockPosition(),
+                    SoundEvents.STONE_PLACE,
+                    SoundSource.PLAYERS,
                     0.6f,
                     1.0f
             );
 
-            serverPlayer.openHandledScreen(new RockKnappingMenuProvider());
+            serverPlayer.openMenu(new RockKnappingMenuProvider());
         }
 
-        return TypedActionResult.success(usedStack, world.isClient);
+        return InteractionResultHolder.sidedSuccess(usedStack, world.isClientSide);
     }
 
-    private static void spawnGrindParticles(World world, BlockPos pos) {
-        if (world instanceof ServerWorld serverWorld) {
-            serverWorld.spawnParticles(ParticleTypes.CRIT,
+    private static void spawnGrindParticles(Level world, BlockPos pos) {
+        if (world instanceof ServerLevel serverWorld) {
+            serverWorld.sendParticles(ParticleTypes.CRIT,
                     pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
                     10, 0.2, 0.2, 0.2, 0.1);
         }
     }
 
-    private static void handleCauldronInteraction(World world, BlockPos pos, net.minecraft.entity.player.PlayerEntity player,
+    private static void handleCauldronInteraction(Level world, BlockPos pos, net.minecraft.world.entity.player.Player player,
                                                     ItemStack heldStack, BlockState state) {
-        int waterLevel = state.get(LeveledCauldronBlock.LEVEL);
+        int waterLevel = state.getValue(LayeredCauldronBlock.LEVEL);
 
         if (waterLevel > 0) {
             coolItem(player, heldStack);
         }
     }
 
-    private static ItemStack coolSingleStack(ItemStack stack, World world) {
+    private static ItemStack coolSingleStack(ItemStack stack, Level world) {
         Item cooled = getCooledItem(stack.getItem(), world);
         if (cooled == null) return stack;
 
         ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
 
-        if (stack.hasNbt()) {
-            NbtCompound tag = stack.getNbt().copy();
+        if (stack.hasTag()) {
+            CompoundTag tag = stack.getTag().copy();
             tag.remove("Heated");
             tag.remove("HeatedSince");
             if (tag.isEmpty()) {
-                cooledStack.setNbt(null);
+                cooledStack.setTag(null);
             } else {
-                cooledStack.setNbt(tag);
+                cooledStack.setTag(tag);
             }
         }
 
         return cooledStack;
     }
 
-    private static void coolItem(net.minecraft.entity.player.PlayerEntity player, ItemStack stack) {
-        Item cooled = getCooledItem(stack.getItem(), player.getWorld());
+    private static void coolItem(net.minecraft.world.entity.player.Player player, ItemStack stack) {
+        Item cooled = getCooledItem(stack.getItem(), player.level());
         if (cooled == null) return;
         if (stack.getCount() <= 0) return;
 
         // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem && stack.hasNbt()) {
-            NbtCompound tag = stack.getNbt();
+        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
+            CompoundTag tag = stack.getTag();
 
-            if (tag != null && tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
-                ItemStack output = ItemStack.fromNbt(tag.getCompound("Output"));
-                ItemStack cooledOutput = coolSingleStack(output, player.getWorld());
-                tag.put("Output", cooledOutput.writeNbt(new NbtCompound()));
+            if (tag != null && tag.contains("Output", Tag.TAG_COMPOUND)) {
+                ItemStack output = ItemStack.of(tag.getCompound("Output"));
+                ItemStack cooledOutput = coolSingleStack(output, player.level());
+                tag.put("Output", cooledOutput.save(new CompoundTag()));
             }
         }
 
         // === Original logic (unchanged) ===
         ItemStack cooledStack = new ItemStack(cooled, 1);
-        if (stack.hasNbt()) {
-            cooledStack.setNbt(stack.getNbt().copy());
-            cooledStack.removeSubNbt("HeatedSince");
-            cooledStack.removeSubNbt("Heated");
+        if (stack.hasTag()) {
+            cooledStack.setTag(stack.getTag().copy());
+            cooledStack.removeTagKey("HeatedSince");
+            cooledStack.removeTagKey("Heated");
         }
 
-        stack.decrement(1);
+        stack.shrink(1);
 
         if (stack.isEmpty()) {
-            if (player.getMainHandStack() == stack) {
-                player.setStackInHand(Hand.MAIN_HAND, cooledStack);
-            } else if (player.getOffHandStack() == stack) {
-                player.setStackInHand(Hand.OFF_HAND, cooledStack);
-            } else if (!player.getInventory().insertStack(cooledStack)) {
-                player.dropItem(cooledStack, false);
+            if (player.getMainHandItem() == stack) {
+                player.setItemInHand(InteractionHand.MAIN_HAND, cooledStack);
+            } else if (player.getOffhandItem() == stack) {
+                player.setItemInHand(InteractionHand.OFF_HAND, cooledStack);
+            } else if (!player.getInventory().add(cooledStack)) {
+                player.drop(cooledStack, false);
             }
         } else {
-            if (!player.getInventory().insertStack(cooledStack)) {
-                player.dropItem(cooledStack, false);
+            if (!player.getInventory().add(cooledStack)) {
+                player.drop(cooledStack, false);
             }
         }
 
-        player.playSound(SoundEvents.BLOCK_FIRE_EXTINGUISH, 1.0F, 1.0F);
+        player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
     }
 
 
     private static void coolItemEntity(ItemEntity entity) {
-        ItemStack stack = entity.getStack();
-        World world = entity.getWorld();
+        ItemStack stack = entity.getItem();
+        Level world = entity.level();
 
         Item cooled = getCooledItem(stack.getItem(), world);
         if (cooled == null || stack.getCount() <= 0) return;
 
-        if (stack.getItem() instanceof ToolCastItem && stack.hasNbt()) {
-            NbtCompound tag = stack.getNbt();
+        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
+            CompoundTag tag = stack.getTag();
 
-            if (tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
-                ItemStack output = ItemStack.fromNbt(tag.getCompound("Output"));
+            if (tag.contains("Output", Tag.TAG_COMPOUND)) {
+                ItemStack output = ItemStack.of(tag.getCompound("Output"));
                 ItemStack cooledOutput = coolSingleStack(output, world);
-                tag.put("Output", cooledOutput.writeNbt(new NbtCompound()));
+                tag.put("Output", cooledOutput.save(new CompoundTag()));
             }
         }
 
-        NbtCompound oldTag = stack.hasNbt() ? stack.getNbt().copy() : null;
+        CompoundTag oldTag = stack.hasTag() ? stack.getTag().copy() : null;
         ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
 
         if (oldTag != null) {
             oldTag.remove("Heated");
             oldTag.remove("HeatedSince");
             if (oldTag.isEmpty()) {
-                cooledStack.setNbt(null);
+                cooledStack.setTag(null);
             } else {
-                cooledStack.setNbt(oldTag);
+                cooledStack.setTag(oldTag);
             }
         }
 
-        entity.setStack(cooledStack);
+        entity.setItem(cooledStack);
     }
 
 
-    private static void grindItem(net.minecraft.entity.player.PlayerEntity player, ItemStack heldStack) {
-        Item cooledItem = getGrindable(heldStack.getItem(), player.getWorld());
+    private static void grindItem(net.minecraft.world.entity.player.Player player, ItemStack heldStack) {
+        Item cooledItem = getGrindable(heldStack.getItem(), player.level());
         if (cooledItem != null) {
             ItemStack cooledIngot = new ItemStack(cooledItem);
-            if (heldStack.hasNbt()) {
-                cooledIngot.setNbt(heldStack.getNbt().copy());
+            if (heldStack.hasTag()) {
+                cooledIngot.setTag(heldStack.getTag().copy());
             }
-            cooledIngot.getOrCreateNbt().putBoolean("Polished", true);
-            heldStack.decrement(1);
+            cooledIngot.getOrCreateTag().putBoolean("Polished", true);
+            heldStack.shrink(1);
 
             if (heldStack.isEmpty()) {
-                player.setStackInHand(player.getActiveHand(), cooledIngot);
+                player.setItemInHand(player.getUsedItemHand(), cooledIngot);
             } else {
-                if (!player.getInventory().insertStack(cooledIngot)) {
-                    player.dropItem(cooledIngot, false);
+                if (!player.getInventory().add(cooledIngot)) {
+                    player.drop(cooledIngot, false);
                 }
             }
 
-            player.playSound(SoundEvents.BLOCK_GRINDSTONE_USE, 1.0F, 1.0F);
+            player.playSound(SoundEvents.GRINDSTONE_USE, 1.0F, 1.0F);
         }
     }
 
-    private static Item getGrindable(@Nullable Item heatedItem, @NotNull World world) {
+    private static Item getGrindable(@Nullable Item heatedItem, @NotNull Level world) {
         if (heatedItem == null) return null;
 
-        net.minecraft.inventory.SimpleInventory container = new net.minecraft.inventory.SimpleInventory(new ItemStack(heatedItem));
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<GrindingRecipe> recipeOpt = world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.GRINDING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE)
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
@@ -751,37 +752,37 @@ public class ModItemInteractEvents {
         }
 
         GrindingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getOutput(world.getRegistryManager());
+        ItemStack result = recipe.getResultItem(world.registryAccess());
         return result.isEmpty() ? heatedItem : result.getItem();
     }
 
-    public static boolean hasCoolingRecipe(@Nullable Item heatedItem, @NotNull World world) {
+    public static boolean hasCoolingRecipe(@Nullable Item heatedItem, @NotNull Level world) {
         if (heatedItem == null) return false;
 
-        net.minecraft.inventory.SimpleInventory container = new net.minecraft.inventory.SimpleInventory(new ItemStack(heatedItem));
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<CoolingRecipe> recipeOpt = world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.COOLING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE)
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
 
-        return recipeOpt.map(recipe -> !recipe.getOutput(world.getRegistryManager()).isEmpty())
+        return recipeOpt.map(recipe -> !recipe.getResultItem(world.registryAccess()).isEmpty())
                 .orElse(false);
     }
 
-    public static boolean hasGrindingRecipe(@Nullable Item heatedItem, @NotNull World world) {
+    public static boolean hasGrindingRecipe(@Nullable Item heatedItem, @NotNull Level world) {
         if (heatedItem == null) return false;
 
-        net.minecraft.inventory.SimpleInventory container = new net.minecraft.inventory.SimpleInventory(new ItemStack(heatedItem));
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<GrindingRecipe> recipeOpt = world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.GRINDING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE)
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
 
-        return recipeOpt.map(recipe -> !recipe.getOutput(world.getRegistryManager()).isEmpty())
+        return recipeOpt.map(recipe -> !recipe.getResultItem(world.registryAccess()).isEmpty())
                 .orElse(false);
     }
 
@@ -794,42 +795,42 @@ public class ModItemInteractEvents {
      * existing cooldown check - equivalent behavior, just detected up to ~10 ticks later than
      * the instant join-event would have.
      */
-    private static void trackNewItemEntities(ServerWorld world) {
-        for (Entity entity : world.iterateEntities()) {
+    private static void trackNewItemEntities(ServerLevel world) {
+        for (Entity entity : world.getAllEntities()) {
             if (!(entity instanceof ItemEntity itemEntity)) continue;
             if (!knownTrackedEntities.add(itemEntity)) continue; // already seen
 
-            ItemStack stack = itemEntity.getStack();
-            boolean isHeatedItem = stack.hasNbt() && stack.getNbt().getBoolean("Heated");
+            ItemStack stack = itemEntity.getItem();
+            boolean isHeatedItem = stack.hasTag() && stack.getTag().getBoolean("Heated");
 
             if (hasCoolingRecipe(stack.getItem(), world) || isHeatedItem) {
                 trackedEntitiesPerWorld
                         .computeIfAbsent(world, w -> new ArrayList<>())
                         .add(itemEntity);
 
-                if (stack.hasNbt() && stack.getNbt().contains("HeatedSince")) {
-                    long heatedSince = stack.getNbt().getLong("HeatedSince");
+                if (stack.hasTag() && stack.getTag().contains("HeatedSince")) {
+                    long heatedSince = stack.getTag().getLong("HeatedSince");
                     trackedSinceMs.put(itemEntity, heatedSince);
                 }
             }
         }
     }
 
-    private static boolean hasCoolingRecipeCached(Item item, World world) {
+    private static boolean hasCoolingRecipeCached(Item item, Level world) {
         return COOLING_CACHE.computeIfAbsent(item, i -> hasCoolingRecipe(i, world));
     }
 
     private static void onServerTick(MinecraftServer server) {
-        for (ServerWorld world : server.getWorlds()) {
-            long now = world.getTime();
+        for (ServerLevel world : server.getAllLevels()) {
+            long now = world.getGameTime();
 
             if (now % 10 != 0) continue;
 
             trackNewItemEntities(world);
 
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (player.currentScreenHandler != null && player.currentScreenHandler != player.playerScreenHandler) {
-                    checkContainerMenu(player, player.currentScreenHandler);
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                if (player.containerMenu != null && player.containerMenu != player.inventoryMenu) {
+                    checkContainerMenu(player, player.containerMenu);
                 }
             }
 
@@ -846,9 +847,9 @@ public class ModItemInteractEvents {
                     continue;
                 }
 
-                ItemStack stack = entity.getStack();
+                ItemStack stack = entity.getItem();
 
-                boolean isHeated = (stack.hasNbt() && stack.getNbt().getBoolean("Heated"))
+                boolean isHeated = (stack.hasTag() && stack.getTag().getBoolean("Heated"))
                         || hasCoolingRecipeCached(stack.getItem(), world);
 
                 if (!isHeated) {
@@ -864,23 +865,23 @@ public class ModItemInteractEvents {
                     cooled = true;
                 }
 
-                BlockPos.Mutable pos = new BlockPos.Mutable(
+                BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(
                         (int) entity.getX(), (int) entity.getY(), (int) entity.getZ());
 
                 BlockState state = world.getBlockState(pos);
-                if (state.isOf(Blocks.WATER) || state.isOf(Blocks.WATER_CAULDRON)) {
+                if (state.is(Blocks.WATER) || state.is(Blocks.WATER_CAULDRON)) {
                     cooled = true;
                 }
 
                 if (cooled) {
                     coolItemEntity(entity);
-                    world.spawnParticles(ParticleTypes.SMOKE,
+                    world.sendParticles(ParticleTypes.SMOKE,
                             entity.getX(), entity.getY() + 0.25, entity.getZ(),
                             6, 0.15, 0.15, 0.15, 0.02);
-                    world.playSound(null, entity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5f, 2.0f);
+                    world.playSound(null, entity.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 2.0f);
                     trackedSinceMs.remove(entity);
 
-                    if (entity.getStack().isEmpty()) {
+                    if (entity.getItem().isEmpty()) {
                         it.remove();
                     }
                 }
@@ -892,24 +893,24 @@ public class ModItemInteractEvents {
         }
     }
 
-    private static void checkContainerMenu(ServerPlayerEntity player, ScreenHandler menu) {
-        long gameTime = player.getWorld().getTime();
+    private static void checkContainerMenu(ServerPlayer player, AbstractContainerMenu menu) {
+        long gameTime = player.level().getGameTime();
         int cooldown = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
         boolean playedSound = false;
 
         for (Slot slot : menu.slots) {
-            ItemStack stack = slot.getStack();
+            ItemStack stack = slot.getItem();
             if (stack.isEmpty()) continue;
 
-            if (stack.hasNbt() && stack.getNbt().contains("HeatedSince")) {
-                long heatedAt = stack.getNbt().getLong("HeatedSince");
+            if (stack.hasTag() && stack.getTag().contains("HeatedSince")) {
+                long heatedAt = stack.getTag().getLong("HeatedSince");
                 if (gameTime - heatedAt >= cooldown) {
                     coolItemInContainerSlot(player, slot);
 
                     if (!playedSound) {
-                        player.getWorld().playSound(null, player.getBlockPos(),
-                                SoundEvents.BLOCK_FIRE_EXTINGUISH,
-                                SoundCategory.PLAYERS, 0.5F, 1.0F);
+                        player.level().playSound(null, player.blockPosition(),
+                                SoundEvents.FIRE_EXTINGUISH,
+                                SoundSource.PLAYERS, 0.5F, 1.0F);
                         playedSound = true;
                     }
                 }
@@ -917,56 +918,56 @@ public class ModItemInteractEvents {
         }
     }
 
-    private static void coolItemInContainerSlot(ServerPlayerEntity player, Slot slot) {
-        ItemStack stack = slot.getStack();
+    private static void coolItemInContainerSlot(ServerPlayer player, Slot slot) {
+        ItemStack stack = slot.getItem();
         if (stack.isEmpty()) return;
 
-        Item cooled = getCooledItem(stack.getItem(), player.getWorld());
+        Item cooled = getCooledItem(stack.getItem(), player.level());
         if (cooled == null) return;
 
-        if (stack.getItem() instanceof ToolCastItem && stack.hasNbt()) {
-            NbtCompound tag = stack.getNbt();
-            if (tag != null && tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
-                ItemStack output = ItemStack.fromNbt(tag.getCompound("Output"));
+        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
+            CompoundTag tag = stack.getTag();
+            if (tag != null && tag.contains("Output", Tag.TAG_COMPOUND)) {
+                ItemStack output = ItemStack.of(tag.getCompound("Output"));
 
-                Item cooledOutputItem = getCooledItem(output.getItem(), player.getWorld());
+                Item cooledOutputItem = getCooledItem(output.getItem(), player.level());
                 if (cooledOutputItem != null) {
                     ItemStack cooledOutput = new ItemStack(cooledOutputItem, output.getCount());
-                    if (output.hasNbt()) {
-                        cooledOutput.setNbt(output.getNbt().copy());
+                    if (output.hasTag()) {
+                        cooledOutput.setTag(output.getTag().copy());
                     }
-                    tag.put("Output", cooledOutput.writeNbt(new NbtCompound()));
+                    tag.put("Output", cooledOutput.save(new CompoundTag()));
                 }
             }
         }
 
         ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
 
-        if (stack.hasNbt()) {
-            NbtCompound newTag = stack.getNbt().copy();
+        if (stack.hasTag()) {
+            CompoundTag newTag = stack.getTag().copy();
             newTag.remove("HeatedSince");
             newTag.remove("Heated");
 
             if (newTag.isEmpty()) {
-                cooledStack.setNbt(null);
+                cooledStack.setTag(null);
             } else {
-                cooledStack.setNbt(newTag);
+                cooledStack.setTag(newTag);
             }
         }
 
-        slot.setStack(cooledStack);
+        slot.setByPlayer(cooledStack);
     }
 
     // =========================
     // Flint on stone (knapping-adjacent rock interactions)
     // =========================
 
-    private static ActionResult onFlintUsedOnStone(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-        if (world.isClient) return ActionResult.PASS;
+    private static InteractionResult onFlintUsedOnStone(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+        if (world.isClientSide) return InteractionResult.PASS;
 
         BlockPos pos = hit.getBlockPos();
         BlockState state = world.getBlockState(pos);
-        ItemStack heldItem = player.getStackInHand(hand);
+        ItemStack heldItem = player.getItemInHand(hand);
 
         for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
 
@@ -975,7 +976,7 @@ public class ModItemInteractEvents {
             RockInteractionData.ToolEntry tool = data.getTool(heldItem);
             if (tool == null) continue;
 
-            ServerWorld serverWorld = (ServerWorld) world;
+            ServerLevel serverWorld = (ServerLevel) world;
 
             if (world.random.nextFloat() < tool.dropChance()) {
                 ItemStack dropStack = tool.dropItem().copy();
@@ -985,7 +986,7 @@ public class ModItemInteractEvents {
                 double sz = pos.getZ() + 0.5;
 
                 double dx = player.getX() - sx;
-                double dy = (player.getY() + player.getStandingEyeHeight()) - sy;
+                double dy = (player.getY() + player.getEyeHeight()) - sy;
                 double dz = player.getZ() - sz;
 
                 double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
@@ -996,149 +997,149 @@ public class ModItemInteractEvents {
                 }
 
                 ItemEntity item = new ItemEntity(serverWorld, sx, sy, sz, dropStack);
-                item.setVelocity(dx * 0.25, dy * 0.25, dz * 0.25);
-                item.setToDefaultPickupDelay();
-                serverWorld.spawnEntity(item);
+                item.setDeltaMovement(dx * 0.25, dy * 0.25, dz * 0.25);
+                item.setDefaultPickUpDelay();
+                serverWorld.addFreshEntity(item);
 
-                world.setBlockState(pos, data.getResultBlock().getDefaultState());
+                world.setBlockAndUpdate(pos, data.getResultBlock().defaultBlockState());
             }
 
             if (world.random.nextFloat() < tool.breakChance()) {
 
-                if (heldItem.isDamageable()) {
-                    heldItem.damage(1, player, p -> p.sendEquipmentBreakStatus(hand == Hand.MAIN_HAND
+                if (heldItem.isDamageableItem()) {
+                    heldItem.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand == InteractionHand.MAIN_HAND
                             ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND));
                 } else {
-                    heldItem.decrement(1);
+                    heldItem.shrink(1);
                 }
 
-                world.playSound(null, player.getBlockPos(),
-                        SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS,
+                world.playSound(null, player.blockPosition(),
+                        SoundEvents.ITEM_BREAK, SoundSource.PLAYERS,
                         0.8F, 1.0F);
             } else {
                 world.playSound(null, pos,
-                        SoundEvents.BLOCK_STONE_HIT, SoundCategory.BLOCKS,
+                        SoundEvents.STONE_HIT, SoundSource.BLOCKS,
                         1.0F, 1.0F);
             }
 
-            player.swingHand(hand);
-            return ActionResult.SUCCESS;
+            player.swing(hand);
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     // =========================
     // Arrow tipping
     // =========================
 
-    private static TypedActionResult<ItemStack> onArrowTipping(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand) {
-        if (world.isClient) return TypedActionResult.pass(player.getStackInHand(hand));
-        if (!ServerConfig.TIPPING_TOGGLE.get()) return TypedActionResult.pass(player.getStackInHand(hand));
+    private static InteractionResultHolder<ItemStack> onArrowTipping(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand) {
+        if (world.isClientSide) return InteractionResultHolder.pass(player.getItemInHand(hand));
+        if (!ServerConfig.TIPPING_TOGGLE.get()) return InteractionResultHolder.pass(player.getItemInHand(hand));
 
-        ItemStack usedHand = player.getStackInHand(hand);
-        Hand otherHand = hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND;
-        ItemStack otherStack = player.getStackInHand(otherHand);
+        ItemStack usedHand = player.getItemInHand(hand);
+        InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        ItemStack otherStack = player.getItemInHand(otherHand);
 
-        boolean isVanillaArrow = usedHand.isOf(Items.ARROW) && otherStack.isOf(Items.POTION);
-        boolean isCustomArrow = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get() && (usedHand.isOf(ModItems.IRON_UPGRADE_ARROW) ||
-                usedHand.isOf(ModItems.STEEL_UPGRADE_ARROW) ||
-                usedHand.isOf(ModItems.DIAMOND_UPGRADE_ARROW)) &&
-                otherStack.isOf(Items.POTION);
+        boolean isVanillaArrow = usedHand.is(Items.ARROW) && otherStack.is(Items.POTION);
+        boolean isCustomArrow = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW) ||
+                usedHand.is(ModItems.STEEL_UPGRADE_ARROW) ||
+                usedHand.is(ModItems.DIAMOND_UPGRADE_ARROW)) &&
+                otherStack.is(Items.POTION);
 
         if (!isVanillaArrow && !isCustomArrow) {
-            return TypedActionResult.pass(usedHand);
+            return InteractionResultHolder.pass(usedHand);
         }
 
-        NbtCompound potionTag = otherStack.getOrCreateNbt();
+        CompoundTag potionTag = otherStack.getOrCreateTag();
         int used = potionTag.getInt("TippedUsed");
         int maxUse = ServerConfig.MAX_POTION_TIPPING_USE.get();
-        Potion basePotion = PotionUtil.getPotion(otherStack);
+        Potion basePotion = PotionUtils.getPotion(otherStack);
 
         ItemStack resultArrow;
         if (isVanillaArrow) {
-            resultArrow = PotionUtil.setPotion(new ItemStack(Items.TIPPED_ARROW), basePotion);
+            resultArrow = PotionUtils.setPotion(new ItemStack(Items.TIPPED_ARROW), basePotion);
         } else {
             resultArrow = usedHand.copy();
             resultArrow.setCount(1);
 
-            NbtCompound arrowTag = new NbtCompound();
-            arrowTag.putString("Potion", Registries.POTION.getId(basePotion).toString());
+            CompoundTag arrowTag = new CompoundTag();
+            arrowTag.putString("Potion", BuiltInRegistries.POTION.getKey(basePotion).toString());
 
-            if (potionTag.contains("CustomPotionEffects", NbtElement.LIST_TYPE)) {
-                arrowTag.put("CustomPotionEffects", potionTag.getList("CustomPotionEffects", NbtElement.COMPOUND_TYPE));
+            if (potionTag.contains("CustomPotionEffects", Tag.TAG_LIST)) {
+                arrowTag.put("CustomPotionEffects", potionTag.getList("CustomPotionEffects", Tag.TAG_COMPOUND));
             }
-            if (potionTag.contains("CustomPotionColor", NbtElement.INT_TYPE)) {
+            if (potionTag.contains("CustomPotionColor", Tag.TAG_INT)) {
                 arrowTag.putInt("CustomPotionColor", potionTag.getInt("CustomPotionColor"));
             }
 
-            resultArrow.setNbt(arrowTag);
+            resultArrow.setTag(arrowTag);
         }
 
         if (usedHand.getCount() == 1) {
-            player.setStackInHand(hand, resultArrow);
+            player.setItemInHand(hand, resultArrow);
         } else {
-            usedHand.decrement(1);
-            player.setStackInHand(hand, usedHand);
-            if (!player.getInventory().insertStack(resultArrow)) {
-                player.dropItem(resultArrow, false);
+            usedHand.shrink(1);
+            player.setItemInHand(hand, usedHand);
+            if (!player.getInventory().add(resultArrow)) {
+                player.drop(resultArrow, false);
             }
         }
 
         if (otherStack.getCount() > 1) {
             ItemStack onePotion = otherStack.split(1);
-            NbtCompound oneTag = onePotion.getOrCreateNbt();
+            CompoundTag oneTag = onePotion.getOrCreateTag();
             oneTag.putInt("TippedUsed", used + 1);
-            PotionUtil.setPotion(onePotion, basePotion);
-            player.setStackInHand(otherHand, otherStack);
+            PotionUtils.setPotion(onePotion, basePotion);
+            player.setItemInHand(otherHand, otherStack);
         } else {
             used++;
             if (used >= maxUse) {
-                player.setStackInHand(otherHand, new ItemStack(Items.GLASS_BOTTLE));
+                player.setItemInHand(otherHand, new ItemStack(Items.GLASS_BOTTLE));
             } else {
                 potionTag.putInt("TippedUsed", used);
-                PotionUtil.setPotion(otherStack, basePotion);
-                player.setStackInHand(otherHand, otherStack);
+                PotionUtils.setPotion(otherStack, basePotion);
+                player.setItemInHand(otherHand, otherStack);
             }
         }
 
         world.playSound(null,
-                player.getBlockPos(),
-                SoundEvents.BLOCK_BREWING_STAND_BREW,
-                SoundCategory.PLAYERS,
+                player.blockPosition(),
+                SoundEvents.BREWING_STAND_BREW,
+                SoundSource.PLAYERS,
                 0.6F,
                 1.2F
         );
 
-        return TypedActionResult.success(usedHand);
+        return InteractionResultHolder.success(usedHand);
     }
 
     // =========================
     // Fletching table
     // =========================
 
-    private static ActionResult onRightClickFletching(net.minecraft.entity.player.PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
-        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return ActionResult.PASS;
-        if (hand != Hand.MAIN_HAND) return ActionResult.PASS;
+    private static InteractionResult onRightClickFletching(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand, BlockHitResult hit) {
+        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return InteractionResult.PASS;
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
         BlockPos pos = hit.getBlockPos();
         BlockState state = world.getBlockState(pos);
-        if (!state.isOf(Blocks.FLETCHING_TABLE)) return ActionResult.PASS;
+        if (!state.is(Blocks.FLETCHING_TABLE)) return InteractionResult.PASS;
 
-        if (world.isClient) return ActionResult.SUCCESS;
+        if (world.isClientSide) return InteractionResult.SUCCESS;
 
-        SimpleNamedScreenHandlerFactory provider = new SimpleNamedScreenHandlerFactory(
+        SimpleMenuProvider provider = new SimpleMenuProvider(
                 (syncId, playerInv, p) ->
                         new FletchingStationScreenHandler(
                                 syncId,
                                 playerInv,
-                                ScreenHandlerContext.create(world, pos)
+                                ContainerLevelAccess.create(world, pos)
                         ),
-                Text.translatable("container.overgeared.fletching_table")
+                Component.translatable("container.overgeared.fletching_table")
         );
 
-        ((ServerPlayerEntity) player).openHandledScreen(provider);
+        ((ServerPlayer) player).openMenu(provider);
 
-        return ActionResult.CONSUME;
+        return InteractionResult.CONSUME;
     }
 }

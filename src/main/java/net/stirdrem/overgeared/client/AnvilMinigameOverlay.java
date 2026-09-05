@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ClientConfig;
 
@@ -13,8 +13,8 @@ import net.stirdrem.overgeared.config.ClientConfig;
  */
 public class AnvilMinigameOverlay {
 
-    private static final Identifier TEXTURE =
-            new Identifier(Overgeared.MOD_ID, "textures/gui/smithing_anvil_minigame.png");
+    private static final ResourceLocation TEXTURE =
+            new ResourceLocation(Overgeared.MOD_ID, "textures/gui/smithing_anvil_minigame.png");
 
     private static final int ARROW_WIDTH = 8;
     private static final int ARROW_HEIGHT = 16;
@@ -23,12 +23,12 @@ public class AnvilMinigameOverlay {
         HudRenderCallback.EVENT.register(AnvilMinigameOverlay::render);
     }
 
-    private static void render(DrawContext context, float partialTick) {
+    private static void render(GuiGraphics context, float partialTick) {
         if (!AnvilMinigameEvents.isIsVisible()) return;
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        int screenWidth = client.getWindow().getScaledWidth();
-        int screenHeight = client.getWindow().getScaledHeight();
+        Minecraft client = Minecraft.getInstance();
+        int screenWidth = client.getWindow().getGuiScaledWidth();
+        int screenHeight = client.getWindow().getGuiScaledHeight();
 
         int imageWidth = 238;
         int imageHeight = 37;
@@ -38,7 +38,7 @@ public class AnvilMinigameOverlay {
         int x = (screenWidth - imageWidth) / 2;
         int y = (screenHeight - imageHeight) - ClientConfig.MINIGAME_OVERLAY_HEIGHT.get();
 
-        context.drawTexture(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, textureWidth, textureHeight);
+        context.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, textureWidth, textureHeight);
 
         int barX = x + 9;
         int barY = y + 21;
@@ -55,7 +55,7 @@ public class AnvilMinigameOverlay {
         int goodEndPx = (int) (barWidth * goodZoneEnd / 100f);
 
         if (goodEndPx > goodStartPx) {
-            context.drawTexture(TEXTURE,
+            context.blit(TEXTURE,
                     barX + goodStartPx, barY,
                     9, 94,
                     goodEndPx - goodStartPx, barHeight,
@@ -66,7 +66,7 @@ public class AnvilMinigameOverlay {
         int perfectEndPx = (int) (barWidth * perfectZoneEnd / 100f);
 
         if (perfectEndPx > perfectStartPx) {
-            context.drawTexture(TEXTURE,
+            context.blit(TEXTURE,
                     barX + perfectStartPx, barY,
                     9, 72,
                     perfectEndPx - perfectStartPx, barHeight,
@@ -75,14 +75,14 @@ public class AnvilMinigameOverlay {
 
         int progressLengthPx = (int) (222 * (1 - ((float) AnvilMinigameEvents.getHitsRemaining() / AnvilMinigameEvents.getMaxHits())));
 
-        context.drawTexture(TEXTURE,
+        context.blit(TEXTURE,
                 x + 8, y + 12,
                 8, 62,
                 progressLengthPx, 5,
                 textureWidth, textureHeight);
 
         int arrowX = barX + (int) (barWidth * arrowPosition / 100f) - 5;
-        context.drawTexture(TEXTURE,
+        context.blit(TEXTURE,
                 arrowX, barY - 3,
                 9, 41,
                 ARROW_WIDTH, ARROW_HEIGHT,

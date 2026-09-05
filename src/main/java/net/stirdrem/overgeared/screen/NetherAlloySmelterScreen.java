@@ -1,52 +1,52 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class NetherAlloySmelterScreen extends HandledScreen<NetherAlloySmelterScreenHandler> {
-    private static final Identifier TEXTURE =
-            new Identifier(Overgeared.MOD_ID, "textures/gui/nether_alloy_furnace.png");
+public class NetherAlloySmelterScreen extends AbstractContainerScreen<NetherAlloySmelterScreenHandler> {
+    private static final ResourceLocation TEXTURE =
+            new ResourceLocation(Overgeared.MOD_ID, "textures/gui/nether_alloy_furnace.png");
 
-    public NetherAlloySmelterScreen(NetherAlloySmelterScreenHandler handler, PlayerInventory playerInventory, Text title) {
+    public NetherAlloySmelterScreen(NetherAlloySmelterScreenHandler handler, Inventory playerInventory, Component title) {
         super(handler, playerInventory, title);
-        this.backgroundWidth = 176;
-        this.backgroundHeight = 166;
+        this.imageWidth = 176;
+        this.imageHeight = 166;
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float partialTick, int mouseX, int mouseY) {
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
+    protected void renderBg(GuiGraphics context, float partialTick, int mouseX, int mouseY) {
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
 
-        context.drawTexture(TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.blit(TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
 
-        if (this.handler.isLit()) {
-            int litHeight = this.handler.getLitProgress();
-            context.drawTexture(TEXTURE, x + 8, y + 36 + 13 - litHeight,
+        if (this.menu.isLit()) {
+            int litHeight = this.menu.getLitProgress();
+            context.blit(TEXTURE, x + 8, y + 36 + 13 - litHeight,
                     176, 13 - litHeight, 14, litHeight + 1);
         }
 
-        int progress = this.handler.getCookProgress();
-        context.drawTexture(TEXTURE, x + 89, y + 34, 176, 14, progress + 1, 16);
+        int progress = this.menu.getCookProgress();
+        context.blit(TEXTURE, x + 89, y + 34, 176, 14, progress + 1, 16);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(context, mouseX, mouseY);
+        this.renderTooltip(context, mouseX, mouseY);
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        int titleWidth = this.textRenderer.getWidth(this.title);
-        int titleX = (this.backgroundWidth - titleWidth) / 2;
-        context.drawText(this.textRenderer, this.title, titleX, this.titleY, 4210752, false);
+    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
+        int titleWidth = this.font.width(this.title);
+        int titleX = (this.imageWidth - titleWidth) / 2;
+        context.drawString(this.font, this.title, titleX, this.titleLabelY, 4210752, false);
 
-        context.drawText(this.textRenderer, this.playerInventoryTitle, this.playerInventoryTitleX, this.backgroundHeight - 94, 4210752, false);
+        context.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.imageHeight - 94, 4210752, false);
     }
 }

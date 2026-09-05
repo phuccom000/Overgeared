@@ -1,20 +1,20 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
-public class RockKnappingMenuProvider implements NamedScreenHandlerFactory {
+public class RockKnappingMenuProvider implements MenuProvider {
     @Override
-    public Text getDisplayName() {
-        return Text.translatable("gui.overgeared.rock_knapping");
+    public Component getDisplayName() {
+        return Component.translatable("gui.overgeared.rock_knapping");
     }
 
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
         // The screen handler constructor will handle checking if player has knappable rocks
-        return new RockKnappingScreenHandler(syncId, inv, player.getWorld().getRecipeManager());
+        return new RockKnappingScreenHandler(syncId, inv, player.level().getRecipeManager());
     }
 }

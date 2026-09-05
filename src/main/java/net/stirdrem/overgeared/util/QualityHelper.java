@@ -1,12 +1,12 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 public class QualityHelper {
     public static float getDurabilityMultiplier(ItemStack stack) {
-        if (stack.hasNbt() && stack.getNbt().contains("ForgingQuality")) {
-            String quality = stack.getNbt().getString("ForgingQuality");
+        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
+            String quality = stack.getTag().getString("ForgingQuality");
             return switch (quality) {
                 case "poor" -> ServerConfig.POOR_DURABILITY_BONUS.get().floatValue();
                 case "well" -> ServerConfig.WELL_DURABILITY_BONUS.get().floatValue();
@@ -20,8 +20,8 @@ public class QualityHelper {
     }
 
     public static float getMiningSpeedMultiplier(ItemStack stack) {
-        if (stack.hasNbt() && stack.getNbt().contains("ForgingQuality")) {
-            String quality = stack.getNbt().getString("ForgingQuality");
+        if (stack.hasTag() && stack.getTag().contains("ForgingQuality")) {
+            String quality = stack.getTag().getString("ForgingQuality");
             return switch (quality) {
                 case "poor" -> ServerConfig.POOR_MINING_SPEED_BONUS.get().floatValue();
                 case "well" -> ServerConfig.WELL_MINING_SPEED_BONUS.get().floatValue();

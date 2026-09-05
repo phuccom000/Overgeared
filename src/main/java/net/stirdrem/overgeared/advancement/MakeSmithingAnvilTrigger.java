@@ -1,31 +1,31 @@
 package net.stirdrem.overgeared.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterionConditions;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.Overgeared;
 
 import org.jetbrains.annotations.Nullable;
 
 public class MakeSmithingAnvilTrigger
-        extends AbstractCriterion<MakeSmithingAnvilTrigger.Conditions> {
+        extends SimpleCriterionTrigger<MakeSmithingAnvilTrigger.Conditions> {
 
-    public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "make_smithing_anvil");
+    public static final ResourceLocation ID = new ResourceLocation(Overgeared.MOD_ID, "make_smithing_anvil");
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 
     @Override
-    protected Conditions conditionsFromJson(
+    protected Conditions createInstance(
             JsonObject json,
-            LootContextPredicate playerPredicate,
-            AdvancementEntityPredicateDeserializer context
+            ContextAwarePredicate playerPredicate,
+            DeserializationContext context
     ) {
         String tier = null;
 
@@ -36,18 +36,18 @@ public class MakeSmithingAnvilTrigger
         return new Conditions(playerPredicate, tier);
     }
 
-    public void trigger(ServerPlayerEntity player, String tierUsed) {
+    public void trigger(ServerPlayer player, String tierUsed) {
         this.trigger(player, instance -> instance.matches(tierUsed));
     }
 
     // ---------------- Conditions ----------------
 
-    public static class Conditions extends AbstractCriterionConditions {
+    public static class Conditions extends AbstractCriterionTriggerInstance {
 
         @Nullable
         private final String tier;
 
-        public Conditions(LootContextPredicate playerPredicate,
+        public Conditions(ContextAwarePredicate playerPredicate,
                            @Nullable String tier) {
             super(ID, playerPredicate);
             this.tier = tier;

@@ -13,7 +13,8 @@
   "entrypoints": {
     "main": ["net.stirdrem.overgeared.Overgeared"],
     "client": ["net.stirdrem.overgeared.client.OvergearedClient"],
-    "modmenu": ["net.stirdrem.overgeared.client.config.OvergearedConfigScreen"]
+    "modmenu": ["net.stirdrem.overgeared.client.config.OvergearedConfigScreen"],
+    "jei_mod_plugin": ["net.stirdrem.overgeared.compat.jei.JEIOvergearedModPlugin"]
   },
   "mixins": ["overgeared.mixins.json"],
   "accessWidener": "overgeared.accesswidener",

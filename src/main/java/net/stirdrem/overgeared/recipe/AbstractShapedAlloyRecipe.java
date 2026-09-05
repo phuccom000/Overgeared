@@ -1,42 +1,41 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
-
 import java.util.List;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.Level;
 
 public abstract class AbstractShapedAlloyRecipe
-        implements Recipe<SimpleInventory> {
+        implements Recipe<SimpleContainer> {
 
-    protected final Identifier id;
+    protected final ResourceLocation id;
     protected final String group;
-    protected final CraftingRecipeCategory category;
+    protected final CraftingBookCategory category;
 
     protected final int width;
     protected final int height;
     protected final int gridSize; // 2 or 3
 
-    protected final DefaultedList<Ingredient> patterns;
+    protected final NonNullList<Ingredient> patterns;
 
     protected final ItemStack output;
     protected final float experience;
     protected final int cookingTime;
 
     protected AbstractShapedAlloyRecipe(
-            Identifier id,
+            ResourceLocation id,
             String group,
-            CraftingRecipeCategory category,
+            CraftingBookCategory category,
             int width,
             int height,
             int gridSize,
-            DefaultedList<Ingredient> patterns,
+            NonNullList<Ingredient> patterns,
             ItemStack output,
             float experience,
             int cookingTime
@@ -64,8 +63,8 @@ public abstract class AbstractShapedAlloyRecipe
     // -----------------------
 
     @Override
-    public boolean matches(SimpleInventory inv, World world) {
-        if (world.isClient) return false;
+    public boolean matches(SimpleContainer inv, Level world) {
+        if (world.isClientSide) return false;
 
         for (int offY = 0; offY <= gridSize - height; offY++) {
             for (int offX = 0; offX <= gridSize - width; offX++) {
@@ -77,14 +76,14 @@ public abstract class AbstractShapedAlloyRecipe
         return false;
     }
 
-    protected boolean matchesAt(SimpleInventory inv, int offX, int offY) {
+    protected boolean matchesAt(SimpleContainer inv, int offX, int offY) {
         // Match pattern
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int recipeIndex = y * width + x;
                 int invIndex = (y + offY) * gridSize + (x + offX);
 
-                if (!patterns.get(recipeIndex).test(inv.getStack(invIndex))) {
+                if (!patterns.get(recipeIndex).test(inv.getItem(invIndex))) {
                     return false;
                 }
             }
@@ -99,7 +98,7 @@ public abstract class AbstractShapedAlloyRecipe
                     x >= offX && x < offX + width &&
                             y >= offY && y < offY + height;
 
-            if (!inside && !inv.getStack(i).isEmpty()) {
+            if (!inside && !inv.getItem(i).isEmpty()) {
                 return false;
             }
         }
@@ -112,22 +111,22 @@ public abstract class AbstractShapedAlloyRecipe
     // -----------------------
 
     @Override
-    public ItemStack craft(SimpleInventory inv, DynamicRegistryManager access) {
+    public ItemStack assemble(SimpleContainer inv, RegistryAccess access) {
         return output.copy();
     }
 
     @Override
-    public boolean fits(int w, int h) {
+    public boolean canCraftInDimensions(int w, int h) {
         return w >= gridSize && h >= gridSize;
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager access) {
+    public ItemStack getResultItem(RegistryAccess access) {
         return output.copy();
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -136,7 +135,7 @@ public abstract class AbstractShapedAlloyRecipe
         return group;
     }
 
-    public CraftingRecipeCategory category() {
+    public CraftingBookCategory category() {
         return category;
     }
 

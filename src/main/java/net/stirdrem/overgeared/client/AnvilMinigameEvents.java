@@ -1,10 +1,10 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -143,7 +143,7 @@ public class AnvilMinigameEvents {
     }
 
 
-    private static void onClientTick(MinecraftClient mc) {
+    private static void onClientTick(Minecraft mc) {
         if (mc.player == null) return;
         if (!mc.isPaused()) updatePopups();
         if (mc.isPaused() || !isIsVisible()) return;
@@ -168,14 +168,14 @@ public class AnvilMinigameEvents {
         // Age existing popups
         for (int i = 0; i < POPUPS.size(); i++) {
             Popup popup = POPUPS.get(i);
-            popup.age += MinecraftClient.getInstance().getLastFrameDuration() * 1000f;
+            popup.age += Minecraft.getInstance().getDeltaFrameTime() * 1000f;
             if (popup.age >= POPUP_DURATION_MS) {
                 POPUPS.remove(i--);
             }
         }
     }
 
-    public static void triggerPopup(Text text) {
+    public static void triggerPopup(Component text) {
         POPUPS.add(new Popup(text));
     }
 
@@ -197,7 +197,7 @@ public class AnvilMinigameEvents {
 
     public static void setIsVisible(BlockPos pos, boolean isVisible) {
         AnvilMinigameEvents.isVisible = isVisible;
-        PacketByteBuf buf = ModMessages.buf();
+        FriendlyByteBuf buf = ModMessages.buf();
         SetMinigameVisibleC2SPacket.encode(new SetMinigameVisibleC2SPacket(pos, isVisible), buf);
         ClientModMessages.sendToServer(ModMessages.SET_MINIGAME_VISIBLE, buf);
     }
@@ -292,18 +292,18 @@ public class AnvilMinigameEvents {
         if (arrowPosition >= perfectZoneStart && arrowPosition <= perfectZoneEnd) {
             perfectHits++;
             lastPerfect = perfectHits;
-            triggerPopup(Text.translatable("overgeared.forging.perfect")
-                    .styled(s -> s.withBold(true).withColor(0xFFD700)));
+            triggerPopup(Component.translatable("overgeared.forging.perfect")
+                    .withStyle(s -> s.withBold(true).withColor(0xFFD700)));
         } else if (arrowPosition >= goodZoneStart && arrowPosition <= goodZoneEnd) {
             goodHits++;
             lastGood = goodHits;
-            triggerPopup(Text.translatable("overgeared.forging.good")
-                    .styled(s -> s.withBold(true).withColor(0x55FF55)));
+            triggerPopup(Component.translatable("overgeared.forging.good")
+                    .withStyle(s -> s.withBold(true).withColor(0x55FF55)));
         } else {
             missedHits++;
             lastMiss = missedHits;
-            triggerPopup(Text.translatable("overgeared.forging.miss")
-                    .styled(s -> s.withBold(true).withColor(0xFF5555)));
+            triggerPopup(Component.translatable("overgeared.forging.miss")
+                    .withStyle(s -> s.withBold(true).withColor(0xFF5555)));
         }
 
         shrinkAndShiftZones();
@@ -419,7 +419,7 @@ public class AnvilMinigameEvents {
     }
 
     public static BlockPos getAnvilPos(UUID playerId) {
-        return ModItemInteractEvents.playerAnvilPositions.getOrDefault(playerId, BlockPos.ORIGIN);
+        return ModItemInteractEvents.playerAnvilPositions.getOrDefault(playerId, BlockPos.ZERO);
     }
 
     public static void setAnvilPos(UUID playerId, BlockPos pos) {
@@ -444,14 +444,14 @@ public class AnvilMinigameEvents {
 
     public static boolean hasAnvilPosition(UUID playerId) {
         BlockPos pos = ModItemInteractEvents.playerAnvilPositions.get(playerId);
-        return pos != null && !pos.equals(BlockPos.ORIGIN);
+        return pos != null && !pos.equals(BlockPos.ZERO);
     }
 
     public static void hideMinigame(UUID playerId) {
         isVisible = false;
         BlockPos pos = ModItemInteractEvents.playerAnvilPositions.get(playerId);
-        if (pos != null && !pos.equals(BlockPos.ORIGIN)) {
-            PacketByteBuf buf = ModMessages.buf();
+        if (pos != null && !pos.equals(BlockPos.ZERO)) {
+            FriendlyByteBuf buf = ModMessages.buf();
             SetMinigameVisibleC2SPacket.encode(new SetMinigameVisibleC2SPacket(pos, false), buf);
             ClientModMessages.sendToServer(ModMessages.SET_MINIGAME_VISIBLE, buf);
         }
@@ -461,10 +461,10 @@ public class AnvilMinigameEvents {
     // Popup class
     // ===============================
     public static class Popup {
-        public final Text text;
+        public final Component text;
         public float age; // milliseconds
 
-        public Popup(Text text) {
+        public Popup(Component text) {
             this.text = text;
             this.age = 0f;
         }

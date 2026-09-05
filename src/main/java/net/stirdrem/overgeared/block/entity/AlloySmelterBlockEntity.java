@@ -2,32 +2,32 @@ package net.stirdrem.overgeared.block.entity;
 
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.recipe.AlloySmeltingRecipe;
 import net.stirdrem.overgeared.recipe.ShapedAlloySmeltingRecipe;
 import net.stirdrem.overgeared.screen.AlloySmelterScreenHandler;
@@ -36,15 +36,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, Inventory, SidedInventory {
+public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, Container, WorldlyContainer {
     private final ItemStackHandler itemHandler = new ItemStackHandler(6) {
         @Override
         protected void onContentsChanged(int slot) {
-            markDirty();
+            setChanged();
         }
     };
 
-    private final PropertyDelegate data;
+    private final ContainerData data;
 
     private int burnTime;
     private int maxBurnTime;
@@ -55,7 +55,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     public AlloySmelterBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ALLOY_FURNACE_BE, pos, state);
 
-        this.data = new PropertyDelegate() {
+        this.data = new ContainerData() {
             public int get(int index) {
                 return switch (index) {
                     case 0 -> burnTime;
@@ -75,7 +75,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
                 }
             }
 
-            public int size() {
+            public int getCount() {
                 return 4;
             }
         };
@@ -84,7 +84,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // --------------------------------------------------
     // Tick logic
     // --------------------------------------------------
-    public static void tick(World world, BlockPos pos, BlockState state, AlloySmelterBlockEntity be) {
+    public static void tick(Level world, BlockPos pos, BlockState state, AlloySmelterBlockEntity be) {
         boolean wasLit = be.burnTime > 0;
         boolean dirty = false;
 
@@ -96,8 +96,8 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
             Integer fuelTime = FuelRegistry.INSTANCE.get(fuel.getItem());
             be.maxBurnTime = be.burnTime = fuelTime == null ? 0 : fuelTime;
             if (be.burnTime > 0 && !fuel.isEmpty()) {
-                Item fuelContainer = fuel.getItem().getRecipeRemainder();
-                fuel.decrement(1);
+                Item fuelContainer = fuel.getItem().getCraftingRemainingItem();
+                fuel.shrink(1);
                 if (fuel.isEmpty() && fuelContainer != null)
                     be.itemHandler.setStackInSlot(4, new ItemStack(fuelContainer));
                 dirty = true;
@@ -116,78 +116,78 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
         }
 
         if (wasLit != be.isLit()) {
-            state = state.with(Properties.LIT, be.isLit());
-            world.setBlockState(pos, state, 3);
+            state = state.setValue(BlockStateProperties.LIT, be.isLit());
+            world.setBlock(pos, state, 3);
             dirty = true;
         }
 
-        if (dirty) be.markDirty();
+        if (dirty) be.setChanged();
     }
 
     // --------------------------------------------------
     // Smelting logic
     // --------------------------------------------------
     private boolean canSmelt() {
-        SimpleInventory inv = new SimpleInventory(4);
-        for (int i = 0; i < 4; i++) inv.setStack(i, itemHandler.getStackInSlot(i));
+        SimpleContainer inv = new SimpleContainer(4);
+        for (int i = 0; i < 4; i++) inv.setItem(i, itemHandler.getStackInSlot(i));
 
         Optional<AlloySmeltingRecipe> shapelessRecipe =
-                world.getRecipeManager().getFirstMatch(AlloySmeltingRecipe.Type.INSTANCE, inv, world);
+                level.getRecipeManager().getRecipeFor(AlloySmeltingRecipe.Type.INSTANCE, inv, level);
 
         Optional<ShapedAlloySmeltingRecipe> shapedRecipe =
-                world.getRecipeManager().getFirstMatch(ShapedAlloySmeltingRecipe.Type.INSTANCE, inv, world);
+                level.getRecipeManager().getRecipeFor(ShapedAlloySmeltingRecipe.Type.INSTANCE, inv, level);
 
         if (shapelessRecipe.isEmpty() && shapedRecipe.isEmpty()) return false;
 
         cookTimeTotal = shapelessRecipe.map(AlloySmeltingRecipe::getCookingTime)
                 .orElseGet(() -> shapedRecipe.get().getCookingTime());
 
-        ItemStack result = shapelessRecipe.map(r -> r.getOutput(world.getRegistryManager()))
-                .orElseGet(() -> shapedRecipe.get().getOutput(world.getRegistryManager()));
+        ItemStack result = shapelessRecipe.map(r -> r.getResultItem(level.registryAccess()))
+                .orElseGet(() -> shapedRecipe.get().getResultItem(level.registryAccess()));
 
         ItemStack output = itemHandler.getStackInSlot(5);
         return !result.isEmpty() &&
-                (output.isEmpty() || (output.isOf(result.getItem()) &&
-                        output.getCount() + result.getCount() <= output.getMaxCount()));
+                (output.isEmpty() || (output.is(result.getItem()) &&
+                        output.getCount() + result.getCount() <= output.getMaxStackSize()));
     }
 
     private void smelt() {
         if (!canSmelt()) return;
 
-        SimpleInventory inv = new SimpleInventory(4);
-        for (int i = 0; i < 4; i++) inv.setStack(i, itemHandler.getStackInSlot(i));
+        SimpleContainer inv = new SimpleContainer(4);
+        for (int i = 0; i < 4; i++) inv.setItem(i, itemHandler.getStackInSlot(i));
 
         Optional<AlloySmeltingRecipe> shapelessRecipe =
-                world.getRecipeManager().getFirstMatch(AlloySmeltingRecipe.Type.INSTANCE, inv, world);
+                level.getRecipeManager().getRecipeFor(AlloySmeltingRecipe.Type.INSTANCE, inv, level);
         Optional<ShapedAlloySmeltingRecipe> shapedRecipe =
-                world.getRecipeManager().getFirstMatch(ShapedAlloySmeltingRecipe.Type.INSTANCE, inv, world);
+                level.getRecipeManager().getRecipeFor(ShapedAlloySmeltingRecipe.Type.INSTANCE, inv, level);
 
         ItemStack result;
         float xp;
 
         if (shapelessRecipe.isPresent()) {
             AlloySmeltingRecipe recipe = shapelessRecipe.get();
-            result = recipe.getOutput(world.getRegistryManager());
+            result = recipe.getResultItem(level.registryAccess());
             xp = recipe.getExperience();
         } else if (shapedRecipe.isPresent()) {
             ShapedAlloySmeltingRecipe recipe = shapedRecipe.get();
-            result = recipe.getOutput(world.getRegistryManager());
+            result = recipe.getResultItem(level.registryAccess());
             xp = recipe.getExperience();
         } else return;
 
         ItemStack output = itemHandler.getStackInSlot(5);
         if (output.isEmpty()) {
             itemHandler.setStackInSlot(5, result.copy());
-        } else if (output.isOf(result.getItem())) {
-            output.increment(result.getCount());
+        } else if (output.is(result.getItem())) {
+            output.grow(result.getCount());
         }
 
         for (int i = 0; i < 4; i++) {
             ItemStack input = itemHandler.getStackInSlot(i);
-            if (!input.isEmpty()) input.decrement(1);
+            if (!input.isEmpty()) input.shrink(1);
         }
 
-        if (!world.isClient && xp > 0.0F) {
+        if (!level.isClientSide && xp > 0.0F) {
             storedExperience += xp;
         }
     }
@@ -196,16 +196,16 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // Experience logic (vanilla accurate)
     // --------------------------------------------------
     private void spawnExperience(float xp) {
-        if (this.world == null || this.world.isClient) return;
-        if (!(this.world instanceof ServerWorld serverWorld)) return;
+        if (this.level == null || this.level.isClientSide) return;
+        if (!(this.level instanceof ServerLevel serverWorld)) return;
 
-        int i = MathHelper.floor(xp);
+        int i = Mth.floor(xp);
         float f = xp - i;
         if (f > 0.0F && Math.random() < f) i++;
 
         if (i > 0) {
-            ExperienceOrbEntity.spawn(serverWorld, new Vec3d(
-                    pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5), i);
+            ExperienceOrb.award(serverWorld, new Vec3(
+                    worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5), i);
         }
     }
 
@@ -217,41 +217,41 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // Container & UI
     // --------------------------------------------------
     @Override
-    public Text getDisplayName() {
-        return Text.translatable("container.overgeared.alloy_smelter");
+    public Component getDisplayName() {
+        return Component.translatable("container.overgeared.alloy_smelter");
     }
 
     @Nullable
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         return new AlloySmelterScreenHandler(syncId, playerInventory, this, this.data);
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        buf.writeBlockPos(pos);
+    public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
+        buf.writeBlockPos(worldPosition);
     }
 
-    public void awardStoredExperience(PlayerEntity player) {
-        if (this.world == null || this.world.isClient) return;
+    public void awardStoredExperience(Player player) {
+        if (this.level == null || this.level.isClientSide) return;
         if (storedExperience > 0 && player != null) {
             int total = (int) storedExperience;
             float fractional = storedExperience - total;
             if (fractional > 0.0F && Math.random() < fractional) total++;
 
-            player.addExperience(total);
+            player.giveExperiencePoints(total);
 
-            this.world.playSound(
+            this.level.playSound(
                     null,
-                    pos,
-                    SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
-                    SoundCategory.PLAYERS,
+                    worldPosition,
+                    SoundEvents.EXPERIENCE_ORB_PICKUP,
+                    SoundSource.PLAYERS,
                     0.5F,
-                    this.world.random.nextFloat() * 0.1F + 0.9F
+                    this.level.random.nextFloat() * 0.1F + 0.9F
             );
 
             storedExperience = 0;
-            markDirty();
+            setChanged();
         }
     }
 
@@ -259,8 +259,8 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // NBT
     // --------------------------------------------------
     @Override
-    protected void writeNbt(NbtCompound tag) {
-        super.writeNbt(tag);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tag.put("inventory", itemHandler.serializeNBT());
         tag.putInt("burnTime", burnTime);
         tag.putInt("maxBurnTime", maxBurnTime);
@@ -270,8 +270,8 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     }
 
     @Override
-    public void readNbt(NbtCompound tag) {
-        super.readNbt(tag);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         itemHandler.deserializeNBT(tag.getCompound("inventory"));
         burnTime = tag.getInt("burnTime");
         maxBurnTime = tag.getInt("maxBurnTime");
@@ -281,11 +281,11 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     }
 
     public void drops() {
-        SimpleInventory inventory = new SimpleInventory(itemHandler.getSlots());
+        SimpleContainer inventory = new SimpleContainer(itemHandler.getSlots());
         for (int i = 0; i < itemHandler.getSlots(); i++) {
-            inventory.setStack(i, itemHandler.getStackInSlot(i));
+            inventory.setItem(i, itemHandler.getStackInSlot(i));
         }
-        ItemScatterer.spawn(this.world, this.pos, inventory);
+        Containers.dropContents(this.level, this.worldPosition, inventory);
         spawnExperience(storedExperience);
     }
 
@@ -293,14 +293,14 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // Hopper automation
     // --------------------------------------------------
     @Override
-    public int[] getAvailableSlots(Direction side) {
+    public int[] getSlotsForFace(Direction side) {
         if (side == Direction.UP) return new int[]{0, 1, 2, 3};
         else if (side == Direction.DOWN) return new int[]{5};
         else return new int[]{4};
     }
 
     @Override
-    public boolean canInsert(int slot, ItemStack stack, @Nullable Direction direction) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
         if (slot == 5) return false;
         if (slot == 4) {
             Integer fuelTime = FuelRegistry.INSTANCE.get(stack.getItem());
@@ -310,7 +310,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     }
 
     @Override
-    public boolean canExtract(int slot, ItemStack stack, Direction direction) {
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
         return slot == 5;
     }
 
@@ -318,7 +318,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     // Basic container methods
     // --------------------------------------------------
     @Override
-    public int size() {
+    public int getContainerSize() {
         return itemHandler.getSlots();
     }
 
@@ -330,45 +330,45 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     }
 
     @Override
-    public ItemStack getStack(int slot) {
+    public ItemStack getItem(int slot) {
         return itemHandler.getStackInSlot(slot);
     }
 
     @Override
-    public ItemStack removeStack(int slot, int amount) {
+    public ItemStack removeItem(int slot, int amount) {
         ItemStack stack = itemHandler.getStackInSlot(slot);
         if (!stack.isEmpty()) {
             ItemStack result = stack.split(amount);
-            markDirty();
+            setChanged();
             return result;
         }
         return ItemStack.EMPTY;
     }
 
     @Override
-    public ItemStack removeStack(int slot) {
+    public ItemStack removeItemNoUpdate(int slot) {
         ItemStack stack = itemHandler.getStackInSlot(slot);
         itemHandler.setStackInSlot(slot, ItemStack.EMPTY);
         return stack;
     }
 
     @Override
-    public void setStack(int slot, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         itemHandler.setStackInSlot(slot, stack);
-        markDirty();
+        setChanged();
     }
 
     @Override
-    public boolean canPlayerUse(PlayerEntity player) {
-        if (this.world.getBlockEntity(this.pos) != this) return false;
-        return player.squaredDistanceTo(
-                pos.getX() + 0.5D,
-                pos.getY() + 0.5D,
-                pos.getZ() + 0.5D) <= 64.0D;
+    public boolean stillValid(Player player) {
+        if (this.level.getBlockEntity(this.worldPosition) != this) return false;
+        return player.distanceToSqr(
+                worldPosition.getX() + 0.5D,
+                worldPosition.getY() + 0.5D,
+                worldPosition.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             itemHandler.setStackInSlot(i, ItemStack.EMPTY);
         }

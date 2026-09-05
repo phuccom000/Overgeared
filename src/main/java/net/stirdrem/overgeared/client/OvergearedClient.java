@@ -5,17 +5,16 @@ import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.color.item.ItemColorProvider;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.util.Identifier;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
@@ -46,16 +45,20 @@ public class OvergearedClient implements ClientModInitializer {
         PopupOverlay.register();
         OvergearedTooltipEvents.register();
 
-        HandledScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU, SteelSmithingAnvilScreen::new);
-        HandledScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU, TierASmithingAnvilScreen::new);
-        HandledScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU, TierBSmithingAnvilScreen::new);
-        HandledScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU, StoneSmithingAnvilScreen::new);
-        HandledScreens.register(ModMenuTypes.ALLOY_SMELTER_MENU, AlloySmelterScreen::new);
-        HandledScreens.register(ModMenuTypes.NETHER_ALLOY_SMELTER_MENU, NetherAlloySmelterScreen::new);
-        HandledScreens.register(ModMenuTypes.CAST_FURNACE, CastFurnaceScreen::new);
-        HandledScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU, RockKnappingScreen::new);
-        HandledScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU, BlueprintWorkbenchScreen::new);
-        HandledScreens.register(ModMenuTypes.FLETCHING_STATION_MENU, FletchingStationScreen::new);
+        if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("polymorph")) {
+            net.stirdrem.overgeared.compat.polymorph.client.PolymorphClientIntegration.register();
+        }
+
+        MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU, SteelSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU, TierASmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU, TierBSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU, StoneSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.ALLOY_SMELTER_MENU, AlloySmelterScreen::new);
+        MenuScreens.register(ModMenuTypes.NETHER_ALLOY_SMELTER_MENU, NetherAlloySmelterScreen::new);
+        MenuScreens.register(ModMenuTypes.CAST_FURNACE, CastFurnaceScreen::new);
+        MenuScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU, RockKnappingScreen::new);
+        MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU, BlueprintWorkbenchScreen::new);
+        MenuScreens.register(ModMenuTypes.FLETCHING_STATION_MENU, FletchingStationScreen::new);
 
         registerAnvilRenderer(ModBlockEntities.STEEL_SMITHING_ANVIL_BE);
         registerAnvilRenderer(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE);
@@ -78,8 +81,8 @@ public class OvergearedClient implements ClientModInitializer {
         // layer0 (the "*_head" texture, despite the name - see upgradeArrowModel in the Forge
         // datagen) is the tintable potion-coating layer; layer1 ("*_base") is pre-colored art
         // and always renders at full white (no tint).
-        ItemColorProvider arrowColorProvider = (stack, tintIndex) ->
-                tintIndex == 0 && stack.hasNbt() ? PotionUtil.getColor(stack) : 0xFFFFFFFF;
+        ItemColor arrowColorProvider = (stack, tintIndex) ->
+                tintIndex == 0 && stack.hasTag() ? PotionUtils.getColor(stack) : 0xFFFFFFFF;
         ColorProviderRegistry.ITEM.register(arrowColorProvider,
                 ModItems.IRON_UPGRADE_ARROW, ModItems.STEEL_UPGRADE_ARROW,
                 ModItems.DIAMOND_UPGRADE_ARROW, ModItems.LINGERING_ARROW);
@@ -91,9 +94,9 @@ public class OvergearedClient implements ClientModInitializer {
      * NBT written by FletchingStationScreenHandler when crafting tipped/lingering results.
      */
     private static void registerArrowPotionTypeProvider(Item item) {
-        ModelPredicateProviderRegistry.register(item, new Identifier("overgeared", "potion_type"),
+        ItemProperties.register(item, new ResourceLocation("overgeared", "potion_type"),
                 (stack, world, entity, seed) -> {
-                    NbtCompound nbt = stack.getNbt();
+                    CompoundTag nbt = stack.getTag();
                     if (nbt == null || !nbt.contains("Potion")) {
                         return 0f;
                     }
@@ -109,7 +112,7 @@ public class OvergearedClient implements ClientModInitializer {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static <E extends AbstractSmithingAnvilBlockEntity> void registerAnvilRenderer(BlockEntityType<E> type) {
-        BlockEntityRendererFactory<E> factory = (BlockEntityRendererFactory) (BlockEntityRendererFactory<AbstractSmithingAnvilBlockEntity>) SmithingAnvilBlockEntityRenderer::new;
+        BlockEntityRendererProvider<E> factory = (BlockEntityRendererProvider) (BlockEntityRendererProvider<AbstractSmithingAnvilBlockEntity>) SmithingAnvilBlockEntityRenderer::new;
         BlockEntityRendererRegistry.register(type, factory);
     }
 }

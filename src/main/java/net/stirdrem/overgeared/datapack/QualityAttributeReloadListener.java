@@ -2,19 +2,19 @@ package net.stirdrem.overgeared.datapack;
 
 import com.google.gson.*;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.ToolItem;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TieredItem;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class QualityAttributeReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class QualityAttributeReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
 
     public static final QualityAttributeReloadListener INSTANCE =
             new QualityAttributeReloadListener();
@@ -37,14 +37,14 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
     private static final Set<Item> cachedItems = new HashSet<>();
 
     @Override
-    public Identifier getFabricId() {
+    public ResourceLocation getFabricId() {
         return Overgeared.id("quality_attributes_listener");
     }
 
     @Override
-    protected void apply(Map<Identifier, JsonElement> jsons,
+    protected void apply(Map<ResourceLocation, JsonElement> jsons,
                           ResourceManager manager,
-                          Profiler profiler) {
+                          ProfilerFiller profiler) {
 
         definitions.clear();
         cachedItems.clear();
@@ -67,22 +67,22 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
     private static QualityAttributeDefinition parse(JsonObject json) {
 
         // ---- attribute ----
-        Identifier attributeId = Identifier.tryParse(
-                JsonHelper.getString(json, "attribute")
+        ResourceLocation attributeId = ResourceLocation.tryParse(
+                GsonHelper.getAsString(json, "attribute")
         );
 
         // ---- targets ----
         List<QualityTarget> targets = new ArrayList<>();
-        JsonArray targetsJson = JsonHelper.getArray(json, "targets");
+        JsonArray targetsJson = GsonHelper.getAsJsonArray(json, "targets");
 
         for (JsonElement elem : targetsJson) {
             JsonObject obj = elem.getAsJsonObject();
 
             QualityTarget.TargetType type = QualityTarget.TargetType
-                    .valueOf(JsonHelper.getString(obj, "type").toUpperCase(Locale.ROOT));
+                    .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase(Locale.ROOT));
 
-            Identifier id = obj.has("id")
-                    ? Identifier.tryParse(JsonHelper.getString(obj, "id"))
+            ResourceLocation id = obj.has("id")
+                    ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "id"))
                     : null;
 
             targets.add(new QualityTarget(type, id));
@@ -90,18 +90,18 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
 
         // ---- qualities ----
         Map<String, QualityValue> qualities = new HashMap<>();
-        JsonObject qualitiesJson = JsonHelper.getObject(json, "qualities");
+        JsonObject qualitiesJson = GsonHelper.getAsJsonObject(json, "qualities");
 
         for (Map.Entry<String, JsonElement> entry : qualitiesJson.entrySet()) {
             String quality = entry.getKey();
             JsonObject value = entry.getValue().getAsJsonObject();
 
-            String opString = JsonHelper.getString(value, "operation")
+            String opString = GsonHelper.getAsString(value, "operation")
                     .toLowerCase(Locale.ROOT);
 
-            EntityAttributeModifier.Operation operation = getOperation(opString);
+            AttributeModifier.Operation operation = getOperation(opString);
 
-            double amount = JsonHelper.getDouble(value, "amount");
+            double amount = GsonHelper.getAsDouble(value, "amount");
 
             qualities.put(quality, new QualityValue(operation, amount));
         }
@@ -113,13 +113,13 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
         );
     }
 
-    private static EntityAttributeModifier.@NotNull Operation getOperation(String opString) {
-        EntityAttributeModifier.Operation operation;
+    private static AttributeModifier.@NotNull Operation getOperation(String opString) {
+        AttributeModifier.Operation operation;
 
         switch (opString) {
-            case "add" -> operation = EntityAttributeModifier.Operation.ADDITION;
-            case "mult_base" -> operation = EntityAttributeModifier.Operation.MULTIPLY_BASE;
-            case "mult_total" -> operation = EntityAttributeModifier.Operation.MULTIPLY_TOTAL;
+            case "add" -> operation = AttributeModifier.Operation.ADDITION;
+            case "mult_base" -> operation = AttributeModifier.Operation.MULTIPLY_BASE;
+            case "mult_total" -> operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
             default -> throw new JsonSyntaxException(
                     "Unknown operation: " + opString +
                             ". Valid values: add, mult_base, mult_total"
@@ -138,7 +138,7 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
 
                     case ITEM -> {
                         if (target.id() != null) {
-                            Item item = Registries.ITEM.get(target.id());
+                            Item item = BuiltInRegistries.ITEM.get(target.id());
                             if (item != null) {
                                 items.add(item);
                             }
@@ -147,32 +147,32 @@ public class QualityAttributeReloadListener extends JsonDataLoader implements Id
 
                     case ITEM_TAG -> {
                         if (target.id() != null) {
-                            TagKey<Item> tag = TagKey.of(Registries.ITEM.getKey(), target.id());
+                            TagKey<Item> tag = TagKey.create(BuiltInRegistries.ITEM.key(), target.id());
 
-                            for (RegistryEntry<Item> entry : Registries.ITEM.iterateEntries(tag)) {
+                            for (Holder<Item> entry : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
                                 items.add(entry.value());
                             }
                         }
                     }
 
                     case WEAPON -> {
-                        for (Item item : Registries.ITEM) {
-                            if (item instanceof ToolItem ||
-                                    item instanceof RangedWeaponItem) {
+                        for (Item item : BuiltInRegistries.ITEM) {
+                            if (item instanceof TieredItem ||
+                                    item instanceof ProjectileWeaponItem) {
                                 items.add(item);
                             }
                         }
                     }
 
                     case ARMOR -> {
-                        for (Item item : Registries.ITEM) {
+                        for (Item item : BuiltInRegistries.ITEM) {
                             if (item instanceof ArmorItem) {
                                 items.add(item);
                             }
                         }
                     }
 
-                    case ITEM_ALL -> Registries.ITEM.forEach(items::add);
+                    case ITEM_ALL -> BuiltInRegistries.ITEM.forEach(items::add);
                 }
             }
         }

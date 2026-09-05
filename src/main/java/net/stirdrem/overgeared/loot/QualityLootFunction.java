@@ -1,12 +1,12 @@
 package net.stirdrem.overgeared.loot;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.function.LootFunction;
-import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.util.JsonSerializer;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Serializer;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
@@ -17,16 +17,16 @@ import net.stirdrem.overgeared.util.ModTags;
  * to every table's builder runs it against every stack that table generates, which is the same
  * per-stack post-process semantics as the original QualityLootModifier.
  */
-public class QualityLootFunction implements LootFunction {
+public class QualityLootFunction implements LootItemFunction {
     public static final QualityLootFunction INSTANCE = new QualityLootFunction();
 
-    private static final LootFunctionType TYPE = new LootFunctionType(new JsonSerializer<>() {
+    private static final LootItemFunctionType TYPE = new LootItemFunctionType(new Serializer<>() {
         @Override
-        public void toJson(com.google.gson.JsonObject json, LootFunction object, com.google.gson.JsonSerializationContext context) {
+        public void serialize(com.google.gson.JsonObject json, LootItemFunction object, com.google.gson.JsonSerializationContext context) {
         }
 
         @Override
-        public LootFunction fromJson(com.google.gson.JsonObject json, com.google.gson.JsonDeserializationContext context) {
+        public LootItemFunction deserialize(com.google.gson.JsonObject json, com.google.gson.JsonDeserializationContext context) {
             return INSTANCE;
         }
     });
@@ -50,11 +50,11 @@ public class QualityLootFunction implements LootFunction {
         if (wMaster > 0) total += wMaster;
 
         if (total == 0) {
-            generated.getOrCreateNbt().putString("ForgingQuality", ForgingQuality.POOR.getDisplayName());
+            generated.getOrCreateTag().putString("ForgingQuality", ForgingQuality.POOR.getDisplayName());
             return generated;
         }
 
-        Random random = context.getRandom();
+        RandomSource random = context.getRandom();
         int r = random.nextInt(total);
         ForgingQuality chosen;
         int accum = 0;
@@ -80,20 +80,20 @@ public class QualityLootFunction implements LootFunction {
             }
         }
 
-        generated.getOrCreateNbt().putString("ForgingQuality", chosen.getDisplayName());
+        generated.getOrCreateTag().putString("ForgingQuality", chosen.getDisplayName());
         return generated;
     }
 
     private static boolean isEligibleItem(ItemStack stack) {
         Item item = stack.getItem();
 
-        if (!item.isDamageable()) return false;
+        if (!item.canBeDepleted()) return false;
 
-        return !stack.isIn(ModTags.Items.QUALITY_BLACKLIST);
+        return !stack.is(ModTags.Items.QUALITY_BLACKLIST);
     }
 
     @Override
-    public LootFunctionType getType() {
+    public LootItemFunctionType getType() {
         return TYPE;
     }
 }

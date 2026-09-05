@@ -2,6 +2,7 @@ package net.stirdrem.overgeared.compat.jei;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
@@ -11,12 +12,12 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.recipe.INetherAlloyRecipe;
@@ -26,8 +27,8 @@ import java.util.List;
 
 public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INetherAlloyRecipe> {
 
-    public static final Identifier UID = Overgeared.id("nether_alloy_smelting");
-    public static final Identifier TEXTURE = Overgeared.id("textures/gui/nether_furnace_jei.png");
+    public static final ResourceLocation UID = Overgeared.id("nether_alloy_smelting");
+    public static final ResourceLocation TEXTURE = Overgeared.id("textures/gui/nether_furnace_jei.png");
 
     public static final RecipeType<INetherAlloyRecipe> ALLOY_SMELTING_TYPE =
             new RecipeType<>(UID, INetherAlloyRecipe.class);
@@ -68,8 +69,8 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    public Text getTitle() {
-        return Text.translatable("gui.overgeared.jei.category.nether_alloy_smelting");
+    public Component getTitle() {
+        return Component.translatable("gui.overgeared.jei.category.nether_alloy_smelting");
     }
 
     @Override
@@ -83,7 +84,7 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
+    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Float exp = recipe.getExperience();
         arrowAnimated.draw(guiGraphics, 60, 19);
         flameAnimated.draw(guiGraphics, 64, 39);
@@ -95,10 +96,10 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
             expText = String.format("%.1f XP", exp);
         }
 
-        int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(expText);
+        int textWidth = Minecraft.getInstance().font.width(expText);
         int xPos = this.background.getWidth() - textWidth;
 
-        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, expText, xPos, textureHeight - 9, 0xFFFFFFFF, true);
+        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, textureHeight - 9, 0xFFFFFFFF, true);
     }
 
     @Override
@@ -169,7 +170,7 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
         }
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 20)
-                .addItemStack(recipe.getOutput(null));
+                .addItemStack(recipe.getResultItem(null));
     }
 
     private static int getOffsetY(int gridHeight, int gridWidth, int recipeHeight, int recipeWidth) {

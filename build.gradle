@@ -15,11 +15,16 @@ repositories {
     maven { url 'https://maven.blamejared.com/' }             // JEI
     maven { url 'https://maven.terraformersmc.com/releases/' } // Mod Menu
     // maven { url 'https://maven.valkyrienskies.org' }        // Valkyrien Skies - not yet integrated
+    flatDir { dirs 'libs' }                                    // Polymorph - not on a public maven we could pin reliably
+    maven { url 'https://maven.parchmentmc.org/' }             // Parchment (parameter names on top of Mojmap)
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${project.parchment_minecraft}:${project.parchment_version}@zip")
+    }
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
@@ -34,6 +39,12 @@ dependencies {
 
     modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
     modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
+
+    // Polymorph is optional - lets the player choose between ambiguous forging recipe matches.
+    // Anvil.getCurrentRecipe() checks FabricLoader.isModLoaded("polymorph") before touching any
+    // of these classes, so the mod must still run without it installed.
+    modCompileOnly files("libs/polymorph-fabric-0.49.10+1.20.1.jar")
+    modLocalRuntime files("libs/polymorph-fabric-0.49.10+1.20.1.jar")
 
     // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
     // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin

@@ -1,29 +1,29 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
 
-public class RockKnappingScreenHandler extends ScreenHandler {
-    private final Inventory craftingGrid = new SimpleInventory(9); // 3x3 grid
-    private final Inventory resultContainer = new SimpleInventory(1); // Output slot
-    private final World world;
+public class RockKnappingScreenHandler extends AbstractContainerMenu {
+    private final Container craftingGrid = new SimpleContainer(9); // 3x3 grid
+    private final Container resultContainer = new SimpleContainer(1); // Output slot
+    private final Level world;
     private final RecipeManager recipeManager;
-    private final PlayerEntity player;
+    private final Player player;
     private ItemStack inputRock; // The rock being knapped
     private boolean knappingFinished = false;
     private boolean resultCollected = false;
@@ -37,18 +37,18 @@ public class RockKnappingScreenHandler extends ScreenHandler {
     private static final int GRID_LAST_SLOT_INDEX = GRID_FIRST_SLOT_INDEX + 8;
     private static final int RESULT_SLOT_INDEX = GRID_LAST_SLOT_INDEX + 1;
 
-    public RockKnappingScreenHandler(int syncId, PlayerInventory playerInv, RecipeManager recipeManager) {
+    public RockKnappingScreenHandler(int syncId, Inventory playerInv, RecipeManager recipeManager) {
         super(ModMenuTypes.ROCK_KNAPPING_MENU, syncId);
-        this.world = playerInv.player.getWorld();
+        this.world = playerInv.player.level();
         this.recipeManager = recipeManager;
         this.player = playerInv.player;
 
         // Check if player has a knappable rock in either hand
-        ItemStack mainHandItem = player.getMainHandStack();
-        ItemStack offHandItem = player.getOffHandStack();
+        ItemStack mainHandItem = player.getMainHandItem();
+        ItemStack offHandItem = player.getOffhandItem();
         boolean valid = false;
 
-        if (mainHandItem.isIn(ModTags.Items.KNAPPABLE) && offHandItem.isIn(ModTags.Items.KNAPPABLE)) {
+        if (mainHandItem.is(ModTags.Items.KNAPPABLE) && offHandItem.is(ModTags.Items.KNAPPABLE)) {
             this.inputRock = mainHandItem.copy();
             valid = true;
         }
@@ -64,12 +64,12 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         for (int i = 0; i < 9; i++) {
             this.addSlot(new Slot(craftingGrid, i, -1000, -1000) {
                 @Override
-                public boolean canInsert(ItemStack stack) {
+                public boolean mayPlace(ItemStack stack) {
                     return false;
                 }
 
                 @Override
-                public boolean canTakeItems(PlayerEntity player) {
+                public boolean mayPickup(Player player) {
                     return false;
                 }
             });
@@ -78,23 +78,23 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         // Result/output slot
         this.addSlot(new Slot(resultContainer, 0, 124, 35) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return false;
             }
 
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
-                super.onTakeItem(player, stack);
+            public void onTake(Player player, ItemStack stack) {
+                super.onTake(player, stack);
                 knappingFinished = true;
                 resultCollected = true;
-                if (player instanceof ServerPlayerEntity serverPlayer) {
+                if (player instanceof ServerPlayer serverPlayer) {
                     ModAdvancementTriggers.KNAPPING.trigger(serverPlayer);
                 }
             }
 
             @Override
-            public boolean canTakeItems(PlayerEntity player) {
-                return !getStack().isEmpty() && !knappingFinished;
+            public boolean mayPickup(Player player) {
+                return !getItem().isEmpty() && !knappingFinished;
             }
         });
     }
@@ -108,7 +108,7 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         this.knappingFinished = true;
     }
 
-    private void addPlayerInventory(PlayerInventory playerInv) {
+    private void addPlayerInventory(Inventory playerInv) {
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 this.addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
@@ -116,13 +116,13 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         }
     }
 
-    private void addPlayerHotbar(PlayerInventory playerInv) {
+    private void addPlayerHotbar(Inventory playerInv) {
         for (int col = 0; col < 9; ++col) {
             this.addSlot(new Slot(playerInv, col, 8 + col * 18, 142));
         }
     }
 
-    public Identifier getUnchippedTexture() {
+    public ResourceLocation getUnchippedTexture() {
         return KnappingResourceReloadListener.getTexture(inputRock);
     }
 
@@ -131,7 +131,7 @@ public class RockKnappingScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         // Only close if the input rock disappears before being consumed
         if (!rockConsumed) {
             return hasInputRock(player);
@@ -141,57 +141,57 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         return true;
     }
 
-    private boolean hasInputRock(PlayerEntity player) {
-        ItemStack mainHand = player.getMainHandStack();
-        ItemStack offHand = player.getOffHandStack();
+    private boolean hasInputRock(Player player) {
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
 
         boolean hasRock =
-                mainHand.isIn(ModTags.Items.KNAPPABLE) &&
-                        offHand.isIn(ModTags.Items.KNAPPABLE);
+                mainHand.is(ModTags.Items.KNAPPABLE) &&
+                        offHand.is(ModTags.Items.KNAPPABLE);
 
-        if (!hasRock && !player.getWorld().isClient && player instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.closeHandledScreen();
+        if (!hasRock && !player.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.closeContainer();
         }
 
         return hasRock;
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
 
-        if (slot != null && slot.hasStack()) {
-            ItemStack itemstack1 = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
 
             if (index == RESULT_SLOT_INDEX) {
-                if (!this.insertItem(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_LAST_SLOT_INDEX + 1, false)) {
+                if (!this.moveItemStackTo(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_LAST_SLOT_INDEX + 1, false)) {
                     return ItemStack.EMPTY;
                 }
 
-                slot.onQuickTransfer(itemstack1, itemstack);
+                slot.onQuickCraft(itemstack1, itemstack);
 
                 if (itemstack1.isEmpty()) {
-                    slot.setStack(ItemStack.EMPTY);
+                    slot.setByPlayer(ItemStack.EMPTY);
                     knappingFinished = true;
                     resultCollected = true;
 
-                    if (player instanceof ServerPlayerEntity serverPlayer) {
+                    if (player instanceof ServerPlayer serverPlayer) {
                         ModAdvancementTriggers.KNAPPING.trigger(serverPlayer);
                     }
                 } else {
-                    slot.markDirty();
+                    slot.setChanged();
                 }
 
                 return itemstack;
             } else if (index >= PLAYER_FIRST_SLOT_INDEX && index <= PLAYER_LAST_SLOT_INDEX) {
                 if (index < PLAYER_FIRST_SLOT_INDEX + 27) {
-                    if (!this.insertItem(itemstack1, PLAYER_FIRST_SLOT_INDEX + 27, PLAYER_LAST_SLOT_INDEX + 1, false)) {
+                    if (!this.moveItemStackTo(itemstack1, PLAYER_FIRST_SLOT_INDEX + 27, PLAYER_LAST_SLOT_INDEX + 1, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else {
-                    if (!this.insertItem(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_FIRST_SLOT_INDEX + 27, false)) {
+                    if (!this.moveItemStackTo(itemstack1, PLAYER_FIRST_SLOT_INDEX, PLAYER_FIRST_SLOT_INDEX + 27, false)) {
                         return ItemStack.EMPTY;
                     }
                 }
@@ -200,16 +200,16 @@ public class RockKnappingScreenHandler extends ScreenHandler {
             }
 
             if (itemstack1.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
 
             if (itemstack1.getCount() == itemstack.getCount()) {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTakeItem(player, itemstack1);
+            slot.onTake(player, itemstack1);
         }
 
         return itemstack;
@@ -223,23 +223,23 @@ public class RockKnappingScreenHandler extends ScreenHandler {
             rockConsumed = true;
         }
 
-        if (!craftingGrid.getStack(index).isEmpty()) {
-            craftingGrid.setStack(index, ItemStack.EMPTY);
+        if (!craftingGrid.getItem(index).isEmpty()) {
+            craftingGrid.setItem(index, ItemStack.EMPTY);
         } else {
-            craftingGrid.setStack(index, new ItemStack(inputRock.getItem()));
+            craftingGrid.setItem(index, new ItemStack(inputRock.getItem()));
         }
 
         updateResult();
     }
 
     private void consumeInputRock() {
-        if (world.isClient) return;
+        if (world.isClientSide) return;
 
-        ItemStack mainHand = player.getMainHandStack();
+        ItemStack mainHand = player.getMainHandItem();
 
-        if (ItemStack.canCombine(mainHand, inputRock) && mainHand.getCount() > 0) {
-            mainHand.decrement(1);
-            player.getInventory().markDirty();
+        if (ItemStack.isSameItemSameTags(mainHand, inputRock) && mainHand.getCount() > 0) {
+            mainHand.shrink(1);
+            player.getInventory().setChanged();
         }
     }
 
@@ -247,7 +247,7 @@ public class RockKnappingScreenHandler extends ScreenHandler {
         if (world == null || knappingFinished || resultCollected) return;
 
         RockKnappingRecipe matchingRecipe = recipeManager
-                .listAllOfType(ModRecipeTypes.KNAPPING)
+                .getAllRecipesFor(ModRecipeTypes.KNAPPING)
                 .stream()
                 .filter(recipe -> recipe.getIngredient().test(inputRock))
                 .filter(recipe -> recipe.matches(craftingGrid, world))
@@ -255,25 +255,25 @@ public class RockKnappingScreenHandler extends ScreenHandler {
                 .orElse(null);
 
         if (matchingRecipe != null) {
-            resultContainer.setStack(0,
-                    matchingRecipe.getOutput(world.getRegistryManager()).copy());
+            resultContainer.setItem(0,
+                    matchingRecipe.getResultItem(world.registryAccess()).copy());
         } else {
-            resultContainer.setStack(0, ItemStack.EMPTY);
+            resultContainer.setItem(0, ItemStack.EMPTY);
         }
 
-        this.sendContentUpdates();
+        this.broadcastChanges();
     }
 
     public boolean isChipped(int index) {
-        return !craftingGrid.getStack(index).isEmpty();
+        return !craftingGrid.getItem(index).isEmpty();
     }
 
     public void clearGrid() {
         for (int i = 0; i < 9; i++) {
-            craftingGrid.setStack(i, ItemStack.EMPTY);
+            craftingGrid.setItem(i, ItemStack.EMPTY);
         }
-        resultContainer.setStack(0, ItemStack.EMPTY);
-        this.sendContentUpdates();
+        resultContainer.setItem(0, ItemStack.EMPTY);
+        this.broadcastChanges();
     }
 
     public boolean isKnappingFinished() {
@@ -290,23 +290,23 @@ public class RockKnappingScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        super.onClosed(player);
-        if (player.currentScreenHandler != this) {
+    public void removed(Player player) {
+        super.removed(player);
+        if (player.containerMenu != this) {
             return;
         }
-        if (!player.getWorld().isClient) {
-            ItemStack result = resultContainer.getStack(0);
+        if (!player.level().isClientSide) {
+            ItemStack result = resultContainer.getItem(0);
             if (!result.isEmpty() && !resultCollected) {
-                if (player instanceof ServerPlayerEntity serverPlayer) {
+                if (player instanceof ServerPlayer serverPlayer) {
                     ModAdvancementTriggers.KNAPPING.trigger(serverPlayer);
                 }
 
-                if (!player.getInventory().insertStack(result.copy())) {
-                    player.dropItem(result.copy(), false);
+                if (!player.getInventory().add(result.copy())) {
+                    player.drop(result.copy(), false);
                 }
 
-                resultContainer.setStack(0, ItemStack.EMPTY);
+                resultContainer.setItem(0, ItemStack.EMPTY);
             }
         }
     }

@@ -1,18 +1,22 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.Overgeared;
 
-public class FletchingRecipe implements Recipe<Inventory> {
-    private final Identifier id;
+public class FletchingRecipe implements Recipe<Container> {
+    private final ResourceLocation id;
     private final Ingredient tip, shaft, feather, potion;
     private final ItemStack result;
     private final ItemStack resultTipped;
@@ -20,7 +24,7 @@ public class FletchingRecipe implements Recipe<Inventory> {
     private final String tippedTag;
     private final String lingeringTag;
 
-    public FletchingRecipe(Identifier id, Ingredient tip, Ingredient shaft, Ingredient feather, Ingredient potion,
+    public FletchingRecipe(ResourceLocation id, Ingredient tip, Ingredient shaft, Ingredient feather, Ingredient potion,
                             ItemStack result, ItemStack resultTipped, ItemStack resultLingering,
                             String tippedTag, String lingeringTag) {
         this.id = id;
@@ -36,15 +40,15 @@ public class FletchingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public boolean matches(Inventory inventory, World world) {
-        return (tip == Ingredient.EMPTY || tip.test(inventory.getStack(0))) &&
-                (shaft == Ingredient.EMPTY || shaft.test(inventory.getStack(1))) &&
-                (feather == Ingredient.EMPTY || feather.test(inventory.getStack(2))) &&
-                (potion == Ingredient.EMPTY || potion.test(inventory.getStack(3)));
+    public boolean matches(Container inventory, Level world) {
+        return (tip == Ingredient.EMPTY || tip.test(inventory.getItem(0))) &&
+                (shaft == Ingredient.EMPTY || shaft.test(inventory.getItem(1))) &&
+                (feather == Ingredient.EMPTY || feather.test(inventory.getItem(2))) &&
+                (potion == Ingredient.EMPTY || potion.test(inventory.getItem(3)));
     }
 
     @Override
-    public ItemStack craft(Inventory inventory, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(Container inventory, RegistryAccess registryAccess) {
         return getDefaultResult();
     }
 
@@ -81,17 +85,17 @@ public class FletchingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return true;
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager access) {
+    public ItemStack getResultItem(RegistryAccess access) {
         return getDefaultResult();
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -128,11 +132,11 @@ public class FletchingRecipe implements Recipe<Inventory> {
 
     public static class Serializer implements RecipeSerializer<FletchingRecipe> {
         public static final FletchingRecipe.Serializer INSTANCE = new FletchingRecipe.Serializer();
-        public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "fletching");
+        public static final ResourceLocation ID = new ResourceLocation(Overgeared.MOD_ID, "fletching");
 
         @Override
-        public FletchingRecipe read(Identifier id, JsonObject json) {
-            JsonObject material = JsonHelper.getObject(json, "material");
+        public FletchingRecipe fromJson(ResourceLocation id, JsonObject json) {
+            JsonObject material = GsonHelper.getAsJsonObject(json, "material");
 
             // Allow tip, shaft, feather to be optional
             Ingredient tip = material.has("tip") ? Ingredient.fromJson(material.get("tip")) : Ingredient.EMPTY;
@@ -143,16 +147,16 @@ public class FletchingRecipe implements Recipe<Inventory> {
             Ingredient potion = json.has("potion") ? Ingredient.fromJson(json.get("potion")) : Ingredient.EMPTY;
 
             // Base result
-            ItemStack result = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
+            ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
 
             // Optional tipped result
             ItemStack resultTipped = ItemStack.EMPTY;
             String tippedTag = null;
             if (json.has("result_tipped")) {
-                JsonObject tippedJson = JsonHelper.getObject(json, "result_tipped");
-                resultTipped = ShapedRecipe.outputFromJson(tippedJson);
+                JsonObject tippedJson = GsonHelper.getAsJsonObject(json, "result_tipped");
+                resultTipped = ShapedRecipe.itemStackFromJson(tippedJson);
                 if (tippedJson.has("tag")) {
-                    tippedTag = JsonHelper.getString(tippedJson, "tag");
+                    tippedTag = GsonHelper.getAsString(tippedJson, "tag");
                 }
             }
 
@@ -160,10 +164,10 @@ public class FletchingRecipe implements Recipe<Inventory> {
             ItemStack resultLingering = ItemStack.EMPTY;
             String lingeringTag = null;
             if (json.has("result_lingering")) {
-                JsonObject lingeringJson = JsonHelper.getObject(json, "result_lingering");
-                resultLingering = ShapedRecipe.outputFromJson(lingeringJson);
+                JsonObject lingeringJson = GsonHelper.getAsJsonObject(json, "result_lingering");
+                resultLingering = ShapedRecipe.itemStackFromJson(lingeringJson);
                 if (lingeringJson.has("tag")) {
-                    lingeringTag = JsonHelper.getString(lingeringJson, "tag");
+                    lingeringTag = GsonHelper.getAsString(lingeringJson, "tag");
                 }
             }
 
@@ -173,21 +177,21 @@ public class FletchingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public FletchingRecipe read(Identifier id, PacketByteBuf buffer) {
+        public FletchingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
             // Read ingredients (can be EMPTY)
-            Ingredient tip = Ingredient.fromPacket(buffer);
-            Ingredient shaft = Ingredient.fromPacket(buffer);
-            Ingredient feather = Ingredient.fromPacket(buffer);
-            Ingredient potion = Ingredient.fromPacket(buffer);
+            Ingredient tip = Ingredient.fromNetwork(buffer);
+            Ingredient shaft = Ingredient.fromNetwork(buffer);
+            Ingredient feather = Ingredient.fromNetwork(buffer);
+            Ingredient potion = Ingredient.fromNetwork(buffer);
 
             // Read result stacks
-            ItemStack result = buffer.readItemStack();
-            ItemStack resultTipped = buffer.readItemStack();
-            ItemStack resultLingering = buffer.readItemStack();
+            ItemStack result = buffer.readItem();
+            ItemStack resultTipped = buffer.readItem();
+            ItemStack resultLingering = buffer.readItem();
 
             // Read optional tags
-            String tippedTag = buffer.readBoolean() ? buffer.readString() : null;
-            String lingeringTag = buffer.readBoolean() ? buffer.readString() : null;
+            String tippedTag = buffer.readBoolean() ? buffer.readUtf() : null;
+            String lingeringTag = buffer.readBoolean() ? buffer.readUtf() : null;
 
             return new FletchingRecipe(id, tip, shaft, feather, potion, result,
                     resultTipped, resultLingering,
@@ -195,29 +199,29 @@ public class FletchingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public void write(PacketByteBuf buffer, FletchingRecipe recipe) {
+        public void toNetwork(FriendlyByteBuf buffer, FletchingRecipe recipe) {
             // Write ingredients (Ingredient.EMPTY is supported by vanilla serializer)
-            recipe.tip.write(buffer);
-            recipe.shaft.write(buffer);
-            recipe.feather.write(buffer);
-            recipe.potion.write(buffer);
+            recipe.tip.toNetwork(buffer);
+            recipe.shaft.toNetwork(buffer);
+            recipe.feather.toNetwork(buffer);
+            recipe.potion.toNetwork(buffer);
 
             // Write result stacks
-            buffer.writeItemStack(recipe.result);
-            buffer.writeItemStack(recipe.resultTipped);
-            buffer.writeItemStack(recipe.resultLingering);
+            buffer.writeItem(recipe.result);
+            buffer.writeItem(recipe.resultTipped);
+            buffer.writeItem(recipe.resultLingering);
 
             // Write optional tags
             if (recipe.tippedTag != null) {
                 buffer.writeBoolean(true);
-                buffer.writeString(recipe.tippedTag);
+                buffer.writeUtf(recipe.tippedTag);
             } else {
                 buffer.writeBoolean(false);
             }
 
             if (recipe.lingeringTag != null) {
                 buffer.writeBoolean(true);
-                buffer.writeString(recipe.lingeringTag);
+                buffer.writeUtf(recipe.lingeringTag);
             } else {
                 buffer.writeBoolean(false);
             }

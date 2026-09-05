@@ -8,17 +8,17 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.recipe.FletchingRecipe;
 
 public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
 
-    public static final Identifier UID = Overgeared.id("fletching");
-    public static final Identifier TEXTURE = Overgeared.id("textures/gui/fletching_table_jei.png");
+    public static final ResourceLocation UID = Overgeared.id("fletching");
+    public static final ResourceLocation TEXTURE = Overgeared.id("textures/gui/fletching_table_jei.png");
 
     public static final RecipeType<FletchingRecipe> FLETCHING_RECIPE_TYPE =
             new RecipeType<>(UID, FletchingRecipe.class);
@@ -37,8 +37,8 @@ public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
     }
 
     @Override
-    public Text getTitle() {
-        return Text.translatable("gui.overgeared.jei.category.fletching");
+    public Component getTitle() {
+        return Component.translatable("gui.overgeared.jei.category.fletching");
     }
 
     @Override

@@ -1,16 +1,16 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
@@ -18,31 +18,32 @@ import net.stirdrem.overgeared.util.ConfigHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
-public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
+public class DynamicToolCastRecipe extends CustomRecipe {
 
-    public DynamicToolCastRecipe(Identifier id, CraftingRecipeCategory category) {
+    public DynamicToolCastRecipe(ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
     }
 
     @Override
-    public boolean matches(RecipeInputInventory inv, World world) {
+    public boolean matches(CraftingContainer inv, Level world) {
         ItemStack cast = ItemStack.EMPTY;
         int existingAmount = 0;
         int addedAmount = 0;
         int maxAmount = 0;
         boolean foundMaterial = false;
 
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
 
             // === CAST ===
-            if (stack.isOf(ModItems.CLAY_TOOL_CAST) || stack.isOf(ModItems.NETHER_TOOL_CAST)) {
+            if (stack.is(ModItems.CLAY_TOOL_CAST) || stack.is(ModItems.NETHER_TOOL_CAST)) {
                 if (!cast.isEmpty()) return false; // only one cast allowed
-                if (!stack.hasNbt()) return false;
+                if (!stack.hasTag()) return false;
 
-                NbtCompound tag = stack.getNbt();
+                CompoundTag tag = stack.getTag();
                 String toolType = tag.getString("ToolType");
                 if (toolType.isBlank()) return false;
 
@@ -76,7 +77,7 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
 
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
         if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
 
         ItemStack cast = ItemStack.EMPTY;
@@ -87,13 +88,13 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
         String toolType = "none";
 
         // Scan grid
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
 
             // Find cast
-            if (stack.isOf(ModItems.CLAY_TOOL_CAST) || stack.isOf(ModItems.NETHER_TOOL_CAST)) {
+            if (stack.is(ModItems.CLAY_TOOL_CAST) || stack.is(ModItems.NETHER_TOOL_CAST)) {
                 cast = stack.copy();
-                NbtCompound tag = cast.getOrCreateNbt();
+                CompoundTag tag = cast.getOrCreateTag();
                 toolType = tag.getString("ToolType");
                 maxAmount = ConfigHelper.getMaxMaterialAmount(toolType);
             }
@@ -116,8 +117,8 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
         if (cast.isEmpty()) return ItemStack.EMPTY;
 
         // === Load existing values ===
-        NbtCompound castTag = cast.getOrCreateNbt();
-        NbtCompound existingMatTag = castTag.getCompound("Materials");
+        CompoundTag castTag = cast.getOrCreateTag();
+        CompoundTag existingMatTag = castTag.getCompound("Materials");
         int existingAmount = castTag.getInt("Amount");
 
         // Sum total after adding
@@ -127,13 +128,13 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
         if (maxAmount > 0 && totalAmount > maxAmount) return ItemStack.EMPTY;
 
         // Merge materials
-        for (String mat : existingMatTag.getKeys()) {
+        for (String mat : existingMatTag.getAllKeys()) {
             int oldVal = existingMatTag.getInt(mat);
             materialTotals.put(mat, materialTotals.getOrDefault(mat, 0) + oldVal);
         }
 
         // Write merged data back
-        NbtCompound newMatTag = new NbtCompound();
+        CompoundTag newMatTag = new CompoundTag();
         for (var entry : materialTotals.entrySet()) {
             newMatTag.putInt(entry.getKey(), entry.getValue());
         }
@@ -151,20 +152,20 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
     /**
      * Adds complete item stack data to the "input" NBT list, merging duplicates
      */
-    private void addItemStacksToInputList(NbtCompound castTag, List<ItemStack> newInputItems) {
+    private void addItemStacksToInputList(CompoundTag castTag, List<ItemStack> newInputItems) {
         // Get or create the "input" list
-        NbtList inputList;
-        if (castTag.contains("input", NbtElement.LIST_TYPE)) {
-            inputList = castTag.getList("input", NbtElement.COMPOUND_TYPE);
+        ListTag inputList;
+        if (castTag.contains("input", Tag.TAG_LIST)) {
+            inputList = castTag.getList("input", Tag.TAG_COMPOUND);
         } else {
-            inputList = new NbtList();
+            inputList = new ListTag();
         }
 
         // Convert existing input list to a list of ItemStacks for comparison
         List<ItemStack> existingItems = new ArrayList<>();
-        for (NbtElement inputTag : inputList) {
-            if (inputTag instanceof NbtCompound compound) {
-                ItemStack existingItem = ItemStack.fromNbt(compound);
+        for (Tag inputTag : inputList) {
+            if (inputTag instanceof CompoundTag compound) {
+                ItemStack existingItem = ItemStack.of(compound);
                 if (!existingItem.isEmpty()) {
                     existingItems.add(existingItem);
                 }
@@ -195,10 +196,10 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
         }
 
         // Convert back to NBT list
-        NbtList mergedInputList = new NbtList();
+        ListTag mergedInputList = new ListTag();
         for (ItemStack item : existingItems) {
-            NbtCompound itemTag = new NbtCompound();
-            item.writeNbt(itemTag); // Save with updated count
+            CompoundTag itemTag = new CompoundTag();
+            item.save(itemTag); // Save with updated count
             mergedInputList.add(itemTag);
         }
 
@@ -211,13 +212,13 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
      */
     private boolean areItemStacksIdentical(ItemStack stack1, ItemStack stack2) {
         // Check if items are the same
-        if (!ItemStack.areItemsEqual(stack1, stack2)) {
+        if (!ItemStack.isSameItem(stack1, stack2)) {
             return false;
         }
 
         // Check if NBT tags are the same
-        NbtCompound tag1 = stack1.getNbt();
-        NbtCompound tag2 = stack2.getNbt();
+        CompoundTag tag1 = stack1.getTag();
+        CompoundTag tag2 = stack2.getTag();
 
         if (tag1 == null && tag2 == null) {
             return true;
@@ -231,7 +232,7 @@ public class DynamicToolCastRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 2;
     }
 

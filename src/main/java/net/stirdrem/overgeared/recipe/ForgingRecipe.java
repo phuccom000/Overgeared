@@ -4,17 +4,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
@@ -23,18 +28,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ForgingRecipe implements Recipe<Inventory> {
+public class ForgingRecipe implements Recipe<Container> {
     private static final ForgingIngredient EMPTY_ING =
             new ForgingIngredient(Ingredient.EMPTY, false, false);
 
     private static int BLUEPRINT_SLOT = 11;
     public final int width;
     public final int height;
-    private final Identifier id;
+    private final ResourceLocation id;
     private final String group;
     private final Set<String> blueprintTypes;
     private final String tier;
-    private final DefaultedList<ForgingIngredient> ingredients;
+    private final NonNullList<ForgingIngredient> ingredients;
     private final ItemStack result;
     private final ItemStack failedResult;
     private final int hammering;
@@ -49,7 +54,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
     private final ForgingBookCategory tab;
 
 
-    public ForgingRecipe(Identifier id, String group, boolean requireBlueprint, Set<String> blueprintTypes, String tier, DefaultedList<ForgingIngredient> ingredients,
+    public ForgingRecipe(ResourceLocation id, String group, boolean requireBlueprint, Set<String> blueprintTypes, String tier, NonNullList<ForgingIngredient> ingredients,
                           ItemStack result, ItemStack failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookCategory tab) {
         this.id = id;
         this.group = group;
@@ -72,20 +77,42 @@ public class ForgingRecipe implements Recipe<Inventory> {
         this.tab = tab;
     }
 
-    public static Optional<ForgingRecipe> findBestMatch(World world, Inventory inv) {
+    public static Optional<ForgingRecipe> findBestMatch(Level world, Container inv) {
         var manager = world.getRecipeManager();
         //  Find a key item (first non-empty slot)
-        ItemStack keyStack = IntStream.range(0, 9).mapToObj(inv::getStack).filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+        ItemStack keyStack = IntStream.range(0, 9).mapToObj(inv::getItem).filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
         // If empty grid → no recipe
         if (keyStack.isEmpty()) {
             return Optional.empty();
         }
 
-        return manager.listAllOfType(ModRecipeTypes.FORGING)
+        return manager.getAllRecipesFor(ModRecipeTypes.FORGING)
                 .stream()
                 .filter(recipe -> recipe.containsIngredient(keyStack))
                 .filter(recipe -> recipe.matches(inv, world))
                 .max(Comparator.comparingInt(ForgingRecipe::getRecipeSize));
+    }
+
+    /**
+     * Every recipe matching the current grid, not just the auto-picked "best" one - used by
+     * Polymorph integration so the player can choose between ambiguous matches instead of always
+     * getting whichever recipe happens to have the most ingredients. Sorted largest-first so the
+     * first entry matches what findBestMatch would have auto-picked (the sensible default when
+     * nothing has been explicitly selected yet).
+     */
+    public static List<ForgingRecipe> findAllMatches(Level world, Container inv) {
+        var manager = world.getRecipeManager();
+        ItemStack keyStack = IntStream.range(0, 9).mapToObj(inv::getItem).filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+        if (keyStack.isEmpty()) {
+            return List.of();
+        }
+
+        return manager.getAllRecipesFor(ModRecipeTypes.FORGING)
+                .stream()
+                .filter(recipe -> recipe.containsIngredient(keyStack))
+                .filter(recipe -> recipe.matches(inv, world))
+                .sorted(Comparator.comparingInt(ForgingRecipe::getRecipeSize).reversed())
+                .collect(Collectors.toList());
     }
 
     public boolean containsIngredient(ItemStack stack) {
@@ -97,8 +124,8 @@ public class ForgingRecipe implements Recipe<Inventory> {
         return false;
     }
 
-    private boolean checkBlueprint(Inventory inv) {
-        ItemStack blueprintStack = inv.getStack(BLUEPRINT_SLOT);
+    private boolean checkBlueprint(Container inv) {
+        ItemStack blueprintStack = inv.getItem(BLUEPRINT_SLOT);
 
         // If blueprint not required and no types defined -> slot must be empty
         if (!requiresBlueprint && blueprintTypes.isEmpty()) {
@@ -110,7 +137,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
             return !requiresBlueprint;
         }
 
-        NbtCompound nbt = blueprintStack.getNbt();
+        CompoundTag nbt = blueprintStack.getTag();
         if (nbt == null || !nbt.contains("ToolType")) return false;
 
         String toolType = nbt.getString("ToolType");
@@ -118,7 +145,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public boolean matches(Inventory inv, World world) {
+    public boolean matches(Container inv, Level world) {
         if (!checkBlueprint(inv)) return false;
 
         for (int y = 0; y <= 3 - height; y++) {
@@ -132,7 +159,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
         return false;
     }
 
-    private boolean checkSurroundingBlanks(Inventory inv, int xOffset, int yOffset) {
+    private boolean checkSurroundingBlanks(Container inv, int xOffset, int yOffset) {
         // Check if slots outside the recipe pattern are empty
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
@@ -144,7 +171,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
 
                 // Check if non-recipe slots are empty
                 int invSlot = y * 3 + x;
-                if (!inv.getStack(invSlot).isEmpty()) {
+                if (!inv.getItem(invSlot).isEmpty()) {
                     return false;
                 }
             }
@@ -152,7 +179,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
         return true;
     }
 
-    private boolean matchesPattern(Inventory inv, int xOffset, int yOffset) {
+    private boolean matchesPattern(Container inv, int xOffset, int yOffset) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int invSlot = (y + yOffset) * 3 + (x + xOffset);
@@ -160,12 +187,12 @@ public class ForgingRecipe implements Recipe<Inventory> {
 
                 // If recipe expects empty, inventory slot must be empty
                 if (ingredient.isEmpty()) {
-                    if (!inv.getStack(invSlot).isEmpty()) {
+                    if (!inv.getItem(invSlot).isEmpty()) {
                         return false;
                     }
                 }
                 // If recipe expects item, must match and have at least 1 count
-                else if (!ingredients.get(y * width + x).test(inv.getStack(invSlot))) {
+                else if (!ingredients.get(y * width + x).test(inv.getItem(invSlot))) {
                     return false;
                 }
             }
@@ -174,51 +201,51 @@ public class ForgingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess) {
         ItemStack out = result.copy();
-        NbtCompound merged = new NbtCompound();
+        CompoundTag merged = new CompoundTag();
 
         for (int i = 0; i < ingredients.size(); i++) {
             ForgingIngredient ing = ingredients.get(i);
             if (!ing.transferNbt()) continue;
 
-            ItemStack stack = inv.getStack(i);
-            if (!stack.hasNbt()) continue;
+            ItemStack stack = inv.getItem(i);
+            if (!stack.hasTag()) continue;
 
-            mergeCompound(merged, stack.getNbt());
+            mergeCompound(merged, stack.getTag());
         }
 
         if (!merged.isEmpty()) {
-            out.setNbt(merged);
+            out.setTag(merged);
         }
 
         return out;
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width >= this.width && height >= this.height;
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager registryAccess) {
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         return result.copy();
     }
 
     public boolean hasFailedResult() {
         return failedResult != null
                 && !failedResult.isEmpty()
-                && !failedResult.isOf(result.getItem());
+                && !failedResult.is(result.getItem());
     }
 
-    public ItemStack getFailedResultItem(DynamicRegistryManager registryAccess) {
+    public ItemStack getFailedResultItem(RegistryAccess registryAccess) {
         return hasFailedResult() ? failedResult.copy() : ItemStack.EMPTY;
     }
 
     @Override
-    public DefaultedList<Ingredient> getIngredients() {
-        DefaultedList<Ingredient> list =
-                DefaultedList.ofSize(this.width * this.height, Ingredient.EMPTY);
+    public NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> list =
+                NonNullList.withSize(this.width * this.height, Ingredient.EMPTY);
 
         for (int i = 0; i < this.width * this.height; i++) {
             list.set(i, ingredients.get(i).ingredient);
@@ -228,16 +255,16 @@ public class ForgingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isIncomplete() {
         return false;
     }
 
-    public DefaultedList<ForgingIngredient> getForgingIngredients() {
+    public NonNullList<ForgingIngredient> getForgingIngredients() {
         return ingredients;
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -342,7 +369,7 @@ public class ForgingRecipe implements Recipe<Inventory> {
 
     public static class Serializer implements RecipeSerializer<ForgingRecipe> {
         public static final Serializer INSTANCE = new Serializer();
-        public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "forging");
+        public static final ResourceLocation ID = new ResourceLocation(Overgeared.MOD_ID, "forging");
 
         private static Map<Character, ForgingIngredient> parseKey(JsonObject keyJson) {
             Map<Character, ForgingIngredient> keyMap = new HashMap<>();
@@ -352,11 +379,11 @@ public class ForgingRecipe implements Recipe<Inventory> {
                     throw new JsonSyntaxException("Invalid key: " + entry.getKey());
                 }
 
-                JsonObject obj = JsonHelper.asObject(entry.getValue(), entry.getKey());
+                JsonObject obj = GsonHelper.convertToJsonObject(entry.getValue(), entry.getKey());
 
                 Ingredient ingredient = Ingredient.fromJson(obj);
-                boolean requiresHeated = JsonHelper.getBoolean(obj, "requires_heated", false);
-                boolean transferNbt = JsonHelper.getBoolean(obj, "transfer_nbt", false);
+                boolean requiresHeated = GsonHelper.getAsBoolean(obj, "requires_heated", false);
+                boolean transferNbt = GsonHelper.getAsBoolean(obj, "transfer_nbt", false);
 
                 keyMap.put(entry.getKey().charAt(0),
                         new ForgingIngredient(ingredient, requiresHeated, transferNbt));
@@ -366,18 +393,18 @@ public class ForgingRecipe implements Recipe<Inventory> {
         }
 
 
-        private static DefaultedList<ForgingIngredient> dissolvePattern(
+        private static NonNullList<ForgingIngredient> dissolvePattern(
                 JsonArray pattern,
                 Map<Character, ForgingIngredient> keys,
                 int width,
                 int height
         ) {
-            DefaultedList<ForgingIngredient> ingredients =
-                    DefaultedList.ofSize(width * height,
+            NonNullList<ForgingIngredient> ingredients =
+                    NonNullList.withSize(width * height,
                             new ForgingIngredient(Ingredient.EMPTY, false, false));
 
             for (int y = 0; y < height; y++) {
-                String row = JsonHelper.asString(pattern.get(y), "pattern[" + y + "]");
+                String row = GsonHelper.convertToString(pattern.get(y), "pattern[" + y + "]");
                 if (row.length() != width) {
                     throw new JsonSyntaxException("Pattern row width mismatch");
                 }
@@ -406,8 +433,8 @@ public class ForgingRecipe implements Recipe<Inventory> {
 
 
         @Override
-        public ForgingRecipe read(Identifier recipeId, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
+        public ForgingRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
+            String group = GsonHelper.getAsString(json, "group", "");
 
             Set<String> blueprintTypes = new LinkedHashSet<>();
             if (json.has("blueprint")) {
@@ -430,27 +457,27 @@ public class ForgingRecipe implements Recipe<Inventory> {
                 }
             }
 
-            boolean requiresBlueprint = JsonHelper.getBoolean(json, "requires_blueprint", false);
+            boolean requiresBlueprint = GsonHelper.getAsBoolean(json, "requires_blueprint", false);
 
-            String tier = JsonHelper.getString(json, "tier", AnvilTier.IRON.getDisplayName());
-            int hammering = JsonHelper.getInt(json, "hammering", 1);
-            boolean hasQuality = JsonHelper.getBoolean(json, "has_quality", true);
-            boolean needsMinigame = JsonHelper.getBoolean(json, "needs_minigame", false);
-            boolean hasPolishing = JsonHelper.getBoolean(json, "has_polishing", true);
+            String tier = GsonHelper.getAsString(json, "tier", AnvilTier.IRON.getDisplayName());
+            int hammering = GsonHelper.getAsInt(json, "hammering", 1);
+            boolean hasQuality = GsonHelper.getAsBoolean(json, "has_quality", true);
+            boolean needsMinigame = GsonHelper.getAsBoolean(json, "needs_minigame", false);
+            boolean hasPolishing = GsonHelper.getAsBoolean(json, "has_polishing", true);
 
-            boolean showNotification = JsonHelper.getBoolean(json, "show_notification", true);
+            boolean showNotification = GsonHelper.getAsBoolean(json, "show_notification", true);
             ForgingQuality minimumQuality = ForgingQuality.fromString(
-                    JsonHelper.getString(json, "minimumQuality", ForgingQuality.POOR.getDisplayName())
+                    GsonHelper.getAsString(json, "minimumQuality", ForgingQuality.POOR.getDisplayName())
             );
             ForgingQuality qualityDifficulty = ForgingQuality.fromString(
-                    JsonHelper.getString(json, "quality_difficulty", ForgingQuality.NONE.getDisplayName())
+                    GsonHelper.getAsString(json, "quality_difficulty", ForgingQuality.NONE.getDisplayName())
             );
 
             Map<Character, ForgingIngredient> keyMap =
-                    parseKey(JsonHelper.getObject(json, "key"));
+                    parseKey(GsonHelper.getAsJsonObject(json, "key"));
 
-            JsonArray pattern = JsonHelper.getArray(json, "pattern");
-            final String tabKeyIn = JsonHelper.getString(json, "category", ForgingBookCategory.MISC.toString());
+            JsonArray pattern = GsonHelper.getAsJsonArray(json, "pattern");
+            final String tabKeyIn = GsonHelper.getAsString(json, "category", ForgingBookCategory.MISC.toString());
             ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKeyIn);
             if (tabIn == null) {
                 tabIn = ForgingBookCategory.MISC; // safe fallback
@@ -458,22 +485,22 @@ public class ForgingRecipe implements Recipe<Inventory> {
             int width = pattern.get(0).getAsString().length();
             int height = pattern.size();
 
-            DefaultedList<ForgingIngredient> ingredients =
+            NonNullList<ForgingIngredient> ingredients =
                     dissolvePattern(pattern, keyMap, width, height);
 
             ItemStack result =
-                    ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"));
+                    ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
 
             boolean defaultQuench = !(result.getItem() instanceof ArmorItem);
             boolean needQuenching =
-                    JsonHelper.getBoolean(json, "need_quenching", defaultQuench);
+                    GsonHelper.getAsBoolean(json, "need_quenching", defaultQuench);
 
             ItemStack failedResult =
-                    ShapedRecipe.outputFromJson(
-                            JsonHelper.getObject(
+                    ShapedRecipe.itemStackFromJson(
+                            GsonHelper.getAsJsonObject(
                                     json,
                                     "result_failed",
-                                    JsonHelper.getObject(json, "result")
+                                    GsonHelper.getAsJsonObject(json, "result")
                             )
                     );
 
@@ -502,15 +529,15 @@ public class ForgingRecipe implements Recipe<Inventory> {
 
 
         @Override
-        public ForgingRecipe read(Identifier recipeId, PacketByteBuf buffer) {
-            String group = buffer.readString();
+        public ForgingRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
+            String group = buffer.readUtf();
             boolean requiresBlueprint = buffer.readBoolean();
             int blueprintCount = buffer.readVarInt();
             Set<String> blueprintTypes = new LinkedHashSet<>();
             for (int i = 0; i < blueprintCount; i++) {
-                blueprintTypes.add(buffer.readString());
+                blueprintTypes.add(buffer.readUtf());
             }
-            String tier = buffer.readString();
+            String tier = buffer.readUtf();
             int hammering = buffer.readVarInt();
             boolean hasQuality = buffer.readBoolean();
             boolean needsMinigame = buffer.readBoolean();
@@ -519,28 +546,28 @@ public class ForgingRecipe implements Recipe<Inventory> {
             boolean showNotification = buffer.readBoolean();
             int width = buffer.readVarInt();
             int height = buffer.readVarInt();
-            ForgingQuality minimumQuality = ForgingQuality.fromString(buffer.readString());
-            DefaultedList<ForgingIngredient> ingredients =
-                    DefaultedList.ofSize(
+            ForgingQuality minimumQuality = ForgingQuality.fromString(buffer.readUtf());
+            NonNullList<ForgingIngredient> ingredients =
+                    NonNullList.withSize(
                             width * height,
                             new ForgingIngredient(Ingredient.EMPTY, false, false)
                     );
 
             ingredients.replaceAll(ignored ->
                     new ForgingIngredient(
-                            Ingredient.fromPacket(buffer),
+                            Ingredient.fromNetwork(buffer),
                             buffer.readBoolean(),
                             buffer.readBoolean()
                     )
             );
 
-            ForgingQuality qualityDifficulty = ForgingQuality.fromString(buffer.readString());
+            ForgingQuality qualityDifficulty = ForgingQuality.fromString(buffer.readUtf());
 
 
-            ItemStack result = buffer.readItemStack();
-            ItemStack failedResult = buffer.readItemStack();
+            ItemStack result = buffer.readItem();
+            ItemStack failedResult = buffer.readItem();
 
-            String tabKey = buffer.readString();
+            String tabKey = buffer.readUtf();
             ForgingBookCategory tabIn = ForgingBookCategory.findByName(tabKey);
             if (tabIn == null) {
                 tabIn = ForgingBookCategory.MISC;
@@ -550,14 +577,14 @@ public class ForgingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public void write(PacketByteBuf buffer, ForgingRecipe recipe) {
-            buffer.writeString(recipe.group);
+        public void toNetwork(FriendlyByteBuf buffer, ForgingRecipe recipe) {
+            buffer.writeUtf(recipe.group);
             buffer.writeBoolean(recipe.requiresBlueprint);
             buffer.writeVarInt(recipe.blueprintTypes.size());
             for (String type : recipe.blueprintTypes) {
-                buffer.writeString(type);
+                buffer.writeUtf(type);
             }
-            buffer.writeString(recipe.tier);
+            buffer.writeUtf(recipe.tier);
             buffer.writeVarInt(recipe.hammering);
             buffer.writeBoolean(recipe.hasQuality);
             buffer.writeBoolean(recipe.needsMinigame);
@@ -566,19 +593,19 @@ public class ForgingRecipe implements Recipe<Inventory> {
             buffer.writeBoolean(recipe.showNotification);
             buffer.writeVarInt(recipe.width);
             buffer.writeVarInt(recipe.height);
-            buffer.writeString(recipe.minimumQuality.toString());
+            buffer.writeUtf(recipe.minimumQuality.toString());
 
             for (ForgingIngredient ingredient : recipe.ingredients) {
-                ingredient.ingredient.write(buffer);
+                ingredient.ingredient.toNetwork(buffer);
                 buffer.writeBoolean(ingredient.requiresHeated);
                 buffer.writeBoolean(ingredient.transferNbt);
             }
 
-            buffer.writeString(recipe.qualityDifficulty.toString());
+            buffer.writeUtf(recipe.qualityDifficulty.toString());
 
-            buffer.writeItemStack(recipe.result);
-            buffer.writeItemStack(recipe.failedResult);
-            buffer.writeString(recipe.tab.getFolderName());
+            buffer.writeItem(recipe.result);
+            buffer.writeItem(recipe.failedResult);
+            buffer.writeUtf(recipe.tab.getFolderName());
         }
     }
 
@@ -591,19 +618,19 @@ public class ForgingRecipe implements Recipe<Inventory> {
             if (!ingredient.test(stack)) return false;
 
             if (requiresHeated) {
-                if (!stack.hasNbt()) return false;
-                if (!stack.getNbt().getBoolean("Heated")) return false;
+                if (!stack.hasTag()) return false;
+                if (!stack.getTag().getBoolean("Heated")) return false;
             }
 
             return true;
         }
     }
 
-    private static void mergeCompound(NbtCompound target, NbtCompound source) {
-        for (String key : source.getKeys()) {
+    private static void mergeCompound(CompoundTag target, CompoundTag source) {
+        for (String key : source.getAllKeys()) {
             if (target.contains(key)
-                    && target.get(key) instanceof NbtCompound t
-                    && source.get(key) instanceof NbtCompound s) {
+                    && target.get(key) instanceof CompoundTag t
+                    && source.get(key) instanceof CompoundTag s) {
                 // Deep merge
                 mergeCompound(t, s);
             } else {

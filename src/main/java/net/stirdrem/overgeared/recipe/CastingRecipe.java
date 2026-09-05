@@ -1,19 +1,24 @@
 package net.stirdrem.overgeared.recipe;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
@@ -23,12 +28,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class CastingRecipe implements Recipe<Inventory> {
+public class CastingRecipe implements Recipe<Container> {
 
-    private final Identifier id;
+    private final ResourceLocation id;
     private final String group;
-    private final CookingRecipeCategory category;
+    private final CookingBookCategory category;
 
     private final ItemStack result;
     private final float experience;
@@ -39,9 +45,9 @@ public class CastingRecipe implements Recipe<Inventory> {
     private final boolean needPolishing;
 
     public CastingRecipe(
-            Identifier id,
+            ResourceLocation id,
             String group,
-            CookingRecipeCategory category,
+            CookingBookCategory category,
             ItemStack result,
             float experience,
             int cookingTime,
@@ -61,14 +67,14 @@ public class CastingRecipe implements Recipe<Inventory> {
     }
 
     @Override
-    public boolean matches(Inventory inv, World world) {
-        if (world.isClient) return false;
+    public boolean matches(Container inv, Level world) {
+        if (world.isClientSide) return false;
 
         // Tool cast (slot 1)
-        ItemStack cast = inv.getStack(1);
+        ItemStack cast = inv.getItem(1);
         if (!(cast.getItem() instanceof ToolCastItem)) return false;
 
-        NbtCompound castTag = cast.getNbt();
+        CompoundTag castTag = cast.getTag();
         if (castTag == null) return false;
 
         // Tool type check (FROM CAST)
@@ -76,7 +82,7 @@ public class CastingRecipe implements Recipe<Inventory> {
         if (!toolType.equals(castTag.getString("ToolType").toLowerCase(Locale.ROOT))) return false;
 
         // Material input slot (slot 0)
-        ItemStack materialStack = inv.getStack(0);
+        ItemStack materialStack = inv.getItem(0);
         if (materialStack.isEmpty()) return false;
 
         // Must be a valid material
@@ -106,15 +112,15 @@ public class CastingRecipe implements Recipe<Inventory> {
 
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
-        ItemStack cast = inv.getStack(3);
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess) {
+        ItemStack cast = inv.getItem(3);
         if (cast.isEmpty()) return ItemStack.EMPTY;
 
-        NbtCompound castTag = cast.getOrCreateNbt();
+        CompoundTag castTag = cast.getOrCreateTag();
 
         // Build result item
         ItemStack out = result.copy();
-        NbtCompound outTag = out.getOrCreateNbt();
+        CompoundTag outTag = out.getOrCreateTag();
 
         // Transfer forging quality from cast
         if (castTag.contains("Quality")) {
@@ -133,22 +139,22 @@ public class CastingRecipe implements Recipe<Inventory> {
         outTag.putBoolean("Heated", true);
 
         // Creator tooltip
-        if (cast.hasCustomName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
-            outTag.putString("Creator", cast.getName().getString());
+        if (cast.hasCustomHoverName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+            outTag.putString("Creator", cast.getHoverName().getString());
         }
 
         /* -------------------------------------------------- */
         /* DAMAGE CAST — CAST STAYS IN SLOT                   */
         /* -------------------------------------------------- */
 
-        if (cast.isDamageable()) {
-            int newDamage = cast.getDamage() + 1;
+        if (cast.isDamageableItem()) {
+            int newDamage = cast.getDamageValue() + 1;
 
             if (newDamage >= cast.getMaxDamage()) {
                 // Cast breaks
-                cast.decrement(1);
+                cast.shrink(1);
             } else {
-                cast.setDamage(newDamage);
+                cast.setDamageValue(newDamage);
             }
         }
 
@@ -161,13 +167,13 @@ public class CastingRecipe implements Recipe<Inventory> {
     /* ============================================================= */
 
     @Override
-    public @NotNull DefaultedList<Ingredient> getIngredients() {
-        DefaultedList<Ingredient> list = DefaultedList.of();
+    public @NotNull NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> list = NonNullList.create();
 
-        NbtCompound tag = new NbtCompound();
+        CompoundTag tag = new CompoundTag();
         tag.putString("ToolType", toolType);
 
-        NbtCompound mats = new NbtCompound();
+        CompoundTag mats = new CompoundTag();
         double total = 0;
         for (var e : requiredMaterials.entrySet()) {
             mats.putDouble(e.getKey(), e.getValue());
@@ -179,9 +185,9 @@ public class CastingRecipe implements Recipe<Inventory> {
         tag.putDouble("MaxAmount", total);
 
         ItemStack dummyCast = new ItemStack(ModItems.CLAY_TOOL_CAST);
-        dummyCast.setNbt(tag);
+        dummyCast.setTag(tag);
 
-        list.add(Ingredient.ofStacks(dummyCast));
+        list.add(Ingredient.of(dummyCast));
         return list;
     }
 
@@ -190,12 +196,12 @@ public class CastingRecipe implements Recipe<Inventory> {
     /* ============================================================= */
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager access) {
+    public ItemStack getResultItem(RegistryAccess access) {
         return result;
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -206,7 +212,7 @@ public class CastingRecipe implements Recipe<Inventory> {
 
 
     @Override
-    public boolean fits(int w, int h) {
+    public boolean canCraftInDimensions(int w, int h) {
         return true;
     }
 
@@ -220,12 +226,12 @@ public class CastingRecipe implements Recipe<Inventory> {
         return ModRecipeTypes.CASTING;
     }
 
-    public static Map<String, Double> readMaterials(NbtCompound tag) {
+    public static Map<String, Double> readMaterials(CompoundTag tag) {
         Map<String, Double> map = new HashMap<>();
-        for (String key : tag.getKeys()) {
-            if (tag.contains(key, NbtElement.DOUBLE_TYPE)) {
+        for (String key : tag.getAllKeys()) {
+            if (tag.contains(key, Tag.TAG_DOUBLE)) {
                 map.put(key, tag.getDouble(key));
-            } else if (tag.contains(key, NbtElement.INT_TYPE)) {
+            } else if (tag.contains(key, Tag.TAG_INT)) {
                 map.put(key, (double) tag.getInt(key));
             }
         }
@@ -261,11 +267,11 @@ public class CastingRecipe implements Recipe<Inventory> {
         public static final CastingRecipe.Serializer INSTANCE = new CastingRecipe.Serializer();
 
         @Override
-        public CastingRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-            CookingRecipeCategory category = CookingRecipeCategory.MISC;
+        public CastingRecipe fromJson(ResourceLocation id, JsonObject json) {
+            String group = GsonHelper.getAsString(json, "group", "");
+            CookingBookCategory category = CookingBookCategory.MISC;
 
-            JsonObject input = JsonHelper.getObject(json, "input");
+            JsonObject input = GsonHelper.getAsJsonObject(json, "input");
 
             Map<String, Double> mats = new HashMap<>();
             for (var entry : input.entrySet()) {
@@ -298,14 +304,14 @@ public class CastingRecipe implements Recipe<Inventory> {
                 mats.put(key, amount);
             }
 
-            ItemStack result = ShapedRecipe.outputFromJson(
-                    JsonHelper.getObject(json, "result")
+            ItemStack result = ShapedRecipe.itemStackFromJson(
+                    GsonHelper.getAsJsonObject(json, "result")
             );
 
-            float xp = JsonHelper.getFloat(json, "experience", 0f);
-            int time = JsonHelper.getInt(json, "cookingtime", 200);
-            String toolType = JsonHelper.getString(json, "tool_type").toLowerCase(Locale.ROOT);
-            boolean polish = JsonHelper.getBoolean(json, "need_polishing", false);
+            float xp = GsonHelper.getAsFloat(json, "experience", 0f);
+            int time = GsonHelper.getAsInt(json, "cookingtime", 200);
+            String toolType = GsonHelper.getAsString(json, "tool_type").toLowerCase(Locale.ROOT);
+            boolean polish = GsonHelper.getAsBoolean(json, "need_polishing", false);
 
             return new CastingRecipe(
                     id, group, category,
@@ -315,20 +321,20 @@ public class CastingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public CastingRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = CookingRecipeCategory.MISC;
+        public CastingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
+            String group = buf.readUtf();
+            CookingBookCategory category = CookingBookCategory.MISC;
 
             int size = buf.readInt();
             Map<String, Double> mats = new HashMap<>();
             for (int i = 0; i < size; i++) {
-                mats.put(buf.readString(), buf.readDouble());
+                mats.put(buf.readUtf(), buf.readDouble());
             }
 
-            ItemStack result = buf.readItemStack();
+            ItemStack result = buf.readItem();
             float xp = buf.readFloat();
             int time = buf.readVarInt();
-            String toolType = buf.readString();
+            String toolType = buf.readUtf();
             boolean polish = buf.readBoolean();
 
             return new CastingRecipe(
@@ -339,19 +345,19 @@ public class CastingRecipe implements Recipe<Inventory> {
         }
 
         @Override
-        public void write(PacketByteBuf buf, CastingRecipe recipe) {
-            buf.writeString(recipe.group);
+        public void toNetwork(FriendlyByteBuf buf, CastingRecipe recipe) {
+            buf.writeUtf(recipe.group);
 
             buf.writeInt(recipe.requiredMaterials.size());
             recipe.requiredMaterials.forEach((k, v) -> {
-                buf.writeString(k);
+                buf.writeUtf(k);
                 buf.writeDouble(v);
             });
 
-            buf.writeItemStack(recipe.result);
+            buf.writeItem(recipe.result);
             buf.writeFloat(recipe.experience);
             buf.writeVarInt(recipe.cookingTime);
-            buf.writeString(recipe.toolType);
+            buf.writeUtf(recipe.toolType);
             buf.writeBoolean(recipe.needPolishing);
         }
     }
