@@ -15,6 +15,12 @@ repositories {
     maven { url 'https://maven.blamejared.com/' }             // JEI
     maven { url 'https://maven.terraformersmc.com/releases/' } // Mod Menu
     // maven { url 'https://maven.valkyrienskies.org' }        // Valkyrien Skies - not yet integrated
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -35,6 +41,8 @@ dependencies {
     modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
     modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
 
+    modImplementation "curse.maven:architectury-api-419699:5137936"
+    modImplementation "curse.maven:epic-knights-armor-and-weapons-509041:7756532"
     // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
     // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
     // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is

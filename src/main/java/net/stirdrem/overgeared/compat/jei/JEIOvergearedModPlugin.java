@@ -7,7 +7,6 @@ import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
 import mezz.jei.api.registration.*;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -50,8 +49,8 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     // ----------------------------
     // SAFER CATEGORY LOGIC
     // ----------------------------
-    private static String categorizeRecipe(ForgingRecipe recipe) {
-        ItemStack output = recipe.getOutput(null);
+    private static String categorizeRecipe(ForgingRecipe recipe, DynamicRegistryManager registryManager) {
+        ItemStack output = recipe.getOutput(registryManager);
         Item item = output.getItem();
 
         if (item instanceof ArmorItem) return "armor";
@@ -103,12 +102,14 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
 
         MinecraftClient mc = MinecraftClient.getInstance();
-        ClientWorld world = mc.world;
 
-        if (world == null || mc.getNetworkHandler() == null) return;
+        if (mc.world == null) {
+            Overgeared.LOGGER.warn("JEI registerRecipes: mc.world is null");
+            return;
+        }
 
-        RecipeManager manager = world.getRecipeManager();
-        DynamicRegistryManager registryManager = world.getRegistryManager();
+        RecipeManager manager = mc.world.getRecipeManager();
+        DynamicRegistryManager registryManager = mc.world.getRegistryManager();
 
         // ----------------------------
         // FORGING RECIPES
@@ -122,7 +123,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         combined.addAll(filterByTier(all, AnvilTier.ABOVE_B));
 
         combined.sort(Comparator
-                .comparing((ForgingRecipe r) -> CATEGORY_PRIORITY.getOrDefault(categorizeRecipe(r), 999))
+                .comparing((ForgingRecipe r) -> CATEGORY_PRIORITY.getOrDefault(categorizeRecipe(r, registryManager), 999))
                 .thenComparing(r -> safeName(r, registryManager))
         );
 

@@ -24,6 +24,9 @@
     ],
     "fabric-datagen": [
       "net.stirdrem.overgeared.OvergearedDataGenerator"
+    ],
+    "jei_mod_plugin": [
+      "net.stirdrem.overgeared.compat.jei.JEIOvergearedModPlugin"
     ]
   },
   "mixins": [
