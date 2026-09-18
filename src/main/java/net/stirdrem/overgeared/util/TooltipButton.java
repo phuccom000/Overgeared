@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.util;
 
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 
 public class TooltipButton extends Button {
     private final Component tooltip;

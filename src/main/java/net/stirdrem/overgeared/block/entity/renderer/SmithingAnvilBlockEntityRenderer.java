@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
 import java.util.HashSet;
 import java.util.Set;

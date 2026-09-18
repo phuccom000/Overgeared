@@ -1,14 +1,14 @@
 package net.stirdrem.overgeared.util;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class CraftingMatrix implements CraftingContainer {
     private final NonNullList<ItemStack> items;

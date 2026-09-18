@@ -4,8 +4,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.block.entity.TierASmithingAnvilBlockEntity;
 
 public class TierASmithingAnvilMenu extends AbstractSmithingAnvilMenu {

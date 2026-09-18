@@ -9,10 +9,10 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.recipe.CoolingRecipe;
 
 public class CoolingRecipeCategory implements IRecipeCategory<CoolingRecipe> {
     // Recipe type and UID

@@ -1,11 +1,9 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 import java.util.function.Supplier;
 

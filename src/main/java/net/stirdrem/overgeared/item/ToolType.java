@@ -4,7 +4,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Locale;
-import java.util.Set;
 
 public class ToolType {
 

@@ -1,7 +1,6 @@
 package net.stirdrem.overgeared.util;
 
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.LinkedList;

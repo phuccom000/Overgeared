@@ -2,12 +2,11 @@ package net.stirdrem.overgeared.block;
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,9 +14,6 @@ import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.custom.*;
-//import net.stirdrem.overgeared.block.custom.LayeredWaterBarrel;
-//import net.stirdrem.overgeared.block.custom.WaterBarrel;
-//import net.stirdrem.overgeared.core.waterbarrel.BarrelInteraction;
 import net.stirdrem.overgeared.item.ModItems;
 
 import java.util.function.Supplier;

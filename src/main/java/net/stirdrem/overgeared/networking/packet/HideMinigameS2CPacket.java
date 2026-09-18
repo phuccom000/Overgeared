@@ -148,13 +148,10 @@ public class MinigameSyncS2CPacket {
 package net.stirdrem.overgeared.networking.packet;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 import java.util.function.Supplier;
 

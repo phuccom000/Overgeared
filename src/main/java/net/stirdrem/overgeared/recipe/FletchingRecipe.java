@@ -11,8 +11,6 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.OvergearedMod;
 
-import javax.annotation.Nullable;
-
 public class FletchingRecipe implements Recipe<Container> {
     private final ResourceLocation id;
     private final Ingredient tip, shaft, feather, potion; // <-- added potion

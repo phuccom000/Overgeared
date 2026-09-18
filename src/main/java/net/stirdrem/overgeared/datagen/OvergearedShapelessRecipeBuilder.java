@@ -3,11 +3,6 @@ package net.stirdrem.overgeared.datagen;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import java.util.List;
-import java.util.function.Consumer;
-import javax.annotation.Nullable;
-
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
@@ -25,10 +20,11 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
-import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 
-import static net.minecraft.data.recipes.RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class OvergearedShapelessRecipeBuilder extends CraftingRecipeBuilder implements RecipeBuilder {
     private final RecipeCategory category;

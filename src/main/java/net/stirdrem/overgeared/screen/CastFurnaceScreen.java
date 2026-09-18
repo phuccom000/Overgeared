@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.screen.CastFurnaceMenu;
 
 public class CastFurnaceScreen extends AbstractContainerScreen<CastFurnaceMenu> {
 

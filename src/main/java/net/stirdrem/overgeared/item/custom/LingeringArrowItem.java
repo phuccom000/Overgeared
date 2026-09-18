@@ -15,7 +15,6 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.entity.ArrowTier;
-import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 
 import javax.annotation.Nullable;

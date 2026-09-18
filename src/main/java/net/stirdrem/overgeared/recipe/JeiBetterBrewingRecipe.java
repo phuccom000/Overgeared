@@ -2,11 +2,7 @@ package net.stirdrem.overgeared.recipe;
 
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraftforge.common.brewing.IBrewingRecipe;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 

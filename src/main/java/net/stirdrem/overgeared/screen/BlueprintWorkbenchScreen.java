@@ -12,12 +12,7 @@ import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.SelectToolTypeC2SPacket;
-import net.stirdrem.overgeared.screen.BlueprintWorkbenchMenu;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

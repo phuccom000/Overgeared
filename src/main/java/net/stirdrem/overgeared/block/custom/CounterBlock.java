@@ -1,16 +1,12 @@
 package net.stirdrem.overgeared.block.custom;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
-import net.stirdrem.overgeared.networking.ModMessages;
-import net.stirdrem.overgeared.networking.packet.PacketSendCounterC2SPacket;
 
 public class CounterBlock extends Block {
     public CounterBlock(Properties properties) {

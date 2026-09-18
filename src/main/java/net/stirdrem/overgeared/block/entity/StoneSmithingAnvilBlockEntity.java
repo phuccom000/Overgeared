@@ -5,18 +5,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Optional;
 
 public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;

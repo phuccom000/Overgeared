@@ -26,8 +26,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
-import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.CastFurnaceBlockEntity;
+import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import org.jetbrains.annotations.Nullable;
 
 public class CastFurnaceBlock extends BaseEntityBlock {

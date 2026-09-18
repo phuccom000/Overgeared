@@ -1,9 +1,8 @@
 package net.stirdrem.overgeared.compat.valkyrienskies;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
-
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;

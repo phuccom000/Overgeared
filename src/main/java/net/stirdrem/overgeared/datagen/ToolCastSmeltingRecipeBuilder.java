@@ -14,9 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
-import org.jetbrains.annotations.Nullable;
-import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.recipe.ModRecipes;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;

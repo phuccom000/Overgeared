@@ -8,7 +8,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
-
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 
 public class ModEntities {

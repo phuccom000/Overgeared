@@ -1,25 +1,17 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.entity.AlloySmelterBlockEntity;
-import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.recipe.ModRecipeTypes;
-import net.stirdrem.overgeared.screen.ModMenuTypes;
-
-import java.util.List;
 
 public class AlloySmelterMenu extends AbstractContainerMenu {
 

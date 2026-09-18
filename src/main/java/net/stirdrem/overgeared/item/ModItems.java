@@ -8,7 +8,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.item.armor.CopperHelmet;
 import net.stirdrem.overgeared.item.armor.CopperLeggings;

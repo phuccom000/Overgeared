@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.recipe;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -11,16 +11,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.item.ModItems;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class OvergearedShapelessRecipe extends ShapelessRecipe {
 

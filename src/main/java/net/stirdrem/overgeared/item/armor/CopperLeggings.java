@@ -10,8 +10,6 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.stirdrem.overgeared.item.armor.custom.ArmorModelHelper;
-import net.stirdrem.overgeared.item.armor.model.CustomCopperHelmet;
 import net.stirdrem.overgeared.item.armor.model.CustomCopperLeggings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 
 public class ClientHooks {

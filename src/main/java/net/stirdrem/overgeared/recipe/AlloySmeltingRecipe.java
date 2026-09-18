@@ -12,7 +12,6 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class AlloySmeltingRecipe implements Recipe<SimpleContainer>, IAlloyRecipe {
     private final ResourceLocation id;

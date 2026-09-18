@@ -1,16 +1,13 @@
 package net.stirdrem.overgeared.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.stirdrem.overgeared.OvergearedMod;
 
 public class FletchingStationScreen extends AbstractContainerScreen<FletchingStationMenu> implements MenuAccess<FletchingStationMenu> {

@@ -25,7 +25,6 @@ import net.stirdrem.overgeared.util.ConfigHelper;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ToolCastItem extends Item {
     private final boolean allowMaterialInsert;

@@ -5,7 +5,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.List;
-import java.util.Map;
 
 public interface IAlloyRecipe {
     List<Ingredient> getIngredientsList();
