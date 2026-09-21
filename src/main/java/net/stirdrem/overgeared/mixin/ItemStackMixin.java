@@ -102,6 +102,8 @@ public abstract class ItemStackMixin {
 
     @Unique
     private static final String HEATED_TIME_TAG = "HeatedSince";
+    @Unique
+    private static final String HEATED_TAG = "Heated";
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))
     private void overgeared$onInventoryTick(World world, Entity entity, int slot, boolean selected, CallbackInfo ci) {
@@ -117,7 +119,7 @@ public abstract class ItemStackMixin {
         for (ItemStack stack : player.getInventory().main) {
             if (stack.isEmpty()) continue;
             NbtCompound stackTag = stack.getNbt();
-            if (!stack.isIn(ModTags.Items.HEATED_METALS) && !(stackTag != null && stackTag.contains("Heated")))
+            if (!stack.isIn(ModTags.Items.HEATED_METALS) && !(stackTag != null && stackTag.contains(HEATED_TAG)))
                 continue;
 
             NbtCompound tag = stack.getOrCreateNbt();
@@ -131,7 +133,7 @@ public abstract class ItemStackMixin {
                     NbtCompound currentTag = stack.getNbt();
                     if (currentTag != null) {
                         NbtCompound newTag = currentTag.copy();
-                        newTag.remove("Heated");
+                        newTag.remove(HEATED_TAG);
                         newTag.remove(HEATED_TIME_TAG);
                         if (!newTag.isEmpty()) {
                             newStack.setNbt(newTag);
@@ -159,7 +161,7 @@ public abstract class ItemStackMixin {
         for (ItemStack s : player.getInventory().main) {
             if (s.isEmpty()) continue;
             NbtCompound sTag = s.getNbt();
-            if (s.isIn(ModTags.Items.HEATED_METALS) || s.isIn(ModTags.Items.HOT_ITEMS) || (sTag != null && sTag.contains("Heated"))) {
+            if (s.isIn(ModTags.Items.HEATED_METALS) || s.isIn(ModTags.Items.HOT_ITEMS) || (sTag != null && sTag.contains(HEATED_TAG))) {
                 hasHotItem = true;
                 break;
             }
@@ -198,6 +200,7 @@ public abstract class ItemStackMixin {
                 overgeared$lastTongsHit.put(uuid, tick);
             }
         } else {
+            if (tick % 10 != 0) return;
             player.damage(world.getDamageSources().hotFloor(), 1.0f);
         }
     }
