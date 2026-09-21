@@ -1,63 +1,23 @@
 package net.stirdrem.overgeared.block.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.block.custom.TierASmithingAnvil;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.TierASmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class TierASmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
-    private static final int BLUEPRINT_SLOT = 11;
+public class TierASmithingAnvilBlockEntity extends SteelSmithingAnvilBlockEntity {
 
     public TierASmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super((TierASmithingAnvil) pBlockState.getBlock(), AnvilTier.ABOVE_A, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
     }
 
     @Override
-    public Component getDisplayName() {
-        return Component.translatable("gui.overgeared.smithing_anvil");
+    protected @Nullable AbstractContainerMenu createMenuInternal(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return new TierASmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
     }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        if (!pPlayer.isCrouching()) {
-            return new TierASmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
-        } else return null;
-    }
-
-    @Override
-    protected String determineForgingQuality() {
-        // Get quality from anvil or use default if null
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
-            return super.determineForgingQualityNoBlueprint();
-        } else return super.determineForgingQuality();
-    }
-
-    @Override
-    public String blueprintQuality() {
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
-            return BlueprintQuality.PERFECT.getDisplayName();
-        else return super.blueprintQuality();
-    }
-
-    @Override
-    protected void craftItem() {
-        super.craftItem();
-        super.craftItemWithBlueprint();
-    }
-
-    @Override
-    public boolean hasRecipe() {
-        return super.hasRecipeWithBlueprint();
-    }
-
-
 }

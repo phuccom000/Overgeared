@@ -13,7 +13,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
@@ -998,6 +1000,37 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         ownerUUID = uuid;
         sessionStartTime = level.getGameTime();
         setChanged();
+    }
+
+    @Override
+    public @Nullable AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        if (!pPlayer.isCrouching()) {
+            return createMenuInternal(pContainerId, pPlayerInventory, pPlayer);
+        }
+        return null;
+    }
+
+    protected @Nullable AbstractContainerMenu createMenuInternal(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return null;
+    }
+
+    protected String determineForgingQualityInternal() {
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+            return determineForgingQualityNoBlueprint();
+        }
+        return determineForgingQuality();
+    }
+
+    protected String blueprintQualityInternal() {
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+            return BlueprintQuality.PERFECT.getDisplayName();
+        }
+        return blueprintQuality();
+    }
+
+    protected void craftItemInternal() {
+        craftItem();
+        craftItemWithBlueprint();
     }
 
     public void clearOwner() {

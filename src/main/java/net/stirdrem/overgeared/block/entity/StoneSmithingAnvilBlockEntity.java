@@ -21,21 +21,15 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
         super((StoneSmithingAnvil) pBlockState.getBlock(), AnvilTier.STONE, ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
     }
 
-
     @Override
     public Component getDisplayName() {
         return Component.translatable("gui.overgeared.smithing_anvil");
     }
 
-    @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        if (!pPlayer.isCrouching()) {
-            return new StoneSmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
-        } else return null;
-
+    protected @Nullable AbstractContainerMenu createMenuInternal(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
+        return new StoneSmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
     }
-
 
     @Override
     protected String determineForgingQuality() {

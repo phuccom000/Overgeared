@@ -101,10 +101,12 @@ public abstract class ItemStackMixin {
 
 
     // Per-player last-hit tick
+    @Unique
     private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
-    private static final Map<UUID, Long> lastHeatCheckTick = new WeakHashMap<>();
 
+    @Unique
     private static final String HEATED_TIME_TAG = "HeatedSince";
+    @Unique
     private static final String HEATED_TAG = "Heated";
 
     @Inject(method = "inventoryTick", at = @At("HEAD"))
@@ -121,7 +123,7 @@ public abstract class ItemStackMixin {
 
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
-            if (!stack.is(ModTags.Items.HEATED_METALS) && !(stack.hasTag() && stack.getTag().contains("Heated")))
+            if (!stack.is(ModTags.Items.HEATED_METALS) && !(stack.hasTag() && stack.getTag().contains(HEATED_TAG)))
                 continue;
 
             CompoundTag tag = stack.getOrCreateTag();
@@ -136,7 +138,7 @@ public abstract class ItemStackMixin {
                         CompoundTag newtag = stack.getTag().copy();
 
                         // Remove heated-related tags
-                        newtag.remove("Heated");
+                        newtag.remove(HEATED_TAG);
                         newtag.remove(HEATED_TIME_TAG);
 
                         if (!newtag.isEmpty()) {
@@ -163,15 +165,11 @@ public abstract class ItemStackMixin {
 
         boolean hasHotItem = player.getInventory().items.stream()
                 .anyMatch(s -> !s.isEmpty() && (s.is(ModTags.Items.HEATED_METALS) || s.is(ModTags.Items.HOT_ITEMS))
-                        || (s.hasTag() && s.getTag().contains("Heated")))
+                        || (s.hasTag() && s.getTag().contains(HEATED_TAG)))
                 || player.getMainHandItem().is(ModTags.Items.HEATED_METALS) || player.getMainHandItem().is(ModTags.Items.HOT_ITEMS)
                 || player.getOffhandItem().is(ModTags.Items.HEATED_METALS) || player.getOffhandItem().is(ModTags.Items.HOT_ITEMS);
 
         if (!hasHotItem) return;
-
-        long lastCheck = lastHeatCheckTick.getOrDefault(player.getUUID(), -1L);
-        if (lastCheck == tick) return;
-        lastHeatCheckTick.put(player.getUUID(), tick);
 
         UUID uuid = player.getUUID();
         ItemStack main = player.getMainHandItem();
@@ -203,7 +201,7 @@ public abstract class ItemStackMixin {
                 lastTongsHit.put(uuid, tick);
             }
         } else {
-            if (tick % 40 != 0) return;
+            if (tick % 10 != 0) return;
             player.hurt(player.damageSources().hotFloor(), 1.0f);
         }
     }
