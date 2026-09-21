@@ -9,7 +9,7 @@ group = project.maven_group
 version = project.mod_version
 
 base {
-    archivesName = project.mod_id
+    archivesName = "${project.mod_id}-neoforge"
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -147,8 +147,10 @@ dependencies {
     compileOnly "curse.maven:wooden-tools-are-dumb-736942:5695358"
     implementation "curse.maven:selene-499980:7708176"
     runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7206981"
-    implementation "curse.maven:dragons-survival-420799:8460438"
+    implementation "curse.maven:dragons-survival-420799:8792066"
     implementation "curse.maven:geckolib-388172:7707149"
+    implementation "curse.maven:knight-lib-1105855:8859434"
+    implementation "curse.maven:clockwork-596411:8857305"
     /*modImplementation "curse.maven:biolith-852512:7074761"
     modImplementation "curse.maven:zeta-968868:7640154"
     modImplementation "curse.maven:quark-243121:7777937"
