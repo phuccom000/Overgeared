@@ -102,6 +102,7 @@ public abstract class ItemStackMixin {
 
     // Per-player last-hit tick
     private static final Map<UUID, Long> lastTongsHit = new WeakHashMap<>();
+    private static final Map<UUID, Long> lastHeatCheckTick = new WeakHashMap<>();
 
     private static final String HEATED_TIME_TAG = "HeatedSince";
     private static final String HEATED_TAG = "Heated";
@@ -168,6 +169,9 @@ public abstract class ItemStackMixin {
 
         if (!hasHotItem) return;
 
+        long lastCheck = lastHeatCheckTick.getOrDefault(player.getUUID(), -1L);
+        if (lastCheck == tick) return;
+        lastHeatCheckTick.put(player.getUUID(), tick);
 
         UUID uuid = player.getUUID();
         ItemStack main = player.getMainHandItem();
@@ -199,6 +203,7 @@ public abstract class ItemStackMixin {
                 lastTongsHit.put(uuid, tick);
             }
         } else {
+            if (tick % 40 != 0) return;
             player.hurt(player.damageSources().hotFloor(), 1.0f);
         }
     }
