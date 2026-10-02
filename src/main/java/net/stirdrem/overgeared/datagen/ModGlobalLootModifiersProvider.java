@@ -28,12 +28,12 @@ public class ModGlobalLootModifiersProvider extends GlobalLootModifierProvider {
     private static final ResourceLocation STRONGHOLD_LIBRARY = ResourceLocation.withDefaultNamespace("chests/stronghold_library");
     private static final ResourceLocation DESERT_PYRAMID = ResourceLocation.withDefaultNamespace("chests/desert_pyramid");
     private static final ResourceLocation JUNGLE_TEMPLE = ResourceLocation.withDefaultNamespace("chests/jungle_temple");
-    private static final ResourceLocation JUNGLE_TEMPLE_DISPENSER = ResourceLocation.tryBuild("minecraft", "chests/jungle_temple_dispenser");
+    private static final ResourceLocation JUNGLE_TEMPLE_DISPENSER = ResourceLocation.withDefaultNamespace("chests/jungle_temple_dispenser");
     private static final ResourceLocation SHIPWRECK_TREASURE = ResourceLocation.withDefaultNamespace("chests/shipwreck_treasure");
     private static final ResourceLocation WOODLAND_MANSION = ResourceLocation.withDefaultNamespace("chests/woodland_mansion");
-    private static final ResourceLocation ANCIENT_CITY = ResourceLocation.tryBuild("minecraft", "chests/ancient_city");
-    private static final ResourceLocation PILLAGER_OUTPOST = ResourceLocation.tryBuild("minecraft", "chests/pillager_outpost");
-    private static final ResourceLocation BURIED_TREASURE = ResourceLocation.tryBuild("minecraft", "chests/buried_treasure");
+    private static final ResourceLocation ANCIENT_CITY = ResourceLocation.withDefaultNamespace("chests/ancient_city");
+    private static final ResourceLocation PILLAGER_OUTPOST = ResourceLocation.withDefaultNamespace("chests/pillager_outpost");
+    private static final ResourceLocation BURIED_TREASURE = ResourceLocation.withDefaultNamespace("chests/buried_treasure");
 
     @Override
     protected void start() {

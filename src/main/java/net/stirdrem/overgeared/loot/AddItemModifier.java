@@ -33,6 +33,14 @@ public class AddItemModifier extends LootModifier {
         return generatedLoot;
     }
 
+    public Item getItem() {
+        return this.item;
+    }
+
+    public LootItemCondition[] getConditions() {
+        return this.conditions;
+    }
+
     @Override
     public MapCodec<? extends IGlobalLootModifier> codec() {
         return CODEC;

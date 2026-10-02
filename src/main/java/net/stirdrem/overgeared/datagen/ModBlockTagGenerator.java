@@ -22,7 +22,8 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(ModBlocks.STEEL_BLOCK.get(),
+                .add(
+                        ModBlocks.STEEL_BLOCK.get(),
                         ModBlocks.SMITHING_ANVIL.get(),
                         ModBlocks.TIER_A_SMITHING_ANVIL.get(),
                         ModBlocks.TIER_B_SMITHING_ANVIL.get(),
@@ -40,11 +41,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         ModBlocks.TIER_B_SMITHING_ANVIL.get()
                 );
 
-        this.tag(ModTags.Blocks.NEEDS_STEEL_TOOL)
-                .add(
-                        Blocks.OBSIDIAN,
-                        Blocks.CRYING_OBSIDIAN
-                );
+        /*
+         * Copper tier:
+         * Stone < Copper < Iron
+         */
         this.tag(ModTags.Blocks.NEEDS_COPPER_TOOL)
                 .add(
                         Blocks.RAW_IRON_BLOCK,
@@ -53,52 +53,87 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         Blocks.IRON_BLOCK
                 );
 
-        /*this.tag(BlockTags.NEEDS_STONE_TOOL)
-                .remove(
-                        Blocks.IRON_ORE,
-                        Blocks.DEEPSLATE_IRON_ORE,
-                        Blocks.RAW_IRON_BLOCK,
-                        Blocks.IRON_BLOCK
-                );*/
-
+        /*
+         * Steel tier:
+         * Iron < Steel < Diamond
+         */
+        this.tag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .add(
+                        Blocks.OBSIDIAN,
+                        Blocks.CRYING_OBSIDIAN
+                );
 
         this.tag(BlockTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
 
         this.tag(ModTags.Blocks.ANVIL_BASES)
-                .add(Blocks.STONE
-                );
+                .add(Blocks.STONE);
+
         this.tag(ModTags.Blocks.IRON_ANVIL_BASES)
-                .add(Blocks.ANVIL
-                );
+                .add(Blocks.ANVIL);
 
+        /*
+         * COPPER
+         *
+         * Start with everything that Stone cannot mine,
+         * then remove the blocks Copper is allowed to mine.
+         */
         this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
-                .addTag(BlockTags.NEEDS_IRON_TOOL)
-                .addTag(BlockTags.NEEDS_DIAMOND_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
-
-        this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
-                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
-
-        this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
-
-        this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
-                .add(
+                .addTag(BlockTags.INCORRECT_FOR_STONE_TOOL)
+                .remove(
                         Blocks.RAW_IRON_BLOCK,
                         Blocks.IRON_ORE,
                         Blocks.DEEPSLATE_IRON_ORE,
                         Blocks.IRON_BLOCK
                 );
 
-        this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL)
+        /*
+         * STEEL
+         *
+         * Start with everything Iron cannot mine,
+         * then remove the blocks Steel is allowed to mine.
+         */
+        this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
+                .addTag(BlockTags.INCORRECT_FOR_IRON_TOOL)
+                .remove(
+                        Blocks.OBSIDIAN,
+                        Blocks.CRYING_OBSIDIAN
+                );
+
+        /*
+         * WOOD
+         */
+        this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .addTag(BlockTags.NEEDS_IRON_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+
+        /*
+         * STONE
+         *
+         * Stone must no longer be able to harvest the Copper tier.
+         */
+        this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
 
+        /*
+         * GOLD
+         */
+        this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .addTag(BlockTags.NEEDS_IRON_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+
+        /*
+         * IRON
+         *
+         * Iron cannot harvest Steel or Diamond-level blocks.
+         */
         this.tag(BlockTags.INCORRECT_FOR_IRON_TOOL)
-                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL);
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
     }
 }

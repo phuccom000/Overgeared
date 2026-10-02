@@ -40,7 +40,7 @@ public final class HeatedItem {
 
     public static boolean isHeated(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        return stack.is(ModTags.Items.HEATED_METALS)
+        return stack.is(ModTags.Items.HEATED_METALS) || stack.is(ModTags.Items.HOT_ITEMS)
                 || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT));
     }
 
@@ -50,6 +50,7 @@ public final class HeatedItem {
         UUID uuid = entity.getUUID();
         ItemStack main = entity.getMainHandItem();
         ItemStack off = entity.getOffhandItem();
+        if (entity instanceof Player player && player.isCreative()) return;
 
         // Check for tongs in either hand
         ItemStack tongsStack;
@@ -76,7 +77,8 @@ public final class HeatedItem {
         } else {
             // No tongs - damage the entity
             if (!entity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                entity.hurt(entity.damageSources().hotFloor(), 1.0f);
+                entity.setSharedFlagOnFire(true);
+                entity.setRemainingFireTicks(20);
             }
         }
 
