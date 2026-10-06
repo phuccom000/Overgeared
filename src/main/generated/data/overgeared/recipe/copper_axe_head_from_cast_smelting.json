@@ -1,0 +1,14 @@
+{
+  "type": "overgeared:cast_smelting",
+  "cookingtime": 150,
+  "experience": 0.5,
+  "group": "misc",
+  "input": {
+    "copper": 27.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:copper_axe_head"
+  },
+  "tool_type": "axe"
+}

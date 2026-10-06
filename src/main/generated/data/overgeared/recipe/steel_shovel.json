@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "overgeared:steel_shovel_head",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "overgeared:steel_shovel"
+  }
+}

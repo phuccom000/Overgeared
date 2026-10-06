@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cast": {
+      "conditions": {
+        "items": [
+          {
+            "items": "overgeared:unfired_tool_cast"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "overgeared:iron_shovel_head_from_cast_smelting"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cast"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "overgeared:iron_shovel_head_from_cast_smelting"
+    ]
+  }
+}

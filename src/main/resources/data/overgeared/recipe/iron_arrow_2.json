@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "a": "minecraft:feather",
+    "#": "minecraft:stick",
+    "x": "overgeared:iron_arrow_head"
+  },
+  "pattern": [
+    "x",
+    "#",
+    "a"
+  ],
+  "result": {
+    "id": "overgeared:iron_arrow",
+    "count": 4
+  },
+  "show_notification": true
+}

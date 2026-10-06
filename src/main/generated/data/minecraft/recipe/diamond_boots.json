@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:diamond",
+  "base": "overgeared:steel_boots",
+  "result": {
+    "id": "minecraft:diamond_boots"
+  },
+  "template": "overgeared:diamond_upgrade_smithing_template"
+}

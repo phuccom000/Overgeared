@@ -1,0 +1,19 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "hoe"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "minecraft:gold_ingot"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "##"
+  ],
+  "result": {
+    "id": "overgeared:golden_hoe_head"
+  },
+  "tier": "stone"
+}

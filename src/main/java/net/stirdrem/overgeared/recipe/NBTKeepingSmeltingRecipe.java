@@ -1,94 +1,46 @@
 package net.stirdrem.overgeared.recipe;
 
-import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import org.jetbrains.annotations.Nullable;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 
-public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
+/**
+ * {@code overgeared:nbt_smelting}: a vanilla smelting recipe (type {@code minecraft:smelting}) whose result keeps
+ * the input's data components (1.20.1: copied the input NBT). Vanilla smelting JSON; {@code cookingtime} defaults to 200.
+ */
+public class NBTKeepingSmeltingRecipe extends SmeltingRecipe implements CookingCodecs.ResultAccess {
 
-    public NBTKeepingSmeltingRecipe(Identifier id, String group, CookingRecipeCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
-        super(id, group, category, ingredient, result, experience, cookingTime);
+    public NBTKeepingSmeltingRecipe(Recipe.CommonInfo commonInfo, AbstractCookingRecipe.CookingBookInfo bookInfo,
+                                    Ingredient ingredient, ItemStackTemplate result, float experience, int cookingTime) {
+        super(commonInfo, bookInfo, ingredient, result, experience, cookingTime);
     }
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
-        ItemStack input = ItemStack.EMPTY;
-
-        // Get input item
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
-            if (!stack.isEmpty() && this.input.test(stack)) {
-                input = stack.copy();
-                break;
-            }
-        }
-
-        ItemStack output = this.output.copy();
-
-        // Copy NBT data
-        if (input.hasNbt()) {
-            output.setNbt(input.getNbt().copy());
-        }
-
-        return output;
+    public ItemStack assemble(SingleRecipeInput input) {
+        return CookingCodecs.keepComponents(result(), input.item());
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.NBT_SMELTING;
+    public ItemStackTemplate resultTemplate() {
+        return result();
     }
 
-    public static class Serializer implements RecipeSerializer<NBTKeepingSmeltingRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public NBTKeepingSmeltingRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-            CookingRecipeCategory category = json.has("category")
-                    ? CookingRecipeCategory.CODEC.byId(JsonHelper.getString(json, "category"), CookingRecipeCategory.MISC)
-                    : CookingRecipeCategory.MISC;
-
-            Ingredient ingredient = Ingredient.fromJson(json.get("ingredient"));
-
-            ItemStack result = json.get("result").isJsonObject()
-                    ? ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"))
-                    : new ItemStack(Registries.ITEM.get(new Identifier(JsonHelper.getString(json, "result"))));
-
-            float xp = JsonHelper.getFloat(json, "experience", 0.0F);
-            int cookTime = JsonHelper.getInt(json, "cookingtime", 200);
-
-            return new NBTKeepingSmeltingRecipe(id, group, category, ingredient, result, xp, cookTime);
-        }
-
-        @Override
-        public @Nullable NBTKeepingSmeltingRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
-            Ingredient ingredient = Ingredient.fromPacket(buf);
-            ItemStack result = buf.readItemStack();
-            float xp = buf.readFloat();
-            int cookTime = buf.readVarInt();
-
-            return new NBTKeepingSmeltingRecipe(id, group, category, ingredient, result, xp, cookTime);
-        }
-
-        @Override
-        public void write(PacketByteBuf buf, NBTKeepingSmeltingRecipe recipe) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.getCategory());
-            recipe.input.write(buf);
-            buf.writeItemStack(recipe.output);
-            buf.writeFloat(recipe.experience);
-            buf.writeVarInt(recipe.cookTime);
-        }
+    @Override
+    public RecipeSerializer<SmeltingRecipe> getSerializer() {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        RecipeSerializer<SmeltingRecipe> s = (RecipeSerializer) ModRecipes.NBT_SMELTING;
+        return s;
     }
 
+    public static final MapCodec<NBTKeepingSmeltingRecipe> MAP_CODEC = CookingCodecs.lenientCookingMapCodec(NBTKeepingSmeltingRecipe::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingSmeltingRecipe> STREAM_CODEC = AbstractCookingRecipe.cookingStreamCodec(NBTKeepingSmeltingRecipe::new);
+    public static final RecipeSerializer<NBTKeepingSmeltingRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 }

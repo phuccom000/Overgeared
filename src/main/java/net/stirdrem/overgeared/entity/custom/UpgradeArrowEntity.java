@@ -1,138 +1,172 @@
 package net.stirdrem.overgeared.entity.custom;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import net.minecraft.entity.AreaEffectCloudEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.AreaEffectCloud;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.util.PotionColorHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class UpgradeArrowEntity extends PersistentProjectileEntity {
-    private static final TrackedData<Byte> DATA_TIER =
-            DataTracker.registerData(UpgradeArrowEntity.class, TrackedDataHandlerRegistry.BYTE);
-    private static final TrackedData<Integer> DATA_POTION_COLOR =
-            DataTracker.registerData(UpgradeArrowEntity.class, TrackedDataHandlerRegistry.INTEGER);
+/**
+ * Iron/steel/diamond (and flint lingering) arrow. Potion data lives on the pickup item stack
+ * (vanilla {@link DataComponents#POTION_CONTENTS} + {@link ModComponents#LINGERING_STATUS}),
+ * which AbstractArrow already persists, so the potion survives chunk reloads.
+ */
+public class UpgradeArrowEntity extends AbstractArrow {
+    private static final EntityDataAccessor<Byte> DATA_TIER =
+            SynchedEntityData.defineId(UpgradeArrowEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_POTION_COLOR =
+            SynchedEntityData.defineId(UpgradeArrowEntity.class, EntityDataSerializers.INT);
 
-    private final ItemStack referenceStack;
-    private final Set<StatusEffectInstance> effects = Sets.newHashSet();
-    private Potion potion = Potions.EMPTY;
+    private final Set<MobEffectInstance> effects = new LinkedHashSet<>();
+    // AbstractArrow has no getter for baseDamage in 26.3; mirror it so the tier bonus can scale it.
+    private double trackedBaseDamage = 2.0;
 
-    public UpgradeArrowEntity(ArrowTier tier, World world, LivingEntity shooter, ItemStack stack) {
-        super(ModEntities.UPGRADE_ARROW, shooter, world);
-        this.referenceStack = stack;
-        this.dataTracker.set(DATA_TIER, (byte) tier.ordinal());
-
-        // Server-side only: extract potion color
-        NbtCompound tag = stack.getNbt();
-        int color = -1;
-        if (tag != null && (tag.contains("Potion") || tag.contains("CustomPotionEffects") || tag.contains("LingeringPotion")))
-            color = PotionColorHelper.getColor(stack);
-        this.dataTracker.set(DATA_POTION_COLOR, color);
-        this.potion = getPotion(tag);
+    public UpgradeArrowEntity(ArrowTier tier, Level level, LivingEntity shooter, ItemStack pickup, @Nullable ItemStack firedFromWeapon) {
+        super(ModEntities.UPGRADE_ARROW, shooter, level, pickup, firedFromWeapon);
+        initFromStack(tier);
     }
 
-    public UpgradeArrowEntity(EntityType<? extends PersistentProjectileEntity> type, World world) {
-        super(type, world);
-        this.referenceStack = ItemStack.EMPTY;
+    public UpgradeArrowEntity(ArrowTier tier, Level level, double x, double y, double z, ItemStack pickup, @Nullable ItemStack firedFromWeapon) {
+        super(ModEntities.UPGRADE_ARROW, x, y, z, level, pickup, firedFromWeapon);
+        initFromStack(tier);
     }
 
-    public UpgradeArrowEntity(ArrowTier tier, World world, double x, double y, double z, ItemStack stack) {
-        super(ModEntities.UPGRADE_ARROW, x, y, z, world);
-        this.referenceStack = stack;
-        this.dataTracker.set(DATA_TIER, (byte) tier.ordinal());
+    /** Dispenser-style constructor (no weapon). */
+    public UpgradeArrowEntity(ArrowTier tier, Level level, double x, double y, double z, ItemStack pickup) {
+        this(tier, level, x, y, z, pickup, null);
+    }
 
-        NbtCompound tag = stack.getNbt();
-        int color = -1;
-        if (tag != null && (tag.contains("Potion") || tag.contains("CustomPotionEffects") || tag.contains("LingeringPotion"))) {
-            color = PotionColorHelper.getColor(stack);
+    /** EntityType factory constructor. */
+    public UpgradeArrowEntity(EntityType<? extends UpgradeArrowEntity> type, Level level) {
+        super(type, level);
+    }
+
+    private void initFromStack(ArrowTier tier) {
+        this.entityData.set(DATA_TIER, (byte) tier.ordinal());
+        updateColor();
+    }
+
+    private PotionContents getPotionContents() {
+        return getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+    }
+
+    private void updateColor() {
+        PotionContents contents = getPotionContents();
+        if (!this.effects.isEmpty()) {
+            List<MobEffectInstance> all = new ArrayList<>(contents.customEffects());
+            all.addAll(this.effects);
+            contents = new PotionContents(contents.potion(), contents.customColor(), all, contents.customName());
         }
-        this.dataTracker.set(DATA_POTION_COLOR, color);
-        this.potion = getPotion(tag);
+        this.entityData.set(DATA_POTION_COLOR, contents.equals(PotionContents.EMPTY) ? -1 : contents.getColor());
     }
 
     @Override
-    protected void initDataTracker() {
-        super.initDataTracker();
-        this.dataTracker.startTracking(DATA_TIER, (byte) ArrowTier.FLINT.ordinal());
-        this.dataTracker.startTracking(DATA_POTION_COLOR, -1); // Default no color
+    protected void setPickupItemStack(ItemStack itemStack) {
+        super.setPickupItemStack(itemStack);
+        updateColor();
     }
 
     @Override
-    protected void onEntityHit(EntityHitResult result) {
-        setDamage(getDamage() * getArrowTier().getDamageBonus());
-        super.onEntityHit(result);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_TIER, (byte) ArrowTier.FLINT.ordinal());
+        builder.define(DATA_POTION_COLOR, -1); // Default no color
+    }
+
+    @Override
+    public void setBaseDamage(double baseDamage) {
+        super.setBaseDamage(baseDamage);
+        this.trackedBaseDamage = baseDamage;
+    }
+
+    public double getTrackedBaseDamage() {
+        return trackedBaseDamage;
+    }
+
+    @Override
+    protected void onHitEntity(EntityHitResult result) {
+        setBaseDamage(trackedBaseDamage * getArrowTier().getDamageBonus());
+        super.onHitEntity(result);
         createLingeringCloud(result);
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult result) {
-        super.onBlockHit(result);
+    protected void onHitBlock(BlockHitResult result) {
+        super.onHitBlock(result);
         createLingeringCloud(result);
     }
 
     @Override
-    protected void onHit(LivingEntity target) {
-        super.onHit(target);
+    protected void doPostHurtEffects(LivingEntity target) {
+        super.doPostHurtEffects(target);
+        if (!(level() instanceof ServerLevel serverLevel)) return;
+
         Entity owner = this.getOwner(); // More reliable than getEffectSource()
         if (owner == null) {
             owner = this; // Fallback to the arrow itself
         }
-        for (StatusEffectInstance effect : this.potion.getEffects()) {
-            if (effect.getEffectType().isInstant()) {
-                effect.getEffectType().applyInstantEffect(owner, owner instanceof LivingEntity livingOwner ? livingOwner : null,
-                        target, effect.getAmplifier(), 1.0D);
+        for (MobEffectInstance effect : getPotionContents().getAllEffects()) {
+            if (effect.getEffect().value().isInstantaneous()) {
+                effect.getEffect().value().applyInstantaneousEffect(serverLevel, owner, owner, target,
+                        effect.getAmplifier(), 1.0D);
             } else {
-                StatusEffectInstance reduced = new StatusEffectInstance(
-                        effect.getEffectType(),
+                MobEffectInstance reduced = new MobEffectInstance(
+                        effect.getEffect(),
                         Math.max(effect.getDuration() / 8, 1),
                         effect.getAmplifier(),
                         effect.isAmbient(),
-                        effect.shouldShowParticles(),
-                        effect.shouldShowIcon()
+                        effect.isVisible(),
+                        effect.showIcon()
                 );
-                target.addStatusEffect(reduced, owner);
+                target.addEffect(reduced, owner);
             }
         }
 
-        for (StatusEffectInstance effect : this.effects) {
-            if (effect.getEffectType().isInstant()) {
-                effect.getEffectType().applyInstantEffect(owner, owner instanceof LivingEntity livingOwner ? livingOwner : null,
-                        target, effect.getAmplifier(), 1.0D);
+        for (MobEffectInstance effect : this.effects) {
+            if (effect.getEffect().value().isInstantaneous()) {
+                effect.getEffect().value().applyInstantaneousEffect(serverLevel, owner, owner, target,
+                        effect.getAmplifier(), 1.0D);
             } else {
-                target.addStatusEffect(effect, owner);
+                target.addEffect(new MobEffectInstance(effect), owner);
             }
         }
     }
 
     @Override
-    protected ItemStack asItemStack() {
+    protected ItemStack getPickupItem() {
+        return getDefaultPickupItem();
+    }
+
+    @Override
+    protected ItemStack getDefaultPickupItem() {
         return switch (getArrowTier()) {
             case FLINT -> new ItemStack(Items.ARROW);
             case IRON -> new ItemStack(ModItems.IRON_UPGRADE_ARROW);
@@ -141,91 +175,77 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
         };
     }
 
-    private void multiplyDamage(double factor) {
-        setDamage(getDamage() * factor);
-    }
-
     public ArrowTier getArrowTier() {
-        int ordinal = this.dataTracker.get(DATA_TIER);
+        int ordinal = this.entityData.get(DATA_TIER);
         return ArrowTier.values()[ordinal % ArrowTier.values().length]; // safety check
     }
 
+    /** Synced potion color (ARGB) or -1 when the arrow carries no potion. */
+    public int getPotionColor() {
+        return this.entityData.get(DATA_POTION_COLOR);
+    }
+
     @Override
-    public void writeCustomDataToNbt(NbtCompound tag) {
-        super.writeCustomDataToNbt(tag);
-        tag.putByte("Tier", this.dataTracker.get(DATA_TIER));
-        tag.putInt("PotionColor", this.dataTracker.get(DATA_POTION_COLOR));
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putByte("Tier", this.entityData.get(DATA_TIER));
+        output.putInt("PotionColor", this.entityData.get(DATA_POTION_COLOR));
         if (!this.effects.isEmpty()) {
-            NbtList listtag = new NbtList();
-
-            for (StatusEffectInstance effectInstance : this.effects) {
-                listtag.add(effectInstance.writeNbt(new NbtCompound()));
-            }
-
-            tag.put("CustomPotionEffects", listtag);
+            output.store("CustomPotionEffects", MobEffectInstance.CODEC.listOf(), List.copyOf(this.effects));
         }
     }
 
     @Override
-    public void readCustomDataFromNbt(NbtCompound tag) {
-        super.readCustomDataFromNbt(tag);
-
-        if (tag.contains("Tier", NbtElement.NUMBER_TYPE)) {
-            this.dataTracker.set(DATA_TIER, tag.getByte("Tier"));
-        }
-        if (tag.contains("PotionColor", NbtElement.NUMBER_TYPE)) {
-            this.dataTracker.set(DATA_POTION_COLOR, tag.getInt("PotionColor"));
-        }
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.trackedBaseDamage = input.getDoubleOr("damage", 2.0);
+        this.entityData.set(DATA_TIER, input.getByteOr("Tier", (byte) ArrowTier.FLINT.ordinal()));
         this.effects.clear();
-        for (StatusEffectInstance effectInstance : PotionUtil.getCustomPotionEffects(tag)) {
-            this.addEffect(effectInstance);
-        }
-
+        input.read("CustomPotionEffects", MobEffectInstance.CODEC.listOf()).ifPresent(this.effects::addAll);
+        updateColor();
+        input.getInt("PotionColor").ifPresent(color -> this.entityData.set(DATA_POTION_COLOR, color));
     }
 
-    public void addEffect(StatusEffectInstance effectInstance) {
+    public void addEffect(MobEffectInstance effectInstance) {
         this.effects.add(effectInstance);
-        NbtCompound tag = this.referenceStack.getNbt();
-        Potion potion = getPotion(tag);
-        this.getDataTracker().set(DATA_POTION_COLOR, PotionUtil.getColor(PotionUtil.getPotionEffects(potion, this.effects)));
+        updateColor();
+    }
+
+    private boolean isLingering() {
+        ItemStack stack = getPickupItemStackOrigin();
+        if (Boolean.TRUE.equals(stack.get(ModComponents.LINGERING_STATUS))) return true;
+        // Flint-tier arrows only exist as the lingering arrow item: any potion on them lingers.
+        return getArrowTier() == ArrowTier.FLINT && getPotionContents().potion().isPresent();
     }
 
     private void createLingeringCloud(HitResult result) {
-        if (getWorld().isClient) {
+        if (level().isClientSide()) {
             return;
         }
 
-        NbtCompound tag = this.referenceStack.getNbt();
-
-        // Only lingering arrows create a cloud
-        if (tag != null && (
-                tag.contains("LingeringPotion")
-                        || (getArrowTier() == ArrowTier.FLINT
-                        && tag.contains("Potion", NbtElement.STRING_TYPE))
-        )) {
-            List<StatusEffectInstance> effects = getAllEffects(tag);
-
-            if (!effects.isEmpty()) {
-                makeAreaOfEffectCloud(this.referenceStack, effects, result);
+        if (isLingering()) {
+            PotionContents contents = getPotionContents();
+            if (contents.getAllEffects().iterator().hasNext()) {
+                makeAreaOfEffectCloud(contents, result);
             }
         }
     }
 
-    private void makeAreaOfEffectCloud(ItemStack stack, List<StatusEffectInstance> effects, HitResult result) {
-        Vec3d hit = result.getPos();
+    private void makeAreaOfEffectCloud(PotionContents contents, HitResult result) {
+        Vec3 hit = result.getLocation();
 
         // Compute vertical motion ratio
-        Vec3d motion = this.getVelocity();
+        Vec3 motion = this.getDeltaMovement();
         double verticalRatio = motion.y / motion.length(); // -1 to 1
 
-        // Map verticalRatio to offset: more vertical ➜ larger downward offset
+        // Map verticalRatio to offset: more vertical -> larger downward offset
         double offset = verticalRatio > 0 ? -verticalRatio * 0.5 : -0.2;
 
         double cloudY = hit.y + offset + 0.25;
         double cloudX = hit.x;
         double cloudZ = hit.z;
 
-        AreaEffectCloudEntity cloud = new AreaEffectCloudEntity(getWorld(), cloudX, cloudY, cloudZ);
+        AreaEffectCloud cloud = new AreaEffectCloud(level(), cloudX, cloudY, cloudZ);
         Entity owner = getOwner();
         if (owner instanceof LivingEntity le) {
             cloud.setOwner(le);
@@ -234,81 +254,32 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
         cloud.setRadius(3.0F);
         cloud.setRadiusOnUse(-0.5F);
         cloud.setWaitTime(10);
-        cloud.setRadiusGrowth(-cloud.getRadius() / cloud.getDuration());
-        cloud.setPotion(potion);
+        cloud.setRadiusPerTick(-cloud.getRadius() / cloud.getDuration());
 
-        for (StatusEffectInstance inst : effects) {
-            StatusEffectInstance reducedEffect = new StatusEffectInstance(
-                    inst.getEffectType(),
-                    Math.max(inst.getDuration() / 8, 1), // 1/4 duration
+        // Reduced-duration copies of every effect (1/8 duration), on top of the base potion,
+        // matching the old setPotion(potion) + addEffect(reduced...) behaviour.
+        List<MobEffectInstance> reducedEffects = new ArrayList<>();
+        for (MobEffectInstance inst : contents.getAllEffects()) {
+            reducedEffects.add(new MobEffectInstance(
+                    inst.getEffect(),
+                    Math.max(inst.getDuration() / 8, 1),
                     inst.getAmplifier(),
                     inst.isAmbient(),
-                    inst.shouldShowParticles(),
-                    inst.shouldShowIcon()
-            );
-            cloud.addEffect(reducedEffect);
+                    inst.isVisible(),
+                    inst.showIcon()
+            ));
         }
+        cloud.setPotionContents(new PotionContents(contents.potion(), contents.customColor(), reducedEffects, contents.customName()));
 
-        NbtCompound compoundtag = stack.getNbt();
-        if (compoundtag != null && compoundtag.contains("CustomPotionColor", NbtElement.NUMBER_TYPE)) {
-            cloud.setColor(compoundtag.getInt("CustomPotionColor"));
-        }
-
-        ((net.minecraft.server.world.ServerWorld) getWorld()).spawnEntity(cloud);
-    }
-
-    public static List<StatusEffectInstance> getMobEffects(ItemStack stack) {
-        return getAllEffects(stack.getNbt());
-    }
-
-    public static Potion getPotion(@Nullable NbtCompound tag) {
-        if (tag == null) return Potions.EMPTY;
-
-        // Prioritize "LingeringPotion" if present
-        if (tag.contains("LingeringPotion", NbtElement.STRING_TYPE)) {
-            return Potion.byId(tag.getString("LingeringPotion"));
-        }
-        if (tag.contains("LingeringPotion") && tag.getBoolean("LingeringPotion")) {
-            return Potion.byId(tag.getString("Potion"));
-        }
-        if (tag.contains("Potion", NbtElement.STRING_TYPE)) {
-            return Potion.byId(tag.getString("Potion"));
-        }
-
-        return Potions.EMPTY;
-    }
-
-    public static List<StatusEffectInstance> getAllEffects(@Nullable NbtCompound compound) {
-        List<StatusEffectInstance> list = Lists.newArrayList();
-        list.addAll(getPotion(compound).getEffects());
-        PotionUtil.getCustomPotionEffects(compound, list);
-        return list;
-    }
-
-    public static void getCustomEffects(@Nullable NbtCompound compound, List<StatusEffectInstance> effectList) {
-        if (compound != null && compound.contains("CustomPotionEffects", NbtElement.LIST_TYPE)) {
-            NbtList listtag = compound.getList("CustomPotionEffects", NbtElement.COMPOUND_TYPE);
-
-            for (int i = 0; i < listtag.size(); ++i) {
-                NbtCompound nbtCompound = listtag.getCompound(i);
-                StatusEffectInstance effectInstance = StatusEffectInstance.fromNbt(nbtCompound);
-                if (effectInstance != null) {
-                    effectList.add(effectInstance);
-                }
-            }
-        }
-
+        level().addFreshEntity(cloud);
     }
 
     private void makeParticle(int amount) {
-        int color = this.dataTracker.get(DATA_POTION_COLOR);
+        int color = getPotionColor();
         if (color != -1 && amount > 0) {
-            double r = (double) (color >> 16 & 255) / 255.0D;
-            double g = (double) (color >> 8 & 255) / 255.0D;
-            double b = (double) (color & 255) / 255.0D;
-
             for (int j = 0; j < amount; ++j) {
-                this.getWorld().addParticle(ParticleTypes.ENTITY_EFFECT, this.getParticleX(0.5D), this.getRandomBodyY(), this.getParticleZ(0.5D), r, g, b);
+                this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, color),
+                        this.getRandomX(0.5D), this.getRandomY(), this.getRandomZ(0.5D), 0.0D, 0.0D, 0.0D);
             }
         }
     }
@@ -316,16 +287,14 @@ public class UpgradeArrowEntity extends PersistentProjectileEntity {
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient) {
-            if (this.inGround) {
+        if (this.level().isClientSide()) {
+            if (this.isInGround()) {
                 if (this.inGroundTime % 5 == 0) {
                     this.makeParticle(1);
                 }
             } else {
                 this.makeParticle(2);
             }
-
         }
-
     }
 }

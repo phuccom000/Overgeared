@@ -1,0 +1,12 @@
+{
+  "type": "overgeared:rock_knapping",
+  "pattern": [
+    " x ",
+    "x x"
+  ],
+  "ingredient": "overgeared:knappable_rock",
+  "result": {
+    "id": "overgeared:stone_spear_head"
+  },
+  "show_notification": true
+}

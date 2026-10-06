@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "group": "steel_ingot",
+  "ingredient": "overgeared:crude_steel",
+  "result": {
+    "id": "overgeared:heated_crude_steel"
+  }
+}

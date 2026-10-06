@@ -3,21 +3,18 @@ package net.stirdrem.overgeared;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-import net.minecraft.block.DispenserBlock;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
-import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -28,11 +25,14 @@ import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import net.stirdrem.overgeared.networking.ModMessages;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
+import net.stirdrem.overgeared.recipe.ItemListInput;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.sound.ModSounds;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class Overgeared implements ModInitializer {
     private static MinecraftServer server;
 
     public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     /**
@@ -73,6 +73,8 @@ public class Overgeared implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(s -> server = null);
 
         // Force static init / registration for each registry class.
+        // Data components first: items, recipes and block entities reference them.
+        ModComponents.register();
         ModItems.register();
         ModBlocks.register();
         ModRecipes.register();
@@ -97,48 +99,39 @@ public class Overgeared implements ModInitializer {
         net.stirdrem.overgeared.event.ModEvents.register();
         ModMessages.register();
 
-        if (FabricLoader.getInstance().isModLoaded("accessories")) {
-            AttributeModifierHandler.register();
-            LOGGER.info("Accessories mod detected - AttributeModifierHandler registered");
-        } else {
-            LOGGER.info("Accessories mod not present - skipping AttributeModifierHandler registration");
-        }
+        // Accessories compat (disabled-compat/accessories) is off until Accessories ships a 26.3 build.
 
         ModLootModifiers.register();
+        net.stirdrem.overgeared.guide.GuideBook.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 ModCommands.register(dispatcher));
     }
 
     @Nullable
-    public static Item getCooledItem(@Nullable Item heatedItem, World world) {
+    public static Item getCooledItem(@Nullable Item heatedItem, Level world) {
         if (heatedItem == null || world == null) return null;
 
-        SimpleInventory container = new SimpleInventory(new ItemStack(heatedItem));
+        ItemListInput input = ItemListInput.of(new ItemStack(heatedItem));
 
-        Optional<CoolingRecipe> recipeOpt = world.getRecipeManager()
-                .listAllOfType(ModRecipeTypes.COOLING_RECIPE)
-                .stream()
-                .filter(r -> r.matches(container, world))
-                .findFirst();
+        Optional<CoolingRecipe> recipeOpt = RecipeLookup.firstMatchValue(world, ModRecipeTypes.COOLING_RECIPE, input);
 
         if (recipeOpt.isEmpty()) {
             return heatedItem;
         }
 
-        CoolingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getOutput(world.getRegistryManager());
+        ItemStack result = recipeOpt.get().assemble(input);
         return result.isEmpty() ? heatedItem : result.getItem();
     }
 
     public static boolean isDurabilityBlacklisted(ItemStack stack) {
-        Identifier itemId = Registries.ITEM.getId(stack.getItem());
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
 
         for (String entry : blacklist) {
             if (entry.startsWith("#")) {
                 Identifier tagId = Identifier.tryParse(entry.substring(1));
-                TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
-                if (stack.isIn(tag)) return true;
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
+                if (stack.is(tag)) return true;
             } else {
                 if (itemId != null && itemId.equals(Identifier.tryParse(entry))) return true;
             }

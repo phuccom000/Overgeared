@@ -1,0 +1,20 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "sword"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "overgeared:heated_iron_ingot"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:iron_sword_blade"
+  },
+  "tier": "stone"
+}

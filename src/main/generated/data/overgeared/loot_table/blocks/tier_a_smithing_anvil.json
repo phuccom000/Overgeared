@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "overgeared:tier_a_smithing_anvil"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

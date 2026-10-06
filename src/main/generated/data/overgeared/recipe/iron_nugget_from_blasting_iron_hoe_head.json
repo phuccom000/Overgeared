@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "experience": 0.1,
+  "ingredient": "overgeared:iron_hoe_head",
+  "result": {
+    "id": "minecraft:iron_nugget"
+  }
+}

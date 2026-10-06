@@ -8,6 +8,7 @@ public class ServerConfig {
 
     public static final ConfigSpec SERVER_CONFIG;
     public static final ConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
+    public static final ConfigSpec.BooleanValue GIVE_GUIDE_BOOK_ON_FIRST_JOIN;
 
 
     // --- Core Anvil Configs ---
@@ -145,6 +146,7 @@ public class ServerConfig {
         builder.push("General Configs");
         ENABLE_MOD_TOOLTIPS = builder.comment("Toggle for the mod's custom tooltips").define("enableModTooltips", true);
         ENABLE_CREATIVE_TAB_ITEMS = builder.comment("Toggle for the mod's items to appear in vanilla creative tabs").define("enableCreativeTabItems", true);
+        GIVE_GUIDE_BOOK_ON_FIRST_JOIN = builder.comment("Give each player the Overgeared guide book the first time they join a world (/overgeared guide gives another copy)").define("giveGuideBookOnFirstJoin", true);
         builder.pop();
         // --- Anvil Conversion ---
         builder.push("Anvil Conversion");
@@ -270,13 +272,13 @@ public class ServerConfig {
         builder.push("Blueprint & Tool Types");
 
         AVAILABLE_TOOL_TYPES = builder.comment(
-                        "List of available tool types for blueprints. Default options: sword, axe, pickaxe, shovel, hoe. You may freely add or remove types.",
+                        "List of available tool types for blueprints. Default options: sword, axe, pickaxe, shovel, hoe, spear. You may freely add or remove types.",
                         "To add a custom blueprint type: add it to availableToolTypes, then define its display name in your lang file.",
                         "Template format: \"availableToolTypes\": [\"sword\", \"axe\", \"your_custom_type\"]",
                         "Lang format: tooltype.overgeared.your_custom_type"
                 )
                 .defineList("availableToolTypes",
-                        Arrays.asList("sword", "axe", "pickaxe", "shovel", "hoe"),
+                        Arrays.asList("sword", "axe", "pickaxe", "shovel", "hoe", "spear"),
                         entry -> entry instanceof String
                 );
 
@@ -396,6 +398,7 @@ public class ServerConfig {
                                 List.of("axe", 27),
                                 List.of("shovel", 9),
                                 List.of("hoe", 18),
+                                List.of("spear", 10),
                                 List.of("hammer", 18)
                         ),
                         entry -> entry instanceof List<?> list &&

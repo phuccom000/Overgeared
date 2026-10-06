@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:item_to_tooltype",
+  "item": [
+    "overgeared:stone_pickaxe_head",
+    "overgeared:iron_pickaxe_head",
+    "overgeared:golden_pickaxe_head",
+    "overgeared:copper_pickaxe_head",
+    "overgeared:steel_pickaxe_head"
+  ],
+  "tooltype": "pickaxe"
+}

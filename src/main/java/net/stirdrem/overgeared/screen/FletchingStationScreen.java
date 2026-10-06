@@ -1,36 +1,29 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class FletchingStationScreen extends HandledScreen<FletchingStationScreenHandler> {
-    private static final Identifier TEXTURE = new Identifier(Overgeared.MOD_ID, "textures/gui/fletching_table.png");
+public class FletchingStationScreen extends AbstractContainerScreen<FletchingStationScreenHandler> {
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Overgeared.MOD_ID, "textures/gui/fletching_table.png");
 
-    public FletchingStationScreen(FletchingStationScreenHandler handler, PlayerInventory playerInventory, Text title) {
-        super(handler, playerInventory, title);
-        this.backgroundWidth = 176;
-        this.backgroundHeight = 166;
+    public FletchingStationScreen(FletchingStationScreenHandler handler, Inventory playerInventory, Component title) {
+        super(handler, playerInventory, title, 176, 166);
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float partialTick, int mouseX, int mouseY) {
-        context.drawTexture(TEXTURE, x, y, 0, 0, backgroundWidth, backgroundHeight);
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(context, mouseX, mouseY, partialTick);
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        context.drawText(this.textRenderer, this.title, 8, 6, 0x404040, false);
-        context.drawText(this.textRenderer, this.playerInventoryTitle, 8, this.backgroundHeight - 94, 0x404040, false);
-    }
-
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(context);
-        super.render(context, mouseX, mouseY, partialTick);
-        this.drawMouseoverTooltip(context, mouseX, mouseY);
+    protected void extractLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        context.text(this.font, this.title, 8, 6, 0xFF404040, false);
+        context.text(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 0xFF404040, false);
     }
 }

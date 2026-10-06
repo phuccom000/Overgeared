@@ -1,0 +1,25 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "component": "minecraft:potion_contents",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "overgeared:item/lingering_arrow"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "overgeared:item/lingering_arrow",
+      "tints": [
+        {
+          "type": "minecraft:potion",
+          "default": -13083194
+        },
+        {
+          "type": "minecraft:constant",
+          "value": -1
+        }
+      ]
+    },
+    "property": "minecraft:has_component"
+  }
+}

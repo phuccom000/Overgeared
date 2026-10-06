@@ -23,3 +23,6 @@ bin/
 # other
 run/
 reference-forge-src/
+
+# Claude Code agent worktrees
+.claude/

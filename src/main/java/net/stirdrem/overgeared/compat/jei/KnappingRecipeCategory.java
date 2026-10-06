@@ -7,24 +7,29 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 
-public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecipe> {
+import java.util.List;
+
+public class KnappingRecipeCategory implements IRecipeCategory<RecipeHolder<RockKnappingRecipe>> {
     public static final Identifier UID = Overgeared.id("rock_knapping");
     public static final Identifier TEXTURE = Overgeared.id("textures/gui/rock_knapping_jei.png");
     private static final Identifier CHIPPED_TEXTURE = Overgeared.id("textures/gui/blank.png");
 
-    public static final RecipeType<RockKnappingRecipe> KNAPPING_RECIPE_TYPE =
-            new RecipeType<>(UID, RockKnappingRecipe.class);
+    public static final IRecipeHolderType<RockKnappingRecipe> KNAPPING_RECIPE_TYPE = IRecipeHolderType.create(UID);
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -35,18 +40,23 @@ public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecip
     }
 
     @Override
-    public RecipeType<RockKnappingRecipe> getRecipeType() {
+    public IRecipeHolderType<RockKnappingRecipe> getRecipeType() {
         return KNAPPING_RECIPE_TYPE;
     }
 
     @Override
-    public Text getTitle() {
-        return Text.translatable("gui.overgeared.rock_knapping");
+    public Component getTitle() {
+        return Component.translatable("gui.overgeared.rock_knapping");
     }
 
     @Override
-    public IDrawable getBackground() {
-        return this.background;
+    public int getWidth() {
+        return this.background.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return this.background.getHeight();
     }
 
     @Override
@@ -55,19 +65,22 @@ public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecip
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, RockKnappingRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<RockKnappingRecipe> holder, IFocusGroup focuses) {
+        RockKnappingRecipe recipe = holder.value();
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)
-                .addIngredients(recipe.getIngredient());
+                .add(recipe.getIngredient());
         builder.addSlot(RecipeIngredientRole.OUTPUT, 117, 19)
-                .addItemStack(recipe.getOutput(null));
+                .add(recipe.getResultItem());
     }
 
     @Override
-    public void draw(RockKnappingRecipe recipe,
-                      IRecipeSlotsView recipeSlotsView,
-                      DrawContext guiGraphics,
-                      double mouseX,
-                      double mouseY) {
+    public void draw(RecipeHolder<RockKnappingRecipe> holder,
+                     IRecipeSlotsView recipeSlotsView,
+                     GuiGraphicsExtractor guiGraphics,
+                     double mouseX,
+                     double mouseY) {
+        RockKnappingRecipe recipe = holder.value();
+        background.draw(guiGraphics);
 
         boolean[][] pattern = recipe.getPattern();
 
@@ -90,16 +103,16 @@ public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecip
                         ? resolveUnchippedTexture(recipe)
                         : CHIPPED_TEXTURE;
 
-                guiGraphics.drawTexture(texture, posX, posY, 0, 0, 16, 16, 16, 16);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, posX, posY, 0, 0, 16, 16, 16, 16);
             }
         }
     }
 
     private Identifier resolveUnchippedTexture(RockKnappingRecipe recipe) {
-        ItemStack[] stacks = recipe.getIngredient().getMatchingStacks();
+        List<Holder<Item>> items = recipe.getIngredient().items().toList();
 
-        for (ItemStack stack : stacks) {
-            Identifier tex = KnappingResourceReloadListener.getTexture(stack);
+        for (Holder<Item> item : items) {
+            Identifier tex = KnappingResourceReloadListener.getTexture(new ItemStack(item));
             if (tex != null) {
                 return tex;
             }

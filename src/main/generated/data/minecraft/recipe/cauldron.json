@@ -1,0 +1,17 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 5,
+  "has_quality": false,
+  "key": {
+    "#": "overgeared:steel_plate"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "# #",
+    "# #",
+    "###"
+  ],
+  "result": {
+    "id": "minecraft:cauldron"
+  }
+}

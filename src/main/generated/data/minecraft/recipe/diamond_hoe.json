@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:diamond",
+  "base": "overgeared:steel_hoe",
+  "result": {
+    "id": "minecraft:diamond_hoe"
+  },
+  "template": "overgeared:diamond_upgrade_smithing_template"
+}

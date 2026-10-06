@@ -1,0 +1,13 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 120,
+  "experience": 0.3,
+  "input": {
+    "copper": 10.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:copper_spear_head"
+  },
+  "tool_type": "spear"
+}

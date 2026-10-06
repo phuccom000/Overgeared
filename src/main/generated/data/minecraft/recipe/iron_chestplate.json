@@ -1,0 +1,19 @@
+{
+  "type": "overgeared:forging",
+  "category": "armors",
+  "hammering": 5,
+  "has_polishing": false,
+  "key": {
+    "#": "#overgeared:iron_plates"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "# #",
+    "###",
+    "###"
+  ],
+  "result": {
+    "id": "minecraft:iron_chestplate"
+  },
+  "tier": "stone"
+}

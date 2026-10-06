@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 200,
+  "experience": 0.1,
+  "ingredient": "overgeared:steel_spear",
+  "result": {
+    "id": "overgeared:steel_nugget"
+  }
+}

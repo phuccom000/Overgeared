@@ -1,0 +1,20 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "axe"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "minecraft:gold_ingot"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "##",
+    "# "
+  ],
+  "result": {
+    "id": "overgeared:golden_axe_head"
+  },
+  "tier": "stone"
+}

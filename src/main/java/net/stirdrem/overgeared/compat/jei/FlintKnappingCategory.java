@@ -6,16 +6,15 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import mezz.jei.api.recipe.types.IRecipeType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.recipe.ExplanationRecipe;
 
@@ -26,34 +25,39 @@ public class FlintKnappingCategory implements IRecipeCategory<ExplanationRecipe>
 
     public static final Identifier UID = Overgeared.id("flint_knapping");
 
-    public static final RecipeType<ExplanationRecipe> FLINT_KNAPPING =
-            new RecipeType<>(UID, ExplanationRecipe.class);
+    public static final IRecipeType<ExplanationRecipe> FLINT_KNAPPING =
+            IRecipeType.create(UID, ExplanationRecipe.class);
 
     private final IDrawable background;
     private final IDrawable icon;
-    private final Text title;
+    private final Component title;
 
     public FlintKnappingCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.drawableBuilder(BACKGROUND_LOCATION, 0, 0, 150, 120)
                 .setTextureSize(150, 120)
                 .build();
         this.icon = guiHelper.createDrawableItemStack(new ItemStack(Items.FLINT));
-        this.title = Text.translatable("jei.overgeared.category.flint_knapping");
+        this.title = Component.translatable("jei.overgeared.category.flint_knapping");
     }
 
     @Override
-    public RecipeType<ExplanationRecipe> getRecipeType() {
+    public IRecipeType<ExplanationRecipe> getRecipeType() {
         return FLINT_KNAPPING;
     }
 
     @Override
-    public Text getTitle() {
+    public Component getTitle() {
         return title;
     }
 
     @Override
-    public IDrawable getBackground() {
-        return background;
+    public int getWidth() {
+        return background.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return background.getHeight();
     }
 
     @Override
@@ -64,33 +68,34 @@ public class FlintKnappingCategory implements IRecipeCategory<ExplanationRecipe>
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, ExplanationRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 21, 18)
-                .addItemStack(new ItemStack(Items.FLINT));
+                .add(new ItemStack(Items.FLINT));
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 18)
-                .addItemStack(recipe.getResultItem());
+                .add(recipe.getResultItem());
     }
 
     @Override
-    public void draw(ExplanationRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
+    public void draw(ExplanationRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
+        background.draw(guiGraphics);
         int textWidth = 140;
         int textX = 5;
         int textY = 43;
         renderWrappedText(
                 guiGraphics,
-                Text.translatable("jei.overgeared.flint_knapping.description"),
+                Component.translatable("jei.overgeared.flint_knapping.description"),
                 textX, textY,
                 textWidth,
-                Formatting.DARK_GRAY.getColorValue(),
+                0xFF555555, // ChatFormatting.DARK_GRAY
                 false
         );
     }
 
-    public static void renderWrappedText(DrawContext guiGraphics, Text text, int x, int y, int width, int color, boolean shadow) {
-        var font = MinecraftClient.getInstance().textRenderer;
-        List<OrderedText> lines = font.wrapLines(text, width);
+    public static void renderWrappedText(GuiGraphicsExtractor guiGraphics, Component text, int x, int y, int width, int color, boolean shadow) {
+        var font = Minecraft.getInstance().font;
+        List<FormattedCharSequence> lines = font.split(text, width);
 
         for (int i = 0; i < lines.size(); i++) {
-            guiGraphics.drawText(font, lines.get(i), x, y + (i * font.fontHeight), color, shadow);
+            guiGraphics.text(font, lines.get(i), x, y + (i * font.lineHeight), color, shadow);
         }
     }
 }

@@ -1,0 +1,17 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 3,
+  "has_quality": false,
+  "key": {
+    "#": "overgeared:steel_nugget"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "###",
+    " ##",
+    "# #"
+  ],
+  "result": {
+    "id": "overgeared:steel_arrow_head"
+  }
+}

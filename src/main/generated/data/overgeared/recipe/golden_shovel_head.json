@@ -1,0 +1,19 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "shovel"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "minecraft:gold_ingot"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:golden_shovel_head"
+  },
+  "tier": "stone"
+}

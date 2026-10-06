@@ -1,94 +1,46 @@
 package net.stirdrem.overgeared.recipe;
 
-import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import org.jetbrains.annotations.Nullable;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.BlastingRecipe;
 
-public class NBTKeepingBlastingRecipe extends BlastingRecipe {
+/**
+ * {@code overgeared:nbt_blasting}: a vanilla blasting recipe (type {@code minecraft:blasting}) whose result keeps
+ * the input's data components (1.20.1: copied the input NBT). Vanilla blasting JSON; {@code cookingtime} defaults to 200.
+ */
+public class NBTKeepingBlastingRecipe extends BlastingRecipe implements CookingCodecs.ResultAccess {
 
-    public NBTKeepingBlastingRecipe(Identifier id, String group, CookingRecipeCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
-        super(id, group, category, ingredient, result, experience, cookingTime);
+    public NBTKeepingBlastingRecipe(Recipe.CommonInfo commonInfo, AbstractCookingRecipe.CookingBookInfo bookInfo,
+                                    Ingredient ingredient, ItemStackTemplate result, float experience, int cookingTime) {
+        super(commonInfo, bookInfo, ingredient, result, experience, cookingTime);
     }
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
-        ItemStack input = ItemStack.EMPTY;
-
-        // Get input item
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
-            if (!stack.isEmpty() && this.input.test(stack)) {
-                input = stack.copy();
-                break;
-            }
-        }
-
-        ItemStack output = this.output.copy();
-
-        // Copy NBT data
-        if (input.hasNbt()) {
-            output.setNbt(input.getNbt().copy());
-        }
-
-        return output;
+    public ItemStack assemble(SingleRecipeInput input) {
+        return CookingCodecs.keepComponents(result(), input.item());
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.NBT_BLASTING;
+    public ItemStackTemplate resultTemplate() {
+        return result();
     }
 
-    public static class Serializer implements RecipeSerializer<NBTKeepingBlastingRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public NBTKeepingBlastingRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-            CookingRecipeCategory category = json.has("category")
-                    ? CookingRecipeCategory.CODEC.byId(JsonHelper.getString(json, "category"), CookingRecipeCategory.MISC)
-                    : CookingRecipeCategory.MISC;
-
-            Ingredient ingredient = Ingredient.fromJson(json.get("ingredient"));
-
-            ItemStack result = json.get("result").isJsonObject()
-                    ? ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"))
-                    : new ItemStack(Registries.ITEM.get(new Identifier(JsonHelper.getString(json, "result"))));
-
-            float xp = JsonHelper.getFloat(json, "experience", 0.0F);
-            int cookTime = JsonHelper.getInt(json, "cookingtime", 200);
-
-            return new NBTKeepingBlastingRecipe(id, group, category, ingredient, result, xp, cookTime);
-        }
-
-        @Override
-        public @Nullable NBTKeepingBlastingRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
-            Ingredient ingredient = Ingredient.fromPacket(buf);
-            ItemStack result = buf.readItemStack();
-            float xp = buf.readFloat();
-            int cookTime = buf.readVarInt();
-
-            return new NBTKeepingBlastingRecipe(id, group, category, ingredient, result, xp, cookTime);
-        }
-
-        @Override
-        public void write(PacketByteBuf buf, NBTKeepingBlastingRecipe recipe) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.getCategory());
-            recipe.input.write(buf);
-            buf.writeItemStack(recipe.output);
-            buf.writeFloat(recipe.experience);
-            buf.writeVarInt(recipe.cookTime);
-        }
+    @Override
+    public RecipeSerializer<BlastingRecipe> getSerializer() {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        RecipeSerializer<BlastingRecipe> s = (RecipeSerializer) ModRecipes.NBT_BLASTING;
+        return s;
     }
 
+    public static final MapCodec<NBTKeepingBlastingRecipe> MAP_CODEC = CookingCodecs.lenientCookingMapCodec(NBTKeepingBlastingRecipe::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NBTKeepingBlastingRecipe> STREAM_CODEC = AbstractCookingRecipe.cookingStreamCodec(NBTKeepingBlastingRecipe::new);
+    public static final RecipeSerializer<NBTKeepingBlastingRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 }

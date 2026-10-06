@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "overgeared:golden_sword_blade",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "minecraft:golden_sword"
+  }
+}

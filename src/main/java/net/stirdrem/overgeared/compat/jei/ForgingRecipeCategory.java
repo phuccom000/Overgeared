@@ -9,20 +9,22 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
+import net.stirdrem.overgeared.components.BlueprintData;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
+public class ForgingRecipeCategory implements IRecipeCategory<RecipeHolder<ForgingRecipe>> {
     public static final Identifier UID = Overgeared.id("forging");
     public static final Identifier TEXTURE = Overgeared.id("textures/gui/smithing_anvil_jei.png");
 
@@ -38,8 +40,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
     public static final Identifier RESULT_TWOSLOT = Overgeared.id("textures/gui/twoslot.png");
 
-    public static final RecipeType<ForgingRecipe> FORGING_RECIPE_TYPE =
-            new RecipeType<>(UID, ForgingRecipe.class);
+    public static final IRecipeHolderType<ForgingRecipe> FORGING_RECIPE_TYPE = IRecipeHolderType.create(UID);
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -59,49 +60,57 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
 
     @Override
-    public RecipeType<ForgingRecipe> getRecipeType() {
+    public IRecipeHolderType<ForgingRecipe> getRecipeType() {
         return FORGING_RECIPE_TYPE;
     }
 
     @Override
-    public Text getTitle() {
-        return Text.translatable("gui.overgeared.smithing_anvil");
+    public Component getTitle() {
+        return Component.translatable("gui.overgeared.smithing_anvil");
     }
 
     @Override
-    public IDrawable getBackground() {
-        return this.background;
+    public int getWidth() {
+        return imageWidth;
     }
 
     @Override
-    public void draw(ForgingRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
-        String hitsText = Text.translatable("tooltip.overgeared.recipe.hits", recipe.getRemainingHits()).getString();
+    public int getHeight() {
+        return imageHeight;
+    }
+
+    @Override
+    public void draw(RecipeHolder<ForgingRecipe> holder, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
+        ForgingRecipe recipe = holder.value();
+        background.draw(guiGraphics);
+
+        String hitsText = Component.translatable("tooltip.overgeared.recipe.hits", recipe.getRemainingHits()).getString();
 
         String tierRaw = recipe.getAnvilTier();
         AnvilTier tierName = AnvilTier.fromDisplayName(tierRaw);
 
-        MutableText tierText =
-                Text.translatable("tooltip.overgeared.recipe.tier")
-                        .append(Text.literal(" "));
+        MutableComponent tierText =
+                Component.translatable("tooltip.overgeared.recipe.tier")
+                        .append(Component.literal(" "));
 
         if (tierName != null) {
             tierText = tierText.append(
-                    Text.translatable(tierName.getLang())
+                    Component.translatable(tierName.getLang())
             );
         } else {
             tierText = tierText.append(
-                    Text.literal(tierRaw)
+                    Component.literal(tierRaw)
             );
         }
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
-            guiGraphics.drawTexture(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
         } else {
-            guiGraphics.drawTexture(RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
         }
 
-        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, hitsText, 79, 1, 0xFF808080, false);
-        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, tierText, 79, 47, 0xFF808080, false);
+        guiGraphics.text(Minecraft.getInstance().font, hitsText, 79, 1, 0xFF808080, false);
+        guiGraphics.text(Minecraft.getInstance().font, tierText, 79, 47, 0xFF808080, false);
 
         arrowAnimated.draw(guiGraphics, 82, 19);
 
@@ -116,16 +125,16 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     @Override
     public void setRecipe(
             IRecipeLayoutBuilder builder,
-            ForgingRecipe recipe,
+            RecipeHolder<ForgingRecipe> holder,
             IFocusGroup focuses
     ) {
         try {
-            setupRecipe(builder, recipe, focuses);
+            setupRecipe(builder, holder.value(), focuses);
         } catch (Exception e) {
 
             Overgeared.LOGGER.error(
                     "JEI failed recipe: {}",
-                    recipe.getId(),
+                    holder.id().identifier(),
                     e
             );
 
@@ -140,7 +149,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         int recipeWidth = recipe.width;
         int recipeHeight = recipe.height;
 
-        DefaultedList<ForgingRecipe.ForgingIngredient> ingredients =
+        List<ForgingRecipe.ForgingIngredient> ingredients =
                 recipe.getForgingIngredients();
 
         int offsetX = (gridWidth - recipeWidth) / 2;
@@ -162,29 +171,27 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                 ForgingRecipe.ForgingIngredient forgingIngredient =
                         ingredients.get(index);
 
-
-                Ingredient ingredient = forgingIngredient.ingredient();
-
-                if (ingredient.isEmpty())
+                if (forgingIngredient.isEmpty() || forgingIngredient.ingredient().isEmpty())
                     continue;
 
+                Ingredient ingredient = forgingIngredient.ingredient().get();
 
+                if (!forgingIngredient.requiresHeated()) {
+                    builder.addSlot(RecipeIngredientRole.INPUT, slotX, slotY)
+                            .add(ingredient);
+                    continue;
+                }
+
+                // Heated ingredients are shown with the overgeared:heated component set.
                 List<ItemStack> stacks = new ArrayList<>();
 
-                for (ItemStack stack : ingredient.getMatchingStacks()) {
-
-                    if (stack.isEmpty())
-                        continue;
-
-                    ItemStack copy = stack.copy();
-
-                    if (forgingIngredient.requiresHeated()) {
-                        copy.getOrCreateNbt()
-                                .putBoolean("Heated", true);
-                    }
-
+                ingredient.items().forEach(item -> {
+                    ItemStack copy = new ItemStack(item);
+                    if (copy.isEmpty())
+                        return;
+                    copy.set(ModComponents.HEATED, true);
                     stacks.add(copy);
-                }
+                });
 
 
                 if (!stacks.isEmpty()) {
@@ -205,21 +212,14 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         if (!blueprints.isEmpty()) {
             builder.addSlot(
-                    RecipeIngredientRole.CATALYST,
+                    RecipeIngredientRole.CRAFTING_STATION,
                     1,
                     19
             ).addItemStacks(blueprints);
         }
 
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (mc.world == null)
-            return;
-
-
-        ItemStack result =
-                recipe.getOutput(mc.world.getRegistryManager());
+        ItemStack result = recipe.getResultItem();
 
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
@@ -228,7 +228,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                     RecipeIngredientRole.OUTPUT,
                     117,
                     19
-            ).addItemStack(result);
+            ).add(result);
 
         } else {
 
@@ -236,24 +236,21 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                     RecipeIngredientRole.OUTPUT,
                     117,
                     10
-            ).addItemStack(result);
+            ).add(result);
 
 
-            ItemStack failed =
-                    recipe.getFailedResultItem(mc.world.getRegistryManager())
-                            .copy();
+            ItemStack failed = recipe.getFailedResultItem();
 
             if (!failed.isEmpty()) {
 
-                failed.getOrCreateNbt()
-                        .putBoolean("failedResult", true);
+                failed.set(ModComponents.FAILED_RESULT, true);
 
 
                 builder.addSlot(
                         RecipeIngredientRole.OUTPUT,
                         117,
                         28
-                ).addItemStack(failed);
+                ).add(failed);
             }
         }
     }
@@ -280,11 +277,9 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         for (String type : types) {
             ItemStack stack = new ItemStack(ModItems.BLUEPRINT);
-            NbtCompound tag = new NbtCompound();
-
-            tag.putString("ToolType", type);
-            tag.putBoolean("Required", required);
-            stack.setNbt(tag);
+            // 1.20.1 NBT {ToolType, Required} -> BLUEPRINT_DATA.toolType + BLUEPRINT_REQUIRED
+            stack.set(ModComponents.BLUEPRINT_DATA, BlueprintData.createDefault().withToolType(type));
+            stack.set(ModComponents.BLUEPRINT_REQUIRED, required);
             stacks.add(stack);
         }
 

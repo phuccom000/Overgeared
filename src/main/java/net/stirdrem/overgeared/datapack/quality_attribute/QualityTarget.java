@@ -1,6 +1,6 @@
 package net.stirdrem.overgeared.datapack.quality_attribute;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public record QualityTarget(
         TargetType type,

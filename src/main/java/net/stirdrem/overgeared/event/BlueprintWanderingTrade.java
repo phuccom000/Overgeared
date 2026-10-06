@@ -1,81 +1,73 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOffers;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
 import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.components.BlueprintData;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class BlueprintWanderingTrade implements TradeOffers.Factory {
-
-    private final ItemStack blueprintItem;
-    private final int maxUses;
-    private final int traderXp;
-
-    public BlueprintWanderingTrade(ItemStack blueprintItem, int maxUses, int traderXp) {
-        this.blueprintItem = blueprintItem;
-        this.maxUses = maxUses;
-        this.traderXp = traderXp;
+/**
+ * 26.3 port: the wandering-trader blueprint trades are data-driven
+ * ({@code data/overgeared/villager_trade/blueprint_common|blueprint_rare.json}); this rolls the
+ * blueprint's quality / tool type and its price on every generated offer (see
+ * {@link QualityWrappedTrade#postProcess}).
+ */
+public final class BlueprintWanderingTrade {
+    private BlueprintWanderingTrade() {
     }
 
-    @Override
-    public @Nullable TradeOffer create(Entity entity, Random random) {
-
-        ItemStack result = blueprintItem.copy();
-        NbtCompound tag = result.getOrCreateNbt();
+    public static MerchantOffer apply(MerchantOffer offer, RandomSource random) {
+        ItemStack result = offer.getResult().copy();
 
         BlueprintQuality quality = rollQuality(random);
-
-        tag.putString("Quality", quality.name());
-        tag.putInt("Uses", 0);
+        BlueprintData data = BlueprintData.createDefault().withQuality(quality.getId()).withUses(0);
 
         // ---------- RANDOM TOOL TYPE ----------
         List<ToolType> types = ToolTypeRegistry.getRegisteredTypesAll();
         if (!types.isEmpty()) {
             ToolType type = types.get(random.nextInt(types.size()));
-            tag.putString("ToolType", type.getId());
+            data = data.withToolType(type.getId());
         }
+        result.set(ModComponents.BLUEPRINT_DATA, data);
 
         // ---------- EMERALD PRICE BY QUALITY ----------
-        ItemStack emeraldCost = getEmeraldCostForQuality(quality);
+        int price = getEmeraldCostForQuality(quality);
 
-        return new TradeOffer(
-                emeraldCost,          // Cost A (emeralds)
-                ItemStack.EMPTY,      // Cost B
-                result,               // Result
-                maxUses,
-                traderXp,
-                0.05F
+        return new MerchantOffer(
+                new ItemCost(Items.EMERALD, price),
+                offer.getItemCostB(),
+                result,
+                offer.getMaxUses(),
+                offer.getXp(),
+                offer.getPriceMultiplier()
         );
     }
 
-    private BlueprintQuality rollQuality(Random random) {
+    private static BlueprintQuality rollQuality(RandomSource random) {
         int roll = random.nextInt(1000);
 
         // 0–9     → MASTER  (1%)
         // 10–249  → PERFECT (24%)
         // 250–999 → EXPERT  (75%)
-
         if (roll < 10) return BlueprintQuality.MASTER;
         if (roll < 250) return BlueprintQuality.PERFECT;
         return BlueprintQuality.EXPERT;
     }
 
-    private ItemStack getEmeraldCostForQuality(BlueprintQuality quality) {
+    private static int getEmeraldCostForQuality(BlueprintQuality quality) {
         return switch (quality) {
-            case MASTER -> new ItemStack(Items.EMERALD, 128); // 2 stacks
-            case PERFECT -> new ItemStack(Items.EMERALD, 64);  // 1 stack
-            case EXPERT -> new ItemStack(Items.EMERALD, 32);  // half stack
-            case WELL -> new ItemStack(Items.EMERALD, 16);
-            case POOR -> new ItemStack(Items.EMERALD, 8);
+            case MASTER -> 128; // 2 stacks
+            case PERFECT -> 64;  // 1 stack
+            case EXPERT -> 32;  // half stack
+            case WELL -> 16;
+            case POOR -> 8;
         };
     }
 }

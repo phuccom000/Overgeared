@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "overgeared:steel_tong",
+    "overgeared:steel_tong"
+  ],
+  "result": {
+    "id": "overgeared:steel_tongs"
+  }
+}

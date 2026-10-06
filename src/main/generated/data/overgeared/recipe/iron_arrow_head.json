@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 2,
+  "has_quality": false,
+  "key": {
+    "#": "minecraft:iron_nugget"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "###",
+    " ##",
+    "# #"
+  ],
+  "result": {
+    "id": "overgeared:iron_arrow_head"
+  },
+  "tier": "stone"
+}

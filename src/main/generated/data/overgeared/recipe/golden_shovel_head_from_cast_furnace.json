@@ -1,0 +1,12 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 80,
+  "experience": 0.2,
+  "input": {
+    "gold": 9.0
+  },
+  "result": {
+    "id": "overgeared:golden_shovel_head"
+  },
+  "tool_type": "shovel"
+}

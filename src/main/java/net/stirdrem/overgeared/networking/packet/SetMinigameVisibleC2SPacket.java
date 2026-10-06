@@ -1,42 +1,36 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
-public class SetMinigameVisibleC2SPacket {
-    private final Boolean visible;
-    private final BlockPos pos;
+/** C2S: the client toggled the visibility of the minigame at the anvil at {@code pos}. */
+public record SetMinigameVisibleC2SPacket(BlockPos pos, boolean visible) implements CustomPacketPayload {
+    public static final Type<SetMinigameVisibleC2SPacket> TYPE = new Type<>(Overgeared.id("set_minigame_visible"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, SetMinigameVisibleC2SPacket> STREAM_CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SetMinigameVisibleC2SPacket::pos,
+            ByteBufCodecs.BOOL, SetMinigameVisibleC2SPacket::visible,
+            SetMinigameVisibleC2SPacket::new);
 
-    public SetMinigameVisibleC2SPacket(BlockPos pos, Boolean visible) {
-        this.visible = visible;
-        this.pos = pos;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
-    public static void encode(SetMinigameVisibleC2SPacket pkt, PacketByteBuf buf) {
-        buf.writeBlockPos(pkt.pos);
-        buf.writeBoolean(pkt.visible);
-    }
-
-    public static SetMinigameVisibleC2SPacket decode(PacketByteBuf buf) {
-        return new SetMinigameVisibleC2SPacket(buf.readBlockPos(), buf.readBoolean());
-    }
-
-    public Boolean getVisible() {
+    public boolean getVisible() {
         return visible;
     }
 
-    public static void handle(SetMinigameVisibleC2SPacket msg, MinecraftServer server, ServerPlayerEntity sender) {
-        server.execute(() -> {
-            if (sender.getWorld().getBlockEntity(msg.pos) instanceof AbstractSmithingAnvilBlockEntity anvilBlock) {
-                anvilBlock.setMinigameOn(msg.getVisible());
-                ModItemInteractEvents.playerMinigameVisibility.put(sender.getUuid(), msg.getVisible());
-            }
-        });
+    public static void handle(SetMinigameVisibleC2SPacket msg, ServerPlayer sender) {
+        if (sender.level().getBlockEntity(msg.pos) instanceof AbstractSmithingAnvilBlockEntity anvilBlock) {
+            anvilBlock.setMinigameOn(msg.visible);
+            ModItemInteractEvents.playerMinigameVisibility.put(sender.getUUID(), msg.visible);
+        }
     }
-
-
 }

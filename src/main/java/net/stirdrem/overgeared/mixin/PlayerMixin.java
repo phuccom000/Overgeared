@@ -1,36 +1,25 @@
 package net.stirdrem.overgeared.mixin;
 
-import com.llamalad7.mixinextras.expression.Definition;
-import com.llamalad7.mixinextras.expression.Expression;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
 /**
- * Vanilla gates the sweep-attack purely on {@code itemStack.getItem() instanceof SwordItem} deep
- * inside PlayerEntity.attack() - there's no clean event/hook at that point, so this uses
- * MixinExtras' expression matching to intercept just that instanceof check rather than a fragile
- * local-variable-ordinal mixin into a huge, heavily-obfuscated vanilla method.
+ * Broken (quality break system) swords can't sweep-attack. 26.3 moved the sweep check (now a
+ * {@code ItemTags.SWORDS} test) into {@code Player#isSweepAttack(boolean, boolean, boolean)}.
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerMixin {
 
-    @Definition(id = "sword", type = SwordItem.class)
-    @Definition(id = "getItem", method = "Lnet/minecraft/item/ItemStack;getItem()Lnet/minecraft/item/Item;")
-    @Expression("?.getItem() instanceof sword")
-    @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean overgeared$disableSweepWhenBroken(boolean original) {
-        if (original) {
-            ItemStack stack = ((PlayerEntity) (Object) this).getMainHandStack();
-            if (isBroken(stack)) {
-                return false;
-            }
+    @Inject(method = "isSweepAttack(ZZZ)Z", at = @At("RETURN"), cancellable = true)
+    private void overgeared$disableSweepWhenBroken(boolean fullStrengthAttack, boolean criticalAttack, boolean knockbackAttack,
+                                                   CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ() && isBroken(((Player) (Object) this).getMainHandItem())) {
+            cir.setReturnValue(false);
         }
-        return original;
     }
 }

@@ -1,0 +1,21 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "spear"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "minecraft:gold_ingot",
+    "n": "minecraft:gold_nugget"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "n",
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:golden_spear_head"
+  },
+  "tier": "stone"
+}

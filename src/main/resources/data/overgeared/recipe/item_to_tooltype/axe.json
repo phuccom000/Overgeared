@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:item_to_tooltype",
+  "item": [
+    "overgeared:stone_axe_head",
+    "overgeared:iron_axe_head",
+    "overgeared:golden_axe_head",
+    "overgeared:copper_axe_head",
+    "overgeared:steel_axe_head"
+  ],
+  "tooltype": "axe"
+}

@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:rock_knapping",
+  "pattern": [
+    "x"
+  ],
+  "ingredient": "overgeared:knappable_rock",
+  "result": {
+    "id": "overgeared:stone_shovel_head"
+  },
+  "show_notification": true
+}

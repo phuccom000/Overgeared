@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "group": "iron_ingot",
+  "ingredient": "minecraft:iron_ingot",
+  "result": {
+    "id": "overgeared:heated_iron_ingot"
+  }
+}

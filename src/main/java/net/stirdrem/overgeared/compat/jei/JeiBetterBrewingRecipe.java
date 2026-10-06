@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.compat.jei;
 
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 

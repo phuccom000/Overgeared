@@ -1,163 +1,53 @@
 package net.stirdrem.overgeared.recipe;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.collection.DefaultedList;
-import net.stirdrem.overgeared.util.ShapedAlloySerializerUtil;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 
+import java.util.List;
 import java.util.Map;
 
+/** Shaped alloy smelter recipe on the 2x2 input grid (slots 0..3). See {@link AbstractShapedAlloyRecipe}. */
 public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe implements IAlloyRecipe {
+    public static final int GRID_SIZE = 2;
 
-    public ShapedAlloySmeltingRecipe(
-            Identifier id,
-            String group,
-            CraftingRecipeCategory category,
-            int width,
-            int height,
-            DefaultedList<Ingredient> ingredients,
-            ItemStack output,
-            float experience,
-            int cookingTime
-    ) {
-        super(id, group, category, width, height, 2, ingredients, output, experience, cookingTime);
+    public ShapedAlloySmeltingRecipe(String group, CraftingBookCategory category, List<String> pattern, Map<Character, Ingredient> key,
+                                     ItemStackTemplate output, float experience, int cookingTime) {
+        super(GRID_SIZE, group, category, pattern, key, output, experience, cookingTime);
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ShapedAlloySmeltingRecipe> getSerializer() {
         return ModRecipes.SHAPED_ALLOY_SMELTING;
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<ShapedAlloySmeltingRecipe> getType() {
         return ModRecipeTypes.SHAPED_ALLOY_SMELTING;
     }
 
     @Override
-    public boolean isShaped() {
-        return true;
+    public RecipeBookCategory recipeBookCategory() {
+        return ModRecipeBookCategories.ALLOY_SMELTING;
     }
 
     public static class Type implements RecipeType<ShapedAlloySmeltingRecipe> {
         public static final Type INSTANCE = new Type();
         public static final String ID = "shaped_alloy_smelting";
-    }
-
-    public static class Serializer
-            implements RecipeSerializer<ShapedAlloySmeltingRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public ShapedAlloySmeltingRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-            CraftingRecipeCategory category =
-                    json.has("category")
-                            ? CraftingRecipeCategory.CODEC.byId(
-                            json.get("category").getAsString(),
-                            CraftingRecipeCategory.MISC)
-                            : CraftingRecipeCategory.MISC;
-
-            // 1) Parse & trim pattern
-            JsonArray patternArray = JsonHelper.getArray(json, "pattern");
-            var parsed = ShapedAlloySerializerUtil.parsePattern(patternArray, 2);
-
-            // 2) Parse key
-            Map<Character, Ingredient> key =
-                    ShapedAlloySerializerUtil.parseKey(
-                            JsonHelper.getObject(json, "key"));
-
-            // 3) Build ingredient list
-            DefaultedList<Ingredient> ingredients =
-                    ShapedAlloySerializerUtil.buildIngredientList(
-                            parsed.pattern(),
-                            parsed.width(),
-                            parsed.height(),
-                            key
-                    );
-
-            // 4) Output & extras
-            ItemStack output =
-                    ShapedRecipe.outputFromJson(
-                            JsonHelper.getObject(json, "result"));
-
-            float experience = JsonHelper.getFloat(json, "experience", 0.0F);
-            int cookingTime = JsonHelper.getInt(json, "cookingtime", 200);
-
-            return new ShapedAlloySmeltingRecipe(
-                    id,
-                    group,
-                    category,
-                    parsed.width(),
-                    parsed.height(),
-                    ingredients,
-                    output,
-                    experience,
-                    cookingTime
-            );
-        }
-
-        // ---------------- NETWORK ----------------
-
-        @Override
-        public ShapedAlloySmeltingRecipe read(
-                Identifier id,
-                PacketByteBuf buf
-        ) {
-            String group = buf.readString();
-            CraftingRecipeCategory category =
-                    buf.readEnumConstant(CraftingRecipeCategory.class);
-
-            int width = buf.readVarInt();
-            int height = buf.readVarInt();
-
-            DefaultedList<Ingredient> ingredients =
-                    DefaultedList.ofSize(width * height, Ingredient.EMPTY);
-
-            for (int i = 0; i < ingredients.size(); i++) {
-                ingredients.set(i, Ingredient.fromPacket(buf));
-            }
-
-            ItemStack output = buf.readItemStack();
-            float experience = buf.readFloat();
-            int cookingTime = buf.readVarInt();
-
-            return new ShapedAlloySmeltingRecipe(
-                    id,
-                    group,
-                    category,
-                    width,
-                    height,
-                    ingredients,
-                    output,
-                    experience,
-                    cookingTime
-            );
-        }
-
-        @Override
-        public void write(
-                PacketByteBuf buf,
-                ShapedAlloySmeltingRecipe recipe
-        ) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.category());
-
-            buf.writeVarInt(recipe.getWidth());
-            buf.writeVarInt(recipe.getHeight());
-
-            for (Ingredient ingredient : recipe.getIngredientsList()) {
-                ingredient.write(buf);
-            }
-
-            buf.writeItemStack(recipe.getOutput(null));
-            buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookingTime());
+        public String toString() {
+            return ID;
         }
     }
+
+    public static final MapCodec<ShapedAlloySmeltingRecipe> MAP_CODEC = mapCodec(GRID_SIZE, ShapedAlloySmeltingRecipe::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ShapedAlloySmeltingRecipe> STREAM_CODEC = streamCodec(ShapedAlloySmeltingRecipe::new);
+    public static final RecipeSerializer<ShapedAlloySmeltingRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 }

@@ -1,15 +1,20 @@
 package net.stirdrem.overgeared.datapack;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class RockInteractionData {
 
-    public record ToolEntry(Ingredient ingredient, ItemStack dropItem, float dropChance, float breakChance) {
+    // 26.3: drops are stored as templates - building an ItemStack needs item components, which are
+    // not bound yet while datapack reload listeners run.
+    public record ToolEntry(Ingredient ingredient, ItemStackTemplate drop, float dropChance, float breakChance) {
+        public ItemStack dropItem() {
+            return drop.create();
+        }
     }
 
     private final Block inputBlock;
@@ -23,7 +28,7 @@ public class RockInteractionData {
     }
 
     public boolean matches(BlockState state, ItemStack stack) {
-        if (!state.isOf(inputBlock)) return false;
+        if (!state.is(inputBlock)) return false;
         return tools.stream().anyMatch(t -> t.ingredient.test(stack));
     }
 

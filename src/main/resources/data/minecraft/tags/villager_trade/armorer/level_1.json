@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "overgeared:armorer/1/emerald_copper_helmet",
+    "overgeared:armorer/1/emerald_copper_chestplate",
+    "overgeared:armorer/1/emerald_copper_leggings",
+    "overgeared:armorer/1/emerald_copper_boots"
+  ]
+}

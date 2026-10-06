@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "category": "armors",
+  "hammering": 5,
+  "has_polishing": false,
+  "key": {
+    "#": "overgeared:steel_plate"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "# #",
+    "###",
+    "###"
+  ],
+  "result": {
+    "id": "overgeared:steel_chestplate"
+  }
+}

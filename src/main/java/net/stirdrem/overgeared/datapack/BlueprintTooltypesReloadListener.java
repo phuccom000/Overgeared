@@ -5,28 +5,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BlueprintTooltypesReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class BlueprintTooltypesReloadListener extends OvergearedJsonReloadListener {
 
     public static final Map<Identifier, BlueprintTooltypesData> DATA = new ConcurrentHashMap<>();
 
     private static final Gson GSON = new Gson();
 
     public BlueprintTooltypesReloadListener() {
-        super(GSON, "blueprint_tooltypes");
+        super("blueprint_tooltypes");
     }
-
-    @Override
     public Identifier getFabricId() {
         return Overgeared.id("blueprint_tooltypes_listener");
     }
@@ -35,7 +31,7 @@ public class BlueprintTooltypesReloadListener extends JsonDataLoader implements 
     protected void apply(
             Map<Identifier, JsonElement> objects,
             ResourceManager resourceManager,
-            Profiler profiler
+            ProfilerFiller profiler
     ) {
         DATA.clear();
 

@@ -1,0 +1,19 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "shovel"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "overgeared:heated_copper_ingot"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:copper_shovel_head"
+  },
+  "tier": "stone"
+}
