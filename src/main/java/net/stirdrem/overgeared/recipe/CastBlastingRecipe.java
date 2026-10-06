@@ -8,17 +8,14 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.util.CodecUtils;
 import net.stirdrem.overgeared.util.ModTags;
@@ -32,7 +29,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
     private final boolean needPolishing;
 
     public CastBlastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
-            String toolType, ItemStack result, boolean needPolishing, float experience, int cookingTime) {
+                              String toolType, ItemStack result, boolean needPolishing, float experience, int cookingTime) {
         super(group, category, Ingredient.of(ModTags.Items.USABLE_TOOL_CAST), result, experience, cookingTime);
 
         this.requiredMaterials = requiredMaterials;
@@ -44,8 +41,10 @@ public class CastBlastingRecipe extends BlastingRecipe {
     public NonNullList<Ingredient> getIngredients() {
         NonNullList<Ingredient> list = NonNullList.create();
 
-        Map<String, Integer> materials = requiredMaterials;
-        int total = requiredMaterials.values().stream().mapToInt(Integer::intValue).sum();
+        Map<String, Integer> materials = new HashMap<>(requiredMaterials);
+        int total = requiredMaterials.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
 
         CastData displayData = new CastData(
                 "",
@@ -55,9 +54,10 @@ public class CastBlastingRecipe extends BlastingRecipe {
                 total,
                 java.util.List.of(),
                 ItemStack.EMPTY,
-                false);
+                false
+        );
 
-        ItemStack cast = this.ingredient.getItems()[0];
+        ItemStack cast = this.ingredient.getItems()[0].copy();
         cast.set(ModComponents.CAST_DATA, displayData);
 
         list.add(Ingredient.of(cast));

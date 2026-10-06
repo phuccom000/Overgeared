@@ -184,9 +184,8 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         if (ServerConfig.ENABLE_TIER_B.get())
             registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.TIER_B_SMITHING_ANVIL.get()));
 
-        // Register Knapping
-        registry.addCategory(KNAPPING_CATEGORY);
-        //registry.addWorkstation(KNAPPING_CATEGORY, KNAPPING_WORKSTATION);
+        // Register how to get Rock
+        registry.addCategory(ROCK_GETTING_CATEGORY);
 
         for (RecipeHolder<RockKnappingRecipe> holder : registry.getRecipeManager().getAllRecipesFor(ModRecipeTypes.KNAPPING.get())) {
             registry.addRecipe(new KnappingEmiRecipe(holder));
