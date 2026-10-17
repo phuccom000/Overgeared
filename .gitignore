@@ -1,25 +1,23 @@
-# gradle
-.gradle/
-build/
-out/
-classes/
-
 # eclipse
+bin
 *.launch
-
-# idea
-.idea/
-*.iml
-*.ipr
-*.iws
-bin/
-
-# vscode
-.vscode/
+.settings
+.metadata
 .classpath
 .project
-.settings/
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea/*
+!.idea/scopes
+
+# gradle
+build
+.gradle
 
 # other
-run/
-reference-forge-src/
+eclipse
+run

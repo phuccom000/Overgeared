@@ -1,0 +1,9 @@
+package net.stirdrem.overgeared.screen;
+
+import net.minecraft.core.BlockPos;
+
+public class ClientHooks {
+    public static void openSmithingMinigameScreen(BlockPos pos) {
+        //Minecraft.getInstance().setScreen(new SmithingAnvilMinigameScreen(pos));
+    }
+}

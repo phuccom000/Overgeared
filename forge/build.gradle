@@ -1,0 +1,260 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
+}
+
+mixin {
+    add(sourceSets.main, "${mod_id}.refmap.json")
+
+    config("${mod_id}.mixins.json")
+    config("${mod_id}.forge.mixins.json")
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+
+    validateAccessTransformers = true
+
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers = ["src/main/resources/META-INF/accesstransformer.cfg"]
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        client {
+            client()
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+repositories {
+    flatDir {
+        dir 'libs'
+    }
+    maven {
+        name = "Sleeping Town"
+        url = "https://repo.sleeping.town/"
+    }
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        url "https://maven.theillusivec4.top/"
+    }
+    maven {
+        // location of the maven that hosts JEI files before January 2023
+        name = "Progwml6's maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        name = "DaPorkchop_"
+        url = "https://maven.daporkchop.net/"
+    }
+    maven {
+        name = "Valkyrien Skies Internal"
+        url = "https://maven.valkyrienskies.org"
+        content {
+            excludeGroup("org.spongepowered")
+        }
+    }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+    maven {
+        name 'Jitpack'
+        url 'https://jitpack.io'
+    }
+    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+    maven { url = "https://maven.ithundxr.dev/mirror" } // Registrate
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
+    maven {
+        // Shedaniel's maven (Architectury API)
+        url = "https://maven.architectury.dev"
+        content {
+            includeGroup "dev.architectury"
+        }
+    }
+    maven { url "https://maven.shedaniel.me/" }
+    maven {
+        // saps.dev Maven (KubeJS and Rhino)
+        url = "https://maven.saps.dev/minecraft"
+        content {
+            includeGroup "dev.latvian.mods"
+        }
+    }
+    maven {
+        url "https://maven.latvian.dev/releases"
+        content {
+            includeGroup "dev.latvian.mods"
+            includeGroup "dev.latvian.apps"
+        }
+    }
+
+    maven {
+        url 'https://jitpack.io'
+        content {
+            includeGroup "com.github.rtyley"
+        }
+    }
+
+
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+    }
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url 'https://maven.su5ed.dev/releases' }
+    maven { url 'https://maven.fabricmc.net' }
+    maven {
+        name = "Kotlin for Forge"
+        url = "https://thedarkcolour.github.io/KotlinForForge/"
+//		content {
+//			includeModule("thedarkcolour", "kotlinforforge")
+//		}
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    compileOnly project(":common")
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.5"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.5.5"))
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    modRuntimeOnly("curse.maven:tmrv-1194921:8145843")
+    compileOnly("dev.emi:emi-forge:1.1.24+1.20.1:api")
+    modRuntimeOnly("dev.emi:emi-forge:1.1.23+1.20.1")
+
+    modRuntimeOnly("curse.maven:curios-309927:6418456")
+    modRuntimeOnly("curse.maven:lionfish-api-1001614:5922047")
+
+    modRuntimeOnly("curse.maven:lendercataclysm-551586:6906993")
+
+    modRuntimeOnly("curse.maven:v-tweaks-238048:7119159")
+    modRuntimeOnly("curse.maven:spartan-weaponry-278141:6842571")
+    modRuntimeOnly("curse.maven:bookling-gear-1122766:7317926")
+    modRuntimeOnly("curse.maven:lit-it-up-916334:7239006")
+    modRuntimeOnly("curse.maven:cupboard-326652:5470032")
+    modRuntimeOnly("curse.maven:recipe-essentials-forge-fabric-907856:6165709")
+
+    modRuntimeOnly("curse.maven:caelus-308989:5281700")
+    modRuntimeOnly("curse.maven:attribute-setter-1064034:7196879")
+
+    modRuntimeOnly("curse.maven:geckolib-388172:7025129")
+
+    // region Valkyrien Skies
+    implementation("org.valkyrienskies.core:api:${vs_core_version}") {
+        transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    implementation("org.valkyrienskies.core:internal:${vs_core_version}") {
+        transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    implementation("org.valkyrienskies.core:util:${vs_core_version}") {
+        transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    implementation("org.valkyrienskies.core:impl:${vs_core_version}") {
+        transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    modImplementation("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") {
+        transitive = false
+        exclude group: 'org.valkyrienskies.core', module: ''
+    }
+    // endregion
+
+    // region VS deps
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
+    compileOnly("org.joml:joml:1.10.4")
+    compileOnly("org.joml:joml-primitives:1.10.0")
+    modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+
+    // endregion
+    // Compile against only the API artifact
+    compileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    // Use the full Curios API jar at runtime
+    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
+
+    modRuntimeOnly("curse.maven:selene-499980:6983934")
+    modRuntimeOnly("curse.maven:owo-lib-532610:4749199")
+    compileOnly("curse.maven:accessories-938917:7164863")
+
+    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-api-base:0.4.31+ef105b4977")
+
+    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-data-attachment-api-v1:1.0.0+30ef839e77")
+    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-entity-events-v1:1.6.0+6274ab9d77")
+    modImplementation("dev.su5ed.sinytra.fabric-api:fabric-object-builder-api-v1:11.1.3+2174fc8477")
+
+    modRuntimeOnly("curse.maven:immersive-armors-580681:6851704")
+    modRuntimeOnly("curse.maven:jade-324717:6855440")
+
+    modRuntimeOnly("curse.maven:cloth-config-348521:5729105")
+    modRuntimeOnly("curse.maven:architectury-api-419699:5137938")
+
+    modImplementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
+    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
+    modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    modImplementation("curse.maven:puzzles-lib-495476:6918565")
+    modImplementation("curse.maven:easy-anvils-682567:5156621")
+
+    modImplementation("curse.maven:endremastered-404183:5598990")
+    compileOnly 'org.jetbrains:annotations:26.0.2-1'
+
+    modImplementation("curse.maven:supermartijn642s-config-lib-438332:4715408")
+    modImplementation("curse.maven:durability-tooltip-511040:6833215")
+    modImplementation("curse.maven:bots-lib-1062753:7283906")
+    modImplementation("curse.maven:watering-cans-dew-drop-1062863:5550049")
+    // Mixin
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+}
+
+jar {
+    finalizedBy('reobfJar')
+    manifest.attributes([
+            "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
+    ])
+}

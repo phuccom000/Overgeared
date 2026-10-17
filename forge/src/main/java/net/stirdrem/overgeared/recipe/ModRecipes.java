@@ -1,0 +1,70 @@
+package net.stirdrem.overgeared.recipe;
+
+
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.recipe.castcooking.CastBlastingRecipe;
+import net.stirdrem.overgeared.recipe.castcooking.CastSmeltingRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTBlastingRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTCampfireRecipe;
+import net.stirdrem.overgeared.recipe.nbtcooking.NBTSmeltingRecipe;
+
+public class ModRecipes {
+    public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
+            DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Overgeared.MOD_ID);
+
+    public static final RegistryObject<RecipeSerializer<ForgingRecipe>> FORGING_SERIALIZER =
+            SERIALIZERS.register("forging", () -> ForgingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<RockKnappingRecipe>> ROCK_KNAPPING_SERIALIZER =
+            SERIALIZERS.register("rock_knapping", () -> RockKnappingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<OvergearedShapelessRecipe>> CRAFTING_SHAPELESS =
+            SERIALIZERS.register("crafting_shapeless", () -> OvergearedShapelessRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<BlueprintCloningRecipe>> CRAFTING_BLUEPRINTCLONING =
+            SERIALIZERS.register("crafting_cloning", () -> new SimpleCraftingRecipeSerializer<>(BlueprintCloningRecipe::new));
+    public static final RegistryObject<RecipeSerializer<DynamicToolCastRecipe>> CRAFTING_DYNAMIC_TOOL_CAST =
+            SERIALIZERS.register("crafting_cast", () -> new SimpleCraftingRecipeSerializer<>(DynamicToolCastRecipe::new));
+    public static final RegistryObject<RecipeSerializer<ClayToolCastRecipe>> CLAY_TOOL_CAST =
+            SERIALIZERS.register("crafting_initial_cast", () -> new SimpleCraftingRecipeSerializer<>(ClayToolCastRecipe::new));
+    public static final RegistryObject<RecipeSerializer<FletchingRecipe>> FLETCHING_SERIALIZER =
+            SERIALIZERS.register("fletching", () -> FletchingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTKeepingSmeltingRecipe>> NBT_SMELTING =
+            SERIALIZERS.register("nbt_smelting", () -> NBTKeepingSmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTKeepingBlastingRecipe>> NBT_BLASTING =
+            SERIALIZERS.register("nbt_blasting", () -> NBTKeepingBlastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<CastSmeltingRecipe>> CAST_SMELTING =
+            SERIALIZERS.register("cast_smelting", () -> CastSmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<CastBlastingRecipe>> CAST_BLASTING =
+            SERIALIZERS.register("cast_blasting", () -> CastBlastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<AlloySmeltingRecipe>> ALLOY_SMELTING =
+            SERIALIZERS.register("alloy_smelting", () -> AlloySmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<ShapedAlloySmeltingRecipe>> SHAPED_ALLOY_SMELTING =
+            SERIALIZERS.register("shaped_alloy_smelting", () -> ShapedAlloySmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NetherAlloySmeltingRecipe>> NETHER_ALLOY_SMELTING =
+            SERIALIZERS.register("nether_alloy_smelting", () -> NetherAlloySmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<ShapedNetherAlloySmeltingRecipe>> SHAPED_NETHER_ALLOY_SMELTING =
+            SERIALIZERS.register("shaped_nether_alloy_smelting", () -> ShapedNetherAlloySmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<ItemToToolTypeRecipe>> ITEM_TO_TOOLTYPE =
+            SERIALIZERS.register("item_to_tooltype", ItemToToolTypeRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<CoolingRecipe>> COOLING_SERIALIZER =
+            SERIALIZERS.register("cooling", CoolingRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<GrindingRecipe>> GRINDING_SERIALIZER =
+            SERIALIZERS.register("grinding", GrindingRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<CastingRecipe>> CASTING =
+            SERIALIZERS.register("casting", () -> CastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTSmeltingRecipe>> NBT_ADD_SMELTING =
+            SERIALIZERS.register("nbt_add_smelting", () -> NBTSmeltingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTBlastingRecipe>> NBT_ADD_BLASTING =
+            SERIALIZERS.register("nbt_add_blasting", () -> NBTBlastingRecipe.Serializer.INSTANCE);
+    public static final RegistryObject<RecipeSerializer<NBTCampfireRecipe>> NBT_ADD_CAMPFIRE =
+            SERIALIZERS.register("nbt_add_campfire_cooking", () -> NBTCampfireRecipe.Serializer.INSTANCE);
+
+    public static void register(IEventBus eventBus) {
+        SERIALIZERS.register(eventBus);
+    }
+}
+

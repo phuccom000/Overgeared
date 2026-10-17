@@ -1,0 +1,89 @@
+plugins {
+    id 'multiloader-loader'
+    id 'fabric-loom'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.wispforest.io/releases' }     // Accessories
+    maven { url 'https://maven.shedaniel.me/' }               // Cloth Config (Accessories transitive dep)
+    maven { url 'https://maven.blamejared.com/' }             // JEI
+    maven { url 'https://maven.terraformersmc.com/releases/' } // Mod Menu
+    // maven { url 'https://maven.valkyrienskies.org' }        // Valkyrien Skies - not yet integrated
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+    implementation project(":common")
+
+    modImplementation "io.wispforest:accessories-fabric:${project.accessories_version}"
+
+    // Mod Menu / Cloth Config are optional - OvergearedConfigScreen is only classloaded when Mod
+    // Menu calls the "modmenu" entrypoint, so the mod must still run without either installed.
+    modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
+    modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    modLocalRuntime "com.terraformersmc:modmenu:${project.mod_menu_version}"
+    modLocalRuntime "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+
+    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
+    modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
+
+    modImplementation "curse.maven:architectury-api-419699:5137936"
+    modImplementation "curse.maven:epic-knights-armor-and-weapons-509041:7756532"
+    // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
+    // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
+    // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is
+    // designed to support multiple mods each embedding a copy safely.
+    modImplementation "curse.maven:advanced-core-info-1661923:9208460"
+    modImplementation "curse.maven:advanced-loot-info-1205426:9208465"
+    include(modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.5"))
+}
+
+loom {
+    if (project(":common").file("src/main/resources/${mod_id}.accesswidener").exists()) {
+        accessWidenerPath.set(project(":common").file("src/main/resources/${mod_id}.accesswidener"))
+    }
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("run")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("run")
+        }
+        datagen {
+            inherit server
+            name "Data Generation"
+            ideConfigGenerated(true)
+            runDir "run-datagen"
+
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=${mod_id}"
+            vmArg "-Dfabric-api.datagen.strict-validation=false"
+            vmArg "--add-opens"
+            vmArg "java.base/java.lang=ALL-UNNAMED"
+        }
+    }
+}

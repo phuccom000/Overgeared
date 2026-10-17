@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "overgeared:block/tier_a_smithing_anvil" },
-    "facing=east": { "model": "overgeared:block/tier_a_smithing_anvil", "y": 90 },
-    "facing=south": { "model": "overgeared:block/tier_a_smithing_anvil", "y": 180 },
-    "facing=west": { "model": "overgeared:block/tier_a_smithing_anvil", "y": 270 }
-  }
-}
