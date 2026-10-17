@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7.4'
+    id 'fabric-loom' version '1.18-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -47,6 +47,8 @@ dependencies {
     // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
     // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is
     // designed to support multiple mods each embedding a copy safely.
+    modImplementation "curse.maven:advanced-core-info-1661923:9208460"
+    modImplementation "curse.maven:advanced-loot-info-1205426:9208465"
     include(modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.4"))
 }
 
