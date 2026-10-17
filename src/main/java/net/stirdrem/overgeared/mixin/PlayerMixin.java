@@ -3,9 +3,9 @@ package net.stirdrem.overgeared.mixin;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -17,16 +17,16 @@ import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
  * MixinExtras' expression matching to intercept just that instanceof check rather than a fragile
  * local-variable-ordinal mixin into a huge, heavily-obfuscated vanilla method.
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerMixin {
 
     @Definition(id = "sword", type = SwordItem.class)
-    @Definition(id = "getItem", method = "Lnet/minecraft/item/ItemStack;getItem()Lnet/minecraft/item/Item;")
+    @Definition(id = "getItem", method = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;")
     @Expression("?.getItem() instanceof sword")
     @ModifyExpressionValue(method = "attack", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean overgeared$disableSweepWhenBroken(boolean original) {
         if (original) {
-            ItemStack stack = ((PlayerEntity) (Object) this).getMainHandStack();
+            ItemStack stack = ((Player) (Object) this).getMainHandItem();
             if (isBroken(stack)) {
                 return false;
             }

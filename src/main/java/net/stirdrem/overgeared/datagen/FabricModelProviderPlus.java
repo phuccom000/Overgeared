@@ -4,15 +4,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
-import net.minecraft.data.client.ItemModelGenerator;
-import net.minecraft.data.client.Model;
-import net.minecraft.data.client.Models;
-import net.minecraft.data.client.TextureMap;
-import net.minecraft.item.DyeableItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.models.ItemModelGenerators;
+import net.minecraft.data.models.model.ModelTemplate;
+import net.minecraft.data.models.model.ModelTemplates;
+import net.minecraft.data.models.model.TextureMapping;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.Item;
 import java.util.*;
 
 public abstract class FabricModelProviderPlus extends FabricModelProvider {
@@ -27,8 +26,8 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
     protected void registerItemWConditions(
             Item item,
-            Model model,
-            ItemModelGenerator itemModelGenerator,
+            ModelTemplate model,
+            ItemModelGenerators itemModelGenerator,
             OverrideCondition... conditions) {
 
         registerItemWConditions(
@@ -42,12 +41,12 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
     protected void registerItemWConditions(
             Item item,
-            Model model,
-            ItemModelGenerator itemModelGenerator,
+            ModelTemplate model,
+            ItemModelGenerators itemModelGenerator,
             boolean joinConditions,
             OverrideCondition... conditions) {
 
-        Identifier itemId = Registries.ITEM.getId(item);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
 
         String namespace = itemId.getNamespace();
         String path = itemId.getPath();
@@ -65,7 +64,7 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
             generateOverrideModel(
                     item,
-                    Models.GENERATED,
+                    ModelTemplates.FLAT_ITEM,
                     modelName,
                     itemModelGenerator
             );
@@ -118,7 +117,7 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
                     generateOverrideModel(
                             item,
-                            Models.GENERATED,
+                            ModelTemplates.FLAT_ITEM,
                             combinedModelName,
                             itemModelGenerator
                     );
@@ -139,8 +138,8 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
         // Main model
         // ---------------------------------------------------------------------
 
-        Identifier modelId =
-                new Identifier(
+        ResourceLocation modelId =
+                new ResourceLocation(
                         namespace,
                         "item/" + path
                 );
@@ -156,16 +155,16 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
          * layer1 = item/<path>_overlay
          */
 
-        TextureMap textures;
+        TextureMapping textures;
 
-        if (item instanceof DyeableItem) {
+        if (item instanceof DyeableLeatherItem) {
 
-            textures = TextureMap.layered(
-                    new Identifier(
+            textures = TextureMapping.layered(
+                    new ResourceLocation(
                             namespace,
                             "item/" + path
                     ),
-                    new Identifier(
+                    new ResourceLocation(
                             namespace,
                             "item/" + path + "_overlay"
                     )
@@ -173,8 +172,8 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
         } else {
 
-            textures = TextureMap.layer0(
-                    new Identifier(
+            textures = TextureMapping.layer0(
+                    new ResourceLocation(
                             namespace,
                             "item/" + path
                     )
@@ -185,14 +184,14 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
          * Model.upload() is the Yarn 1.20.1 equivalent of the low-level
          * model creation used here.
          */
-        model.upload(
+        model.create(
                 modelId,
                 textures,
-                itemModelGenerator.writer,
+                itemModelGenerator.output,
                 (id, textureMap) -> {
 
                     JsonObject json =
-                            model.createJson(id, textureMap);
+                            model.createBaseTemplate(id, textureMap);
 
                     json.add(
                             "overrides",
@@ -314,31 +313,31 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
     private void generateOverrideModel(
             Item item,
-            Model model,
+            ModelTemplate model,
             String modelName,
-            ItemModelGenerator itemModelGenerator) {
+            ItemModelGenerators itemModelGenerator) {
 
-        Identifier itemId =
-                Registries.ITEM.getId(item);
+        ResourceLocation itemId =
+                BuiltInRegistries.ITEM.getKey(item);
 
         String namespace =
                 itemId.getNamespace();
 
-        Identifier modelId =
-                new Identifier(
+        ResourceLocation modelId =
+                new ResourceLocation(
                         namespace,
                         "item/" + modelName
                 );
 
-        if (item instanceof DyeableItem) {
+        if (item instanceof DyeableLeatherItem) {
 
-            TextureMap textures =
-                    TextureMap.layered(
-                            new Identifier(
+            TextureMapping textures =
+                    TextureMapping.layered(
+                            new ResourceLocation(
                                     namespace,
                                     "item/" + modelName
                             ),
-                            new Identifier(
+                            new ResourceLocation(
                                     namespace,
                                     "item/" + modelName + "_overlay"
                             )
@@ -351,10 +350,10 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
              * Generate the layered model directly.
              */
 
-            Model layeredModel =
-                    new Model(
+            ModelTemplate layeredModel =
+                    new ModelTemplate(
                             Optional.of(
-                                    new Identifier(
+                                    new ResourceLocation(
                                             "minecraft",
                                             "item/handheld"
                                     )
@@ -362,26 +361,26 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
                             Optional.empty()
                     );
 
-            layeredModel.upload(
+            layeredModel.create(
                     modelId,
                     textures,
-                    itemModelGenerator.writer
+                    itemModelGenerator.output
             );
 
         } else {
 
-            TextureMap textures =
-                    TextureMap.layer0(
-                            new Identifier(
+            TextureMapping textures =
+                    TextureMapping.layer0(
+                            new ResourceLocation(
                                     namespace,
                                     "item/" + modelName
                             )
                     );
 
-            model.upload(
+            model.create(
                     modelId,
                     textures,
-                    itemModelGenerator.writer
+                    itemModelGenerator.output
             );
         }
     }
@@ -393,7 +392,7 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
     private void addOverride(
             JsonArray overrides,
             String namespace,
-            Identifier predicateKey,
+            ResourceLocation predicateKey,
             Number predicateValue,
             String modelName) {
 
@@ -441,11 +440,11 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
     protected void generateBannerPatternModels(
             Item item,
-            Model model,
-            ItemModelGenerator itemModelGenerator) {
+            ModelTemplate model,
+            ItemModelGenerators itemModelGenerator) {
 
-        Identifier itemId =
-                Registries.ITEM.getId(item);
+        ResourceLocation itemId =
+                BuiltInRegistries.ITEM.getKey(item);
 
         String[] bannerPatternNames = {
                 "bl", "bo", "br", "bri", "bs", "bt",
@@ -459,8 +458,8 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
         for (String pattern : bannerPatternNames) {
 
-            Identifier modelId =
-                    new Identifier(
+            ResourceLocation modelId =
+                    new ResourceLocation(
                             itemId.getNamespace(),
                             "item/" +
                                     itemId.getPath() +
@@ -468,9 +467,9 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
                                     pattern
                     );
 
-            TextureMap textures =
-                    TextureMap.layer0(
-                            new Identifier(
+            TextureMapping textures =
+                    TextureMapping.layer0(
+                            new ResourceLocation(
                                     itemId.getNamespace(),
                                     "item/" +
                                             itemId.getPath() +
@@ -479,10 +478,10 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
                             )
                     );
 
-            model.upload(
+            model.create(
                     modelId,
                     textures,
-                    itemModelGenerator.writer
+                    itemModelGenerator.output
             );
         }
     }
@@ -493,20 +492,20 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
 
     protected void registerWCustomName(
             Item item,
-            Model model,
-            ItemModelGenerator itemModelGenerator,
+            ModelTemplate model,
+            ItemModelGenerators itemModelGenerator,
             String modelName,
-            Identifier texturePath) {
+            ResourceLocation texturePath) {
 
-        Identifier itemId =
-                Registries.ITEM.getId(item);
+        ResourceLocation itemId =
+                BuiltInRegistries.ITEM.getKey(item);
 
-        Identifier modelId;
+        ResourceLocation modelId;
 
         if (modelName.isEmpty()) {
 
             modelId =
-                    new Identifier(
+                    new ResourceLocation(
                             itemId.getNamespace(),
                             "item/" + itemId.getPath()
                     );
@@ -514,34 +513,34 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
         } else {
 
             modelId =
-                    new Identifier(
+                    new ResourceLocation(
                             itemId.getNamespace(),
                             "item/" + modelName
                     );
         }
 
-        TextureMap texture;
+        TextureMapping texture;
 
         if (texturePath != null) {
 
             texture =
-                    TextureMap.layer0(texturePath);
+                    TextureMapping.layer0(texturePath);
 
         } else {
 
             texture =
-                    TextureMap.layer0(
-                            new Identifier(
+                    TextureMapping.layer0(
+                            new ResourceLocation(
                                     itemId.getNamespace(),
                                     "item/" + itemId.getPath()
                             )
                     );
         }
 
-        model.upload(
+        model.create(
                 modelId,
                 texture,
-                itemModelGenerator.writer
+                itemModelGenerator.output
         );
     }
 
@@ -550,7 +549,7 @@ public abstract class FabricModelProviderPlus extends FabricModelProvider {
     // =========================================================================
 
     public record OverrideCondition(
-            Identifier predicateKey,
+            ResourceLocation predicateKey,
             Number predicateValue) {
 
         String getModelName(String basePath) {

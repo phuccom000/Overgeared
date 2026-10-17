@@ -3,14 +3,23 @@ package net.stirdrem.overgeared.datagen;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.block.Block;
-import net.minecraft.data.client.*;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.models.BlockModelGenerators;
+import net.minecraft.data.models.ItemModelGenerators;
+import net.minecraft.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.data.models.blockstates.PropertyDispatch;
+import net.minecraft.data.models.blockstates.Variant;
+import net.minecraft.data.models.blockstates.VariantProperties;
+import net.minecraft.data.models.model.ModelLocationUtils;
+import net.minecraft.data.models.model.ModelTemplates;
+import net.minecraft.data.models.model.TextureMapping;
+import net.minecraft.data.models.model.TextureSlot;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.item.ModItems;
@@ -20,20 +29,20 @@ import java.util.Map;
 
 public class ModModelProvider extends FabricModelProviderPlus {
 
-    private static final LinkedHashMap<Identifier, Float> TRIM_MATERIALS =
+    private static final LinkedHashMap<ResourceLocation, Float> TRIM_MATERIALS =
             new LinkedHashMap<>();
 
     static {
-        TRIM_MATERIALS.put(new Identifier("minecraft", "quartz"), 0.1F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "iron"), 0.2F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "netherite"), 0.3F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "redstone"), 0.4F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "copper"), 0.5F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "gold"), 0.6F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "emerald"), 0.7F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "diamond"), 0.8F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "lapis"), 0.9F);
-        TRIM_MATERIALS.put(new Identifier("minecraft", "amethyst"), 1.0F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "quartz"), 0.1F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "iron"), 0.2F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "netherite"), 0.3F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "redstone"), 0.4F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "copper"), 0.5F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "gold"), 0.6F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "emerald"), 0.7F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "diamond"), 0.8F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "lapis"), 0.9F);
+        TRIM_MATERIALS.put(new ResourceLocation("minecraft", "amethyst"), 1.0F);
     }
 
     public ModModelProvider(FabricDataOutput output) {
@@ -45,13 +54,13 @@ public class ModModelProvider extends FabricModelProviderPlus {
     // -------------------------------------------------------------------------
 
     @Override
-    public void generateBlockStateModels(BlockStateModelGenerator generator) {
+    public void generateBlockStateModels(BlockModelGenerators generator) {
 
         // ---------------------------------------------------------------------
         // Simple blocks
         // ---------------------------------------------------------------------
 
-        generator.registerSimpleCubeAll(ModBlocks.STEEL_BLOCK);
+        generator.createTrivialCube(ModBlocks.STEEL_BLOCK);
 
         // ---------------------------------------------------------------------
         // Horizontal blocks
@@ -112,50 +121,50 @@ public class ModModelProvider extends FabricModelProviderPlus {
     // =========================================================================
 
     private void horizontalBlock(
-            BlockStateModelGenerator generator,
+            BlockModelGenerators generator,
             Block block,
-            Identifier model
+            ResourceLocation model
     ) {
-        generator.blockStateCollector.accept(
-                VariantsBlockStateSupplier.create(block)
-                        .coordinate(
-                                BlockStateVariantMap.create(Properties.HORIZONTAL_FACING)
-                                        .register(
+        generator.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(block)
+                        .with(
+                                PropertyDispatch.property(BlockStateProperties.HORIZONTAL_FACING)
+                                        .select(
                                                 Direction.NORTH,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, model)
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, model)
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.EAST,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, model)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R90
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, model)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R90
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.SOUTH,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, model)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R180
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, model)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R180
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.WEST,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, model)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R270
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, model)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R270
                                                         )
                                         )
                         )
         );
 
-        generator.registerParentedItemModel(block, model);
+        generator.delegateItemModel(block, model);
     }
 
     // =========================================================================
@@ -163,100 +172,100 @@ public class ModModelProvider extends FabricModelProviderPlus {
     // =========================================================================
 
     private void facingLitBlock(
-            BlockStateModelGenerator generator,
+            BlockModelGenerators generator,
             Block block,
             String baseModelName,
             String litModelName
     ) {
-        Identifier baseModel =
+        ResourceLocation baseModel =
                 modLoc("block/" + baseModelName);
 
-        Identifier litModel =
+        ResourceLocation litModel =
                 modLoc("block/" + litModelName);
 
-        generator.blockStateCollector.accept(
-                VariantsBlockStateSupplier.create(block)
-                        .coordinate(
-                                BlockStateVariantMap.create(
-                                                Properties.HORIZONTAL_FACING,
-                                                Properties.LIT
+        generator.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(block)
+                        .with(
+                                PropertyDispatch.properties(
+                                                BlockStateProperties.HORIZONTAL_FACING,
+                                                BlockStateProperties.LIT
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.NORTH,
                                                 false,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, baseModel)
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, baseModel)
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.EAST,
                                                 false,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, baseModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R90
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, baseModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R90
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.SOUTH,
                                                 false,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, baseModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R180
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, baseModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R180
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.WEST,
                                                 false,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, baseModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R270
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, baseModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R270
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.NORTH,
                                                 true,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, litModel)
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, litModel)
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.EAST,
                                                 true,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, litModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R90
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, litModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R90
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.SOUTH,
                                                 true,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, litModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R180
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, litModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R180
                                                         )
                                         )
-                                        .register(
+                                        .select(
                                                 Direction.WEST,
                                                 true,
-                                                BlockStateVariant.create()
-                                                        .put(VariantSettings.MODEL, litModel)
-                                                        .put(
-                                                                VariantSettings.Y,
-                                                                VariantSettings.Rotation.R270
+                                                Variant.variant()
+                                                        .with(VariantProperties.MODEL, litModel)
+                                                        .with(
+                                                                VariantProperties.Y_ROT,
+                                                                VariantProperties.Rotation.R270
                                                         )
                                         )
                         )
         );
 
-        generator.registerParentedItemModel(block, baseModel);
+        generator.delegateItemModel(block, baseModel);
     }
 
     // -------------------------------------------------------------------------
@@ -264,7 +273,7 @@ public class ModModelProvider extends FabricModelProviderPlus {
     // -------------------------------------------------------------------------
 
     @Override
-    public void generateItemModels(ItemModelGenerator generator) {
+    public void generateItemModels(ItemModelGenerators generator) {
 
         // ---------------------------------------------------------------------
         // Simple items
@@ -321,17 +330,17 @@ public class ModModelProvider extends FabricModelProviderPlus {
         // Armor
         // ---------------------------------------------------------------------
 
-        generator.registerArmor((ArmorItem) ModItems.STEEL_HELMET);
-        generator.registerArmor((ArmorItem) ModItems.STEEL_BOOTS);
-        generator.registerArmor((ArmorItem) ModItems.STEEL_CHESTPLATE);
-        generator.registerArmor((ArmorItem) ModItems.STEEL_LEGGINGS);
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_HELMET);
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_BOOTS);
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_CHESTPLATE);
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_LEGGINGS);
 
-        generator.registerArmor((ArmorItem) ModItems.COPPER_HELMET);
-        generator.registerArmor((ArmorItem) ModItems.COPPER_CHESTPLATE);
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_HELMET);
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_CHESTPLATE);
 
         registerArmorWithOverlay(generator, (ArmorItem) ModItems.COPPER_LEGGINGS);
 
-        generator.registerArmor((ArmorItem) ModItems.COPPER_BOOTS);
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_BOOTS);
 
         // ---------------------------------------------------------------------
         // Handheld items
@@ -415,42 +424,42 @@ public class ModModelProvider extends FabricModelProviderPlus {
     // BASIC ITEMS
     // =========================================================================
 
-    private void simpleItem(ItemModelGenerator generator, Item item) {
-        generator.register(item, Models.GENERATED);
+    private void simpleItem(ItemModelGenerators generator, Item item) {
+        generator.generateFlatItem(item, ModelTemplates.FLAT_ITEM);
     }
 
-    private void handheldItem(ItemModelGenerator generator, Item item) {
-        generator.register(item, Models.HANDHELD);
+    private void handheldItem(ItemModelGenerators generator, Item item) {
+        generator.generateFlatItem(item, ModelTemplates.FLAT_HANDHELD_ITEM);
     }
 
     protected void registerArmorWithOverlay(
-            ItemModelGenerator generators,
+            ItemModelGenerators generators,
             ArmorItem armor
     ) {
-        Identifier itemId = Registries.ITEM.getId(armor);
-        Identifier baseModelId = ModelIds.getItemModelId(armor);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(armor);
+        ResourceLocation baseModelId = ModelLocationUtils.getModelLocation(armor);
 
-        Identifier baseTexture = TextureMap.getId(armor);
+        ResourceLocation baseTexture = TextureMapping.getItemTexture(armor);
 
-        Identifier skirtOverlay = Identifier.of(
+        ResourceLocation skirtOverlay = ResourceLocation.tryBuild(
                 Overgeared.MOD_ID,
                 "item/" + itemId.getPath() + "_overlay"
         );
 
         JsonArray overrides = new JsonArray();
 
-        for (Map.Entry<Identifier, Float> entry : TRIM_MATERIALS.entrySet()) {
-            Identifier trimMaterial = entry.getKey();
+        for (Map.Entry<ResourceLocation, Float> entry : TRIM_MATERIALS.entrySet()) {
+            ResourceLocation trimMaterial = entry.getKey();
             float trimValue = entry.getValue();
 
             String trimName = trimMaterial.getPath();
 
-            Identifier trimModelId =
-                    baseModelId.withSuffixedPath(
+            ResourceLocation trimModelId =
+                    baseModelId.withSuffix(
                             "_" + trimName + "_trim"
                     );
 
-            Identifier trimTexture = new Identifier(
+            ResourceLocation trimTexture = new ResourceLocation(
                     "minecraft",
                     "trims/items/"
                             + getArmorType(armor)
@@ -465,20 +474,20 @@ public class ModModelProvider extends FabricModelProviderPlus {
              * layer1 = trim
              * layer2 = skirt overlay
              */
-            TextureMap textures = new TextureMap()
-                    .put(TextureKey.LAYER0, baseTexture)
-                    .put(TextureKey.LAYER1, trimTexture)
-                    .put(TextureKey.LAYER2, skirtOverlay);
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.LAYER0, baseTexture)
+                    .put(TextureSlot.LAYER1, trimTexture)
+                    .put(TextureSlot.LAYER2, skirtOverlay);
 
-            Models.GENERATED_THREE_LAYERS.upload(
+            ModelTemplates.THREE_LAYERED_ITEM.create(
                     trimModelId,
                     textures,
-                    generators.writer
+                    generators.output
             );
 
             JsonObject predicate = new JsonObject();
             predicate.addProperty(
-                    ItemModelGenerator.TRIM_TYPE.getPath(),
+                    ItemModelGenerators.TRIM_TYPE_PREDICATE_ID.getPath(),
                     trimValue
             );
 
@@ -498,17 +507,17 @@ public class ModModelProvider extends FabricModelProviderPlus {
          * layer0 = base armor
          * layer1 = skirt overlay
          */
-        TextureMap baseTextures = new TextureMap()
-                .put(TextureKey.LAYER0, baseTexture)
-                .put(TextureKey.LAYER1, skirtOverlay);
+        TextureMapping baseTextures = new TextureMapping()
+                .put(TextureSlot.LAYER0, baseTexture)
+                .put(TextureSlot.LAYER1, skirtOverlay);
 
-        Models.GENERATED_TWO_LAYERS.upload(
+        ModelTemplates.TWO_LAYERED_ITEM.create(
                 baseModelId,
                 baseTextures,
-                generators.writer,
+                generators.output,
                 (id, textures) -> {
                     JsonObject json =
-                            Models.GENERATED_TWO_LAYERS.createJson(
+                            ModelTemplates.TWO_LAYERED_ITEM.createBaseTemplate(
                                     id,
                                     textures
                             );
@@ -521,39 +530,39 @@ public class ModModelProvider extends FabricModelProviderPlus {
     }
 
     private void upgradeArrowModel(
-            ItemModelGenerator generator,
+            ItemModelGenerators generator,
             Item item
     ) {
-        Identifier itemId = Registries.ITEM.getId(item);
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
         String baseName = itemId.getPath();
 
-        Identifier baseTexture = modLoc(
+        ResourceLocation baseTexture = modLoc(
                 "item/" + baseName
         );
 
-        Identifier tippedHead = modLoc(
+        ResourceLocation tippedHead = modLoc(
                 "item/tipped_" + baseName + "_head"
         );
 
-        Identifier tippedBase = modLoc(
+        ResourceLocation tippedBase = modLoc(
                 "item/tipped_" + baseName + "_base"
         );
 
-        Identifier lingeringHead = modLoc(
+        ResourceLocation lingeringHead = modLoc(
                 "item/lingering_" + baseName + "_head"
         );
 
-        Identifier lingeringBase = modLoc(
+        ResourceLocation lingeringBase = modLoc(
                 "item/lingering_" + baseName + "_base"
         );
 
-        Identifier baseModel = ModelIds.getItemModelId(item);
+        ResourceLocation baseModel = ModelLocationUtils.getModelLocation(item);
 
-        Identifier tippedModel = modLoc(
+        ResourceLocation tippedModel = modLoc(
                 "item/" + baseName + "_tipped"
         );
 
-        Identifier lingeringModel = modLoc(
+        ResourceLocation lingeringModel = modLoc(
                 "item/" + baseName + "_lingering"
         );
 
@@ -595,13 +604,13 @@ public class ModModelProvider extends FabricModelProviderPlus {
 
         overrides.add(lingeringOverride);
 
-        Models.GENERATED.upload(
+        ModelTemplates.FLAT_ITEM.create(
                 baseModel,
-                TextureMap.layer0(baseTexture),
-                generator.writer,
+                TextureMapping.layer0(baseTexture),
+                generator.output,
                 (id, textures) -> {
                     JsonObject json =
-                            Models.GENERATED.createJson(
+                            ModelTemplates.FLAT_ITEM.createBaseTemplate(
                                     id,
                                     textures
                             );
@@ -616,31 +625,31 @@ public class ModModelProvider extends FabricModelProviderPlus {
         // Tipped arrow
         // ---------------------------------------------------------------------
 
-        Models.GENERATED_TWO_LAYERS.upload(
+        ModelTemplates.TWO_LAYERED_ITEM.create(
                 tippedModel,
-                TextureMap.layered(
+                TextureMapping.layered(
                         tippedHead,
                         tippedBase
                 ),
-                generator.writer
+                generator.output
         );
 
         // ---------------------------------------------------------------------
         // Lingering arrow
         // ---------------------------------------------------------------------
 
-        Models.GENERATED_TWO_LAYERS.upload(
+        ModelTemplates.TWO_LAYERED_ITEM.create(
                 lingeringModel,
-                TextureMap.layered(
+                TextureMapping.layered(
                         lingeringHead,
                         lingeringBase
                 ),
-                generator.writer
+                generator.output
         );
     }
 
     private String getArmorType(ArmorItem armor) {
-        return switch (armor.getSlotType()) {
+        return switch (armor.getEquipmentSlot()) {
             case HEAD -> "helmet";
             case CHEST -> "chestplate";
             case LEGS -> "leggings";
@@ -650,13 +659,13 @@ public class ModModelProvider extends FabricModelProviderPlus {
     }
 
     private String getItemName(Item item) {
-        return Registries.ITEM
-                .getId(item)
+        return BuiltInRegistries.ITEM
+                .getKey(item)
                 .getPath();
     }
 
-    private Identifier modLoc(String path) {
-        return new Identifier(
+    private ResourceLocation modLoc(String path) {
+        return new ResourceLocation(
                 Overgeared.MOD_ID,
                 path
         );

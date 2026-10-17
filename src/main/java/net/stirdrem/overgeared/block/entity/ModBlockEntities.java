@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.block.entity;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 
@@ -37,7 +37,7 @@ public class ModBlockEntities {
                     CastFurnaceBlockEntity::new, ModBlocks.CAST_FURNACE).build());
 
     private static <T extends BlockEntityType<?>> T register(String name, T type) {
-        return Registry.register(Registries.BLOCK_ENTITY_TYPE, Overgeared.id(name), type);
+        return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Overgeared.id(name), type);
     }
 
     public static void register() {

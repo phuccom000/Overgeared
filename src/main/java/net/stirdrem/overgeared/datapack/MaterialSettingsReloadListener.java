@@ -2,16 +2,16 @@ package net.stirdrem.overgeared.datapack;
 
 import com.google.gson.*;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.stirdrem.overgeared.Overgeared;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MaterialSettingsReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class MaterialSettingsReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
 
     public static class MaterialEntry {
         private final String itemOrTag;
@@ -47,7 +47,7 @@ public class MaterialSettingsReloadListener extends JsonDataLoader implements Id
         }
     }
 
-    private static final Map<Identifier, List<MaterialEntry>> DATA = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, List<MaterialEntry>> DATA = new ConcurrentHashMap<>();
     public static final MaterialSettingsReloadListener INSTANCE = new MaterialSettingsReloadListener();
     private static final Gson GSON = new Gson();
 
@@ -56,16 +56,16 @@ public class MaterialSettingsReloadListener extends JsonDataLoader implements Id
     }
 
     @Override
-    public Identifier getFabricId() {
+    public ResourceLocation getFabricId() {
         return Overgeared.id("material_settings_listener");
     }
 
     @Override
-    protected void apply(Map<Identifier, JsonElement> resources, ResourceManager resourceManager, Profiler profiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> resources, ResourceManager resourceManager, ProfilerFiller profiler) {
         DATA.clear();
 
-        for (Map.Entry<Identifier, JsonElement> entry : resources.entrySet()) {
-            Identifier id = entry.getKey();
+        for (Map.Entry<ResourceLocation, JsonElement> entry : resources.entrySet()) {
+            ResourceLocation id = entry.getKey();
             JsonElement jsonElement = entry.getValue();
 
             try {
@@ -116,7 +116,7 @@ public class MaterialSettingsReloadListener extends JsonDataLoader implements Id
         return entries;
     }
 
-    public static Map<Identifier, List<MaterialEntry>> getData() {
+    public static Map<ResourceLocation, List<MaterialEntry>> getData() {
         return Collections.unmodifiableMap(DATA);
     }
 

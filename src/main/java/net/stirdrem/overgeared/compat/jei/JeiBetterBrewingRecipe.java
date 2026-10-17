@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.compat.jei;
 
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -12,9 +12,9 @@ public class JeiBetterBrewingRecipe implements IJeiBrewingRecipe {
     private final List<ItemStack> input;
     private final List<ItemStack> ingredient;
     private final ItemStack output;
-    private final @Nullable Identifier uid;
+    private final @Nullable ResourceLocation uid;
 
-    public JeiBetterBrewingRecipe(List<ItemStack> input, List<ItemStack> ingredient, ItemStack output, @Nullable Identifier uid) {
+    public JeiBetterBrewingRecipe(List<ItemStack> input, List<ItemStack> ingredient, ItemStack output, @Nullable ResourceLocation uid) {
         this.input = List.copyOf(input);
         this.ingredient = List.copyOf(ingredient);
         this.output = output;
@@ -42,7 +42,7 @@ public class JeiBetterBrewingRecipe implements IJeiBrewingRecipe {
     }
 
     @Override
-    public @Nullable Identifier getUid() {
+    public @Nullable ResourceLocation getUid() {
         return this.uid;
     }
 }

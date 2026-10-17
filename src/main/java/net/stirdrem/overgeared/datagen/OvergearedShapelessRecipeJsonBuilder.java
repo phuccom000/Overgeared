@@ -3,22 +3,22 @@ package net.stirdrem.overgeared.datagen;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.CriterionMerger;
-import net.minecraft.advancement.criterion.CriterionConditions;
-import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
-import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder;
-import net.minecraft.data.server.recipe.RecipeJsonBuilder;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.RequirementsStrategy;
+import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.recipes.CraftingRecipeBuilder;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeBuilder;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,22 +26,22 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class OvergearedShapelessRecipeJsonBuilder
-        extends RecipeJsonBuilder
-        implements CraftingRecipeJsonBuilder {
+        extends CraftingRecipeBuilder
+        implements RecipeBuilder {
 
     private final RecipeCategory category;
     private final Item output;
     private final int count;
     private final List<Ingredient> inputs = Lists.newArrayList();
     private final Advancement.Builder advancementBuilder =
-            Advancement.Builder.createUntelemetered();
+            Advancement.Builder.recipeAdvancement();
 
     @Nullable
     private String group;
 
     public OvergearedShapelessRecipeJsonBuilder(
             RecipeCategory category,
-            ItemConvertible output,
+            ItemLike output,
             int count
     ) {
         this.category = category;
@@ -51,14 +51,14 @@ public class OvergearedShapelessRecipeJsonBuilder
 
     public static OvergearedShapelessRecipeJsonBuilder create(
             RecipeCategory category,
-            ItemConvertible output
+            ItemLike output
     ) {
         return new OvergearedShapelessRecipeJsonBuilder(category, output, 1);
     }
 
     public static OvergearedShapelessRecipeJsonBuilder create(
             RecipeCategory category,
-            ItemConvertible output,
+            ItemLike output,
             int count
     ) {
         return new OvergearedShapelessRecipeJsonBuilder(category, output, count);
@@ -66,14 +66,14 @@ public class OvergearedShapelessRecipeJsonBuilder
 
     public static OvergearedShapelessRecipeJsonBuilder shapeless(
             RecipeCategory category,
-            ItemConvertible output
+            ItemLike output
     ) {
         return create(category, output);
     }
 
     public static OvergearedShapelessRecipeJsonBuilder shapeless(
             RecipeCategory category,
-            ItemConvertible output,
+            ItemLike output,
             int count
     ) {
         return create(category, output, count);
@@ -82,20 +82,20 @@ public class OvergearedShapelessRecipeJsonBuilder
     public OvergearedShapelessRecipeJsonBuilder requires(
             TagKey<Item> tag
     ) {
-        return input(Ingredient.fromTag(tag));
+        return input(Ingredient.of(tag));
     }
 
     public OvergearedShapelessRecipeJsonBuilder requires(
-            ItemConvertible item
+            ItemLike item
     ) {
         return input(item, 1);
     }
 
     public OvergearedShapelessRecipeJsonBuilder requires(
-            ItemConvertible item,
+            ItemLike item,
             int size
     ) {
-        return input(Ingredient.ofItems(item), size);
+        return input(Ingredient.of(item), size);
     }
 
     public OvergearedShapelessRecipeJsonBuilder requires(
@@ -118,21 +118,21 @@ public class OvergearedShapelessRecipeJsonBuilder
     public OvergearedShapelessRecipeJsonBuilder input(
             TagKey<Item> tag
     ) {
-        return input(Ingredient.fromTag(tag));
+        return input(Ingredient.of(tag));
     }
 
     public OvergearedShapelessRecipeJsonBuilder input(
-            ItemConvertible item
+            ItemLike item
     ) {
         return input(item, 1);
     }
 
     public OvergearedShapelessRecipeJsonBuilder input(
-            ItemConvertible item,
+            ItemLike item,
             int size
     ) {
         for (int i = 0; i < size; ++i) {
-            this.inputs.add(Ingredient.ofItems(item));
+            this.inputs.add(Ingredient.of(item));
         }
 
         return this;
@@ -155,11 +155,11 @@ public class OvergearedShapelessRecipeJsonBuilder
         return this;
     }
 
-    public OvergearedShapelessRecipeJsonBuilder criterion(
+    public OvergearedShapelessRecipeJsonBuilder unlockedBy(
             String name,
-            CriterionConditions conditions
+            CriterionTriggerInstance conditions
     ) {
-        this.advancementBuilder.criterion(name, conditions);
+        this.advancementBuilder.addCriterion(name, conditions);
         return this;
     }
 
@@ -171,27 +171,27 @@ public class OvergearedShapelessRecipeJsonBuilder
     }
 
     @Override
-    public Item getOutputItem() {
+    public Item getResult() {
         return this.output;
     }
 
     @Override
-    public void offerTo(
-            Consumer<RecipeJsonProvider> exporter,
-            Identifier recipeId
+    public void save(
+            Consumer<FinishedRecipe> exporter,
+            ResourceLocation recipeId
     ) {
         this.validate(recipeId);
 
         this.advancementBuilder
-                .parent(ROOT)
-                .criterion(
+                .parent(ROOT_RECIPE_ADVANCEMENT)
+                .addCriterion(
                         "has_the_recipe",
-                        RecipeUnlockedCriterion.create(recipeId)
+                        RecipeUnlockedTrigger.unlocked(recipeId)
                 )
                 .rewards(
-                        net.minecraft.advancement.AdvancementRewards.Builder.recipe(recipeId)
+                        net.minecraft.advancements.AdvancementRewards.Builder.recipe(recipeId)
                 )
-                .criteriaMerger(CriterionMerger.OR);
+                .requirements(RequirementsStrategy.OR);
 
         exporter.accept(
                 new OvergearedShapelessRecipeJsonProvider(
@@ -199,17 +199,17 @@ public class OvergearedShapelessRecipeJsonBuilder
                         this.output,
                         this.count,
                         this.group == null ? "" : this.group,
-                        getCraftingCategory(this.category),
+                        determineBookCategory(this.category),
                         this.inputs,
                         this.advancementBuilder,
-                        recipeId.withPrefixedPath(
-                                "recipes/" + this.category.getName() + "/"
+                        recipeId.withPrefix(
+                                "recipes/" + this.category.getFolderName() + "/"
                         )
                 )
         );
     }
 
-    private void validate(Identifier recipeId) {
+    private void validate(ResourceLocation recipeId) {
         if (this.advancementBuilder.getCriteria().isEmpty()) {
             throw new IllegalStateException(
                     "No way of obtaining recipe " + recipeId
@@ -218,25 +218,25 @@ public class OvergearedShapelessRecipeJsonBuilder
     }
 
     public static class OvergearedShapelessRecipeJsonProvider
-            extends CraftingRecipeJsonProvider {
+            extends CraftingResult {
 
-        private final Identifier recipeId;
+        private final ResourceLocation recipeId;
         private final Item output;
         private final int count;
         private final String group;
         private final List<Ingredient> inputs;
         private final Advancement.Builder advancementBuilder;
-        private final Identifier advancementId;
+        private final ResourceLocation advancementId;
 
         public OvergearedShapelessRecipeJsonProvider(
-                Identifier recipeId,
+                ResourceLocation recipeId,
                 Item output,
                 int outputCount,
                 String group,
-                CraftingRecipeCategory craftingCategory,
+                CraftingBookCategory craftingCategory,
                 List<Ingredient> inputs,
                 Advancement.Builder advancementBuilder,
-                Identifier advancementId
+                ResourceLocation advancementId
         ) {
             super(craftingCategory);
             this.recipeId = recipeId;
@@ -249,8 +249,8 @@ public class OvergearedShapelessRecipeJsonBuilder
         }
 
         @Override
-        public void serialize(JsonObject json) {
-            super.serialize(json);
+        public void serializeRecipeData(JsonObject json) {
+            super.serializeRecipeData(json);
 
             if (!this.group.isEmpty()) {
                 json.addProperty("group", this.group);
@@ -267,7 +267,7 @@ public class OvergearedShapelessRecipeJsonBuilder
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty(
                     "item",
-                    Registries.ITEM.getId(this.output).toString()
+                    BuiltInRegistries.ITEM.getKey(this.output).toString()
             );
 
             if (this.count > 1) {
@@ -278,24 +278,24 @@ public class OvergearedShapelessRecipeJsonBuilder
         }
 
         @Override
-        public RecipeSerializer<?> getSerializer() {
+        public RecipeSerializer<?> getType() {
             return ModRecipes.CRAFTING_SHAPELESS;
         }
 
         @Override
-        public Identifier getRecipeId() {
+        public ResourceLocation getId() {
             return this.recipeId;
         }
 
         @Nullable
         @Override
-        public JsonObject toAdvancementJson() {
-            return this.advancementBuilder.toJson();
+        public JsonObject serializeAdvancement() {
+            return this.advancementBuilder.serializeToJson();
         }
 
         @Nullable
         @Override
-        public Identifier getAdvancementId() {
+        public ResourceLocation getAdvancementId() {
             return this.advancementId;
         }
     }

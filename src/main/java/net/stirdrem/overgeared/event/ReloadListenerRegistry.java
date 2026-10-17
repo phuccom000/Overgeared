@@ -1,13 +1,13 @@
 package net.stirdrem.overgeared.event;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.minecraft.resource.ResourceType;
+import net.minecraft.server.packs.PackType;
 import net.stirdrem.overgeared.datapack.*;
 
 public class ReloadListenerRegistry {
 
     public static void register() {
-        ResourceManagerHelper helper = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+        ResourceManagerHelper helper = ResourceManagerHelper.get(PackType.SERVER_DATA);
         helper.registerReloadListener(new BlueprintTooltypesReloadListener());
         helper.registerReloadListener(new GrindingBlacklistReloadListener());
         helper.registerReloadListener(new DurabilityBlacklistReloadListener());

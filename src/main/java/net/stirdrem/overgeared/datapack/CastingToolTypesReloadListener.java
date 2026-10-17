@@ -2,16 +2,16 @@ package net.stirdrem.overgeared.datapack;
 
 import com.google.gson.*;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.stirdrem.overgeared.Overgeared;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CastingToolTypesReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class CastingToolTypesReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
 
     public static class CastingToolEntry {
         private final String toolType;
@@ -31,7 +31,7 @@ public class CastingToolTypesReloadListener extends JsonDataLoader implements Id
         }
     }
 
-    private static final Map<Identifier, List<CastingToolEntry>> DATA = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, List<CastingToolEntry>> DATA = new ConcurrentHashMap<>();
     public static final CastingToolTypesReloadListener INSTANCE = new CastingToolTypesReloadListener();
     private static final Gson GSON = new Gson();
 
@@ -40,16 +40,16 @@ public class CastingToolTypesReloadListener extends JsonDataLoader implements Id
     }
 
     @Override
-    public Identifier getFabricId() {
+    public ResourceLocation getFabricId() {
         return Overgeared.id("casting_tooltypes_listener");
     }
 
     @Override
-    protected void apply(Map<Identifier, JsonElement> resources, ResourceManager resourceManager, Profiler profiler) {
+    protected void apply(Map<ResourceLocation, JsonElement> resources, ResourceManager resourceManager, ProfilerFiller profiler) {
         DATA.clear();
 
-        for (Map.Entry<Identifier, JsonElement> entry : resources.entrySet()) {
-            Identifier id = entry.getKey();
+        for (Map.Entry<ResourceLocation, JsonElement> entry : resources.entrySet()) {
+            ResourceLocation id = entry.getKey();
             JsonElement jsonElement = entry.getValue();
 
             try {
@@ -99,7 +99,7 @@ public class CastingToolTypesReloadListener extends JsonDataLoader implements Id
         return entries;
     }
 
-    public static Map<Identifier, List<CastingToolEntry>> getData() {
+    public static Map<ResourceLocation, List<CastingToolEntry>> getData() {
         return Collections.unmodifiableMap(DATA);
     }
 

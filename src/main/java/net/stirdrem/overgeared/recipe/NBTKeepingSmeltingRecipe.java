@@ -1,41 +1,44 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import org.jetbrains.annotations.Nullable;
 
 public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
 
-    public NBTKeepingSmeltingRecipe(Identifier id, String group, CookingRecipeCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
+    public NBTKeepingSmeltingRecipe(ResourceLocation id, String group, CookingBookCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
         super(id, group, category, ingredient, result, experience, cookingTime);
     }
 
     @Override
-    public ItemStack craft(Inventory inv, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess) {
         ItemStack input = ItemStack.EMPTY;
 
         // Get input item
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
-            if (!stack.isEmpty() && this.input.test(stack)) {
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack stack = inv.getItem(i);
+            if (!stack.isEmpty() && this.ingredient.test(stack)) {
                 input = stack.copy();
                 break;
             }
         }
 
-        ItemStack output = this.output.copy();
+        ItemStack output = this.result.copy();
 
         // Copy NBT data
-        if (input.hasNbt()) {
-            output.setNbt(input.getNbt().copy());
+        if (input.hasTag()) {
+            output.setTag(input.getTag().copy());
         }
 
         return output;
@@ -50,30 +53,30 @@ public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
         public static final Serializer INSTANCE = new Serializer();
 
         @Override
-        public NBTKeepingSmeltingRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-            CookingRecipeCategory category = json.has("category")
-                    ? CookingRecipeCategory.CODEC.byId(JsonHelper.getString(json, "category"), CookingRecipeCategory.MISC)
-                    : CookingRecipeCategory.MISC;
+        public NBTKeepingSmeltingRecipe fromJson(ResourceLocation id, JsonObject json) {
+            String group = GsonHelper.getAsString(json, "group", "");
+            CookingBookCategory category = json.has("category")
+                    ? CookingBookCategory.CODEC.byName(GsonHelper.getAsString(json, "category"), CookingBookCategory.MISC)
+                    : CookingBookCategory.MISC;
 
             Ingredient ingredient = Ingredient.fromJson(json.get("ingredient"));
 
             ItemStack result = json.get("result").isJsonObject()
-                    ? ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "result"))
-                    : new ItemStack(Registries.ITEM.get(new Identifier(JsonHelper.getString(json, "result"))));
+                    ? ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"))
+                    : new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(GsonHelper.getAsString(json, "result"))));
 
-            float xp = JsonHelper.getFloat(json, "experience", 0.0F);
-            int cookTime = JsonHelper.getInt(json, "cookingtime", 200);
+            float xp = GsonHelper.getAsFloat(json, "experience", 0.0F);
+            int cookTime = GsonHelper.getAsInt(json, "cookingtime", 200);
 
             return new NBTKeepingSmeltingRecipe(id, group, category, ingredient, result, xp, cookTime);
         }
 
         @Override
-        public @Nullable NBTKeepingSmeltingRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
-            Ingredient ingredient = Ingredient.fromPacket(buf);
-            ItemStack result = buf.readItemStack();
+        public @Nullable NBTKeepingSmeltingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
+            String group = buf.readUtf();
+            CookingBookCategory category = buf.readEnum(CookingBookCategory.class);
+            Ingredient ingredient = Ingredient.fromNetwork(buf);
+            ItemStack result = buf.readItem();
             float xp = buf.readFloat();
             int cookTime = buf.readVarInt();
 
@@ -81,13 +84,13 @@ public class NBTKeepingSmeltingRecipe extends SmeltingRecipe {
         }
 
         @Override
-        public void write(PacketByteBuf buf, NBTKeepingSmeltingRecipe recipe) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.getCategory());
-            recipe.input.write(buf);
-            buf.writeItemStack(recipe.output);
+        public void toNetwork(FriendlyByteBuf buf, NBTKeepingSmeltingRecipe recipe) {
+            buf.writeUtf(recipe.getGroup());
+            buf.writeEnum(recipe.category());
+            recipe.ingredient.toNetwork(buf);
+            buf.writeItem(recipe.result);
             buf.writeFloat(recipe.experience);
-            buf.writeVarInt(recipe.cookTime);
+            buf.writeVarInt(recipe.cookingTime);
         }
     }
 

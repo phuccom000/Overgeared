@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 
 public class MinigameSetStartedS2CPacket {
@@ -11,11 +11,11 @@ public class MinigameSetStartedS2CPacket {
         this.pos = pos;
     }
 
-    public static void encode(MinigameSetStartedS2CPacket msg, PacketByteBuf buf) {
+    public static void encode(MinigameSetStartedS2CPacket msg, FriendlyByteBuf buf) {
         buf.writeBlockPos(msg.pos);
     }
 
-    public static MinigameSetStartedS2CPacket decode(PacketByteBuf buf) {
+    public static MinigameSetStartedS2CPacket decode(FriendlyByteBuf buf) {
         return new MinigameSetStartedS2CPacket(buf.readBlockPos());
     }
 

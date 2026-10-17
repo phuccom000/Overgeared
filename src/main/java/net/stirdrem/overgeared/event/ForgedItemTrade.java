@@ -1,16 +1,16 @@
 package net.stirdrem.overgeared.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOffers;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.VillagerTrades;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.MerchantOffer;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.util.ForgingQualityHelper;
 
-public class ForgedItemTrade implements TradeOffers.Factory {
+public class ForgedItemTrade implements VillagerTrades.ItemListing {
 
     private final Item item;
     private final int maxUses;
@@ -25,7 +25,7 @@ public class ForgedItemTrade implements TradeOffers.Factory {
     }
 
     @Override
-    public TradeOffer create(Entity trader, Random rand) {
+    public MerchantOffer getOffer(Entity trader, RandomSource rand) {
         ItemStack result = new ItemStack(item);
 
         ForgingQuality quality =
@@ -35,7 +35,7 @@ public class ForgedItemTrade implements TradeOffers.Factory {
 
         int emeralds = ForgingQualityHelper.priceForQuality(quality);
 
-        return new TradeOffer(
+        return new MerchantOffer(
                 new ItemStack(Items.EMERALD, emeralds),
                 result,
                 maxUses,

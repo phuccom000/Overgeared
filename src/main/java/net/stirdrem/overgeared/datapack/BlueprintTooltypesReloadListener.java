@@ -6,19 +6,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BlueprintTooltypesReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class BlueprintTooltypesReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
 
-    public static final Map<Identifier, BlueprintTooltypesData> DATA = new ConcurrentHashMap<>();
+    public static final Map<ResourceLocation, BlueprintTooltypesData> DATA = new ConcurrentHashMap<>();
 
     private static final Gson GSON = new Gson();
 
@@ -27,22 +27,22 @@ public class BlueprintTooltypesReloadListener extends JsonDataLoader implements 
     }
 
     @Override
-    public Identifier getFabricId() {
+    public ResourceLocation getFabricId() {
         return Overgeared.id("blueprint_tooltypes_listener");
     }
 
     @Override
     protected void apply(
-            Map<Identifier, JsonElement> objects,
+            Map<ResourceLocation, JsonElement> objects,
             ResourceManager resourceManager,
-            Profiler profiler
+            ProfilerFiller profiler
     ) {
         DATA.clear();
 
-        Map<Identifier, BlueprintTooltypesData> tempMap = new HashMap<>();
+        Map<ResourceLocation, BlueprintTooltypesData> tempMap = new HashMap<>();
 
-        for (Map.Entry<Identifier, JsonElement> entry : objects.entrySet()) {
-            Identifier id = entry.getKey();
+        for (Map.Entry<ResourceLocation, JsonElement> entry : objects.entrySet()) {
+            ResourceLocation id = entry.getKey();
             JsonObject json = entry.getValue().getAsJsonObject();
 
             try {
@@ -83,15 +83,15 @@ public class BlueprintTooltypesReloadListener extends JsonDataLoader implements 
     }
 
     public static class BlueprintTooltypesData {
-        private final Identifier id;
+        private final ResourceLocation id;
         private final List<String> toolTypes;
 
-        public BlueprintTooltypesData(Identifier id, List<String> toolTypes) {
+        public BlueprintTooltypesData(ResourceLocation id, List<String> toolTypes) {
             this.id = id;
             this.toolTypes = toolTypes;
         }
 
-        public Identifier getId() {
+        public ResourceLocation getId() {
             return id;
         }
 

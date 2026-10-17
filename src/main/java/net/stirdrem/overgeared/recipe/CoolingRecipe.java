@@ -1,52 +1,52 @@
 package net.stirdrem.overgeared.recipe;
 
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.level.Level;
 
-public class CoolingRecipe implements Recipe<SimpleInventory> {
-    private final Identifier id;
+public class CoolingRecipe implements Recipe<SimpleContainer> {
+    private final ResourceLocation id;
     private final Ingredient input;
     private final ItemStack output;
 
-    public CoolingRecipe(Identifier id, Ingredient input, ItemStack output) {
+    public CoolingRecipe(ResourceLocation id, Ingredient input, ItemStack output) {
         this.id = id;
         this.input = input;
         this.output = output;
     }
 
     @Override
-    public boolean matches(SimpleInventory container, World world) {
-        return input.test(container.getStack(0));
+    public boolean matches(SimpleContainer container, Level world) {
+        return input.test(container.getItem(0));
     }
 
     @Override
-    public ItemStack craft(SimpleInventory container, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(SimpleContainer container, RegistryAccess registryAccess) {
         return output.copy();
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return true;
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager registryAccess) {
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         return output.copy();
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -75,23 +75,23 @@ public class CoolingRecipe implements Recipe<SimpleInventory> {
 
     public static class Serializer implements RecipeSerializer<CoolingRecipe> {
         @Override
-        public CoolingRecipe read(Identifier id, JsonObject json) {
-            Ingredient input = Ingredient.fromJson(JsonHelper.getObject(json, "input"));
-            ItemStack output = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "output"));
+        public CoolingRecipe fromJson(ResourceLocation id, JsonObject json) {
+            Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+            ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "output"));
             return new CoolingRecipe(id, input, output);
         }
 
         @Override
-        public CoolingRecipe read(Identifier id, PacketByteBuf buffer) {
-            Ingredient input = Ingredient.fromPacket(buffer);
-            ItemStack output = buffer.readItemStack();
+        public CoolingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
+            Ingredient input = Ingredient.fromNetwork(buffer);
+            ItemStack output = buffer.readItem();
             return new CoolingRecipe(id, input, output);
         }
 
         @Override
-        public void write(PacketByteBuf buffer, CoolingRecipe recipe) {
-            recipe.input.write(buffer);
-            buffer.writeItemStack(recipe.output);
+        public void toNetwork(FriendlyByteBuf buffer, CoolingRecipe recipe) {
+            recipe.input.toNetwork(buffer);
+            buffer.writeItem(recipe.output);
         }
     }
 }

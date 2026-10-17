@@ -1,22 +1,22 @@
 package net.stirdrem.overgeared.item.custom;
 
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.ClickType;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ConfigHelper;
@@ -31,11 +31,11 @@ public class ToolCastItem extends Item {
     private final boolean allowMaterialInsert;
     private final boolean haveDurability;
 
-    public ToolCastItem(boolean allowMaterialInsert, boolean haveDurability, Settings settings) {
+    public ToolCastItem(boolean allowMaterialInsert, boolean haveDurability, Properties settings) {
         // Vanilla's Item#getMaxDamage() is final (derived from Settings at construction),
         // unlike Forge's per-stack getMaxDamage(ItemStack) override, so the configured
         // durability is baked in here instead of read dynamically on every call.
-        super(haveDurability ? settings.maxDamage(ServerConfig.FIRED_CAST_DURABILITY.get()) : settings);
+        super(haveDurability ? settings.durability(ServerConfig.FIRED_CAST_DURABILITY.get()) : settings);
         this.allowMaterialInsert = allowMaterialInsert;
         this.haveDurability = haveDurability;
     }
@@ -46,33 +46,33 @@ public class ToolCastItem extends Item {
     }
 
     @Override
-    public int getEnchantability() {
+    public int getEnchantmentValue() {
         return 0;
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getStackInHand(hand);
+    public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
 
-        if (!world.isClient) {
+        if (!world.isClientSide) {
             return calculateAndReturnMaterials(stack, player, hand);
         }
 
         return super.use(world, player, hand);
     }
 
-    private TypedActionResult<ItemStack> calculateAndReturnMaterials(ItemStack castStack, PlayerEntity player, Hand hand) {
-        NbtCompound tag = castStack.getNbt();
+    private InteractionResultHolder<ItemStack> calculateAndReturnMaterials(ItemStack castStack, Player player, InteractionHand hand) {
+        CompoundTag tag = castStack.getTag();
         if (tag == null) {
-            return TypedActionResult.fail(castStack);
+            return InteractionResultHolder.fail(castStack);
         }
 
-        if (tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
-            ItemStack output = ItemStack.fromNbt(tag.getCompound("Output"));
+        if (tag.contains("Output", Tag.TAG_COMPOUND)) {
+            ItemStack output = ItemStack.of(tag.getCompound("Output"));
 
             if (!output.isEmpty()) {
-                if (!player.getInventory().insertStack(output.copy())) {
-                    player.dropItem(output.copy(), false);
+                if (!player.getInventory().add(output.copy())) {
+                    player.drop(output.copy(), false);
                 }
 
                 tag.remove("Output");
@@ -81,49 +81,49 @@ public class ToolCastItem extends Item {
                 tag.remove("Heated");
                 tag.putInt("Amount", 0);
 
-                player.getWorld().playSound(
+                player.level().playSound(
                         null,
-                        player.getBlockPos(),
-                        SoundEvents.ENTITY_ITEM_PICKUP,
-                        SoundCategory.PLAYERS,
+                        player.blockPosition(),
+                        SoundEvents.ITEM_PICKUP,
+                        SoundSource.PLAYERS,
                         0.8F,
                         1.2F
                 );
-                return TypedActionResult.success(castStack, player.getWorld().isClient());
+                return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
             }
         }
 
         List<ItemStack> inputItems = getInputItemsFromCast(castStack);
         if (inputItems.isEmpty()) {
-            player.sendMessage(Text.translatable("message.overgeared.cast_empty"), true);
-            return TypedActionResult.fail(castStack);
+            player.displayClientMessage(Component.translatable("message.overgeared.cast_empty"), true);
+            return InteractionResultHolder.fail(castStack);
         }
 
         for (ItemStack inputItem : inputItems) {
-            if (!player.getInventory().insertStack(inputItem.copy())) {
-                player.dropItem(inputItem.copy(), false);
+            if (!player.getInventory().add(inputItem.copy())) {
+                player.drop(inputItem.copy(), false);
             }
         }
 
-        tag.put("Materials", new NbtCompound());
+        tag.put("Materials", new CompoundTag());
         tag.putInt("Amount", 0);
         tag.remove("input");
 
-        return TypedActionResult.success(castStack, player.getWorld().isClient());
+        return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
     }
 
     @Override
-    public boolean onStackClicked(ItemStack castStack, Slot slot, ClickType clickType, PlayerEntity player) {
+    public boolean overrideStackedOnOther(ItemStack castStack, Slot slot, ClickAction clickType, Player player) {
         if (!allowMaterialInsert) return false;
-        if (clickType != ClickType.RIGHT) return false;
-        if (!slot.canTakeItems(player)) return false;
+        if (clickType != ClickAction.SECONDARY) return false;
+        if (!slot.mayPickup(player)) return false;
 
-        ItemStack slotStack = slot.getStack();
+        ItemStack slotStack = slot.getItem();
         if (slotStack.isEmpty()) return false;
 
         if (insertMaterial(castStack, slotStack, player)) {
-            slotStack.decrement(1);
-            slot.markDirty();
+            slotStack.shrink(1);
+            slot.setChanged();
             return true;
         }
 
@@ -131,29 +131,29 @@ public class ToolCastItem extends Item {
     }
 
     @Override
-    public boolean onClicked(ItemStack castStack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity player, StackReference cursorStackReference) {
+    public boolean overrideOtherStackedOnMe(ItemStack castStack, ItemStack otherStack, Slot slot, ClickAction clickType, Player player, SlotAccess cursorStackReference) {
         if (!allowMaterialInsert) return false;
-        if (clickType != ClickType.RIGHT) return false;
+        if (clickType != ClickAction.SECONDARY) return false;
 
         if (insertMaterial(castStack, otherStack, player)) {
-            otherStack.decrement(1);
+            otherStack.shrink(1);
             return true;
         }
 
         return false;
     }
 
-    private boolean insertMaterial(ItemStack cast, ItemStack material, PlayerEntity player) {
-        if (cast.hasNbt() && cast.getNbt().contains("Output")) {
+    private boolean insertMaterial(ItemStack cast, ItemStack material, Player player) {
+        if (cast.hasTag() && cast.getTag().contains("Output")) {
             return false;
         }
         if (material.isEmpty()) return false;
 
-        NbtCompound tag = cast.getOrCreateNbt();
-        NbtList list = tag.getList("input", NbtElement.COMPOUND_TYPE);
+        CompoundTag tag = cast.getOrCreateTag();
+        ListTag list = tag.getList("input", Tag.TAG_COMPOUND);
 
         if (!ConfigHelper.isValidMaterial(material)) {
-            player.sendMessage(Text.translatable("message.overgeared.invalid_material"), true);
+            player.displayClientMessage(Component.translatable("message.overgeared.invalid_material"), true);
             return false;
         }
 
@@ -168,19 +168,19 @@ public class ToolCastItem extends Item {
         }
 
         String mat = ConfigHelper.getMaterialForItem(material);
-        NbtCompound mats = tag.contains("Materials") ? tag.getCompound("Materials") : new NbtCompound();
+        CompoundTag mats = tag.contains("Materials") ? tag.getCompound("Materials") : new CompoundTag();
 
         int prev = mats.getInt(mat);
         mats.putInt(mat, prev + value);
         tag.put("Materials", mats);
 
         for (int i = 0; i < list.size(); i++) {
-            NbtCompound entry = list.getCompound(i);
-            ItemStack entryStack = ItemStack.fromNbt(entry);
+            CompoundTag entry = list.getCompound(i);
+            ItemStack entryStack = ItemStack.of(entry);
 
             if (isSameItemSameNbt(entryStack, material)) {
-                entryStack.increment(1);
-                list.set(i, entryStack.writeNbt(entry));
+                entryStack.grow(1);
+                list.set(i, entryStack.save(entry));
 
                 tag.put("input", list);
                 tag.putInt("Amount", amount + value);
@@ -191,7 +191,7 @@ public class ToolCastItem extends Item {
 
         ItemStack stored = material.copy();
         stored.setCount(1);
-        list.add(stored.writeNbt(new NbtCompound()));
+        list.add(stored.save(new CompoundTag()));
 
         tag.put("input", list);
         tag.putInt("Amount", amount + value);
@@ -201,29 +201,29 @@ public class ToolCastItem extends Item {
     }
 
     private static boolean isSameItemSameNbt(ItemStack a, ItemStack b) {
-        return ItemStack.areItemsEqual(a, b) && Objects.equals(a.getNbt(), b.getNbt());
+        return ItemStack.isSameItem(a, b) && Objects.equals(a.getTag(), b.getTag());
     }
 
-    private void playInsertSound(PlayerEntity player) {
-        player.getWorld().playSound(
+    private void playInsertSound(Player player) {
+        player.level().playSound(
                 player,
-                player.getBlockPos(),
-                SoundEvents.ITEM_BUNDLE_INSERT,
-                SoundCategory.PLAYERS,
+                player.blockPosition(),
+                SoundEvents.BUNDLE_INSERT,
+                SoundSource.PLAYERS,
                 0.7F, 1.1F
         );
     }
 
     private List<ItemStack> getInputItemsFromCast(ItemStack cast) {
         List<ItemStack> items = new ArrayList<>();
-        NbtCompound tag = cast.getNbt();
+        CompoundTag tag = cast.getTag();
 
-        if (tag != null && tag.contains("input", NbtElement.LIST_TYPE)) {
-            NbtList inputList = tag.getList("input", NbtElement.COMPOUND_TYPE);
+        if (tag != null && tag.contains("input", Tag.TAG_LIST)) {
+            ListTag inputList = tag.getList("input", Tag.TAG_COMPOUND);
 
-            for (NbtElement inputTag : inputList) {
-                if (inputTag instanceof NbtCompound compound) {
-                    ItemStack item = ItemStack.fromNbt(compound);
+            for (Tag inputTag : inputList) {
+                if (inputTag instanceof CompoundTag compound) {
+                    ItemStack item = ItemStack.of(compound);
                     if (!item.isEmpty()) {
                         items.add(item);
                     }
@@ -235,62 +235,62 @@ public class ToolCastItem extends Item {
     }
 
     @Override
-    public boolean isDamageable() {
+    public boolean canBeDepleted() {
         return haveDurability;
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+        super.appendHoverText(stack, world, tooltip, context);
 
-        NbtCompound tag = stack.getNbt();
+        CompoundTag tag = stack.getTag();
         if (tag == null) return;
 
-        if (tag.contains("Quality", NbtElement.STRING_TYPE)) {
+        if (tag.contains("Quality", Tag.TAG_STRING)) {
             String quality = tag.getString("Quality");
-            Formatting color = BlueprintQuality.getColor(quality);
+            ChatFormatting color = BlueprintQuality.getColor(quality);
             if (!quality.equals("NONE"))
                 tooltip.add(
-                        Text.translatable("tooltip.overgeared.tool_cast.quality")
+                        Component.translatable("tooltip.overgeared.tool_cast.quality")
                                 .append(" ")
                                 .append(
-                                        Text.translatable("quality.overgeared." + quality.toLowerCase(Locale.ROOT))
-                                                .formatted(color)
+                                        Component.translatable("quality.overgeared." + quality.toLowerCase(Locale.ROOT))
+                                                .withStyle(color)
                                 )
-                                .formatted(Formatting.GRAY)
+                                .withStyle(ChatFormatting.GRAY)
                 );
         }
 
-        if (tag.contains("ToolType", NbtElement.STRING_TYPE)) {
+        if (tag.contains("ToolType", Tag.TAG_STRING)) {
             String toolType = tag.getString("ToolType");
             tooltip.add(
-                    Text.translatable("tooltip.overgeared.tool_cast.type")
+                    Component.translatable("tooltip.overgeared.tool_cast.type")
                             .append(" ")
-                            .append(Text.translatable("tooltype.overgeared." + toolType.toLowerCase(Locale.ROOT)).formatted(Formatting.BLUE))
-                            .formatted(Formatting.GRAY)
+                            .append(Component.translatable("tooltype.overgeared." + toolType.toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.BLUE))
+                            .withStyle(ChatFormatting.GRAY)
             );
         }
 
-        if (tag.contains("Materials", NbtElement.COMPOUND_TYPE)) {
-            NbtCompound materials = tag.getCompound("Materials");
+        if (tag.contains("Materials", Tag.TAG_COMPOUND)) {
+            CompoundTag materials = tag.getCompound("Materials");
             if (!materials.isEmpty()) {
                 tooltip.add(
-                        Text.translatable("tooltip.overgeared.tool_cast.materials")
-                                .formatted(Formatting.GRAY)
+                        Component.translatable("tooltip.overgeared.tool_cast.materials")
+                                .withStyle(ChatFormatting.GRAY)
                 );
 
-                for (String key : materials.getKeys()) {
+                for (String key : materials.getAllKeys()) {
                     int amount = materials.getInt(key);
 
-                    Text display = Text.translatable("material.overgeared." + key.toLowerCase(Locale.ROOT));
+                    Component display = Component.translatable("material.overgeared." + key.toLowerCase(Locale.ROOT));
                     if (display.getString().equals("material.overgeared." + key.toLowerCase(Locale.ROOT))) {
-                        display = Text.literal(key);
+                        display = Component.literal(key);
                     }
 
                     tooltip.add(
-                            Text.literal("  • ").append(display)
-                                    .append(Text.literal(": " + amount))
-                                    .formatted(Formatting.WHITE)
+                            Component.literal("  • ").append(display)
+                                    .append(Component.literal(": " + amount))
+                                    .withStyle(ChatFormatting.WHITE)
                     );
                 }
             }
@@ -304,45 +304,45 @@ public class ToolCastItem extends Item {
             double maxAmt = maxRaw / 9.0;
 
             tooltip.add(
-                    Text.translatable("tooltip.overgeared.tool_cast.amount")
+                    Component.translatable("tooltip.overgeared.tool_cast.amount")
                             .append(" ")
                             .append(
-                                    Text.literal(String.format("%.2f", amt))
-                                            .formatted(Formatting.YELLOW)
+                                    Component.literal(String.format("%.2f", amt))
+                                            .withStyle(ChatFormatting.YELLOW)
                             )
                             .append(" / ")
                             .append(
-                                    Text.literal(String.format("%.2f", maxAmt))
-                                            .formatted(Formatting.WHITE)
+                                    Component.literal(String.format("%.2f", maxAmt))
+                                            .withStyle(ChatFormatting.WHITE)
                             )
-                            .formatted(Formatting.GRAY)
+                            .withStyle(ChatFormatting.GRAY)
             );
             if (amt / maxAmt != 1)
                 tooltip.add(
-                        Text.translatable("tooltip.overgeared.add_materials")
-                                .formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
+                        Component.translatable("tooltip.overgeared.add_materials")
+                                .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
                 );
         }
-        if (tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
-            ItemStack output = ItemStack.fromNbt(tag.getCompound("Output"));
+        if (tag.contains("Output", Tag.TAG_COMPOUND)) {
+            ItemStack output = ItemStack.of(tag.getCompound("Output"));
 
             tooltip.add(
-                    Text.translatable("tooltip.overgeared.tool_cast.contains")
-                            .formatted(Formatting.GRAY)
+                    Component.translatable("tooltip.overgeared.tool_cast.contains")
+                            .withStyle(ChatFormatting.GRAY)
             );
 
             tooltip.add(
-                    Text.literal("  • ")
-                            .append(output.getName())
-                            .formatted(Formatting.GOLD)
+                    Component.literal("  • ")
+                            .append(output.getHoverName())
+                            .withStyle(ChatFormatting.GOLD)
             );
         }
-        if ((tag.contains("Materials", NbtElement.COMPOUND_TYPE) && !tag.getCompound("Materials").isEmpty()) ||
-                (tag.contains("input", NbtElement.LIST_TYPE) && !tag.getList("input", NbtElement.COMPOUND_TYPE).isEmpty()) ||
-                tag.contains("Output", NbtElement.COMPOUND_TYPE)) {
+        if ((tag.contains("Materials", Tag.TAG_COMPOUND) && !tag.getCompound("Materials").isEmpty()) ||
+                (tag.contains("input", Tag.TAG_LIST) && !tag.getList("input", Tag.TAG_COMPOUND).isEmpty()) ||
+                tag.contains("Output", Tag.TAG_COMPOUND)) {
             tooltip.add(
-                    Text.translatable("tooltip.overgeared.cast_right_click")
-                            .formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
+                    Component.translatable("tooltip.overgeared.cast_right_click")
+                            .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
             );
         }
     }

@@ -1,14 +1,13 @@
 package net.stirdrem.overgeared.block.custom;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.Item;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.TierBSmithingAnvilBlockEntity;
@@ -18,20 +17,20 @@ import org.jetbrains.annotations.Nullable;
 
 public class TierBSmithingAnvil extends SteelSmithingAnvil {
 
-    public TierBSmithingAnvil(AnvilTier tier, Settings settings) {
+    public TierBSmithingAnvil(AnvilTier tier, Properties settings) {
         super(tier, settings);
     }
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TierBSmithingAnvilBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        if (!world.isClient) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        if (!world.isClientSide) {
             return validateTicker(type, ModBlockEntities.TIER_B_SMITHING_ANVIL_BE,
                     (lvl, pos, st, be) -> be.tick(lvl, pos, st));
         }

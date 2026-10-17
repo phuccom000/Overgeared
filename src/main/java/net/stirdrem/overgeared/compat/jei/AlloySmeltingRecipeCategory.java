@@ -11,12 +11,12 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.recipe.IAlloyRecipe;
@@ -26,8 +26,8 @@ import java.util.List;
 
 public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe> {
 
-    public static final Identifier UID = Overgeared.id("alloy_smelting");
-    public static final Identifier TEXTURE = Overgeared.id("textures/gui/furnace_jei.png");
+    public static final ResourceLocation UID = Overgeared.id("alloy_smelting");
+    public static final ResourceLocation TEXTURE = Overgeared.id("textures/gui/furnace_jei.png");
 
     public static final RecipeType<IAlloyRecipe> ALLOY_SMELTING_TYPE =
             new RecipeType<>(UID, IAlloyRecipe.class);
@@ -66,8 +66,8 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
     }
 
     @Override
-    public Text getTitle() {
-        return Text.translatable("gui.overgeared.jei.category.alloy_smelting");
+    public Component getTitle() {
+        return Component.translatable("gui.overgeared.jei.category.alloy_smelting");
     }
 
     @Override
@@ -82,7 +82,7 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
 
 
     @Override
-    public void draw(IAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, DrawContext guiGraphics, double mouseX, double mouseY) {
+    public void draw(IAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         Float exp = recipe.getExperience();
         arrowAnimated.draw(guiGraphics, 47, 9);
         flameAnimated.draw(guiGraphics, 51, 29);
@@ -94,10 +94,10 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
             expText = String.format("%.1f XP", exp);
         }
 
-        int textWidth = MinecraftClient.getInstance().textRenderer.getWidth(expText);
+        int textWidth = Minecraft.getInstance().font.width(expText);
         int xPos = this.background.getWidth() - textWidth;
 
-        guiGraphics.drawText(MinecraftClient.getInstance().textRenderer, expText, xPos, 35, 0xFFFFFFFF, true);
+        guiGraphics.drawString(Minecraft.getInstance().font, expText, xPos, 35, 0xFFFFFFFF, true);
     }
 
     @Override
@@ -144,6 +144,6 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
         }
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 86, 10)
-                .addItemStack(recipe.getOutput(null));
+                .addItemStack(recipe.getResultItem(null));
     }
 }

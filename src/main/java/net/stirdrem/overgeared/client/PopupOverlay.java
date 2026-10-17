@@ -1,9 +1,9 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.stirdrem.overgeared.config.ClientConfig;
 
 import java.util.List;
@@ -19,16 +19,16 @@ public class PopupOverlay {
         HudRenderCallback.EVENT.register(PopupOverlay::render);
     }
 
-    private static void render(DrawContext context, float tickDelta) {
+    private static void render(GuiGraphics context, float tickDelta) {
         if (!ClientConfig.POP_UP_TOGGLE.get()) return;
 
         List<AnvilMinigameEvents.Popup> popups = AnvilMinigameEvents.getPopups();
         if (popups.isEmpty()) return;
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        int screenWidth = client.getWindow().getScaledWidth();
-        int screenHeight = client.getWindow().getScaledHeight();
-        TextRenderer font = client.textRenderer;
+        Minecraft client = Minecraft.getInstance();
+        int screenWidth = client.getWindow().getGuiScaledWidth();
+        int screenHeight = client.getWindow().getGuiScaledHeight();
+        Font font = client.font;
 
         for (int i = 0; i < popups.size(); i++) {
             AnvilMinigameEvents.Popup popup = popups.get(i);
@@ -42,17 +42,17 @@ public class PopupOverlay {
 
             int color = ((int) (alpha * 255) << 24) | 0xFFFFFF;
 
-            int textWidth = font.getWidth(popup.text);
+            int textWidth = font.width(popup.text);
 
             float yOffset = i * 6f;
 
             float popupY = screenHeight / 2f - 40 - floatUp - yOffset;
 
-            context.getMatrices().push();
-            context.getMatrices().translate(screenWidth / 2f, popupY, 0);
-            context.getMatrices().scale(scale, scale, 1f);
+            context.pose().pushPose();
+            context.pose().translate(screenWidth / 2f, popupY, 0);
+            context.pose().scale(scale, scale, 1f);
 
-            context.drawText(
+            context.drawString(
                     font,
                     popup.text,
                     -textWidth / 2,
@@ -61,7 +61,7 @@ public class PopupOverlay {
                     false
             );
 
-            context.getMatrices().pop();
+            context.pose().popPose();
         }
     }
 }

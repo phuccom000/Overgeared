@@ -1,25 +1,25 @@
 package net.stirdrem.overgeared.block;
 
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.ItemDispenserBehavior;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockSource;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 import net.stirdrem.overgeared.item.custom.LingeringArrowItem;
 import net.stirdrem.overgeared.item.custom.UpgradeArrowItem;
 
-public class UpgradeArrowDispenseBehavior extends ItemDispenserBehavior {
+public class UpgradeArrowDispenseBehavior extends DefaultDispenseItemBehavior {
     @Override
-    protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
-        World world = pointer.getWorld();
-        Position position = DispenserBlock.getOutputLocation(pointer);
-        Direction direction = pointer.getBlockState().get(Properties.FACING);
+    protected ItemStack execute(BlockSource pointer, ItemStack stack) {
+        Level world = pointer.getLevel();
+        Position position = DispenserBlock.getDispensePosition(pointer);
+        Direction direction = pointer.getBlockState().getValue(BlockStateProperties.FACING);
 
         if (stack.getItem() instanceof UpgradeArrowItem arrowItem) {
             createAndShootArrow(arrowItem.getTier(), world, position, direction, stack);
@@ -27,33 +27,33 @@ public class UpgradeArrowDispenseBehavior extends ItemDispenserBehavior {
             createAndShootArrow(lingeringArrowItem.getTier(), world, position, direction, stack);
         }
 
-        stack.decrement(1);
+        stack.shrink(1);
         return stack;
     }
 
-    private void createAndShootArrow(ArrowTier tier, World world, Position position, Direction direction, ItemStack stack) {
+    private void createAndShootArrow(ArrowTier tier, Level world, Position position, Direction direction, ItemStack stack) {
         UpgradeArrowEntity arrow = new UpgradeArrowEntity(
                 tier,
                 world,
-                position.getX(),
-                position.getY(),
-                position.getZ(),
+                position.x(),
+                position.y(),
+                position.z(),
                 stack.copy()
         );
 
-        arrow.setVelocity(
-                direction.getOffsetX(),
-                direction.getOffsetY() + 0.1F, // Added slight upward bias like vanilla arrows
-                direction.getOffsetZ(),
+        arrow.shoot(
+                direction.getStepX(),
+                direction.getStepY() + 0.1F, // Added slight upward bias like vanilla arrows
+                direction.getStepZ(),
                 1.1F, // Power
                 6.0F  // Spread/inaccuracy
         );
-        arrow.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
-        world.spawnEntity(arrow);
+        arrow.pickup = AbstractArrow.Pickup.ALLOWED;
+        world.addFreshEntity(arrow);
     }
 
     @Override
-    protected void playSound(BlockPointer pointer) {
-        pointer.getWorld().syncWorldEvent(1002, pointer.getPos(), 0);
+    protected void playSound(BlockSource pointer) {
+        pointer.getLevel().levelEvent(1002, pointer.getPos(), 0);
     }
 }

@@ -1,26 +1,25 @@
 package net.stirdrem.overgeared.screen;
 
 import com.google.common.collect.Lists;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.FletchingRecipe;
@@ -30,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class FletchingStationScreenHandler extends ScreenHandler {
+public class FletchingStationScreenHandler extends AbstractContainerMenu {
     private static final int INPUT_SLOT_TIP = 0;
     private static final int INPUT_SLOT_SHAFT = 1;
     private static final int INPUT_SLOT_FEATHER = 2;
@@ -41,73 +40,73 @@ public class FletchingStationScreenHandler extends ScreenHandler {
     private static final int PLAYER_HOTBAR_START = 33;
     private static final int PLAYER_HOTBAR_END = 40;
 
-    private final World world;
-    private final ScreenHandlerContext access;
-    private final Inventory input;
-    private final CraftingResultInventory result = new CraftingResultInventory();
+    private final Level world;
+    private final ContainerLevelAccess access;
+    private final Container input;
+    private final ResultContainer result = new ResultContainer();
     private final RecipeManager recipeManager;
-    private final PlayerEntity player;
+    private final Player player;
 
-    public FletchingStationScreenHandler(int syncId, PlayerInventory playerInv) {
-        this(syncId, playerInv, ScreenHandlerContext.EMPTY);
+    public FletchingStationScreenHandler(int syncId, Inventory playerInv) {
+        this(syncId, playerInv, ContainerLevelAccess.NULL);
     }
 
-    public FletchingStationScreenHandler(int syncId, PlayerInventory playerInv, ScreenHandlerContext access) {
+    public FletchingStationScreenHandler(int syncId, Inventory playerInv, ContainerLevelAccess access) {
         super(ModMenuTypes.FLETCHING_STATION_MENU, syncId);
         this.access = access;
-        this.recipeManager = playerInv.player.getWorld().getRecipeManager();
+        this.recipeManager = playerInv.player.level().getRecipeManager();
         this.player = playerInv.player;
-        this.world = playerInv.player.getWorld();
-        this.input = new SimpleInventory(4) {
+        this.world = playerInv.player.level();
+        this.input = new SimpleContainer(4) {
             @Override
-            public void setStack(int i, ItemStack stack) {
-                super.setStack(i, stack);
-                FletchingStationScreenHandler.this.onContentChanged(this);
+            public void setItem(int i, ItemStack stack) {
+                super.setItem(i, stack);
+                FletchingStationScreenHandler.this.slotsChanged(this);
             }
 
             @Override
-            public void markDirty() {
-                super.markDirty();
-                FletchingStationScreenHandler.this.onContentChanged(this);
+            public void setChanged() {
+                super.setChanged();
+                FletchingStationScreenHandler.this.slotsChanged(this);
             }
         };
 
         // Input slots
         addSlot(new Slot(input, INPUT_SLOT_TIP, 66, 17) {
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
+            public void onTake(Player player, ItemStack stack) {
                 updateResultSlot();
-                super.onTakeItem(player, stack);
+                super.onTake(player, stack);
             }
         });
         addSlot(new Slot(input, INPUT_SLOT_SHAFT, 48, 35) {
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
+            public void onTake(Player player, ItemStack stack) {
                 updateResultSlot();
-                super.onTakeItem(player, stack);
+                super.onTake(player, stack);
             }
         });
         addSlot(new Slot(input, INPUT_SLOT_FEATHER, 30, 53) {
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
+            public void onTake(Player player, ItemStack stack) {
                 updateResultSlot();
-                super.onTakeItem(player, stack);
+                super.onTake(player, stack);
             }
         });
 
         addSlot(new Slot(input, INPUT_SLOT_POTION, 92, 53) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return isPotion(stack);
             }
 
             @Override
-            public int getMaxItemCount() {
+            public int getMaxStackSize() {
                 return 1;
             }
 
             @Override
-            public int getMaxItemCount(ItemStack stack) {
+            public int getMaxStackSize(ItemStack stack) {
                 return 1;
             }
         });
@@ -115,14 +114,14 @@ public class FletchingStationScreenHandler extends ScreenHandler {
         // Output slot
         addSlot(new Slot(result, 0, 124, 35) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return false;
             }
 
             @Override
-            public void onTakeItem(PlayerEntity player, ItemStack stack) {
+            public void onTake(Player player, ItemStack stack) {
                 consumeInputs(stack);
-                super.onTakeItem(player, stack);
+                super.onTake(player, stack);
             }
         });
 
@@ -140,52 +139,52 @@ public class FletchingStationScreenHandler extends ScreenHandler {
     }
 
     private boolean isPotion(ItemStack stack) {
-        return stack.isOf(Items.POTION) || stack.isOf(Items.SPLASH_POTION) || stack.isOf(Items.LINGERING_POTION);
+        return stack.is(Items.POTION) || stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION);
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return canUse(access, player, net.minecraft.block.Blocks.FLETCHING_TABLE);
+    public boolean stillValid(Player player) {
+        return stillValid(access, player, net.minecraft.world.level.block.Blocks.FLETCHING_TABLE);
     }
 
     @Override
-    public void onContentChanged(Inventory inventory) {
+    public void slotsChanged(Container inventory) {
         updateResultSlot();
-        super.onContentChanged(inventory);
+        super.slotsChanged(inventory);
     }
 
     private boolean isUpgradeableArrow(ItemStack stack) {
-        return stack.isOf(ModItems.IRON_UPGRADE_ARROW)
-                || stack.isOf(ModItems.STEEL_UPGRADE_ARROW)
-                || stack.isOf(ModItems.DIAMOND_UPGRADE_ARROW);
+        return stack.is(ModItems.IRON_UPGRADE_ARROW)
+                || stack.is(ModItems.STEEL_UPGRADE_ARROW)
+                || stack.is(ModItems.DIAMOND_UPGRADE_ARROW);
     }
 
     private void updateResultSlot() {
-        if (world.isClient()) return;
+        if (world.isClientSide()) return;
 
         boolean hasInput = false;
         for (int i = 0; i < 3; i++) {
-            if (!input.getStack(i).isEmpty()) {
+            if (!input.getItem(i).isEmpty()) {
                 hasInput = true;
                 break;
             }
         }
         if (!hasInput) {
-            result.setStack(0, ItemStack.EMPTY);
-            sendContentUpdates();
+            result.setItem(0, ItemStack.EMPTY);
+            broadcastChanges();
             return;
         }
-        Optional<FletchingRecipe> opt = recipeManager.getFirstMatch(ModRecipeTypes.FLETCHING, input, world);
+        Optional<FletchingRecipe> opt = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING, input, world);
         ItemStack resultStack = ItemStack.EMPTY;
-        ItemStack potion = input.getStack(INPUT_SLOT_POTION);
+        ItemStack potion = input.getItem(INPUT_SLOT_POTION);
         boolean allowUpgradeableArrowConversion = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get();
         if (!potion.isEmpty()) {
             int arrowSlots = 0;
             int arrowCount = 0;
             int slotNumber = -1;
             for (int i = 0; i < 3; i++) {
-                ItemStack slotStack = input.getStack(i);
-                if (slotStack.isOf(Items.ARROW) || (allowUpgradeableArrowConversion && isUpgradeableArrow(slotStack))) {
+                ItemStack slotStack = input.getItem(i);
+                if (slotStack.is(Items.ARROW) || (allowUpgradeableArrowConversion && isUpgradeableArrow(slotStack))) {
                     arrowSlots++;
                     arrowCount = slotStack.getCount();
                     slotNumber = i;
@@ -193,37 +192,37 @@ public class FletchingStationScreenHandler extends ScreenHandler {
             }
 
             if (arrowSlots == 1) {
-                ItemStack arrowStack = input.getStack(slotNumber);
+                ItemStack arrowStack = input.getItem(slotNumber);
                 boolean isUpgradeable = isUpgradeableArrow(arrowStack);
 
                 if (isUpgradeable && !allowUpgradeableArrowConversion) {
-                    result.setStack(0, ItemStack.EMPTY);
-                    sendContentUpdates();
+                    result.setItem(0, ItemStack.EMPTY);
+                    broadcastChanges();
                     return;
                 }
-                if (potion.isOf(Items.POTION)) {
+                if (potion.is(Items.POTION)) {
                     ItemStack tippedArrows;
-                    if (isUpgradeableArrow(input.getStack(slotNumber)))
-                        tippedArrows = input.getStack(slotNumber).copy();
+                    if (isUpgradeableArrow(input.getItem(slotNumber)))
+                        tippedArrows = input.getItem(slotNumber).copy();
                     else tippedArrows = new ItemStack(Items.TIPPED_ARROW, arrowCount);
-                    PotionUtil.setPotion(tippedArrows, PotionUtil.getPotion(potion));
-                    if (potion.hasNbt()) {
-                        tippedArrows.setNbt(potion.getNbt().copy());
+                    PotionUtils.setPotion(tippedArrows, PotionUtils.getPotion(potion));
+                    if (potion.hasTag()) {
+                        tippedArrows.setTag(potion.getTag().copy());
                     }
                     resultStack = tippedArrows;
-                } else if (potion.isOf(Items.LINGERING_POTION)) {
+                } else if (potion.is(Items.LINGERING_POTION)) {
                     ItemStack lingeringArrows;
-                    if (isUpgradeableArrow(input.getStack(slotNumber))) {
-                        lingeringArrows = input.getStack(slotNumber).copy();
+                    if (isUpgradeableArrow(input.getItem(slotNumber))) {
+                        lingeringArrows = input.getItem(slotNumber).copy();
                     } else {
                         lingeringArrows = new ItemStack(ModItems.LINGERING_ARROW, arrowCount);
                     }
-                    PotionUtil.setPotion(lingeringArrows, PotionUtil.getPotion(potion));
-                    if (potion.hasNbt()) {
-                        lingeringArrows.setNbt(potion.getNbt().copy());
+                    PotionUtils.setPotion(lingeringArrows, PotionUtils.getPotion(potion));
+                    if (potion.hasTag()) {
+                        lingeringArrows.setTag(potion.getTag().copy());
                     }
-                    if (isUpgradeableArrow(input.getStack(slotNumber))) {
-                        lingeringArrows.getOrCreateNbt().putBoolean("LingeringPotion", true);
+                    if (isUpgradeableArrow(input.getItem(slotNumber))) {
+                        lingeringArrows.getOrCreateTag().putBoolean("LingeringPotion", true);
                     }
                     resultStack = lingeringArrows;
                 }
@@ -233,34 +232,34 @@ public class FletchingStationScreenHandler extends ScreenHandler {
         if (opt.isPresent()) {
             FletchingRecipe recipe = opt.get();
 
-            int tipCount = input.getStack(INPUT_SLOT_TIP).getCount();
-            int shaftCount = input.getStack(INPUT_SLOT_SHAFT).getCount();
-            int featherCount = input.getStack(INPUT_SLOT_FEATHER).getCount();
+            int tipCount = input.getItem(INPUT_SLOT_TIP).getCount();
+            int shaftCount = input.getItem(INPUT_SLOT_SHAFT).getCount();
+            int featherCount = input.getItem(INPUT_SLOT_FEATHER).getCount();
 
             int craftCount = Math.max(Math.min(Math.min(tipCount, shaftCount), featherCount), 1);
-            ItemStack baseResult = recipe.craft(input, world.getRegistryManager());
+            ItemStack baseResult = recipe.assemble(input, world.registryAccess());
 
             if (!potion.isEmpty()) {
                 boolean isUpgradeable = isUpgradeableArrow(baseResult);
                 if ((isUpgradeable && !allowUpgradeableArrowConversion)) {
-                    result.setStack(0, ItemStack.EMPTY);
-                    sendContentUpdates();
+                    result.setItem(0, ItemStack.EMPTY);
+                    broadcastChanges();
                     return;
                 }
-                String potionEffect = Registries.POTION.getId(PotionUtil.getPotion(potion)).toString();
+                String potionEffect = BuiltInRegistries.POTION.getKey(PotionUtils.getPotion(potion)).toString();
 
-                if ((potion.isOf(Items.POTION) || potion.isOf(Items.SPLASH_POTION)) && !recipe.getTippedResult().isEmpty()) {
+                if ((potion.is(Items.POTION) || potion.is(Items.SPLASH_POTION)) && !recipe.getTippedResult().isEmpty()) {
                     resultStack = recipe.getTippedResult().copy();
-                    NbtCompound resultTag = resultStack.getOrCreateNbt();
-                    if (potion.hasNbt()) {
-                        resultTag.copyFrom(potion.getNbt().copy());
+                    CompoundTag resultTag = resultStack.getOrCreateTag();
+                    if (potion.hasTag()) {
+                        resultTag.merge(potion.getTag().copy());
                     }
-                    resultStack.setNbt(potion.getNbt() != null ? potion.getNbt().copy() : resultTag);
+                    resultStack.setTag(potion.getTag() != null ? potion.getTag().copy() : resultTag);
 
-                } else if (potion.isOf(Items.LINGERING_POTION) && !recipe.getLingeringResult().isEmpty()) {
+                } else if (potion.is(Items.LINGERING_POTION) && !recipe.getLingeringResult().isEmpty()) {
                     resultStack = recipe.getLingeringResult().copy();
 
-                    NbtCompound resultTag = resultStack.getOrCreateNbt();
+                    CompoundTag resultTag = resultStack.getOrCreateTag();
 
                     if (isUpgradeableArrow(resultStack)) {
                         resultTag.putBoolean("LingeringPotion", true);
@@ -268,14 +267,14 @@ public class FletchingStationScreenHandler extends ScreenHandler {
                         resultTag.putString(recipe.getLingeringTag(), potionEffect);
                     }
 
-                    if (potion.hasNbt()) {
-                        resultTag.copyFrom(potion.getNbt().copy());
+                    if (potion.hasTag()) {
+                        resultTag.merge(potion.getTag().copy());
                     }
 
-                    resultStack.setNbt(resultTag);
+                    resultStack.setTag(resultTag);
                 } else {
-                    result.setStack(0, ItemStack.EMPTY);
-                    sendContentUpdates();
+                    result.setItem(0, ItemStack.EMPTY);
+                    broadcastChanges();
                     return;
                 }
             } else {
@@ -284,151 +283,151 @@ public class FletchingStationScreenHandler extends ScreenHandler {
 
             if (!resultStack.isEmpty()) {
                 int outPer = baseResult.getCount();
-                int maxStack = resultStack.getMaxCount();
+                int maxStack = resultStack.getMaxStackSize();
                 int maxCraftCount = Math.min(maxStack / outPer, craftCount);
                 resultStack.setCount(outPer * maxCraftCount);
             }
         }
-        result.setStack(0, resultStack);
-        sendContentUpdates();
+        result.setItem(0, resultStack);
+        broadcastChanges();
     }
 
     private void consumeInputs(ItemStack takenResult) {
         if (takenResult.isEmpty()) return;
 
-        Optional<FletchingRecipe> opt = recipeManager.getFirstMatch(ModRecipeTypes.FLETCHING, input, world);
+        Optional<FletchingRecipe> opt = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING, input, world);
         if (opt.isPresent()) {
             FletchingRecipe recipe = opt.get();
-            ItemStack baseResult = recipe.craft(input, world.getRegistryManager());
+            ItemStack baseResult = recipe.assemble(input, world.registryAccess());
             int baseCount = baseResult.getCount();
             int tookCount = takenResult.getCount();
             int batchesTaken = Math.max(1, tookCount / baseCount);
 
             for (int i = 0; i < 3; i++) {
-                ItemStack stack = input.getStack(i);
+                ItemStack stack = input.getItem(i);
                 if (!stack.isEmpty()) {
-                    stack.decrement(batchesTaken);
-                    input.setStack(i, stack.isEmpty() ? ItemStack.EMPTY : stack);
+                    stack.shrink(batchesTaken);
+                    input.setItem(i, stack.isEmpty() ? ItemStack.EMPTY : stack);
                 }
             }
         } else {
             int tookCount = takenResult.getCount();
             for (int i = 0; i < 3; i++) {
-                ItemStack stack = input.getStack(i);
+                ItemStack stack = input.getItem(i);
                 if (!stack.isEmpty()) {
-                    stack.decrement(tookCount);
-                    input.setStack(i, stack.isEmpty() ? ItemStack.EMPTY : stack);
+                    stack.shrink(tookCount);
+                    input.setItem(i, stack.isEmpty() ? ItemStack.EMPTY : stack);
                 }
             }
         }
-        ItemStack potionStack = input.getStack(INPUT_SLOT_POTION);
+        ItemStack potionStack = input.getItem(INPUT_SLOT_POTION);
         if (!potionStack.isEmpty()) {
-            potionStack.decrement(1);
-            input.setStack(INPUT_SLOT_POTION, potionStack.isEmpty() ? new ItemStack(Items.GLASS_BOTTLE) : potionStack);
+            potionStack.shrink(1);
+            input.setItem(INPUT_SLOT_POTION, potionStack.isEmpty() ? new ItemStack(Items.GLASS_BOTTLE) : potionStack);
         }
         updateResultSlot();
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack copiedStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
 
-        if (slot != null && slot.hasStack()) {
-            ItemStack slotStack = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack slotStack = slot.getItem();
             copiedStack = slotStack.copy();
 
             if (index == OUTPUT_SLOT) {
                 while (canStillCraft()) {
-                    ItemStack craftResult = slot.getStack().copy();
-                    int maxTransfer = craftResult.getMaxCount();
+                    ItemStack craftResult = slot.getItem().copy();
+                    int maxTransfer = craftResult.getMaxStackSize();
 
                     int craftCount = Math.min(craftResult.getCount(), maxTransfer);
                     craftResult.setCount(craftCount);
 
-                    if (!insertItem(craftResult, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, true)) {
+                    if (!moveItemStackTo(craftResult, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, true)) {
                         break;
                     }
-                    slot.onQuickTransfer(craftResult, copiedStack);
+                    slot.onQuickCraft(craftResult, copiedStack);
                     consumeInputs(copiedStack);
 
-                    if (slot.getStack().isEmpty()) break;
+                    if (slot.getItem().isEmpty()) break;
                 }
 
-                slot.markDirty();
+                slot.setChanged();
             } else if (index >= PLAYER_INVENTORY_START && index <= PLAYER_HOTBAR_END) {
                 if (isPotion(slotStack)) {
-                    if (!insertItem(slotStack, INPUT_SLOT_POTION, INPUT_SLOT_POTION + 1, false)) {
+                    if (!moveItemStackTo(slotStack, INPUT_SLOT_POTION, INPUT_SLOT_POTION + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else if (!insertItem(slotStack, INPUT_SLOT_TIP, INPUT_SLOT_POTION, false)) {
+                } else if (!moveItemStackTo(slotStack, INPUT_SLOT_TIP, INPUT_SLOT_POTION, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (index >= INPUT_SLOT_TIP && index <= INPUT_SLOT_POTION) {
-                if (!insertItem(slotStack, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, false)) {
+                if (!moveItemStackTo(slotStack, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, false)) {
                     return ItemStack.EMPTY;
                 }
             }
 
             if (slotStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
 
             if (slotStack.getCount() == copiedStack.getCount()) {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTakeItem(player, slotStack);
+            slot.onTake(player, slotStack);
         }
 
         return copiedStack;
     }
 
     private boolean canStillCraft() {
-        Optional<FletchingRecipe> opt = recipeManager.getFirstMatch(ModRecipeTypes.FLETCHING, input, world);
+        Optional<FletchingRecipe> opt = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING, input, world);
         return opt.isPresent();
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        super.onClosed(player);
-        if (this.access != ScreenHandlerContext.EMPTY)
-            for (int i = 0; i < input.size(); i++) {
-                ItemStack stack = input.removeStack(i);
+    public void removed(Player player) {
+        super.removed(player);
+        if (this.access != ContainerLevelAccess.NULL)
+            for (int i = 0; i < input.getContainerSize(); i++) {
+                ItemStack stack = input.removeItemNoUpdate(i);
                 if (!stack.isEmpty()) {
-                    if (!player.getInventory().insertStack(stack)) {
-                        player.dropItem(stack, false);
+                    if (!player.getInventory().add(stack)) {
+                        player.drop(stack, false);
                     }
                 }
             }
     }
 
-    public static Potion getPotion(@Nullable NbtCompound tag) {
+    public static Potion getPotion(@Nullable CompoundTag tag) {
         if (tag == null) return Potions.EMPTY;
 
         if (tag.contains("Potion", 8)) {
-            return Registries.POTION.get(net.minecraft.util.Identifier.tryParse(tag.getString("Potion")));
+            return BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.tryParse(tag.getString("Potion")));
         }
 
         return Potions.EMPTY;
     }
 
-    public static List<StatusEffectInstance> getAllEffects(@Nullable NbtCompound compoundTag) {
-        List<StatusEffectInstance> list = Lists.newArrayList();
+    public static List<MobEffectInstance> getAllEffects(@Nullable CompoundTag compoundTag) {
+        List<MobEffectInstance> list = Lists.newArrayList();
         list.addAll(getPotion(compoundTag).getEffects());
         getCustomEffects(compoundTag, list);
         return list;
     }
 
-    public static void getCustomEffects(@Nullable NbtCompound compoundTag, List<StatusEffectInstance> effectList) {
+    public static void getCustomEffects(@Nullable CompoundTag compoundTag, List<MobEffectInstance> effectList) {
         if (compoundTag != null && compoundTag.contains("CustomPotionEffects", 9)) {
-            NbtList listTag = compoundTag.getList("CustomPotionEffects", 10);
+            ListTag listTag = compoundTag.getList("CustomPotionEffects", 10);
 
             for (int i = 0; i < listTag.size(); ++i) {
-                NbtCompound nbtCompound = listTag.getCompound(i);
-                StatusEffectInstance effectInstance = StatusEffectInstance.fromNbt(nbtCompound);
+                CompoundTag nbtCompound = listTag.getCompound(i);
+                MobEffectInstance effectInstance = MobEffectInstance.load(nbtCompound);
                 if (effectInstance != null) {
                     effectList.add(effectInstance);
                 }

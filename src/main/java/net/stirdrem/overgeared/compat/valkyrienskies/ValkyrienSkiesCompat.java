@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.compat.valkyrienskies;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The original Forge version compiles directly against Valkyrien Skies' API jar
@@ -21,7 +21,7 @@ public final class ValkyrienSkiesCompat {
     private ValkyrienSkiesCompat() {
     }
 
-    public static Vec3d getActualWorldPos(ServerWorld world, BlockPos blockPos) {
-        return Vec3d.ofCenter(blockPos);
+    public static Vec3 getActualWorldPos(ServerLevel world, BlockPos blockPos) {
+        return Vec3.atCenterOf(blockPos);
     }
 }

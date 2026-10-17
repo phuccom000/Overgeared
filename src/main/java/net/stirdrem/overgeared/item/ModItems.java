@@ -1,9 +1,13 @@
 package net.stirdrem.overgeared.item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.item.*;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.item.armor.CopperHelmet;
@@ -32,10 +36,10 @@ public class ModItems {
 
     public static final Item CLAY_TOOL_CAST = register("clay_tool_cast",
             new ToolCastItem(true, true,
-                    new FabricItemSettings().maxCount(1).maxDamage(1)));
+                    new FabricItemSettings().stacksTo(1).durability(1)));
 
     public static final Item NETHER_TOOL_CAST = register("nether_tool_cast",
-            new ToolCastItem(true, false, new FabricItemSettings().maxCount(1)));
+            new ToolCastItem(true, false, new FabricItemSettings().stacksTo(1)));
 
     public static final Item STEEL_NUGGET = register("steel_nugget",
             new Item(new FabricItemSettings()));
@@ -81,12 +85,12 @@ public class ModItems {
     public static final Item IRON_TONG = register("iron_tong",
             new Item(new FabricItemSettings()));
     public static final Item WOODEN_TONGS = register("wooden_tongs",
-            new Tongs(ToolMaterials.WOOD, -1, -2f, new FabricItemSettings().maxDamage(120)));
+            new Tongs(Tiers.WOOD, -1, -2f, new FabricItemSettings().durability(120)));
     public static final Item IRON_TONGS = register("iron_tongs",
-            new Tongs(ToolMaterials.IRON, -1, -2f, new FabricItemSettings().maxDamage(512)));
+            new Tongs(Tiers.IRON, -1, -2f, new FabricItemSettings().durability(512)));
 
     public static final Item STEEL_TONGS = register("steel_tongs",
-            new Tongs(ModToolTiers.STEEL, -1, -2f, new FabricItemSettings().maxDamage(1024)));
+            new Tongs(ModToolTiers.STEEL, -1, -2f, new FabricItemSettings().durability(1024)));
 
     public static final Item STONE_HAMMER_HEAD = register("stone_hammer_head",
             new Item(new FabricItemSettings()));
@@ -223,7 +227,7 @@ public class ModItems {
 
 
     private static Item register(String name, Item item) {
-        return Registry.register(Registries.ITEM, Overgeared.id(name), item);
+        return Registry.register(BuiltInRegistries.ITEM, Overgeared.id(name), item);
     }
 
     public static void register() {

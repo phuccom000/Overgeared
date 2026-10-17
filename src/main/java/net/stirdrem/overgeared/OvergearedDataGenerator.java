@@ -2,7 +2,7 @@ package net.stirdrem.overgeared;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.minecraft.registry.RegistryBuilder;
+import net.minecraft.core.RegistrySetBuilder;
 import net.stirdrem.overgeared.datagen.*;
 
 public class OvergearedDataGenerator implements DataGeneratorEntrypoint {
@@ -20,7 +20,7 @@ public class OvergearedDataGenerator implements DataGeneratorEntrypoint {
     }
 
     @Override
-    public void buildRegistry(RegistryBuilder registryBuilder) {
+    public void buildRegistry(RegistrySetBuilder registryBuilder) {
 		/*registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, ModConfiguredFeatures::boostrap);
 		registryBuilder.addRegistry(RegistryKeys.PLACED_FEATURE, ModPlacedFeatures::boostrap);
 		registryBuilder.addRegistry(RegistryKeys.BIOME, ModBiomes::boostrap);

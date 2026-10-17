@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.*;
 
@@ -14,7 +14,7 @@ import net.stirdrem.overgeared.networking.packet.*;
  */
 public class ClientModMessages {
 
-    public static void sendToServer(Identifier channel, PacketByteBuf buf) {
+    public static void sendToServer(ResourceLocation channel, FriendlyByteBuf buf) {
         ClientPlayNetworking.send(channel, buf);
     }
 

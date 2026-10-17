@@ -1,15 +1,15 @@
 package net.stirdrem.overgeared.datagen;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.criterion.CriterionConditions;
-import net.minecraft.data.server.recipe.RecipeJsonBuilder;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.recipes.CraftingRecipeBuilder;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,18 +17,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
+import static net.minecraft.data.recipes.RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
+import static net.minecraft.data.recipes.RecipeBuilder.getDefaultRecipeId;
 
-public class CastingRecipeBuilder extends RecipeJsonBuilder {
+public class CastingRecipeBuilder extends CraftingRecipeBuilder {
 
-    private final ItemConvertible result;
+    private final ItemLike result;
     private final float experience;
     private final int cookTime;
 
     private final Map<String, Integer> materialInput = new HashMap<>();
     private final Advancement.Builder advancement =
-            Advancement.Builder.createUntelemetered();
+            Advancement.Builder.recipeAdvancement();
 
     private String toolType;
 
@@ -42,7 +42,7 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
     private String category = "misc";
 
     private CastingRecipeBuilder(
-            ItemConvertible result,
+            ItemLike result,
             float xp,
             int cookTime
     ) {
@@ -52,7 +52,7 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
     }
 
     public static CastingRecipeBuilder casting(
-            ItemConvertible result,
+            ItemLike result,
             float xp,
             int cookTime
     ) {
@@ -76,9 +76,9 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
 
     public CastingRecipeBuilder criterion(
             String name,
-            CriterionConditions conditions
+            CriterionTriggerInstance conditions
     ) {
-        this.advancementBuilder().criterion(name, conditions);
+        this.advancementBuilder().addCriterion(name, conditions);
         return this;
     }
 
@@ -100,32 +100,32 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
         return result.asItem();
     }
 
-    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
-        offerTo(exporter, getItemId(this.getOutputItem()));
+    public void offerTo(Consumer<FinishedRecipe> exporter) {
+        offerTo(exporter, getDefaultRecipeId(this.getOutputItem()));
     }
 
     public void offerTo(
-            Consumer<RecipeJsonProvider> exporter,
-            Identifier id
+            Consumer<FinishedRecipe> exporter,
+            ResourceLocation id
     ) {
         ensureValid(id);
 
-        Identifier recipeId = new Identifier(
+        ResourceLocation recipeId = new ResourceLocation(
                 id.getNamespace(),
                 id.getPath() + "_from_cast_furnace"
         );
 
         this.advancement
-                .parent(ROOT)
-                .criterion(
+                .parent(ROOT_RECIPE_ADVANCEMENT)
+                .addCriterion(
                         "has_the_recipe",
-                        net.minecraft.advancement.criterion.RecipeUnlockedCriterion.create(id)
+                        net.minecraft.advancements.critereon.RecipeUnlockedTrigger.unlocked(id)
                 )
                 .rewards(
-                        net.minecraft.advancement.AdvancementRewards.Builder.recipe(id)
+                        net.minecraft.advancements.AdvancementRewards.Builder.recipe(id)
                 )
-                .criteriaMerger(
-                        net.minecraft.advancement.CriterionMerger.OR
+                .requirements(
+                        net.minecraft.advancements.RequirementsStrategy.OR
                 );
 
         exporter.accept(new Result(
@@ -139,11 +139,11 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
                 cookTime,
                 needPolishing,
                 advancement,
-                recipeId.withPrefixedPath("recipes/casting/")
+                recipeId.withPrefix("recipes/casting/")
         ));
     }
 
-    private void ensureValid(Identifier id) {
+    private void ensureValid(ResourceLocation id) {
         if (toolType == null) {
             throw new IllegalStateException(
                     "Missing tool_type for casting recipe " + id
@@ -163,10 +163,10 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
         }
     }
 
-    public static class Result implements RecipeJsonProvider {
+    public static class Result implements FinishedRecipe {
 
-        private final Identifier id;
-        private final ItemConvertible result;
+        private final ResourceLocation id;
+        private final ItemLike result;
         private final String group;
         private final String category;
         private final String toolType;
@@ -175,11 +175,11 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
         private final int cookTime;
         private final Boolean needPolishing;
         private final Advancement.Builder advancement;
-        private final Identifier advancementId;
+        private final ResourceLocation advancementId;
 
         public Result(
-                Identifier id,
-                ItemConvertible result,
+                ResourceLocation id,
+                ItemLike result,
                 String group,
                 String category,
                 String toolType,
@@ -188,7 +188,7 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
                 int cookTime,
                 Boolean needPolishing,
                 Advancement.Builder advancement,
-                Identifier advancementId
+                ResourceLocation advancementId
         ) {
             this.id = id;
             this.result = result;
@@ -204,7 +204,7 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
         }
 
         @Override
-        public void serialize(JsonObject json) {
+        public void serializeRecipeData(JsonObject json) {
 
             if (group != null && !group.isEmpty()) {
                 json.addProperty("group", group);
@@ -223,7 +223,7 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
             JsonObject resultObj = new JsonObject();
             resultObj.addProperty(
                     "item",
-                    Registries.ITEM.getId(result.asItem()).toString()
+                    BuiltInRegistries.ITEM.getKey(result.asItem()).toString()
             );
             json.add("result", resultObj);
 
@@ -236,24 +236,24 @@ public class CastingRecipeBuilder extends RecipeJsonBuilder {
         }
 
         @Override
-        public RecipeSerializer<?> getSerializer() {
+        public RecipeSerializer<?> getType() {
             return ModRecipes.CASTING;
         }
 
         @Override
-        public Identifier getRecipeId() {
+        public ResourceLocation getId() {
             return id;
         }
 
         @Nullable
         @Override
-        public JsonObject toAdvancementJson() {
-            return advancement.toJson();
+        public JsonObject serializeAdvancement() {
+            return advancement.serializeToJson();
         }
 
         @Nullable
         @Override
-        public Identifier getAdvancementId() {
+        public ResourceLocation getAdvancementId() {
             return advancementId;
         }
     }

@@ -1,31 +1,31 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolType;
 
-public class BlueprintWorkbenchScreenHandler extends ScreenHandler {
-    private final Inventory inputContainer;
-    private final Inventory outputContainer;
-    private final PropertyDelegate data;
+public class BlueprintWorkbenchScreenHandler extends AbstractContainerMenu {
+    private final Container inputContainer;
+    private final Container outputContainer;
+    private final ContainerData data;
 
-    public BlueprintWorkbenchScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(1), new SimpleInventory(1), new ArrayPropertyDelegate(2));
+    public BlueprintWorkbenchScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, playerInventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(2));
     }
 
-    public BlueprintWorkbenchScreenHandler(int syncId, PlayerInventory playerInventory,
-                                            Inventory inputContainer, Inventory outputContainer,
-                                            PropertyDelegate data) {
+    public BlueprintWorkbenchScreenHandler(int syncId, Inventory playerInventory,
+                                            Container inputContainer, Container outputContainer,
+                                            ContainerData data) {
         super(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU, syncId);
         this.inputContainer = inputContainer;
         this.outputContainer = outputContainer;
@@ -34,15 +34,15 @@ public class BlueprintWorkbenchScreenHandler extends ScreenHandler {
         // Input slot (slot 0)
         this.addSlot(new Slot(inputContainer, 0, 48, 35) {
             @Override
-            public boolean canInsert(ItemStack stack) {
-                return stack.isOf(ModItems.EMPTY_BLUEPRINT);
+            public boolean mayPlace(ItemStack stack) {
+                return stack.is(ModItems.EMPTY_BLUEPRINT);
             }
         });
 
         // Output slot (slot 1) - not player interactable
         this.addSlot(new Slot(outputContainer, 0, 106, 35) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return false;
             }
         });
@@ -59,71 +59,71 @@ public class BlueprintWorkbenchScreenHandler extends ScreenHandler {
             this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
         }
 
-        addProperties(data);
+        addDataSlots(data);
     }
 
     public void createBlueprint(ToolType toolType) {
-        ItemStack input = this.inputContainer.getStack(0);
-        if (!input.isOf(ModItems.EMPTY_BLUEPRINT) || input.isEmpty()) {
+        ItemStack input = this.inputContainer.getItem(0);
+        if (!input.is(ModItems.EMPTY_BLUEPRINT) || input.isEmpty()) {
             return;
         }
 
-        ItemStack output = this.outputContainer.getStack(0);
+        ItemStack output = this.outputContainer.getItem(0);
 
         if (output.isEmpty()) {
             ItemStack newOutput = new ItemStack(ModItems.BLUEPRINT);
-            NbtCompound tag = newOutput.getOrCreateNbt();
+            CompoundTag tag = newOutput.getOrCreateTag();
             BlueprintQuality quality = BlueprintQuality.WELL;
             tag.putString("ToolType", toolType.getId());
             tag.putString("Quality", quality.getDisplayName());
             tag.putInt("Uses", 0);
 
-            this.outputContainer.setStack(0, newOutput);
-            input.decrement(1);
+            this.outputContainer.setItem(0, newOutput);
+            input.shrink(1);
             if (input.isEmpty()) {
-                this.inputContainer.setStack(0, ItemStack.EMPTY);
+                this.inputContainer.setItem(0, ItemStack.EMPTY);
             } else {
-                this.inputContainer.setStack(0, input);
+                this.inputContainer.setItem(0, input);
             }
         }
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
 
-        if (slot.hasStack()) {
-            ItemStack itemstack1 = slot.getStack();
+        if (slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
 
             if (index == 1) {
-                if (!this.insertItem(itemstack1, 2, 38, true)) {
+                if (!this.moveItemStackTo(itemstack1, 2, 38, true)) {
                     return ItemStack.EMPTY;
                 }
-                slot.onQuickTransfer(itemstack1, itemstack);
+                slot.onQuickCraft(itemstack1, itemstack);
             } else if (index == 0) {
-                if (!this.insertItem(itemstack1, 2, 38, true)) {
+                if (!this.moveItemStackTo(itemstack1, 2, 38, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (itemstack1.isOf(ModItems.EMPTY_BLUEPRINT)) {
-                if (!this.insertItem(itemstack1, 0, 1, false)) {
+            } else if (itemstack1.is(ModItems.EMPTY_BLUEPRINT)) {
+                if (!this.moveItemStackTo(itemstack1, 0, 1, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (index >= 2 && index < 29) {
-                if (!this.insertItem(itemstack1, 29, 38, false)) {
+                if (!this.moveItemStackTo(itemstack1, 29, 38, false)) {
                     return ItemStack.EMPTY;
                 }
             } else if (index >= 29 && index < 38) {
-                if (!this.insertItem(itemstack1, 2, 29, false)) {
+                if (!this.moveItemStackTo(itemstack1, 2, 29, false)) {
                     return ItemStack.EMPTY;
                 }
             }
 
             if (itemstack1.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
 
@@ -131,14 +131,14 @@ public class BlueprintWorkbenchScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.inputContainer.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.inputContainer.stillValid(player);
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        super.onClosed(player);
-        this.dropInventory(player, inputContainer);
-        this.dropInventory(player, outputContainer);
+    public void removed(Player player) {
+        super.removed(player);
+        this.clearContainer(player, inputContainer);
+        this.clearContainer(player, outputContainer);
     }
 }

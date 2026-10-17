@@ -2,12 +2,12 @@ package net.stirdrem.overgeared.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -17,13 +17,13 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
 
     public ModItemTagProvider(
             FabricDataOutput output,
-            CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture
+            CompletableFuture<HolderLookup.Provider> registriesFuture
     ) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+    protected void addTags(HolderLookup.Provider wrapperLookup) {
 
         // ---------------------------------------------------------------------
         // Tongs
@@ -371,9 +371,9 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
      * -> c:ingots/steel
      */
     private TagKey<Item> commonTag(String path) {
-        return TagKey.of(
-                net.minecraft.registry.RegistryKeys.ITEM,
-                Identifier.of("c", path)
+        return TagKey.create(
+                net.minecraft.core.registries.Registries.ITEM,
+                ResourceLocation.tryBuild("c", path)
         );
     }
 }

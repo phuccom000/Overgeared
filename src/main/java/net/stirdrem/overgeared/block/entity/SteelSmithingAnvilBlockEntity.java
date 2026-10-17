@@ -1,11 +1,11 @@
 package net.stirdrem.overgeared.block.entity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
@@ -20,14 +20,14 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     }
 
     @Override
-    public Text getDisplayName() {
-        return Text.translatable("gui.overgeared.smithing_anvil");
+    public Component getDisplayName() {
+        return Component.translatable("gui.overgeared.smithing_anvil");
     }
 
     @Nullable
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        if (!player.isSneaking()) {
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
+        if (!player.isShiftKeyDown()) {
             return new SteelSmithingAnvilScreenHandler(syncId, playerInventory, this, this.data);
         } else return null;
     }

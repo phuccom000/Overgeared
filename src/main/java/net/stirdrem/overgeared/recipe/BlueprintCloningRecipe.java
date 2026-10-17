@@ -1,36 +1,36 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.item.ModItems;
 
-public class BlueprintCloningRecipe extends SpecialCraftingRecipe {
-    public BlueprintCloningRecipe(Identifier id, CraftingRecipeCategory category) {
+public class BlueprintCloningRecipe extends CustomRecipe {
+    public BlueprintCloningRecipe(ResourceLocation id, CraftingBookCategory category) {
         super(id, category);
     }
 
     @Override
-    public boolean matches(RecipeInputInventory inv, World world) {
+    public boolean matches(CraftingContainer inv, Level world) {
         int blueprintCount = 0;
         ItemStack emptyBlueprint = ItemStack.EMPTY;
 
-        for (int j = 0; j < inv.size(); ++j) {
-            ItemStack stack = inv.getStack(j);
+        for (int j = 0; j < inv.getContainerSize(); ++j) {
+            ItemStack stack = inv.getItem(j);
             if (!stack.isEmpty()) {
-                if (stack.isOf(ModItems.EMPTY_BLUEPRINT)) {
+                if (stack.is(ModItems.EMPTY_BLUEPRINT)) {
                     if (!emptyBlueprint.isEmpty()) {
                         return false; // Only 1 empty blueprint allowed
                     }
                     emptyBlueprint = stack;
                 } else {
-                    if (!stack.isOf(ModItems.BLUEPRINT)) {
+                    if (!stack.is(ModItems.BLUEPRINT)) {
                         return false;
                     }
 
@@ -44,12 +44,12 @@ public class BlueprintCloningRecipe extends SpecialCraftingRecipe {
 
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
         ItemStack source = ItemStack.EMPTY;
 
-        for (int j = 0; j < inv.size(); ++j) {
-            ItemStack stack = inv.getStack(j);
-            if (!stack.isEmpty() && stack.isOf(ModItems.BLUEPRINT)) {
+        for (int j = 0; j < inv.getContainerSize(); ++j) {
+            ItemStack stack = inv.getItem(j);
+            if (!stack.isEmpty() && stack.is(ModItems.BLUEPRINT)) {
                 if (!source.isEmpty()) return ItemStack.EMPTY; // only 1 blueprint source allowed
                 source = stack;
             }
@@ -60,13 +60,13 @@ public class BlueprintCloningRecipe extends SpecialCraftingRecipe {
         ItemStack result = source.copyWithCount(2);
 
         // Reduce quality
-        if (source.hasNbt() && source.getNbt().contains("Quality")) {
-            String currentId = source.getNbt().getString("Quality");
+        if (source.hasTag() && source.getTag().contains("Quality")) {
+            String currentId = source.getTag().getString("Quality");
             BlueprintQuality current = BlueprintQuality.fromString(currentId);
             BlueprintQuality downgraded = BlueprintQuality.getPrevious(current);
 
             if (downgraded != null) {
-                result.getOrCreateNbt().putString("Quality", downgraded.getId());
+                result.getOrCreateTag().putString("Quality", downgraded.getId());
             }
         }
 
@@ -75,7 +75,7 @@ public class BlueprintCloningRecipe extends SpecialCraftingRecipe {
 
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width >= 3 && height >= 3;
     }
 

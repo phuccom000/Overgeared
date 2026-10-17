@@ -3,26 +3,25 @@ package net.stirdrem.overgeared.recipe;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-
 import java.util.List;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
-public class ItemToToolTypeRecipe implements Recipe<SimpleInventory> {
+public class ItemToToolTypeRecipe implements Recipe<SimpleContainer> {
 
-    private final Identifier id;
+    private final ResourceLocation id;
     private final Ingredient input;
     private final String toolType;
 
-    public ItemToToolTypeRecipe(Identifier id, Ingredient input, String toolType) {
+    public ItemToToolTypeRecipe(ResourceLocation id, Ingredient input, String toolType) {
         this.id = id;
         this.input = input;
         this.toolType = toolType;
@@ -37,27 +36,27 @@ public class ItemToToolTypeRecipe implements Recipe<SimpleInventory> {
     }
 
     @Override
-    public boolean matches(SimpleInventory container, World world) {
-        return input.test(container.getStack(0));
+    public boolean matches(SimpleContainer container, Level world) {
+        return input.test(container.getItem(0));
     }
 
     @Override
-    public ItemStack craft(SimpleInventory container, DynamicRegistryManager registryAccess) {
+    public ItemStack assemble(SimpleContainer container, RegistryAccess registryAccess) {
         return ItemStack.EMPTY; // purely data-driven recipe
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return true;
     }
 
     @Override
-    public ItemStack getOutput(DynamicRegistryManager registryAccess) {
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -72,7 +71,7 @@ public class ItemToToolTypeRecipe implements Recipe<SimpleInventory> {
     }
 
     public List<ItemStack> getItems() {
-        return List.of(input.getMatchingStacks());
+        return List.of(input.getItems());
     }
 
     // ----------------------------------------------------
@@ -81,7 +80,7 @@ public class ItemToToolTypeRecipe implements Recipe<SimpleInventory> {
     public static class Serializer implements RecipeSerializer<ItemToToolTypeRecipe> {
 
         @Override
-        public ItemToToolTypeRecipe read(Identifier id, JsonObject json) {
+        public ItemToToolTypeRecipe fromJson(ResourceLocation id, JsonObject json) {
             // Allow "item" to be either an object or an array
             if (!json.has("item")) {
                 throw new JsonSyntaxException("Missing 'item' for item_to_tooltype recipe");
@@ -95,16 +94,16 @@ public class ItemToToolTypeRecipe implements Recipe<SimpleInventory> {
         }
 
         @Override
-        public ItemToToolTypeRecipe read(Identifier id, PacketByteBuf buf) {
-            Ingredient input = Ingredient.fromPacket(buf);
-            String toolType = buf.readString();
+        public ItemToToolTypeRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
+            Ingredient input = Ingredient.fromNetwork(buf);
+            String toolType = buf.readUtf();
             return new ItemToToolTypeRecipe(id, input, toolType);
         }
 
         @Override
-        public void write(PacketByteBuf buf, ItemToToolTypeRecipe recipe) {
-            recipe.input.write(buf);
-            buf.writeString(recipe.toolType);
+        public void toNetwork(FriendlyByteBuf buf, ItemToToolTypeRecipe recipe) {
+            recipe.input.toNetwork(buf);
+            buf.writeUtf(recipe.toolType);
         }
     }
 }

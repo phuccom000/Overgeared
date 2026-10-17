@@ -1,21 +1,21 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.Overgeared;
 
 import java.util.function.Supplier;
 
 public enum ModArmorMaterials implements ArmorMaterial {
     STEEL("steel", 26, new int[]{3, 7, 5, 2}, 12,
-            SoundEvents.ITEM_ARMOR_EQUIP_IRON, 1f, 0f, () -> Ingredient.ofItems(ModItems.STEEL_INGOT)),
+            SoundEvents.ARMOR_EQUIP_IRON, 1f, 0f, () -> Ingredient.of(ModItems.STEEL_INGOT)),
 
     COPPER("copper", 10, new int[]{1, 4, 3, 1}, 15,
-            SoundEvents.ITEM_ARMOR_EQUIP_IRON, 0f, 0f, () -> Ingredient.ofItems(Items.COPPER_INGOT));
+            SoundEvents.ARMOR_EQUIP_IRON, 0f, 0f, () -> Ingredient.of(Items.COPPER_INGOT));
 
     private final String name;
     private final int durabilityMultiplier;
@@ -42,17 +42,17 @@ public enum ModArmorMaterials implements ArmorMaterial {
     }
 
     @Override
-    public int getDurability(ArmorItem.Type type) {
+    public int getDurabilityForType(ArmorItem.Type type) {
         return BASE_DURABILITY[type.ordinal()] * this.durabilityMultiplier;
     }
 
     @Override
-    public int getProtection(ArmorItem.Type type) {
+    public int getDefenseForType(ArmorItem.Type type) {
         return this.protectionAmounts[type.ordinal()];
     }
 
     @Override
-    public int getEnchantability() {
+    public int getEnchantmentValue() {
         return enchantmentValue;
     }
 

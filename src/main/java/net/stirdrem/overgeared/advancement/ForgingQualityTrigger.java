@@ -1,37 +1,37 @@
 package net.stirdrem.overgeared.advancement;
 
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterionConditions;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.GsonHelper;
 import net.stirdrem.overgeared.Overgeared;
 
 import org.jetbrains.annotations.Nullable;
 
 public class ForgingQualityTrigger
-        extends AbstractCriterion<ForgingQualityTrigger.Conditions> {
+        extends SimpleCriterionTrigger<ForgingQualityTrigger.Conditions> {
 
-    public static final Identifier ID = new Identifier(Overgeared.MOD_ID, "forging_quality");
+    public static final ResourceLocation ID = new ResourceLocation(Overgeared.MOD_ID, "forging_quality");
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 
     @Override
-    protected Conditions conditionsFromJson(
+    protected Conditions createInstance(
             JsonObject json,
-            LootContextPredicate playerPredicate,
-            AdvancementEntityPredicateDeserializer context
+            ContextAwarePredicate playerPredicate,
+            DeserializationContext context
     ) {
         @Nullable String quality = null;
 
-        if (JsonHelper.hasString(json, "quality")) {
-            quality = JsonHelper.getString(json, "quality");
+        if (GsonHelper.isStringValue(json, "quality")) {
+            quality = GsonHelper.getAsString(json, "quality");
         }
 
         return new Conditions(playerPredicate, quality);
@@ -40,18 +40,18 @@ public class ForgingQualityTrigger
     /**
      * Call when forging completes
      */
-    public void trigger(ServerPlayerEntity player, String forgedQuality) {
+    public void trigger(ServerPlayer player, String forgedQuality) {
         this.trigger(player, inst -> inst.matches(forgedQuality));
     }
 
     // ─────────────────────────────────────────────────────────────
 
-    public static class Conditions extends AbstractCriterionConditions {
+    public static class Conditions extends AbstractCriterionTriggerInstance {
 
         @Nullable
         private final String requiredQuality;
 
-        public Conditions(LootContextPredicate playerPredicate,
+        public Conditions(ContextAwarePredicate playerPredicate,
                            @Nullable String requiredQuality) {
             super(ID, playerPredicate);
             this.requiredQuality = requiredQuality;

@@ -1,15 +1,15 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.List;
 
 public interface INetherAlloyRecipe {
     List<Ingredient> getIngredientsList();
 
-    ItemStack getOutput(DynamicRegistryManager registryAccess);
+    ItemStack getResultItem(RegistryAccess registryAccess);
 
     float getExperience();
 

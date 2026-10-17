@@ -1,23 +1,23 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 public class MinigameSyncS2CPacket {
-    private final NbtCompound minigameData;
+    private final CompoundTag minigameData;
 
-    public MinigameSyncS2CPacket(NbtCompound minigameData) {
+    public MinigameSyncS2CPacket(CompoundTag minigameData) {
         this.minigameData = minigameData;
     }
 
-    public static void encode(MinigameSyncS2CPacket msg, PacketByteBuf buf) {
+    public static void encode(MinigameSyncS2CPacket msg, FriendlyByteBuf buf) {
         buf.writeNbt(msg.minigameData);
     }
 
-    public static MinigameSyncS2CPacket decode(PacketByteBuf buf) {
+    public static MinigameSyncS2CPacket decode(FriendlyByteBuf buf) {
         return new MinigameSyncS2CPacket(buf.readNbt());
     }
 

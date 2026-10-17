@@ -3,19 +3,25 @@ package net.stirdrem.overgeared.datagen;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.AdvancementRewards;
-import net.minecraft.advancement.CriterionMerger;
-import net.minecraft.advancement.criterion.CriterionConditions;
-import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
-import net.minecraft.data.server.recipe.RecipeJsonBuilder;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import net.minecraft.item.*;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.RequirementsStrategy;
+import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.recipes.CraftingRecipeBuilder;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.ItemLike;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.recipe.ForgingBookCategory;
@@ -29,10 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
+import static net.minecraft.data.recipes.RecipeBuilder.ROOT_RECIPE_ADVANCEMENT;
+import static net.minecraft.data.recipes.RecipeBuilder.getDefaultRecipeId;
 
-public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
+public class ShapedForgingRecipeBuilder extends CraftingRecipeBuilder {
 
     private final ForgingBookCategory category;
     private final Item result;
@@ -42,7 +48,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
     private final List<String> rows = Lists.newArrayList();
     private final Map<Character, Ingredient> key = new LinkedHashMap<>();
     private final Advancement.Builder advancement =
-            Advancement.Builder.createUntelemetered();
+            Advancement.Builder.recipeAdvancement();
 
     private final List<String> blueprintTypes = new ArrayList<>();
 
@@ -82,7 +88,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
     public ShapedForgingRecipeBuilder(
             ForgingBookCategory category,
-            ItemConvertible result,
+            ItemLike result,
             int count,
             int hammering
     ) {
@@ -94,20 +100,20 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
     private static boolean isTools(Item item) {
         return item instanceof SwordItem
-                || item instanceof MiningToolItem
-                || item instanceof RangedWeaponItem;
+                || item instanceof DiggerItem
+                || item instanceof ProjectileWeaponItem;
     }
 
     public static boolean isToolPart(ItemStack stack) {
-        return !stack.isEmpty() && stack.isIn(ModTags.Items.TOOL_PARTS);
+        return !stack.isEmpty() && stack.is(ModTags.Items.TOOL_PARTS);
     }
 
     public static boolean isToolPart(Item item) {
-        return item.getDefaultStack().isIn(ModTags.Items.TOOL_PARTS);
+        return item.getDefaultInstance().is(ModTags.Items.TOOL_PARTS);
     }
 
     private static ForgingBookCategory determineWeaponRecipeCategory(
-            ItemConvertible result
+            ItemLike result
     ) {
         Item item = result.asItem();
 
@@ -122,7 +128,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
     public static ShapedForgingRecipeBuilder create(
             ForgingBookCategory category,
-            ItemConvertible result,
+            ItemLike result,
             int hammering
     ) {
         return new ShapedForgingRecipeBuilder(
@@ -135,7 +141,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
     public static ShapedForgingRecipeBuilder create(
             ForgingBookCategory category,
-            ItemConvertible result,
+            ItemLike result,
             int count,
             int hammering
     ) {
@@ -151,14 +157,14 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
             Character symbol,
             TagKey<Item> tag
     ) {
-        return input(symbol, Ingredient.fromTag(tag));
+        return input(symbol, Ingredient.of(tag));
     }
 
     public ShapedForgingRecipeBuilder input(
             Character symbol,
-            ItemConvertible item
+            ItemLike item
     ) {
-        return input(symbol, Ingredient.ofItems(item));
+        return input(symbol, Ingredient.of(item));
     }
 
     public ShapedForgingRecipeBuilder input(
@@ -195,9 +201,9 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
     public ShapedForgingRecipeBuilder criterion(
             String name,
-            CriterionConditions conditions
+            CriterionTriggerInstance conditions
     ) {
-        advancement.criterion(name, conditions);
+        advancement.addCriterion(name, conditions);
         return this;
     }
 
@@ -240,7 +246,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
     }
 
     public ShapedForgingRecipeBuilder failedResult(
-            ItemConvertible result
+            ItemLike result
     ) {
         this.failedResult = result.asItem();
         this.failedResultCount = 1;
@@ -248,7 +254,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
     }
 
     public ShapedForgingRecipeBuilder failedResult(
-            ItemConvertible result,
+            ItemLike result,
             int count
     ) {
         this.failedResult = result.asItem();
@@ -311,26 +317,26 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         return failedResult;
     }
 
-    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
-        offerTo(exporter, getItemId(this.getOutputItem()));
+    public void offerTo(Consumer<FinishedRecipe> exporter) {
+        offerTo(exporter, getDefaultRecipeId(this.getOutputItem()));
     }
 
     public void offerTo(
-            Consumer<RecipeJsonProvider> exporter,
-            Identifier recipeId
+            Consumer<FinishedRecipe> exporter,
+            ResourceLocation recipeId
     ) {
         validate(recipeId);
 
         advancement
-                .parent(ROOT)
-                .criterion(
+                .parent(ROOT_RECIPE_ADVANCEMENT)
+                .addCriterion(
                         "has_the_recipe",
-                        RecipeUnlockedCriterion.create(recipeId)
+                        RecipeUnlockedTrigger.unlocked(recipeId)
                 )
                 .rewards(
                         AdvancementRewards.Builder.recipe(recipeId)
                 )
-                .criteriaMerger(CriterionMerger.OR);
+                .requirements(RequirementsStrategy.OR);
 
         exporter.accept(
                 new Result(
@@ -348,7 +354,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
                         rows,
                         key,
                         advancement,
-                        recipeId.withPrefixedPath(
+                        recipeId.withPrefix(
                                 "recipes/"
                                         + category.getFolderName()
                                         + "/"
@@ -392,7 +398,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         );
     }
 
-    private void validate(Identifier recipeId) {
+    private void validate(ResourceLocation recipeId) {
         if (rows.isEmpty()) {
             throw new IllegalStateException(
                     "No pattern is defined for shaped forging recipe "
@@ -411,9 +417,9 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         }
     }
 
-    static class Result implements RecipeJsonProvider {
+    static class Result implements FinishedRecipe {
 
-        private final Identifier id;
+        private final ResourceLocation id;
         private final int hammering;
         private final ItemStack result;
         private final ItemStack failedResult;
@@ -422,7 +428,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         private final Map<Character, Ingredient> key;
 
         private final Advancement.Builder advancement;
-        private final Identifier advancementId;
+        private final ResourceLocation advancementId;
 
         private final boolean showNotification;
         private final String group;
@@ -442,7 +448,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         private final Boolean needQuenching;
 
         public Result(
-                Identifier id,
+                ResourceLocation id,
                 int hammering,
                 ItemStack result,
                 ItemStack failedResult,
@@ -451,7 +457,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
                 List<String> pattern,
                 Map<Character, Ingredient> key,
                 Advancement.Builder advancement,
-                Identifier advancementId,
+                ResourceLocation advancementId,
                 boolean showNotification,
                 List<String> blueprintTypes,
                 Boolean requiresBlueprint,
@@ -486,7 +492,7 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         }
 
         @Override
-        public void serialize(JsonObject json) {
+        public void serializeRecipeData(JsonObject json) {
 
             if (!group.isEmpty()) {
                 json.addProperty("group", group);
@@ -590,8 +596,8 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
             resultObject.addProperty(
                     "item",
-                    Registries.ITEM
-                            .getId(result.getItem())
+                    BuiltInRegistries.ITEM
+                            .getKey(result.getItem())
                             .toString()
             );
 
@@ -609,8 +615,8 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
 
                 failedResultObject.addProperty(
                         "item",
-                        Registries.ITEM
-                                .getId(failedResult.getItem())
+                        BuiltInRegistries.ITEM
+                                .getKey(failedResult.getItem())
                                 .toString()
                 );
 
@@ -634,24 +640,24 @@ public class ShapedForgingRecipeBuilder extends RecipeJsonBuilder {
         }
 
         @Override
-        public Identifier getRecipeId() {
+        public ResourceLocation getId() {
             return id;
         }
 
         @Override
-        public RecipeSerializer<?> getSerializer() {
+        public RecipeSerializer<?> getType() {
             return ForgingRecipe.Serializer.INSTANCE;
         }
 
         @Nullable
         @Override
-        public JsonObject toAdvancementJson() {
-            return advancement.toJson();
+        public JsonObject serializeAdvancement() {
+            return advancement.serializeToJson();
         }
 
         @Nullable
         @Override
-        public Identifier getAdvancementId() {
+        public ResourceLocation getAdvancementId() {
             return advancementId;
         }
     }
