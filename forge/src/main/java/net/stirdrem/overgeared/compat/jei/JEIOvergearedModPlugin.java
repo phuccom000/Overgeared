@@ -4,6 +4,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe;
+import mezz.jei.api.registration.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -66,7 +67,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
     @Override
     public ResourceLocation getPluginUid() {
-        return new ResourceLocation(Overgeared.MOD_ID, "jei_plugin");
+        return Overgeared.id("jei_plugin");
     }
 
     // ----------------------------
@@ -222,7 +223,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                 List.of(input),
                 List.of(ingredient),
                 output,
-                new ResourceLocation(Overgeared.MOD_ID, "dragon_breath_brewing")
+                Overgeared.id("dragon_breath_brewing")
         ));
     }
 
@@ -267,7 +268,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                 }
 
                 list.add(new FletchingRecipe(
-                        new ResourceLocation(Overgeared.MOD_ID, "potion_conv_" + (id++)),
+                        Overgeared.id("potion_conv_" + (id++)),
                         Ingredient.EMPTY,
                         Ingredient.of(arrow),
                         Ingredient.EMPTY,
