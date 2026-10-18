@@ -1,0 +1,24 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "condition": "minecraft:entity_properties",
+              "entity": "killer",
+              "predicate": {
+                "type": "minecraft:creeper",
+                "nbt": "{powered:1b}"
+              }
+            }
+          ],
+          "name": "minecraft:creeper_head"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:trident"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.25,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:trident"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:fishing_rod"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.25,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:fishing_rod"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:nautilus_shell"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:nautilus_shell"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

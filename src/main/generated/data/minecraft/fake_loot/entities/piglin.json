@@ -1,0 +1,293 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "killer",
+                  "predicate": {
+                    "type": "minecraft:creeper",
+                    "nbt": "{powered:1b}"
+                  }
+                }
+              ],
+              "name": "minecraft:piglin_head"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:golden_sword"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.25,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:golden_sword"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:crossbow"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.25,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:crossbow"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "head": {
+                        "items": [
+                          "minecraft:golden_helmet"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.5,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:golden_helmet"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "chest": {
+                        "items": [
+                          "minecraft:golden_chestplate"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.5,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:golden_chestplate"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "legs": {
+                        "items": [
+                          "minecraft:golden_leggings"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.5,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:golden_leggings"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "feet": {
+                        "items": [
+                          "minecraft:golden_boots"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "conditions": [
+                    {
+                      "chance": 0.5,
+                      "condition": "minecraft:random_chance"
+                    }
+                  ],
+                  "function": "minecraft:enchant_randomly"
+                },
+                {
+                  "add": false,
+                  "damage": {
+                    "type": "minecraft:uniform",
+                    "max": 1.0,
+                    "min": 0.0
+                  },
+                  "function": "minecraft:set_damage"
+                }
+              ],
+              "name": "minecraft:golden_boots"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

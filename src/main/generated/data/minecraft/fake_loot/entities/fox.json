@@ -1,0 +1,148 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:emerald"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:emerald"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:rabbit_foot"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:rabbit_foot"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:rabbit_hide"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:rabbit_hide"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:egg"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:egg"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:wheat"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:wheat"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:leather"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:leather"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:feather"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "name": "minecraft:feather"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

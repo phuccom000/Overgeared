@@ -1,0 +1,135 @@
+{
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:potion"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "function": "minecraft:set_potion",
+                  "id": "minecraft:healing"
+                }
+              ],
+              "name": "minecraft:potion"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:potion"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "function": "minecraft:set_potion",
+                  "id": "minecraft:fire_resistance"
+                }
+              ],
+              "name": "minecraft:potion"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:potion"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "function": "minecraft:set_potion",
+                  "id": "minecraft:swiftness"
+                }
+              ],
+              "name": "minecraft:potion"
+            },
+            {
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "chance": 0.085,
+                  "condition": "minecraft:random_chance_with_looting",
+                  "looting_multiplier": 0.01
+                },
+                {
+                  "condition": "minecraft:entity_properties",
+                  "entity": "this",
+                  "predicate": {
+                    "equipment": {
+                      "mainhand": {
+                        "items": [
+                          "minecraft:potion"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "function": "minecraft:set_potion",
+                  "id": "minecraft:water_breathing"
+                }
+              ],
+              "name": "minecraft:potion"
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

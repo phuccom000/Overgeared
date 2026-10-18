@@ -9,6 +9,7 @@ public class ReloadListenerRegistry {
     public static void register() {
         ResourceManagerHelper helper = ResourceManagerHelper.get(PackType.SERVER_DATA);
         helper.registerReloadListener(new BlueprintTooltypesReloadListener());
+        helper.registerReloadListener(new BreakSystemBlacklistReloadListener());
         helper.registerReloadListener(new GrindingBlacklistReloadListener());
         helper.registerReloadListener(new DurabilityBlacklistReloadListener());
         helper.registerReloadListener(new CastingToolTypesReloadListener());

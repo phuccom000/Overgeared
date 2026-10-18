@@ -1,0 +1,17 @@
+// 1.20.1	2026-10-17T22:13:20.1647663	AdvancedLootInfo/Fake Loot Tables
+0ec7cd54e7a60473c13ff67d219e5328a82740a7 data\minecraft\fake_loot\entities\vindicator.json
+228d4da0f904b335972ba70c7b6c2f84325a9976 data\minecraft\fake_loot\entities\skeleton.json
+812f68cd673b1b5e9b3b5abe5ad1979f7e6b5669 data\minecraft\fake_loot\entities\wandering_trader.json
+47b8812a82568f99267b3ba098be34d622f491ac data\minecraft\fake_loot\entities\witch.json
+248e007bb6d6af65efb5d9ea70babc90e5c1fd2b data\minecraft\fake_loot\entities\wither_skeleton.json
+170419db69c1789d4e0c610ac2003bf4c8816f31 data\minecraft\fake_loot\entities\zombie_villager.json
+55d48a5a284a25ff1e27250bc0b670b5535ec92c data\minecraft\fake_loot\entities\stray.json
+83c5cdf425e437aad58134e0fc5bac61a910695e data\minecraft\fake_loot\entities\zombified_piglin.json
+5ba0e256fa281358f02cc4bbad63ea64bdfb6340 data\minecraft\fake_loot\entities\pillager.json
+812eee97fb7e2d5c69c372824c58e96e55e0d198 data\minecraft\fake_loot\entities\fox.json
+3442f2bd50a81ff051fd6c8e833f47ad3cdc8ccb data\minecraft\fake_loot\entities\zombie.json
+0169049164584b56eedffa562c16a6d4842b7fa3 data\minecraft\fake_loot\entities\creeper.json
+7e6b8d1c2a727b0e1cc5fefab5e3ae2607ef75fc data\minecraft\fake_loot\entities\drowned.json
+4bb2c93fbbdd36af01057df8e13f6fa8d4003013 data\minecraft\fake_loot\entities\wither.json
+5927d909b73f1cfe0f0e5b9ea84c521533221a0a data\minecraft\fake_loot\entities\piglin.json
+170419db69c1789d4e0c610ac2003bf4c8816f31 data\minecraft\fake_loot\entities\husk.json
