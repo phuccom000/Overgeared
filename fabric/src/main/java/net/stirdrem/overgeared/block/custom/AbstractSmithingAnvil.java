@@ -35,10 +35,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientModMessages;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -114,7 +114,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos,
-                              Player player, InteractionHand hand, BlockHitResult hit) {
+                                 Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
         boolean isHammer = held.is(hammerTag());
         BlockEntity be = world.getBlockEntity(pos);
@@ -167,7 +167,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock {
                 return InteractionResult.FAIL;
             }
 
-            if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
+            if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !Overgeared.getConfig().ENABLE_MINIGAME())) {
                 BlockPos pos1 = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (pos1 != null && !pos.equals(ModItemInteractEvents.playerAnvilPositions.get(player.getUUID()))) {
                     ServerPlayer serverPlayer = (ServerPlayer) player;
@@ -181,7 +181,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock {
                     player.openMenu(anvil);
                     return InteractionResult.sidedSuccess(world.isClientSide());
                 }
-                if (!ServerConfig.ENABLE_MINIGAME.get())
+                if (!Overgeared.getConfig().ENABLE_MINIGAME())
                     anvil.setBusyUntil(now + HAMMER_SOUND_DURATION_TICKS);
 
                 EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;

@@ -1,13 +1,14 @@
 package net.stirdrem.overgeared.util;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.datapack.CastingToolTypesReloadListener;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
@@ -42,7 +43,7 @@ public class ConfigHelper {
             return datapackValue;
         }
 
-        for (var e : ServerConfig.CASTING_TOOL_TYPES.get()) {
+        for (var e : Overgeared.getConfig().CASTING_TOOL_TYPES()) {
             List<?> row = e;
             if (row.get(0).equals(toolType)) {
                 return ((Number) row.get(1)).intValue();
@@ -67,8 +68,8 @@ public class ConfigHelper {
     // -----------------------
     // Tool Head → Tool Type
     // -----------------------
-    public static String getToolTypeForItem(Level level, ItemStack stack) {
-        return level.getRecipeManager()
+    public static String getToolTypeForItem(Level world, ItemStack stack) {
+        return world.getRecipeManager()
                 .getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE.get())
                 .stream()
                 .filter(r -> r.getInput().test(stack))
@@ -100,7 +101,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -129,7 +130,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -156,7 +157,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -182,7 +183,7 @@ public class ConfigHelper {
                 .forEach(entry -> result.put(entry.getMaterialId(), entry.getMaterialValue()));
 
         // Add config entries (will override datapack if same material ID)
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -208,28 +209,19 @@ public class ConfigHelper {
 
         // Tag match
         if (key.startsWith("#")) {
-            ResourceLocation tagId = new ResourceLocation(key.substring(1));
+            ResourceLocation tagId = ResourceLocation.parse(key.substring(1));
 
             // ---- Item tag check ----
-            TagKey<Item> itemTag = TagKey.create(
-                    ForgeRegistries.ITEMS.getRegistryKey(),
-                    tagId
-            );
-            if (item.builtInRegistryHolder().is(itemTag)) {
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
+            if (BuiltInRegistries.ITEM.wrapAsHolder(item).is(itemTag)) {
                 return true;
             }
 
             // ---- Block tag check (for BlockItems) ----
-            if (item instanceof net.minecraft.world.item.BlockItem blockItem) {
-                TagKey<net.minecraft.world.level.block.Block> blockTag =
-                        TagKey.create(
-                                ForgeRegistries.BLOCKS.getRegistryKey(),
-                                tagId
-                        );
+            if (item instanceof BlockItem blockItem) {
+                TagKey<net.minecraft.world.level.block.Block> blockTag = TagKey.create(Registries.BLOCK, tagId);
 
-                return blockItem.getBlock()
-                        .builtInRegistryHolder()
-                        .is(blockTag);
+                return BuiltInRegistries.BLOCK.wrapAsHolder(blockItem.getBlock()).is(blockTag);
             }
         }
 
@@ -253,7 +245,7 @@ public class ConfigHelper {
                 .forEach(materialIds::add);
 
         // From config
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             materialIds.add((String) row.get(1));
         }
@@ -273,7 +265,7 @@ public class ConfigHelper {
                 .forEach(items::add);
 
         // From config
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             if (row.get(1).equals(materialId)) {
                 items.add((String) row.get(0));
@@ -291,7 +283,7 @@ public class ConfigHelper {
                 .forEach(entry -> resolveItemOrTag(entry.getItemOrTag(), items));
 
         // --- Config fallback ---
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             if (row.get(1).equals(materialId)) {
                 resolveItemOrTag((String) row.get(0), items);
@@ -305,37 +297,31 @@ public class ConfigHelper {
 
         // Tag
         if (key.startsWith("#")) {
-            ResourceLocation tagId = new ResourceLocation(key.substring(1));
+            ResourceLocation tagId = ResourceLocation.parse(key.substring(1));
 
             // ---- Item tag ----
-            TagKey<Item> itemTag = TagKey.create(
-                    ForgeRegistries.ITEMS.getRegistryKey(),
-                    tagId
-            );
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, tagId);
 
-            ForgeRegistries.ITEMS.getValues().stream()
-                    .filter(item -> item.builtInRegistryHolder().is(itemTag))
-                    .forEach(out::add);
+            for (var entry : BuiltInRegistries.ITEM.getTagOrEmpty(itemTag)) {
+                out.add(entry.value());
+            }
 
             // ---- Block tag → BlockItem ----
-            TagKey<net.minecraft.world.level.block.Block> blockTag =
-                    TagKey.create(
-                            ForgeRegistries.BLOCKS.getRegistryKey(),
-                            tagId
-                    );
+            TagKey<net.minecraft.world.level.block.Block> blockTag = TagKey.create(Registries.BLOCK, tagId);
 
-            ForgeRegistries.BLOCKS.getValues().stream()
-                    .filter(block -> block.builtInRegistryHolder().is(blockTag))
-                    .map(Item.BY_BLOCK::get)
-                    .filter(item -> item != null && item != net.minecraft.world.item.Items.AIR)
-                    .forEach(out::add);
+            for (var entry : BuiltInRegistries.BLOCK.getTagOrEmpty(blockTag)) {
+                Item item = entry.value().asItem();
+                if (item != net.minecraft.world.item.Items.AIR) {
+                    out.add(item);
+                }
+            }
 
             return;
         }
 
         // Direct item
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(key));
-        if (item != null && item != net.minecraft.world.item.Items.AIR) {
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(key));
+        if (item != net.minecraft.world.item.Items.AIR) {
             out.add(item);
         }
     }

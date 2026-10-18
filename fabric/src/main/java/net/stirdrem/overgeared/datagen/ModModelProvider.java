@@ -90,6 +90,12 @@ public class ModModelProvider extends FabricModelProviderPlus {
                 modLoc("block/stone_anvil")
         );
 
+        horizontalBlock(
+                generator,
+                ModBlocks.DRAFTING_TABLE,
+                modLoc("block/drafting_table")
+        );
+
         // ---------------------------------------------------------------------
         // Lit blocks
         // ---------------------------------------------------------------------

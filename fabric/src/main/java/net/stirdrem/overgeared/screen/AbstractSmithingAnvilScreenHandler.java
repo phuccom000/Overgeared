@@ -2,18 +2,14 @@ package net.stirdrem.overgeared.screen;
 
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -45,7 +41,7 @@ public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
         this.world = inv.player.level();
         this.data = data;
         this.player = inv.player;
-        this.blueprintEnabled = hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+        this.blueprintEnabled = hasBlueprint && Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING();
 
         // hammer slot
         this.addSlot(new Slot(entity, 9, 152, 61) {
@@ -279,6 +275,7 @@ public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
             this.checkTakeAchievements(stack);
         }
 
+        @Override
         protected void checkTakeAchievements(ItemStack stack) {
             if (this.removeCount > 0) {
                 stack.onCraftedBy(AbstractSmithingAnvilScreenHandler.this.player.level(), AbstractSmithingAnvilScreenHandler.this.player, this.removeCount);

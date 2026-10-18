@@ -23,8 +23,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedFabric;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -79,7 +79,7 @@ public abstract class ItemStackMixin {
 
         boolean blacklisted = OvergearedFabric.isDurabilityBlacklisted(stack);
 
-        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
+        float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
         int newBaseDurability = blacklisted ? originalDurability : (int) (originalDurability * baseMultiplier);
 
         CompoundTag tag = stack.getTag();
@@ -90,7 +90,7 @@ public abstract class ItemStackMixin {
 
         if (tag != null && tag.contains("ReducedMaxDurability")) {
             int reductions = tag.getInt("ReducedMaxDurability");
-            float durabilityPenaltyMultiplier = 1.0f - (reductions * ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue());
+            float durabilityPenaltyMultiplier = 1.0f - (reductions * (float) Overgeared.getConfig().DURABILITY_REDUCE_PER_GRIND());
             durabilityPenaltyMultiplier = Math.max(0.1f, durabilityPenaltyMultiplier);
             newBaseDurability = (int) (newBaseDurability * durabilityPenaltyMultiplier);
         }
@@ -115,7 +115,7 @@ public abstract class ItemStackMixin {
         if (player.isCreative()) return;
 
         long tick = world.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        int cooldownTicks = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
 
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
@@ -254,7 +254,7 @@ public abstract class ItemStackMixin {
         int max = stack.getMaxDamage();
 
         if (currentDamage < max && newDamage >= max) {
-            if (!ServerConfig.ENABLE_QUALITY_BREAK_SYSTEM.get()) {
+            if (!Overgeared.getConfig().ENABLE_QUALITY_BREAK_SYSTEM()) {
                 return;
             }
 
@@ -295,17 +295,17 @@ public abstract class ItemStackMixin {
     private static float overgeared$getBreakChance(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains("ForgingQuality")) {
-            return ServerConfig.BREAK_CHANCE_WELL.get().floatValue();
+            return (float) Overgeared.getConfig().BREAK_CHANCE_WELL();
         }
 
         ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
 
         return switch (quality) {
-            case POOR -> ServerConfig.BREAK_CHANCE_POOR.get().floatValue();
-            case EXPERT -> ServerConfig.BREAK_CHANCE_EXPERT.get().floatValue();
-            case PERFECT -> ServerConfig.BREAK_CHANCE_PERFECT.get().floatValue();
-            case MASTER -> ServerConfig.BREAK_CHANCE_MASTER.get().floatValue();
-            default -> ServerConfig.BREAK_CHANCE_WELL.get().floatValue();
+            case POOR -> (float) Overgeared.getConfig().BREAK_CHANCE_POOR();
+            case EXPERT -> (float) Overgeared.getConfig().BREAK_CHANCE_EXPERT();
+            case PERFECT -> (float) Overgeared.getConfig().BREAK_CHANCE_PERFECT();
+            case MASTER -> (float) Overgeared.getConfig().BREAK_CHANCE_MASTER();
+            default -> (float) Overgeared.getConfig().BREAK_CHANCE_WELL();
         };
     }
 

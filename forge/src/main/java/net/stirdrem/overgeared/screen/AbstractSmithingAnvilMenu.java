@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.screen;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -20,7 +22,6 @@ import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import net.stirdrem.overgeared.OvergearedForge;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -126,7 +127,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
             }
         }); //hammer
 
-        if (hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+        if (hasBlueprint && Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING())
             this.addSlot(new SlotItemHandler(iItemHandler, 11, 95, 53) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
@@ -210,7 +211,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
-    private static int blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get() ? 1 : 0;
+    private static int blueprintEnabled = Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING() ? 1 : 0;
     private static int VANILLA_FIRST_SLOT_INDEX = 11 + blueprintEnabled;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
@@ -235,7 +236,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         // Player inventory always starts after result slot
         firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
         Slot hammerSlot = this.slots.get(0); // first slot added
-        boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+        boolean blueprintEnabled = Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING();
         Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
 
         if (clickedSlot == hammerSlot || (blueprintEnabled && clickedSlot == blueprintSlot)) {

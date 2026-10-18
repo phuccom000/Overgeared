@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.*;
 import net.stirdrem.overgeared.screen.*;
@@ -176,19 +175,19 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // ----------------------------
         // BREWING FIXED
         // ----------------------------
-        if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) {
+        if (Overgeared.getConfig().ENABLE_DRAGON_BREATH_RECIPE()) {
             registration.addRecipes(RecipeTypes.BREWING, dragonBreathRecipe());
         }
 
         // ----------------------------
         // FLETCHING
         // ----------------------------
-        if (ServerConfig.ENABLE_FLETCHING_RECIPES.get()) {
+        if (Overgeared.getConfig().ENABLE_FLETCHING_RECIPES()) {
             List<FletchingRecipe> base = manager.getAllRecipesFor(FletchingRecipe.Type.INSTANCE);
 
             registration.addRecipes(FletchingCategory.FLETCHING_RECIPE_TYPE, base);
 
-            if (ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get()) {
+            if (Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE()) {
                 registration.addRecipes(
                         FletchingCategory.FLETCHING_RECIPE_TYPE,
                         generatePotionConversions()
@@ -382,11 +381,11 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.SMITHING_ANVIL),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
-        if (ServerConfig.ENABLE_TIER_A.get())
+        if (Overgeared.getConfig().ENABLE_TIER_A())
             registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL),
                     ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
-        if (ServerConfig.ENABLE_TIER_B.get())
+        if (Overgeared.getConfig().ENABLE_TIER_B())
             registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL),
                     ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 

@@ -11,14 +11,13 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 public class DynamicToolCastRecipe extends CustomRecipe {
 
@@ -78,7 +77,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
-        if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
+        if (!Overgeared.getConfig().ENABLE_CASTING()) return ItemStack.EMPTY;
 
         ItemStack cast = ItemStack.EMPTY;
         HashMap<String, Integer> materialTotals = new HashMap<>();

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.core.NonNullList;
@@ -13,7 +15,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.NotNull;
@@ -130,7 +131,7 @@ public class CastingRecipe implements Recipe<Container> {
         outTag.putBoolean("Heated", true);
 
         // Creator tooltip
-        if (cast.hasCustomHoverName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+        if (cast.hasCustomHoverName() && Overgeared.getConfig().PLAYER_AUTHOR_TOOLTIPS()) {
             outTag.putString("Creator", cast.getHoverName().getString());
         }
 

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,7 +15,6 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
 
 public class OvergearedShapelessRecipe extends ShapelessRecipe {
 
@@ -70,7 +71,7 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
     public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
         ItemStack result = super.assemble(container, registryAccess);
 
-        if (!ServerConfig.ENABLE_MINIGAME.get()) {
+        if (!Overgeared.getConfig().ENABLE_MINIGAME()) {
             // When minigame is disabled
             boolean hasUnpolishedQualityItem = false;
             boolean unquenched = false;

@@ -16,7 +16,6 @@ import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.config.ServerConfig;
 
 public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -131,9 +130,9 @@ public class ModCreativeModeTabs {
 */
                         pOutput.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
                         pOutput.accept(ModBlocks.SMITHING_ANVIL.get());
-                        if (ServerConfig.ENABLE_TIER_A.get())
+                        if (Overgeared.getConfig().ENABLE_TIER_A())
                             pOutput.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
-                        if (ServerConfig.ENABLE_TIER_B.get())
+                        if (Overgeared.getConfig().ENABLE_TIER_B())
                             pOutput.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
                         pOutput.accept(ModBlocks.STEEL_BLOCK.get());
                         pOutput.accept(ModBlocks.DRAFTING_TABLE.get());
@@ -150,7 +149,7 @@ public class ModCreativeModeTabs {
                             .title(Component.translatable("creativetab.overgeared.lingering_arrows_tab"))
                             .displayItems((parameters, output) -> {
                                 // Only add items if the config allows it
-                                if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
+                                if (!Overgeared.getConfig().ENABLE_FLETCHING_RECIPES()) return;
 
                                 output.accept(Items.ARROW);
                                 output.accept(ModItems.IRON_UPGRADE_ARROW.get());

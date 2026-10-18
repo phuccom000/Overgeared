@@ -8,7 +8,7 @@ import net.minecraft.world.level.storage.loot.Serializer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.util.ModTags;
 
 /**
@@ -33,14 +33,14 @@ public class QualityLootFunction implements LootItemFunction {
 
     @Override
     public ItemStack apply(ItemStack generated, LootContext context) {
-        if (!ServerConfig.ENABLE_LOOT_QUALITY.get()) return generated;
+        if (!Overgeared.getConfig().ENABLE_LOOT_QUALITY()) return generated;
         if (!isEligibleItem(generated)) return generated;
 
-        int wPoor = ServerConfig.QUALITY_WEIGHT_POOR.get();
-        int wWell = ServerConfig.QUALITY_WEIGHT_WELL.get();
-        int wExpert = ServerConfig.QUALITY_WEIGHT_EXPERT.get();
-        int wPerfect = ServerConfig.QUALITY_WEIGHT_PERFECT.get();
-        int wMaster = ServerConfig.QUALITY_WEIGHT_MASTER.get();
+        int wPoor = Overgeared.getConfig().QUALITY_WEIGHT_POOR();
+        int wWell = Overgeared.getConfig().QUALITY_WEIGHT_WELL();
+        int wExpert = Overgeared.getConfig().QUALITY_WEIGHT_EXPERT();
+        int wPerfect = Overgeared.getConfig().QUALITY_WEIGHT_PERFECT();
+        int wMaster = Overgeared.getConfig().QUALITY_WEIGHT_MASTER();
 
         int total = 0;
         if (wPoor > 0) total += wPoor;

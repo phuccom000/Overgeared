@@ -1,6 +1,8 @@
 plugins {
     id 'multiloader-loader'
     id 'net.neoforged.moddev.legacyforge'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.20'
 }
 
 mixin {
@@ -29,7 +31,9 @@ legacyForge {
         }
         data {
             data()
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath(),
+                    '--existing', file('../common/src/main/resources/').getAbsolutePath()
         }
         server {
             server()
@@ -44,10 +48,15 @@ legacyForge {
 }
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
+//sourceSets.main.resources.srcDir project(':common').file('src/main/resources')
 
 repositories {
     flatDir {
         dir 'libs'
+    }
+    maven {
+        name = "Kotlin for Forge"
+        url = "https://thedarkcolour.github.io/KotlinForForge/"
     }
     maven {
         name = "Sleeping Town"
@@ -133,13 +142,6 @@ repositories {
     maven { url 'https://maven.wispforest.io/releases' }
     maven { url 'https://maven.su5ed.dev/releases' }
     maven { url 'https://maven.fabricmc.net' }
-    maven {
-        name = "Kotlin for Forge"
-        url = "https://thedarkcolour.github.io/KotlinForForge/"
-//		content {
-//			includeModule("thedarkcolour", "kotlinforforge")
-//		}
-    }
     exclusiveContent {
         forRepository {
             maven {
@@ -208,7 +210,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
     compileOnly("org.joml:joml:1.10.4")
     compileOnly("org.joml:joml-primitives:1.10.0")
-    modImplementation("thedarkcolour:kotlinforforge:4.11.0")
+    implementation("thedarkcolour:kotlinforforge:4.11.0")
 
     // endregion
     // Compile against only the API artifact

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.util;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -8,7 +10,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.CastingToolTypesReloadListener;
 import net.stirdrem.overgeared.datapack.MaterialSettingsReloadListener;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
@@ -43,7 +44,7 @@ public class ConfigHelper {
             return datapackValue;
         }
 
-        for (var e : ServerConfig.CASTING_TOOL_TYPES.get()) {
+        for (var e : Overgeared.getConfig().CASTING_TOOL_TYPES()) {
             List<?> row = e;
             if (row.get(0).equals(toolType)) {
                 return ((Number) row.get(1)).intValue();
@@ -101,7 +102,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -130,7 +131,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -157,7 +158,7 @@ public class ConfigHelper {
         }
 
         // Fallback to config for backward compatibility
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -183,7 +184,7 @@ public class ConfigHelper {
                 .forEach(entry -> result.put(entry.getMaterialId(), entry.getMaterialValue()));
 
         // Add config entries (will override datapack if same material ID)
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             String key = (String) row.get(0);
             if (matchesItemOrTag(item, key)) {
@@ -245,7 +246,7 @@ public class ConfigHelper {
                 .forEach(materialIds::add);
 
         // From config
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             materialIds.add((String) row.get(1));
         }
@@ -265,7 +266,7 @@ public class ConfigHelper {
                 .forEach(items::add);
 
         // From config
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             if (row.get(1).equals(materialId)) {
                 items.add((String) row.get(0));
@@ -283,7 +284,7 @@ public class ConfigHelper {
                 .forEach(entry -> resolveItemOrTag(entry.getItemOrTag(), items));
 
         // --- Config fallback ---
-        for (var e : ServerConfig.MATERIAL_SETTING.get()) {
+        for (var e : Overgeared.getConfig().MATERIAL_SETTING()) {
             List<?> row = (List<?>) e;
             if (row.get(1).equals(materialId)) {
                 resolveItemOrTag((String) row.get(0), items);

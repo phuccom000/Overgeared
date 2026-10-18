@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
+import net.stirdrem.overgeared.datapack.FabricKnappingResourceReloadListener;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 
@@ -64,10 +64,10 @@ public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecip
 
     @Override
     public void draw(RockKnappingRecipe recipe,
-                      IRecipeSlotsView recipeSlotsView,
-                      GuiGraphics guiGraphics,
-                      double mouseX,
-                      double mouseY) {
+                     IRecipeSlotsView recipeSlotsView,
+                     GuiGraphics guiGraphics,
+                     double mouseX,
+                     double mouseY) {
 
         boolean[][] pattern = recipe.getPattern();
 
@@ -99,7 +99,7 @@ public class KnappingRecipeCategory implements IRecipeCategory<RockKnappingRecip
         ItemStack[] stacks = recipe.getIngredient().getItems();
 
         for (ItemStack stack : stacks) {
-            ResourceLocation tex = KnappingResourceReloadListener.getTexture(stack);
+            ResourceLocation tex = FabricKnappingResourceReloadListener.getTexture(stack);
             if (tex != null) {
                 return tex;
             }

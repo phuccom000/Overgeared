@@ -1,9 +1,10 @@
 package net.stirdrem.overgeared.recipe;
 
-import java.util.List;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+
+import java.util.List;
 
 public interface INetherAlloyRecipe {
     List<Ingredient> getIngredientsList();

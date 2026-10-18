@@ -8,11 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.CookingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.util.JsonToNBT;
 
@@ -21,8 +17,8 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
     private final CompoundTag resultTag;
 
     public NBTCampfireRecipe(ResourceLocation id, String group, CookingBookCategory category,
-                              Ingredient ingredient, ItemStack result,
-                              float xp, int time, CompoundTag tag) {
+                             Ingredient ingredient, ItemStack result,
+                             float xp, int time, CompoundTag tag) {
         super(id, group, category, ingredient, result, xp, time);
         this.resultTag = tag;
     }

@@ -11,12 +11,13 @@ public class ReloadListenerRegistry {
     @SubscribeEvent
     public static void onReload(AddReloadListenerEvent event) {
         event.addListener(new BlueprintTooltypesReloadListener());
+        event.addListener(new BreakSystemBlacklistReloadListener());
         event.addListener(new GrindingBlacklistReloadListener());
         event.addListener(new DurabilityBlacklistReloadListener());
         event.addListener(new CastingToolTypesReloadListener());
         event.addListener(new MaterialSettingsReloadListener());
         event.addListener(new KnappingResourceReloadListener());
-        event.addListener(new RockInteractionReloadListener());
+        event.addListener(new ForgeRockInteractionReloadListener());
         event.addListener(new QualityAttributeReloadListener());
     }
 }

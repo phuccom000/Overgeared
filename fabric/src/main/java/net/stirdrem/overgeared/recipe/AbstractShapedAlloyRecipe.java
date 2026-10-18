@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.recipe;
 
-import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -10,6 +9,8 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
+
+import java.util.List;
 
 public abstract class AbstractShapedAlloyRecipe
         implements Recipe<SimpleContainer> {

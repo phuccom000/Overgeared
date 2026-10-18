@@ -58,7 +58,6 @@ import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
 import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
@@ -85,7 +84,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static net.stirdrem.overgeared.Overgeared.getCooledItem;
+import static net.stirdrem.overgeared.OvergearedForge.getCooledItem;
 
 
 @Mod.EventBusSubscriber(modid = Overgeared.MOD_ID)
@@ -143,7 +142,7 @@ public class ModItemInteractEvents {
         // =========================
 
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
-                && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
+                && Overgeared.getConfig().ENABLE_STONE_TO_ANVIL()) {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
@@ -162,7 +161,7 @@ public class ModItemInteractEvents {
         }
 
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
-                && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
+                && Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING()) {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
@@ -525,7 +524,7 @@ public class ModItemInteractEvents {
     private static boolean handleDurabilityGrinding(PlayerInteractEvent event, ItemStack stack, Level world, BlockPos pos) {
         if (!stack.isDamageableItem() || stack.getDamageValue() <= 0) return false;
 
-        if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
+        if (!Overgeared.getConfig().GRINDING_RESTORE_DURABILITY()) {
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
             return true;
@@ -548,7 +547,7 @@ public class ModItemInteractEvents {
         Item item = stack.getItem();
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
 
-        for (String entry : ServerConfig.GRINDING_BLACKLIST.get()) {
+        for (String entry : Overgeared.getConfig().GRINDING_BLACKLIST()) {
             if (entry.startsWith("#")) {
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(entry.substring(1)));
                 if (stack.is(tag)) return true;
@@ -566,8 +565,8 @@ public class ModItemInteractEvents {
         int reducedCount = tag.getInt("ReducedMaxDurability");
         int originalDurability = stack.getItem().getMaxDamage();
 
-        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
-        float reduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
+        float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
+        float reduction = (float) Overgeared.getConfig().DURABILITY_REDUCE_PER_GRIND();
 
         float qualityMultiplier = tag.contains("ForgingQuality")
                 ? QualityHelper.getDurabilityMultiplier(stack)
@@ -586,7 +585,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue();
+        float restorePercent = (float) Overgeared.getConfig().DAMAGE_RESTORE_PER_GRIND();
         int repairAmount = Math.max(1, (int) (adjustedMax * restorePercent));
 
         int newDamage = Math.max(adjustedMax - effectiveMax, currentDamage - repairAmount);
@@ -891,7 +890,7 @@ public class ModItemInteractEvents {
 
     @SubscribeEvent
     public static void onEntityPickupItem(EntityItemPickupEvent event) {
-        if (!(event.getItem().level instanceof ServerLevel serverLevel)) return;
+        if (!(event.getItem().level() instanceof ServerLevel serverLevel)) return;
 
         List<ItemEntity> tracked = trackedEntitiesPerWorld.get(serverLevel);
         if (tracked != null) {
@@ -961,7 +960,7 @@ public class ModItemInteractEvents {
                 boolean cooled = false;
 
                 // --- Time-based cooling ---
-                if (started != null && now - started > ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get()) {
+                if (started != null && now - started > Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS()) {
                     cooled = true;
                 }
 
@@ -1000,7 +999,7 @@ public class ModItemInteractEvents {
 
     private static void checkContainerMenu(ServerPlayer player, AbstractContainerMenu menu) {
         long gameTime = player.level().getGameTime();
-        int cooldown = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        int cooldown = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
         boolean playedSound = false;
 
         for (Slot slot : menu.slots) {
@@ -1175,7 +1174,7 @@ public class ModItemInteractEvents {
         InteractionHand hand = event.getHand();
 
         if (level.isClientSide()) return;
-        if (!ServerConfig.TIPPING_TOGGLE.get()) return;
+        if (!Overgeared.getConfig().TIPPING_TOGGLE()) return;
 
         // Get items in both hands
         ItemStack usedHand = player.getItemInHand(hand);
@@ -1184,7 +1183,7 @@ public class ModItemInteractEvents {
 
         // Check if we're dealing with arrow + potion combination
         boolean isVanillaArrow = usedHand.is(Items.ARROW) && otherStack.is(Items.POTION);
-        boolean isCustomArrow = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW.get()) ||
+        boolean isCustomArrow = Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW.get()) ||
                 usedHand.is(ModItems.STEEL_UPGRADE_ARROW.get()) ||
                 usedHand.is(ModItems.DIAMOND_UPGRADE_ARROW.get())) &&
                 otherStack.is(Items.POTION);
@@ -1195,7 +1194,7 @@ public class ModItemInteractEvents {
 
         CompoundTag potionTag = otherStack.getOrCreateTag();
         int used = potionTag.getInt("TippedUsed");
-        int maxUse = ServerConfig.MAX_POTION_TIPPING_USE.get();
+        int maxUse = Overgeared.getConfig().MAX_POTION_TIPPING_USE();
         Potion basePotion = PotionUtils.getPotion(otherStack);
 
         // Create the appropriate tipped arrow BEFORE consuming
@@ -1268,7 +1267,7 @@ public class ModItemInteractEvents {
         BlockPos pos = event.getPos();
         Player player = event.getEntity();
 
-        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return;
+        if (!Overgeared.getConfig().ENABLE_FLETCHING_RECIPES()) return;
 
         // Main hand only
         if (event.getHand() != InteractionHand.MAIN_HAND) return;

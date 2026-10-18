@@ -11,22 +11,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.minecraft.world.item.crafting.*;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 
 public class OvergearedShapelessRecipe extends ShapelessRecipe {
 
     private final NonNullList<IngredientWithRemainder> ingredientsWithRemainder;
 
     public OvergearedShapelessRecipe(ResourceLocation id, String group, CraftingBookCategory category,
-                                      ItemStack result, NonNullList<IngredientWithRemainder> ingredientsWithRemainder) {
+                                     ItemStack result, NonNullList<IngredientWithRemainder> ingredientsWithRemainder) {
         super(id, group, category, result, convertToBaseIngredients(ingredientsWithRemainder));
         this.ingredientsWithRemainder = ingredientsWithRemainder;
     }
@@ -76,7 +70,7 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
     public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
         ItemStack result = super.assemble(container, registryAccess);
 
-        if (!ServerConfig.ENABLE_MINIGAME.get()) {
+        if (!Overgeared.getConfig().ENABLE_MINIGAME()) {
             // When minigame is disabled
             boolean hasUnpolishedQualityItem = false;
             boolean unquenched = false;

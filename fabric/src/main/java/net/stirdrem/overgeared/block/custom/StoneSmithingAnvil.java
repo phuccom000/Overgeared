@@ -19,9 +19,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,7 +107,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public TagKey<Item> hammerTag() {
-        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+        if (Overgeared.getConfig().ENABLE_TIERED_HAMMERS()) {
             return ModTags.Items.STONE_SMITHING_HAMMERS;
         }
         return super.hammerTag();

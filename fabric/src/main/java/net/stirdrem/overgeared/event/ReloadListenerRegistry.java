@@ -8,14 +8,15 @@ public class ReloadListenerRegistry {
 
     public static void register() {
         ResourceManagerHelper helper = ResourceManagerHelper.get(PackType.SERVER_DATA);
-        helper.registerReloadListener(new BlueprintTooltypesReloadListener());
-        helper.registerReloadListener(new GrindingBlacklistReloadListener());
-        helper.registerReloadListener(new DurabilityBlacklistReloadListener());
-        helper.registerReloadListener(new CastingToolTypesReloadListener());
-        helper.registerReloadListener(new MaterialSettingsReloadListener());
-        helper.registerReloadListener(new KnappingResourceReloadListener());
-        helper.registerReloadListener(new RockInteractionReloadListener());
-        helper.registerReloadListener(new QualityAttributeReloadListener());
+        helper.registerReloadListener(new FabricBlueprintTooltypesReloadListener());
+        helper.registerReloadListener(new FabricBreakSystemBlacklistReloadListener());
+        helper.registerReloadListener(new FabricGrindingBlacklistReloadListener());
+        helper.registerReloadListener(new FabricDurabilityBlacklistReloadListener());
+        helper.registerReloadListener(new FabricCastingToolTypesReloadListener());
+        helper.registerReloadListener(new FabricMaterialSettingsReloadListener());
+        helper.registerReloadListener(new FabricKnappingResourceReloadListener());
+        helper.registerReloadListener(new FabricRockInteractionReloadListener());
+        helper.registerReloadListener(new FabricQualityAttributeReloadListener());
         // BreakSystemBlacklistReloadListener is intentionally not registered here,
         // matching upstream (see its own file for why).
     }

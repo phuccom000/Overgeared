@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import net.stirdrem.overgeared.datapack.FabricQualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
 import net.stirdrem.overgeared.event.ModEvents;
@@ -40,7 +40,7 @@ public class AttributeModifierHandler implements AdjustAttributeModifierCallback
         String quality = stack.getTag().getString("ForgingQuality");
         if (quality.isEmpty()) return;
 
-        for (QualityAttributeDefinition def : QualityAttributeReloadListener.INSTANCE.getAll()) {
+        for (QualityAttributeDefinition def : FabricQualityAttributeReloadListener.INSTANCE.getAll()) {
             if (!ModEvents.matches(stack, def.targets())) continue;
 
             QualityValue value = def.qualities().get(quality);

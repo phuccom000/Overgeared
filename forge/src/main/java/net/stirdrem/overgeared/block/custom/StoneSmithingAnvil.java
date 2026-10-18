@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.block.custom;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -25,7 +27,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,7 +107,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public void onLand(Level level, BlockPos pos, BlockState fallingState, BlockState hitState, FallingBlockEntity fallingBlock) {
-        if (!level.isClientSide && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
+        if (!level.isClientSide && Overgeared.getConfig().ENABLE_STONE_ANVIL_BREAKING()) {
             // Show break particles of the anvil
             level.levelEvent(2001, pos, Block.getId(fallingState)); // 2001 = block break effect
             // Replace with cobblestone block instead of dropping item
@@ -122,7 +123,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public void onBrokenAfterFall(Level level, BlockPos pos, FallingBlockEntity fallingBlock) {
-        if (!level.isClientSide && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
+        if (!level.isClientSide && Overgeared.getConfig().ENABLE_STONE_ANVIL_BREAKING()) {
             BlockState state = fallingBlock.getBlockState();
             level.levelEvent(2001, pos, Block.getId(state)); // Show break particles
             Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.COBBLESTONE));
@@ -132,7 +133,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public TagKey<Item> hammerTag() {
-        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+        if (Overgeared.getConfig().ENABLE_TIERED_HAMMERS()) {
             return ModTags.Items.STONE_SMITHING_HAMMERS;
         }
         return super.hammerTag();

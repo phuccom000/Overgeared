@@ -9,7 +9,7 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +32,7 @@ public class BrewingStandBlockEntityMixin {
 
     @Unique
     private static boolean overgeared$isDragonBreathIngredient(NonNullList<ItemStack> slots) {
-        if (!ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) return false;
+        if (!Overgeared.getConfig().ENABLE_DRAGON_BREATH_RECIPE()) return false;
         if (!slots.get(3).is(Items.CHORUS_FRUIT)) return false;
 
         for (int i = 0; i < 3; i++) {
@@ -53,7 +53,7 @@ public class BrewingStandBlockEntityMixin {
 
     @Inject(method = "doBrew", at = @At("HEAD"))
     private static void overgeared$craftDragonBreath(Level world, BlockPos pos, NonNullList<ItemStack> slots, CallbackInfo ci) {
-        if (!ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) return;
+        if (!Overgeared.getConfig().ENABLE_DRAGON_BREATH_RECIPE()) return;
         if (!slots.get(3).is(Items.CHORUS_FRUIT)) return;
 
         // Replace matching slots before vanilla's craft() body runs; BrewingRecipeRegistry.craft
@@ -69,7 +69,7 @@ public class BrewingStandBlockEntityMixin {
 
     @Inject(method = "canPlaceItem", at = @At("HEAD"), cancellable = true)
     private void overgeared$isValidDragonBreathIngredient(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (slot == 3 && ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get() && stack.is(Items.CHORUS_FRUIT)) {
+        if (slot == 3 && Overgeared.getConfig().ENABLE_DRAGON_BREATH_RECIPE() && stack.is(Items.CHORUS_FRUIT)) {
             cir.setReturnValue(true);
         }
     }

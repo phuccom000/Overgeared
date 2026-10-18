@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,7 +14,6 @@ import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
@@ -78,7 +79,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
-        if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
+        if (!Overgeared.getConfig().ENABLE_CASTING()) return ItemStack.EMPTY;
 
         ItemStack cast = ItemStack.EMPTY;
         HashMap<String, Integer> materialTotals = new HashMap<>();

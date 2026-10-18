@@ -21,6 +21,7 @@ import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.datapack.FabricDurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.item.ModItems;
@@ -127,7 +128,7 @@ public class OvergearedFabric implements ModInitializer {
 
     public static boolean isDurabilityBlacklisted(ItemStack stack) {
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
+        List<? extends String> blacklist = Overgeared.getConfig().BASE_DURABILITY_BLACKLIST();
 
         for (String entry : blacklist) {
             if (entry.startsWith("#")) {
@@ -138,6 +139,6 @@ public class OvergearedFabric implements ModInitializer {
                 if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
             }
         }
-        return net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener.isBlacklisted(stack);
+        return FabricDurabilityBlacklistReloadListener.isBlacklisted(stack);
     }
 }

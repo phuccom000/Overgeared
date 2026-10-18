@@ -1,9 +1,10 @@
 package net.stirdrem.overgeared.item;
 
-import java.util.function.Supplier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
+
+import java.util.function.Supplier;
 
 public class ModToolTiers {
     // Forge's ForgeTier/TierSortingRegistry has no Fabric equivalent; ordering between
@@ -16,8 +17,8 @@ public class ModToolTiers {
             1, 190, 5.0F, 1.0F, 12, () -> Ingredient.of(Items.COPPER_INGOT));
 
     private record SimpleToolMaterial(int miningLevel, int durability, float miningSpeed, float attackDamage,
-                                       int enchantability,
-                                       Supplier<Ingredient> repairIngredient) implements Tier {
+                                      int enchantability,
+                                      Supplier<Ingredient> repairIngredient) implements Tier {
         @Override
         public int getUses() {
             return durability;

@@ -8,7 +8,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -37,14 +37,15 @@ public class OvergearedTooltipEvents {
                 case "well" -> Component.translatable("tooltip.overgeared.well").withStyle(ChatFormatting.YELLOW);
                 case "expert" -> Component.translatable("tooltip.overgeared.expert").withStyle(ChatFormatting.BLUE);
                 case "perfect" -> Component.translatable("tooltip.overgeared.perfect").withStyle(ChatFormatting.GOLD);
-                case "master" -> Component.translatable("tooltip.overgeared.master").withStyle(ChatFormatting.LIGHT_PURPLE);
+                case "master" ->
+                        Component.translatable("tooltip.overgeared.master").withStyle(ChatFormatting.LIGHT_PURPLE);
                 default -> null;
             };
             if (qualityComponent != null) {
                 tooltip.add(insertOffset++, qualityComponent);
             }
         }
-        if (isBroken(stack) && ServerConfig.ENABLE_MOD_TOOLTIPS.get()) {
+        if (isBroken(stack) && Overgeared.getConfig().ENABLE_MOD_TOOLTIPS()) {
             tooltip.add(insertOffset++,
                     Component.translatable("tooltip.overgeared.item_broken").withStyle(ChatFormatting.RED)
             );
@@ -74,18 +75,18 @@ public class OvergearedTooltipEvents {
                         .withStyle(ChatFormatting.GRAY));
                 tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line2")
                         .withStyle(ChatFormatting.GRAY));
-                if (ServerConfig.ENABLE_STONE_TO_ANVIL.get())
+                if (Overgeared.getConfig().ENABLE_STONE_TO_ANVIL())
                     tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line3")
                             .withStyle(ChatFormatting.GRAY));
-                if (ServerConfig.ENABLE_ANVIL_TO_SMITHING.get())
+                if (Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING())
                     tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line4")
                             .withStyle(ChatFormatting.GRAY));
             }
         }
 
-        if (stack.is(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
+        if (stack.is(Items.POTION) && Overgeared.getConfig().TIPPING_TOGGLE()) {
             CompoundTag tag = stack.getTag();
-            int maxUses = ServerConfig.MAX_POTION_TIPPING_USE.get();
+            int maxUses = Overgeared.getConfig().MAX_POTION_TIPPING_USE();
             int used = 0;
 
             if (tag != null && tag.contains("TippedUsed", Tag.TAG_INT)) {
@@ -95,9 +96,9 @@ public class OvergearedTooltipEvents {
             int left = Math.max(0, maxUses - used);
             tooltip.add(Component.translatable("tooltip.overgeared.potion_uses", left, maxUses).withStyle(ChatFormatting.GRAY));
         }
-        if (!ServerConfig.ENABLE_MOD_TOOLTIPS.get()) return;
+        if (!Overgeared.getConfig().ENABLE_MOD_TOOLTIPS()) return;
 
-        if (stack.is(Items.FLINT) && ServerConfig.GET_ROCK_USING_FLINT.get()) {
+        if (stack.is(Items.FLINT) && Overgeared.getConfig().GET_ROCK_USING_FLINT()) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.flint_flavor").withStyle(ChatFormatting.GRAY));
         }
         if (stack.is(ModItems.DIAMOND_SHARD)) {

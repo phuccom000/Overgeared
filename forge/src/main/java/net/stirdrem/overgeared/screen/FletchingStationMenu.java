@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.screen;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -20,7 +22,6 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.FletchingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
@@ -207,7 +208,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
         ItemStack resultStack = ItemStack.EMPTY;
         ItemStack potion = input.getItem(INPUT_SLOT_POTION);
         // Check for arrow stack + potion conversion case
-        boolean allowUpgradeableArrowConversion = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get();
+        boolean allowUpgradeableArrowConversion = Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE();
         if (!potion.isEmpty()) {
             int arrowSlots = 0;
             int arrowCount = 0;

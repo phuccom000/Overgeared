@@ -33,7 +33,7 @@ public class ResetMinigameS2CPacket {
             try {
                 var player = Minecraft.getInstance().player;
                 if (player != null) {
-                    BlockEntity be = player.level.getBlockEntity(anvilPos);
+                    BlockEntity be = player.level().getBlockEntity(anvilPos);
                     if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                         String quality = anvil.minigameQuality(); // ✅ get directly from BE
                         Overgeared.LOGGER.info(

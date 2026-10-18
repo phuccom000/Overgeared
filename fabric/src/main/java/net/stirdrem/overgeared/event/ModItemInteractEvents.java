@@ -45,15 +45,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.OvergearedFabric;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
-import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
+import net.stirdrem.overgeared.datapack.FabricGrindingBlacklistReloadListener;
+import net.stirdrem.overgeared.datapack.FabricRockInteractionReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
-import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.networking.ModMessages;
@@ -76,7 +76,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static net.stirdrem.overgeared.Overgeared.getCooledItem;
+import static net.stirdrem.overgeared.OvergearedFabric.getCooledItem;
 
 public class ModItemInteractEvents {
     public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
@@ -149,7 +149,7 @@ public class ModItemInteractEvents {
         // =========================
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
-                && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
+                && Overgeared.getConfig().ENABLE_STONE_TO_ANVIL()) {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL
                     .defaultBlockState()
@@ -166,7 +166,7 @@ public class ModItemInteractEvents {
         }
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
-                && ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
+                && Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING()) {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL
                     .defaultBlockState()
@@ -362,7 +362,7 @@ public class ModItemInteractEvents {
     }
 
     public static ServerPlayer getUsingPlayer(BlockPos pos) {
-        MinecraftServer server = Overgeared.getServer();
+        MinecraftServer server = OvergearedFabric.getServer();
         if (server == null) return null;
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -475,7 +475,7 @@ public class ModItemInteractEvents {
     private static boolean handleDurabilityGrinding(ItemStack stack, Level world, BlockPos pos) {
         if (!stack.isDamageableItem() || stack.getDamageValue() <= 0) return false;
 
-        if (!ServerConfig.GRINDING_RESTORE_DURABILITY.get()) {
+        if (!Overgeared.getConfig().GRINDING_RESTORE_DURABILITY()) {
             return true;
         }
 
@@ -492,7 +492,7 @@ public class ModItemInteractEvents {
         Item item = stack.getItem();
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
 
-        for (String entry : ServerConfig.GRINDING_BLACKLIST.get()) {
+        for (String entry : Overgeared.getConfig().GRINDING_BLACKLIST()) {
             if (entry.startsWith("#")) {
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.tryParse(entry.substring(1)));
                 if (stack.is(tag)) return true;
@@ -501,7 +501,7 @@ public class ModItemInteractEvents {
             }
         }
 
-        return GrindingBlacklistReloadListener.isBlacklisted(stack);
+        return FabricGrindingBlacklistReloadListener.isBlacklisted(stack);
     }
 
     private static void applyDurabilityRepair(ItemStack stack) {
@@ -510,8 +510,8 @@ public class ModItemInteractEvents {
         int reducedCount = tag.getInt("ReducedMaxDurability");
         int originalDurability = stack.getItem().getMaxDamage();
 
-        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
-        float reduction = ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue();
+        float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
+        float reduction = (float) Overgeared.getConfig().DURABILITY_REDUCE_PER_GRIND();
 
         float qualityMultiplier = tag.contains("ForgingQuality")
                 ? QualityHelper.getDurabilityMultiplier(stack)
@@ -530,7 +530,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        float restorePercent = ServerConfig.DAMAGE_RESTORE_PER_GRIND.get().floatValue();
+        float restorePercent = (float) Overgeared.getConfig().DAMAGE_RESTORE_PER_GRIND();
         int repairAmount = Math.max(1, (int) (adjustedMax * restorePercent));
 
         int newDamage = Math.max(adjustedMax - effectiveMax, currentDamage - repairAmount);
@@ -859,7 +859,7 @@ public class ModItemInteractEvents {
                 Long started = trackedSinceMs.get(entity);
                 boolean cooled = false;
 
-                if (started != null && now - started > ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get()) {
+                if (started != null && now - started > Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS()) {
                     cooled = true;
                 }
 
@@ -893,7 +893,7 @@ public class ModItemInteractEvents {
 
     private static void checkContainerMenu(ServerPlayer player, AbstractContainerMenu menu) {
         long gameTime = player.level().getGameTime();
-        int cooldown = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        int cooldown = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
         boolean playedSound = false;
 
         for (Slot slot : menu.slots) {
@@ -967,7 +967,7 @@ public class ModItemInteractEvents {
         BlockState state = world.getBlockState(pos);
         ItemStack heldItem = player.getItemInHand(hand);
 
-        for (RockInteractionData data : RockInteractionReloadListener.INSTANCE.getAll()) {
+        for (RockInteractionData data : FabricRockInteractionReloadListener.INSTANCE.getAll()) {
 
             if (!data.matches(state, heldItem)) continue;
 
@@ -1033,14 +1033,14 @@ public class ModItemInteractEvents {
 
     private static InteractionResultHolder<ItemStack> onArrowTipping(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand) {
         if (world.isClientSide) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        if (!ServerConfig.TIPPING_TOGGLE.get()) return InteractionResultHolder.pass(player.getItemInHand(hand));
+        if (!Overgeared.getConfig().TIPPING_TOGGLE()) return InteractionResultHolder.pass(player.getItemInHand(hand));
 
         ItemStack usedHand = player.getItemInHand(hand);
         InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
         ItemStack otherStack = player.getItemInHand(otherHand);
 
         boolean isVanillaArrow = usedHand.is(Items.ARROW) && otherStack.is(Items.POTION);
-        boolean isCustomArrow = ServerConfig.UPGRADE_ARROW_POTION_TOGGLE.get() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW) ||
+        boolean isCustomArrow = Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW) ||
                 usedHand.is(ModItems.STEEL_UPGRADE_ARROW) ||
                 usedHand.is(ModItems.DIAMOND_UPGRADE_ARROW)) &&
                 otherStack.is(Items.POTION);
@@ -1051,7 +1051,7 @@ public class ModItemInteractEvents {
 
         CompoundTag potionTag = otherStack.getOrCreateTag();
         int used = potionTag.getInt("TippedUsed");
-        int maxUse = ServerConfig.MAX_POTION_TIPPING_USE.get();
+        int maxUse = Overgeared.getConfig().MAX_POTION_TIPPING_USE();
         Potion basePotion = PotionUtils.getPotion(otherStack);
 
         ItemStack resultArrow;
@@ -1117,7 +1117,7 @@ public class ModItemInteractEvents {
     // =========================
 
     private static InteractionResult onRightClickFletching(net.minecraft.world.entity.player.Player player, Level world, InteractionHand hand, BlockHitResult hit) {
-        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get()) return InteractionResult.PASS;
+        if (!Overgeared.getConfig().ENABLE_FLETCHING_RECIPES()) return InteractionResult.PASS;
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
         BlockPos pos = hit.getBlockPos();

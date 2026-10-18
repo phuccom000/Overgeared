@@ -36,7 +36,6 @@ public class Tongs extends DiggerItem {
         return true;
     }
 
-    // Forge's canAttackBlock (block creative insta-mine with Tongs) and canPerformAction
-    // (deny all ToolActions) have no Fabric equivalent; Tongs isn't registered as a
-    // pickaxe/axe/etc. so it already can't perform those actions by default.
+    // On Forge, ForgeTongs overrides canPerformAction to deny the tier's ToolActions;
+    // canAttackBlock already matches vanilla's default (!player.isCreative()) so no override is needed.
 }

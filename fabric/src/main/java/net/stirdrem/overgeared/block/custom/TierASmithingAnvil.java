@@ -9,9 +9,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.TierASmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +39,7 @@ public class TierASmithingAnvil extends SteelSmithingAnvil {
 
     @Override
     public TagKey<Item> hammerTag() {
-        if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
+        if (Overgeared.getConfig().ENABLE_TIERED_HAMMERS()) {
             return ModTags.Items.TIER_A_SMITHING_HAMMERS;
         }
         return super.hammerTag();

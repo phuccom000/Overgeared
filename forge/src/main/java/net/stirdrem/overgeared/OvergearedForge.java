@@ -1,16 +1,12 @@
 package net.stirdrem.overgeared;
 
-import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.*;
@@ -76,15 +72,15 @@ import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.screen.*;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
-import net.stirdrem.overgeared.util.TickScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import static net.stirdrem.overgeared.Overgeared.getColor;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Overgeared.MOD_ID)
@@ -119,7 +115,6 @@ public class OvergearedForge {
 
         ModAttributes.register(modEventBus);
 
-        MinecraftForge.EVENT_BUS.register(TickScheduler.class);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::sendImc);
         MinecraftForge.EVENT_BUS.register(this);
@@ -191,7 +186,7 @@ public class OvergearedForge {
     @Unique
     public static boolean isDurabilityBlacklisted(ItemStack stack) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
+        List<? extends String> blacklist = Overgeared.getConfig().BASE_DURABILITY_BLACKLIST();
 
         for (String entry : blacklist) {
             if (entry.startsWith("#")) {
@@ -225,7 +220,7 @@ public class OvergearedForge {
             }
         });
 
-        if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get())
+        if (Overgeared.getConfig().ENABLE_DRAGON_BREATH_RECIPE())
             BrewingRecipeRegistry.addRecipe(
                     new BetterBrewingRecipe(
                             Potions.THICK,
@@ -237,7 +232,7 @@ public class OvergearedForge {
 
     // Add the example block item to the building blocks tab
     private void addCreative(final BuildCreativeModeTabContentsEvent event) {
-        if (!ServerConfig.ENABLE_CREATIVE_TAB_ITEMS.get()) return;
+        if (!Overgeared.getConfig().ENABLE_CREATIVE_TAB_ITEMS()) return;
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             var entries = event.getEntries();
             entries.putAfter(
@@ -359,7 +354,7 @@ public class OvergearedForge {
 
         }
         if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            if (ServerConfig.ENABLE_FLETCHING_RECIPES.get()) {
+            if (Overgeared.getConfig().ENABLE_FLETCHING_RECIPES()) {
                 for (Potion potion : ForgeRegistries.POTIONS) {
                     if (potion == Potions.EMPTY) continue;
 
@@ -579,7 +574,7 @@ public class OvergearedForge {
 
         private static void registerArrowProperties(Item item) {
             ItemProperties.register(item,
-                    new ResourceLocation(Overgeared.MOD_ID, "potion_type"),
+                    Overgeared.id("potion_type"),
                     (stack, level, entity, seed) -> {
                         if (!stack.hasTag()) return 0.0F;
                         var tag = stack.getTag();
@@ -629,95 +624,6 @@ public class OvergearedForge {
             //event.registerEntityRenderer(ModEntities.MODULAR_ARROW.get(), ModularArrowEntityRenderer::new);
             event.registerEntityRenderer(ModEntities.LINGERING_ARROW.get(), LingeringArrowEntityRenderer::new);
             event.registerEntityRenderer(ModEntities.UPGRADE_ARROW.get(), UpgradeArrowEntityRenderer::new);
-        }
-
-        public static int getColor(ItemStack pStack) {
-            CompoundTag compoundtag = pStack.getTag();
-            if (compoundtag != null && compoundtag.contains("CustomPotionColor", 99)) {
-                return compoundtag.getInt("CustomPotionColor");
-            } else {
-                return getPotion(pStack) == Potions.EMPTY ? 16253176 : getColor(getMobEffects(pStack));
-            }
-        }
-
-        public static int getColor(Collection<MobEffectInstance> pEffects) {
-            int i = 3694022;
-            if (pEffects.isEmpty()) {
-                return 3694022;
-            } else {
-                float f = 0.0F;
-                float f1 = 0.0F;
-                float f2 = 0.0F;
-                int j = 0;
-
-                for (MobEffectInstance mobeffectinstance : pEffects) {
-                    if (mobeffectinstance.isVisible()) {
-                        int k = mobeffectinstance.getEffect().getColor();
-                        int l = mobeffectinstance.getAmplifier() + 1;
-                        f += (float) (l * (k >> 16 & 255)) / 255.0F;
-                        f1 += (float) (l * (k >> 8 & 255)) / 255.0F;
-                        f2 += (float) (l * (k >> 0 & 255)) / 255.0F;
-                        j += l;
-                    }
-                }
-
-                if (j == 0) {
-                    return 0;
-                } else {
-                    f = f / (float) j * 255.0F;
-                    f1 = f1 / (float) j * 255.0F;
-                    f2 = f2 / (float) j * 255.0F;
-                    return (int) f << 16 | (int) f1 << 8 | (int) f2;
-                }
-            }
-        }
-
-        public static Potion getPotion(ItemStack pStack) {
-            return getPotion(pStack.getTag());
-        }
-
-        public static Potion getPotion(@Nullable CompoundTag tag) {
-            if (tag == null) return Potions.EMPTY;
-
-            // Prioritize "LingeringPotion" if present
-            if (tag.contains("LingeringPotion", 8)) { // 8 = string type
-                return Potion.byName(tag.getString("LingeringPotion"));
-            }
-            if (tag.contains("LingeringPotion") && tag.getBoolean("LingeringPotion")) { // 8 = string type
-                return Potion.byName(tag.getString("Potion"));
-            }
-            if (tag.contains("Potion", 8)) {
-                return Potion.byName(tag.getString("Potion"));
-            }
-
-            return Potions.EMPTY;
-        }
-
-
-        public static List<MobEffectInstance> getMobEffects(ItemStack pStack) {
-            return getAllEffects(pStack.getTag());
-        }
-
-        public static List<MobEffectInstance> getAllEffects(@Nullable CompoundTag pCompoundTag) {
-            List<MobEffectInstance> list = Lists.newArrayList();
-            list.addAll(getPotion(pCompoundTag).getEffects());
-            getCustomEffects(pCompoundTag, list);
-            return list;
-        }
-
-        public static void getCustomEffects(@Nullable CompoundTag pCompoundTag, List<MobEffectInstance> pEffectList) {
-            if (pCompoundTag != null && pCompoundTag.contains("CustomPotionEffects", 9)) {
-                ListTag listtag = pCompoundTag.getList("CustomPotionEffects", 10);
-
-                for (int i = 0; i < listtag.size(); ++i) {
-                    CompoundTag compoundtag = listtag.getCompound(i);
-                    MobEffectInstance mobeffectinstance = MobEffectInstance.load(compoundtag);
-                    if (mobeffectinstance != null) {
-                        pEffectList.add(mobeffectinstance);
-                    }
-                }
-            }
-
         }
     }
 }

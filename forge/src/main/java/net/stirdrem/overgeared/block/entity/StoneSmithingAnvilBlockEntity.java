@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.block.entity;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,7 +12,6 @@ import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,10 +61,10 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     @Override
     protected void craftItem() {
         super.craftItem(); // Perform regular crafting logic
-        if (ServerConfig.STONE_ANVIL_MAX_USES.get() == 0) return;
+        if (Overgeared.getConfig().STONE_ANVIL_MAX_USES() == 0) return;
         craftCount++;
 
-        if (craftCount >= ServerConfig.STONE_ANVIL_MAX_USES.get()) {
+        if (craftCount >= Overgeared.getConfig().STONE_ANVIL_MAX_USES()) {
             breakAnvil();
         }
     }

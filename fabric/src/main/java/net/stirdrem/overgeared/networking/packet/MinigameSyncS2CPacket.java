@@ -28,7 +28,7 @@ public class MinigameSyncS2CPacket {
         }
 
         try {
-            ClientAnvilMinigameData.loadFromNbt(msg.minigameData);
+            ClientAnvilMinigameData.loadFromNBT(msg.minigameData);
             ModItemInteractEvents.handleAnvilOwnershipSync(msg.minigameData);
         } catch (Exception e) {
             Overgeared.LOGGER.error("Failed to process minigame sync packet", e);

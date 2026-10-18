@@ -52,7 +52,7 @@ public class UpgradeArrowEntity extends AbstractArrow {
         CompoundTag tag = stack.getTag();
         int color = -1;
         if (tag != null && (tag.contains("Potion") || tag.contains("CustomPotionEffects") || tag.contains("LingeringPotion")))
-            color = Overgeared.ClientModEvents.getColor(stack);
+            color = Overgeared.getColor(stack);
         this.entityData.set(DATA_POTION_COLOR, color);
         this.potion = getPotion(tag);
     }
@@ -70,7 +70,7 @@ public class UpgradeArrowEntity extends AbstractArrow {
         CompoundTag tag = stack.getTag();
         int color = -1;
         if (tag != null && (tag.contains("Potion") || tag.contains("CustomPotionEffects") || tag.contains("LingeringPotion"))) {
-            color = Overgeared.ClientModEvents.getColor(stack);
+            color = Overgeared.getColor(stack);
         }
         this.entityData.set(DATA_POTION_COLOR, color);
         this.potion = getPotion(tag);

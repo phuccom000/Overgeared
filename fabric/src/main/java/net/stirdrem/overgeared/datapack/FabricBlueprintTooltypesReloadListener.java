@@ -1,0 +1,13 @@
+package net.stirdrem.overgeared.datapack;
+
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.resources.ResourceLocation;
+import net.stirdrem.overgeared.Overgeared;
+
+public class FabricBlueprintTooltypesReloadListener extends BlueprintTooltypesReloadListener implements IdentifiableResourceReloadListener {
+
+    @Override
+    public ResourceLocation getFabricId() {
+        return Overgeared.id("blueprint_tooltypes_listener");
+    }
+}

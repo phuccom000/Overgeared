@@ -38,8 +38,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
@@ -78,6 +78,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     @Override
     public abstract VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext);
 
+    @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
@@ -167,7 +168,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                 return InteractionResult.FAIL;
             }
 
-            if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !ServerConfig.ENABLE_MINIGAME.get())) {
+            if (isHammer && (anvil.isMinigameOn() || (!anvil.hasQuality() && !anvil.needsMinigame()) || !Overgeared.getConfig().ENABLE_MINIGAME())) {
                 BlockPos pos1 = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
                 if (pos1 != null && !pos.equals(ModItemInteractEvents.playerAnvilPositions.get(player.getUUID()))) {
                     ServerPlayer serverPlayer = (ServerPlayer) player;
@@ -181,7 +182,7 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
                     NetworkHooks.openScreen((ServerPlayer) player, anvil, pos);
                     return InteractionResult.sidedSuccess(level.isClientSide());
                 }
-                if (!ServerConfig.ENABLE_MINIGAME.get())
+                if (!Overgeared.getConfig().ENABLE_MINIGAME())
                     anvil.setBusyUntil(now + HAMMER_SOUND_DURATION_TICKS);
                 held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
                 spawnAnvilParticles(level, pos);

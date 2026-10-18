@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe.castcooking;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
@@ -12,7 +14,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.recipe.ModRecipes;
@@ -139,7 +140,7 @@ public class CastBlastingRecipe extends BlastingRecipe {
         resultTag.putBoolean("Heated", true);
 
         // Creator
-        if (input.hasCustomHoverName() && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+        if (input.hasCustomHoverName() && Overgeared.getConfig().PLAYER_AUTHOR_TOOLTIPS()) {
             resultTag.putString("Creator", input.getHoverName().getString());
         }
 

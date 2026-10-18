@@ -33,7 +33,6 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.item.custom.BlueprintItem;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
@@ -256,7 +255,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         // Base result NBT
         if (recipe.hasQuality()
                 && player != null
-                && ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get()) {
+                && Overgeared.getConfig().PLAYER_AUTHOR_TOOLTIPS()) {
             resultTag.putString("Creator", player.getName().getString());
         }
 
@@ -267,7 +266,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         }
 
         // Quality & minigame resolution
-        if (ServerConfig.ENABLE_MINIGAME.get()
+        if (Overgeared.getConfig().ENABLE_MINIGAME()
                 && (recipe.hasQuality() || recipe.needsMinigame())) {
 
             ForgingQuality quality =
@@ -283,15 +282,15 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
                 // Clamp ingredient max
                 if (maxIngredientQuality != null
-                        && ServerConfig.INGREDIENTS_DEFINE_MAX_QUALITY.get()
+                        && Overgeared.getConfig().INGREDIENTS_DEFINE_MAX_QUALITY()
                         && quality.ordinal() > maxIngredientQuality.ordinal()) {
                     quality = maxIngredientQuality;
                 }
 
                 // PERFECT -> MASTER roll
                 if (quality == ForgingQuality.PERFECT
-                        && ServerConfig.MASTER_QUALITY_CHANCE.get() > 0
-                        && level.random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get()) {
+                        && Overgeared.getConfig().MASTER_QUALITY_CHANCE() > 0
+                        && level.random.nextFloat() < Overgeared.getConfig().MASTER_QUALITY_CHANCE()) {
                     quality = ForgingQuality.MASTER;
                 }
 
@@ -360,9 +359,9 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
         return switch (quality) {
             case POOR -> true;
             case WELL -> level.random.nextFloat()
-                    < ServerConfig.FAIL_ON_WELL_QUALITY_CHANCE.get();
+                    < Overgeared.getConfig().FAIL_ON_WELL_QUALITY_CHANCE();
             case EXPERT -> level.random.nextFloat()
-                    < ServerConfig.FAIL_ON_EXPERT_QUALITY_CHANCE.get();
+                    < Overgeared.getConfig().FAIL_ON_EXPERT_QUALITY_CHANCE();
             default -> false;
         };
     }
@@ -392,7 +391,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 ForgingQuality resultQuality = ForgingQuality.fromString(forgingQualityStr);
 
                 if (currentQuality != null && currentQuality != BlueprintQuality.PERFECT && currentQuality != BlueprintQuality.MASTER) {
-                    if (!ServerConfig.EXPERT_ABOVE_INCREASE_BLUEPRINT.get() || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
+                    if (!Overgeared.getConfig().EXPERT_ABOVE_INCREASE_BLUEPRINT() || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
                         uses += switch (resultQuality) {
                             case PERFECT -> 2;
                             case MASTER -> 3;
@@ -764,12 +763,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                     }
 
                     // Normal Master roll from config
-                    boolean masterRoll = ServerConfig.MASTER_QUALITY_CHANCE.get() != 0
-                            && random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get();
+                    boolean masterRoll = Overgeared.getConfig().MASTER_QUALITY_CHANCE() != 0
+                            && random.nextFloat() < Overgeared.getConfig().MASTER_QUALITY_CHANCE();
 
                     // Ingredient-based boost
                     boolean ingredientMasterRoll = hasMasterIngredient
-                            && random.nextFloat() < ServerConfig.MASTER_FROM_INGREDIENT_CHANCE.get();
+                            && random.nextFloat() < Overgeared.getConfig().MASTER_FROM_INGREDIENT_CHANCE();
 
                     if ("master".equals(blueprintToolType) || masterRoll || ingredientMasterRoll) {
                         return ForgingQuality.MASTER.getDisplayName();
@@ -809,12 +808,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
             }
 
             // Normal Master roll from config
-            boolean masterRoll = ServerConfig.MASTER_QUALITY_CHANCE.get() != 0
-                    && random.nextFloat() < ServerConfig.MASTER_QUALITY_CHANCE.get();
+            boolean masterRoll = Overgeared.getConfig().MASTER_QUALITY_CHANCE() != 0
+                    && random.nextFloat() < Overgeared.getConfig().MASTER_QUALITY_CHANCE();
 
             // Ingredient-based boost
             boolean ingredientMasterRoll = hasMasterIngredient
-                    && random.nextFloat() < ServerConfig.MASTER_FROM_INGREDIENT_CHANCE.get();
+                    && random.nextFloat() < Overgeared.getConfig().MASTER_FROM_INGREDIENT_CHANCE();
 
             if (masterRoll || ingredientMasterRoll) {
                 return ForgingQuality.MASTER.getDisplayName();
@@ -970,7 +969,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
     public void tickHeatedIngredients(Level world) {
         if (world.isClientSide) return;
         long tick = world.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
+        int cooldownTicks = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
 
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack = itemHandler.getStackInSlot(slot);

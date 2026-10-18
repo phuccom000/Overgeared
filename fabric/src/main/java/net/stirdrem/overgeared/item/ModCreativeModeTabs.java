@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.config.ServerConfig;
 
 public class ModCreativeModeTabs {
 
@@ -120,9 +119,9 @@ public class ModCreativeModeTabs {
 
                         entries.accept(ModBlocks.STONE_SMITHING_ANVIL);
                         entries.accept(ModBlocks.SMITHING_ANVIL);
-                        if (ServerConfig.ENABLE_TIER_A.get())
+                        if (Overgeared.getConfig().ENABLE_TIER_A())
                             entries.accept(ModBlocks.TIER_A_SMITHING_ANVIL);
-                        if (ServerConfig.ENABLE_TIER_B.get())
+                        if (Overgeared.getConfig().ENABLE_TIER_B())
                             entries.accept(ModBlocks.TIER_B_SMITHING_ANVIL);
                         entries.accept(ModBlocks.STEEL_BLOCK);
                         entries.accept(ModBlocks.DRAFTING_TABLE);
@@ -137,7 +136,7 @@ public class ModCreativeModeTabs {
                     .icon(() -> new ItemStack(Blocks.FLETCHING_TABLE))
                     .title(Component.translatable("creativetab.overgeared.lingering_arrows_tab"))
                     .displayItems((displayContext, entries) -> {
-                        if (!ServerConfig.ENABLE_FLETCHING_RECIPES.get())
+                        if (!Overgeared.getConfig().ENABLE_FLETCHING_RECIPES())
                             return;
 
                         entries.accept(Items.ARROW);

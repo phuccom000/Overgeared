@@ -6,19 +6,15 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CookingBookCategory;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.util.JsonToNBT;
 
 public class NBTSmeltingRecipe extends AbstractNBTCookingRecipe {
 
     public NBTSmeltingRecipe(ResourceLocation id, String group, CookingBookCategory category,
-                              Ingredient ingredient, ItemStack result,
-                              float xp, int time, CompoundTag tag) {
+                             Ingredient ingredient, ItemStack result,
+                             float xp, int time, CompoundTag tag) {
         super(RecipeType.SMELTING, id, group, category, ingredient, result, xp, time, tag);
     }
 

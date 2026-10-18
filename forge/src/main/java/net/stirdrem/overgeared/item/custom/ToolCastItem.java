@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.item.custom;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -19,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
 import javax.annotation.Nullable;
@@ -252,7 +253,7 @@ public class ToolCastItem extends Item {
 
     @Override
     public int getMaxDamage(ItemStack stack) {
-        return haveDurability ? ServerConfig.FIRED_CAST_DURABILITY.get() : 0;
+        return haveDurability ? Overgeared.getConfig().FIRED_CAST_DURABILITY() : 0;
     }
 
     @Override

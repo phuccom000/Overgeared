@@ -8,6 +8,8 @@ import net.stirdrem.overgeared.Overgeared;
 
 public class ModTags {
     public static class Blocks {
+        public static final TagKey<net.minecraft.world.level.block.Block> NEEDS_STEEL_TOOL = tag("needs_steel_tool");
+        public static final TagKey<net.minecraft.world.level.block.Block> NEEDS_COPPER_TOOL = tag("needs_copper_tool");
         public static final TagKey<net.minecraft.world.level.block.Block> SMITHING = tag("smithing");
         public static final TagKey<net.minecraft.world.level.block.Block> SMITHING_ANVIL = tag("smithing_anvil");
         public static final TagKey<net.minecraft.world.level.block.Block> STONE_ANVIL_BASES = tag("stone_anvil_bases");

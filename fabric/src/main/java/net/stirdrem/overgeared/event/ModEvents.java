@@ -27,8 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
-import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import net.stirdrem.overgeared.datapack.FabricQualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityValue;
@@ -83,7 +82,7 @@ public class ModEvents {
                         Vec3 playerWorldPos = player.position();
 
                         double distSq = playerWorldPos.distanceToSqr(anvilWorldPos);
-                        int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+                        int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
 
                         if (distSq > (double) maxDist * maxDist) {
                             resetMinigameForPlayer(player);
@@ -100,7 +99,7 @@ public class ModEvents {
             BlockEntity be = world.getBlockEntity(anvilPos);
             if (be instanceof AbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
-                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+                int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
                     resetMinigameForPlayer(player);
                 }
@@ -118,7 +117,7 @@ public class ModEvents {
         String quality = stack.getTag().getString("ForgingQuality");
         if (quality.isEmpty()) return;
 
-        for (QualityAttributeDefinition def : QualityAttributeReloadListener.INSTANCE.getAll()) {
+        for (QualityAttributeDefinition def : FabricQualityAttributeReloadListener.INSTANCE.getAll()) {
             if (!matches(stack, def.targets())) continue;
 
             QualityValue value = def.qualities().get(quality);

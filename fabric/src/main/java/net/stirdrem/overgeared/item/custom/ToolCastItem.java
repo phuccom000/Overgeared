@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +35,7 @@ public class ToolCastItem extends Item {
         // Vanilla's Item#getMaxDamage() is final (derived from Settings at construction),
         // unlike Forge's per-stack getMaxDamage(ItemStack) override, so the configured
         // durability is baked in here instead of read dynamically on every call.
-        super(haveDurability ? settings.durability(ServerConfig.FIRED_CAST_DURABILITY.get()) : settings);
+        super(haveDurability ? settings.durability(Overgeared.getConfig().FIRED_CAST_DURABILITY()) : settings);
         this.allowMaterialInsert = allowMaterialInsert;
         this.haveDurability = haveDurability;
     }

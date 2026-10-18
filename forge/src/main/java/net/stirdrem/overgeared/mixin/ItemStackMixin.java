@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.mixin;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +25,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedForge;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -80,7 +81,7 @@ public abstract class ItemStackMixin {
 
         boolean blacklisted = OvergearedForge.isDurabilityBlacklisted(stack);
 
-        float baseMultiplier = ServerConfig.BASE_DURABILITY_MULTIPLIER.get().floatValue();
+        float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
         int newBaseDurability = blacklisted ? originalDurability : (int) (originalDurability * baseMultiplier);
 
         // Apply quality multiplier
@@ -92,7 +93,7 @@ public abstract class ItemStackMixin {
         // Apply durability reductions
         if (stack.hasTag() && stack.getTag().contains("ReducedMaxDurability")) {
             int reductions = stack.getTag().getInt("ReducedMaxDurability");
-            float durabilityPenaltyMultiplier = 1.0f - (reductions * ServerConfig.DURABILITY_REDUCE_PER_GRIND.get().floatValue());
+            float durabilityPenaltyMultiplier = 1.0f - (reductions * (float) Overgeared.getConfig().DURABILITY_REDUCE_PER_GRIND());
             durabilityPenaltyMultiplier = Math.max(0.1f, durabilityPenaltyMultiplier);
             newBaseDurability = (int) (newBaseDurability * durabilityPenaltyMultiplier);
         }
@@ -119,7 +120,7 @@ public abstract class ItemStackMixin {
         }
         if (player.isCreative()) return;
         long tick = level.getGameTime();
-        int cooldownTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get(); // add to your config
+        int cooldownTicks = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS(); // add to your config
 
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
@@ -257,7 +258,7 @@ public abstract class ItemStackMixin {
         int max = stack.getMaxDamage();
 
         if (currentDamage < max && newDamage >= max) {
-            if (!ServerConfig.ENABLE_QUALITY_BREAK_SYSTEM.get()) {
+            if (!Overgeared.getConfig().ENABLE_QUALITY_BREAK_SYSTEM()) {
                 return;
             }
 
@@ -302,17 +303,17 @@ public abstract class ItemStackMixin {
     @Unique
     private float getBreakChance(ItemStack stack) {
         if (!stack.hasTag() || !stack.getTag().contains("ForgingQuality")) {
-            return ServerConfig.BREAK_CHANCE_WELL.get().floatValue();
+            return (float) Overgeared.getConfig().BREAK_CHANCE_WELL();
         }
 
         ForgingQuality quality = ForgingQuality.fromString(stack.getTag().getString("ForgingQuality"));
 
         return switch (quality) {
-            case POOR -> ServerConfig.BREAK_CHANCE_POOR.get().floatValue();
-            case EXPERT -> ServerConfig.BREAK_CHANCE_EXPERT.get().floatValue();
-            case PERFECT -> ServerConfig.BREAK_CHANCE_PERFECT.get().floatValue();
-            case MASTER -> ServerConfig.BREAK_CHANCE_MASTER.get().floatValue();
-            default -> ServerConfig.BREAK_CHANCE_WELL.get().floatValue();
+            case POOR -> (float) Overgeared.getConfig().BREAK_CHANCE_POOR();
+            case EXPERT -> (float) Overgeared.getConfig().BREAK_CHANCE_EXPERT();
+            case PERFECT -> (float) Overgeared.getConfig().BREAK_CHANCE_PERFECT();
+            case MASTER -> (float) Overgeared.getConfig().BREAK_CHANCE_MASTER();
+            default -> (float) Overgeared.getConfig().BREAK_CHANCE_WELL();
         };
     }
 

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.loot;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -9,7 +11,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraftforge.common.loot.LootModifier;
 import net.stirdrem.overgeared.ForgingQuality;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,13 +25,13 @@ public class QualityLootModifier extends LootModifier {
     @NotNull
     @Override
     protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-        if (!ServerConfig.ENABLE_LOOT_QUALITY.get()) return generatedLoot;
+        if (!Overgeared.getConfig().ENABLE_LOOT_QUALITY()) return generatedLoot;
 
-        int wPoor = ServerConfig.QUALITY_WEIGHT_POOR.get();
-        int wWell = ServerConfig.QUALITY_WEIGHT_WELL.get();
-        int wExpert = ServerConfig.QUALITY_WEIGHT_EXPERT.get();
-        int wPerfect = ServerConfig.QUALITY_WEIGHT_PERFECT.get();
-        int wMaster = ServerConfig.QUALITY_WEIGHT_MASTER.get();
+        int wPoor = Overgeared.getConfig().QUALITY_WEIGHT_POOR();
+        int wWell = Overgeared.getConfig().QUALITY_WEIGHT_WELL();
+        int wExpert = Overgeared.getConfig().QUALITY_WEIGHT_EXPERT();
+        int wPerfect = Overgeared.getConfig().QUALITY_WEIGHT_PERFECT();
+        int wMaster = Overgeared.getConfig().QUALITY_WEIGHT_MASTER();
 
         int total = 0;
         if (wPoor > 0) total += wPoor;

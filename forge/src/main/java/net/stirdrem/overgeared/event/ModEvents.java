@@ -44,7 +44,6 @@ import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
@@ -103,7 +102,7 @@ public class ModEvents {
                         Vec3 playerWorldPos = player.position();
 
                         double distSq = playerWorldPos.distanceToSqr(anvilWorldPos);
-                        int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+                        int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
 
                         if (distSq > (double) maxDist * maxDist) {
                             resetMinigameForPlayer(player);
@@ -120,7 +119,7 @@ public class ModEvents {
             BlockEntity be = level.getBlockEntity(anvilPos);
             if (be instanceof AbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
-                int maxDist = ServerConfig.MAX_ANVIL_DISTANCE.get();
+                int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
                     resetMinigameForPlayer(player);
                 }
@@ -392,7 +391,7 @@ public class ModEvents {
                 tooltip.add(insertOffset++, qualityComponent);
             }
         }
-        if (isBroken(stack) && ServerConfig.ENABLE_MOD_TOOLTIPS.get()) {
+        if (isBroken(stack) && Overgeared.getConfig().ENABLE_MOD_TOOLTIPS()) {
             tooltip.add(insertOffset++,
                     Component.translatable("tooltip.overgeared.item_broken")
                             .withStyle(ChatFormatting.RED)
@@ -425,18 +424,18 @@ public class ModEvents {
                         .withStyle(ChatFormatting.GRAY));
                 tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line2")
                         .withStyle(ChatFormatting.GRAY));
-                if (ServerConfig.ENABLE_STONE_TO_ANVIL.get())
+                if (Overgeared.getConfig().ENABLE_STONE_TO_ANVIL())
                     tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line3")
                             .withStyle(ChatFormatting.GRAY));
-                if (ServerConfig.ENABLE_ANVIL_TO_SMITHING.get())
+                if (Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING())
                     tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.smithing_hammer.advanced_tooltip.line4")
                             .withStyle(ChatFormatting.GRAY));
             }
         }
 
-        if (stack.is(Items.POTION) && ServerConfig.TIPPING_TOGGLE.get()) {
+        if (stack.is(Items.POTION) && Overgeared.getConfig().TIPPING_TOGGLE()) {
             CompoundTag tag = stack.getTag();
-            int maxUses = ServerConfig.MAX_POTION_TIPPING_USE.get();
+            int maxUses = Overgeared.getConfig().MAX_POTION_TIPPING_USE();
             int used = 0;
 
             if (tag != null && tag.contains("TippedUsed", Tag.TAG_INT)) {
@@ -444,13 +443,13 @@ public class ModEvents {
             }
 
             int left = Math.max(0, maxUses - used);
-            //PotionUtils.addPotionTooltip(stack, tooltip, 1 - (float) used / ServerConfig.MAX_POTION_TIPPING_USE.get());
+            //PotionUtils.addPotionTooltip(stack, tooltip, 1 - (float) used / Overgeared.getConfig().MAX_POTION_TIPPING_USE());
             tooltip.add(Component.translatable("tooltip.overgeared.potion_uses", left, maxUses).withStyle(ChatFormatting.GRAY));
 
         }
-        if (!ServerConfig.ENABLE_MOD_TOOLTIPS.get()) return;
+        if (!Overgeared.getConfig().ENABLE_MOD_TOOLTIPS()) return;
 
-        if (stack.is(Items.FLINT) && ServerConfig.GET_ROCK_USING_FLINT.get()) {
+        if (stack.is(Items.FLINT) && Overgeared.getConfig().GET_ROCK_USING_FLINT()) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.flint_flavor")
                     .withStyle(ChatFormatting.GRAY));
         }

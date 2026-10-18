@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.block.entity;
 
+import net.stirdrem.overgeared.Overgeared;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,7 +13,6 @@ import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.screen.SteelSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,14 +42,14 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     @Override
     protected String determineForgingQuality() {
         // Get quality from anvil or use default if null
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+        if (!Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING()) {
             return super.determineForgingQualityNoBlueprint();
         } else return super.determineForgingQuality();
     }
 
     @Override
     public String blueprintQuality() {
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+        if (!Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING())
             return BlueprintQuality.PERFECT.getDisplayName();
         else return super.blueprintQuality();
     }

@@ -12,8 +12,8 @@ import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedFabric;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
@@ -71,7 +71,7 @@ public class ClayToolCastRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
-        if (!ServerConfig.ENABLE_CASTING.get())
+        if (!Overgeared.getConfig().ENABLE_CASTING())
             return ItemStack.EMPTY;
 
         ItemStack center = inv.getItem(4);

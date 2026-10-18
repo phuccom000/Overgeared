@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
-import net.stirdrem.overgeared.datapack.KnappingResourceReloadListener;
+import net.stirdrem.overgeared.datapack.FabricKnappingResourceReloadListener;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -123,11 +123,11 @@ public class RockKnappingScreenHandler extends AbstractContainerMenu {
     }
 
     public ResourceLocation getUnchippedTexture() {
-        return KnappingResourceReloadListener.getTexture(inputRock);
+        return FabricKnappingResourceReloadListener.getTexture(inputRock);
     }
 
     public SoundEvent getSound() {
-        return KnappingResourceReloadListener.getSound(inputRock);
+        return FabricKnappingResourceReloadListener.getSound(inputRock);
     }
 
     @Override
