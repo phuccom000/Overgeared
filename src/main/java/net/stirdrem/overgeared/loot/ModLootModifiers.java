@@ -24,6 +24,4 @@ public class ModLootModifiers {
     public static void register(IEventBus eventBus) {
         GLOBAL_LOOT_MODIFIER_SERIALIZERS.register(eventBus);
     }
-
-
 }

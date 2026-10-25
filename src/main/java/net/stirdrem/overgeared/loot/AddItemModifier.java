@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.loot;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -8,41 +9,50 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
 
 public class AddItemModifier extends LootModifier {
-    public static final MapCodec<AddItemModifier> CODEC = RecordCodecBuilder.mapCodec(inst ->
-            LootModifier.codecStart(inst).and(
-                    BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(e -> e.item)).apply(inst, AddItemModifier::new));
-    private final Item item;
+    public static final MapCodec<AddItemModifier> CODEC = RecordCodecBuilder.mapCodec((i) -> codecStart(i).and(i.group(
+            BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(AddItemModifier::getItem),
+            Codec.INT.fieldOf("count").forGetter(AddItemModifier::getCount)
+    )).apply(i, AddItemModifier::new));
 
-    public AddItemModifier(LootItemCondition[] conditionsIn, Item item) {
-        super(conditionsIn);
+    private final Item item;
+    private final int count;
+
+    public AddItemModifier(LootItemCondition[] conditions, Item item, int count) {
+        super(conditions);
         this.item = item;
+        this.count = count;
+    }
+
+    public AddItemModifier(LootItemCondition[] conditions, Item item) {
+        super(conditions);
+        this.item = item;
+        this.count = 1;
     }
 
     @Override
-    protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext lootContext) {
-        for (LootItemCondition condition : this.conditions) {
-            if (!condition.test(lootContext)) {
-                return generatedLoot;
-            }
-        }
-        generatedLoot.add(new ItemStack(this.item));
-        return generatedLoot;
+    public MapCodec<AddItemModifier> codec() {
+        return CODEC;
     }
 
+    @Override
+    protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> loot, LootContext context) {
+        loot.add(new ItemStack(item, count));
+        return loot;
+    }
+
+    // ALI needs to read these three
     public Item getItem() {
-        return this.item;
+        return item;
+    }
+
+    public int getCount() {
+        return count;
     }
 
     public LootItemCondition[] getConditions() {
-        return this.conditions;
-    }
-
-    @Override
-    public MapCodec<? extends IGlobalLootModifier> codec() {
-        return CODEC;
+        return conditions;
     }
 }

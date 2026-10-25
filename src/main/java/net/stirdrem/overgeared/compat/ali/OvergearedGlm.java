@@ -1,14 +1,13 @@
 package net.stirdrem.overgeared.compat.ali;
 
-import com.yanny.aci.api.RangeValue;
-import com.yanny.aci.tooltip.TooltipBuilder;
+import com.yanny.aci.api.NumberExpr;
 import com.yanny.ali.api.IOperation;
 import com.yanny.ali.api.IServerUtils;
 import com.yanny.ali.plugin.common.NodeUtils;
 import com.yanny.ali.plugin.common.nodes.ItemNode;
 import com.yanny.ali.plugin.glm.GlobalLootModifierUtils;
 import com.yanny.ali.plugin.glm.IPageLootModifier;
-import com.yanny.ali.plugin.server.EnchantedRanges;
+import com.yanny.ali.plugin.server.LootCount;
 import com.yanny.ali.plugin.server.TooltipUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
@@ -22,18 +21,17 @@ import java.util.Optional;
 
 public class OvergearedGlm {
     public static Optional<IPageLootModifier> getAddItemModifier(IServerUtils utils, AddItemModifier modifier) {
-        return Optional.of(GlobalLootModifierUtils.getLootModifier(utils, modifier,
-                Arrays.asList(modifier.getConditions()),
+        return Optional.of(GlobalLootModifierUtils.getLootModifier(utils, modifier, Arrays.asList(modifier.getConditions()),
                 (page, conditions) -> List.of(new IOperation.AddOperation((stack) -> true,
-                        addedItem(utils, conditions, modifier.getItem().getDefaultInstance(), 1)))));
+                        addedItem(utils, conditions, modifier.getItem().getDefaultInstance(), modifier.getCount())))));
     }
 
     private static ItemNode addedItem(IServerUtils utils, List<LootItemCondition> conditions, ItemStack item, int count) {
-        RangeValue countValue = new RangeValue(count);
-        EnchantedRanges chance = NodeUtils.getEnchantedChance(utils, conditions, 1f);
-        TooltipBuilder tooltip = TooltipUtils.getTooltip(utils, LootPoolSingletonContainer.DEFAULT_QUALITY, chance,
-                new EnchantedRanges(countValue), Collections.emptyList(), conditions);
+        NumberExpr countExpr = NumberExpr.constant(count);
+        var chance = NodeUtils.getChance(utils, conditions, 1f);
+        var tooltip = TooltipUtils.getTooltip(utils, LootPoolSingletonContainer.DEFAULT_QUALITY, chance,
+                LootCount.of(countExpr), NodeUtils.getCountLimit(item), Collections.emptyList(), conditions);
 
-        return new ItemNode(1f, countValue, item, tooltip.build(), Collections.emptyList(), conditions);
+        return new ItemNode(1f, countExpr, item, tooltip.build(), Collections.emptyList(), conditions);
     }
 }

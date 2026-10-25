@@ -193,12 +193,11 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
     public boolean hasFailedResult() {
         return failedResult != null
-                && !failedResult.isEmpty()
-                && !failedResult.is(result.getItem());
+                && !failedResult.isEmpty();
     }
 
     public ItemStack getFailedResultItem(HolderLookup.Provider registries) {
-        return hasFailedResult() ? ItemStack.EMPTY : failedResult.copy();
+        return hasFailedResult() ? failedResult.copy() : ItemStack.EMPTY;
     }
 
     @Override
@@ -507,11 +506,9 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     actualNeedQuenching = false;
                 }
 
-                ItemStack actualFailedResult = failedResult.isEmpty() ? result.copy() : failedResult;
-
                 return new ForgingRecipe("", requiresBlueprint, new LinkedHashSet<>(blueprintTypes), tier,
                         new ArrayList<>(pattern), new LinkedHashMap<>(key), ingredients,
-                        result, actualFailedResult, hammering, hasQuality, needsMinigame, hasPolishing, actualNeedQuenching,
+                        result, failedResult, hammering, hasQuality, needsMinigame, hasPolishing, actualNeedQuenching,
                         showNotification, minimumQuality, qualityDifficulty, width, height, tab);
             }));
         }
