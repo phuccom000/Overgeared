@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.FabricAbstractSmithingAnvil;
 
 public class PacketSendCounterC2SPacket {
     private final String quality;
@@ -30,8 +30,8 @@ public class PacketSendCounterC2SPacket {
 
     public static void handle(PacketSendCounterC2SPacket msg, MinecraftServer server, ServerPlayer sender) {
         server.execute(() -> {
-            if (sender.level().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
-                AbstractSmithingAnvil.setQuality(msg.getCounter());
+            if (sender.level().getBlockState(msg.pos).getBlock() instanceof FabricAbstractSmithingAnvil) {
+                FabricAbstractSmithingAnvil.setQuality(msg.getCounter());
             }
         });
     }

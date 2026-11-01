@@ -60,13 +60,17 @@ repositories {
 
 sourcesJar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename {
+            "${it}_${mod_name.replaceAll(/[^A-Za-z0-9._-]/, '_')}"
+        }
     }
 }
 
 jar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename {
+            "${it}_${mod_name.replaceAll(/[^A-Za-z0-9._-]/, '_')}"
+        }
     }
 
     manifest {
@@ -84,21 +88,21 @@ jar {
 
 processResources {
     var expandProps = [
-            'version'                      : version,
-            'group'                        : project.group, //Else we target the task's group.
-            'minecraft_version'            : minecraft_version,
-            'minecraft_version_range'      : minecraft_version_range,
-            'fabric_version'               : fabric_version,
-            'fabric_loader_version'        : fabric_loader_version,
-            'mod_name'                     : mod_name,
-            'mod_author'                   : mod_author,
-            'mod_id'                       : mod_id,
-            'license'                      : license,
-            'description'                  : project.description,
-            "forge_version": forge_version,
+            'version'                   : version,
+            'group'                     : project.group, //Else we target the task's group.
+            'minecraft_version'         : minecraft_version,
+            'minecraft_version_range'   : minecraft_version_range,
+            'fabric_version'            : fabric_version,
+            'fabric_loader_version'     : fabric_loader_version,
+            'mod_name'                  : mod_name,
+            'mod_author'                : mod_author,
+            'mod_id'                    : mod_id,
+            'license'                   : license,
+            'description'               : project.description,
+            "forge_version"             : forge_version,
             "forge_loader_version_range": forge_loader_version_range,
-            'credits'                      : credits,
-            'java_version'                 : java_version
+            'credits'                   : credits,
+            'java_version'              : java_version
     ]
 
     var jsonExpandProps = expandProps.collectEntries {

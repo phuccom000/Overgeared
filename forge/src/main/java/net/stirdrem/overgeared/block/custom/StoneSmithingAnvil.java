@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.block.custom;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -25,12 +23,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
-public class StoneSmithingAnvil extends AbstractSmithingAnvil {
+public class StoneSmithingAnvil extends ForgeAbstractSmithingAnvil {
 
     public static VoxelShape rotateShape(Direction from, Direction to, VoxelShape shape) {
         VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};

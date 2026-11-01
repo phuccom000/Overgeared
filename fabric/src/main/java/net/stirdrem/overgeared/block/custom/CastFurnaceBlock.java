@@ -109,7 +109,7 @@ public class CastFurnaceBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         if (world.isClientSide()) return null;
-        return AbstractSmithingAnvil.validateTicker(type, ModBlockEntities.CAST_FURNACE_BE, CastFurnaceBlockEntity::tick);
+        return FabricAbstractSmithingAnvil.validateTicker(type, ModBlockEntities.CAST_FURNACE_BE, CastFurnaceBlockEntity::tick);
     }
 
     @Override

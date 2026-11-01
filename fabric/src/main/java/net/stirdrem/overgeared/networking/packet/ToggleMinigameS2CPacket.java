@@ -4,8 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.stirdrem.overgeared.client.AnvilMinigameEvents;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
+import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
+import net.stirdrem.overgeared.client.FabricAnvilMinigameEvents;
 
 public class ToggleMinigameS2CPacket {
 
@@ -30,7 +30,7 @@ public class ToggleMinigameS2CPacket {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        AnvilMinigameEvents.setIsVisible(msg.pos, msg.visible);
-        ModItemInteractEvents.playerMinigameVisibility.put(player.getUUID(), msg.visible);
+        FabricAnvilMinigameEvents.setIsVisible(msg.pos, msg.visible);
+        ClientAnvilMinigameData.playerMinigameVisibility.put(player.getUUID(), msg.visible);
     }
 }

@@ -22,17 +22,29 @@ public class ModBlockStateProvider extends BlockStateProvider {
     @Override
     protected void registerStatesAndModels() {
         blockWithItem(ModBlocks.STEEL_BLOCK);
-        //blockWithItem(ModBlocks.DRAFTING_TABLE);
         horizontalBlock(ModBlocks.SMITHING_ANVIL.get(),
                 new ModelFile.UncheckedModelFile(modLoc("block/smithing_anvil")));
+        simpleBlockItem(ModBlocks.SMITHING_ANVIL.get(),
+                new ModelFile.UncheckedModelFile(modLoc("block/smithing_anvil")));
+
         horizontalBlock(ModBlocks.TIER_A_SMITHING_ANVIL.get(),
                 new ModelFile.UncheckedModelFile(modLoc("block/tier_a_smithing_anvil")));
+        simpleBlockItem(ModBlocks.TIER_A_SMITHING_ANVIL.get(),
+                new ModelFile.UncheckedModelFile(modLoc("block/tier_a_smithing_anvil")));
+
         horizontalBlock(ModBlocks.TIER_B_SMITHING_ANVIL.get(),
                 new ModelFile.UncheckedModelFile(modLoc("block/tier_b_smithing_anvil")));
+        simpleBlockItem(ModBlocks.TIER_B_SMITHING_ANVIL.get(),
+                new ModelFile.UncheckedModelFile(modLoc("block/tier_b_smithing_anvil")));
+
         horizontalBlock(ModBlocks.DRAFTING_TABLE.get(),
                 new ModelFile.UncheckedModelFile(modLoc("block/drafting_table")));
-        //simpleBlockWithItem(ModBlocks.STONE_SMITHING_ANVIL.get(), new ModelFile.UncheckedModelFile(modLoc("block/stone_anvil")));
+        simpleBlockItem(ModBlocks.DRAFTING_TABLE.get(),
+                new ModelFile.UncheckedModelFile(modLoc("block/drafting_table")));
+
         horizontalBlock(ModBlocks.STONE_SMITHING_ANVIL.get(),
+                new ModelFile.UncheckedModelFile(modLoc("block/stone_anvil")));
+        simpleBlockItem(ModBlocks.STONE_SMITHING_ANVIL.get(),
                 new ModelFile.UncheckedModelFile(modLoc("block/stone_anvil")));
         facingLitBlock(ModBlocks.ALLOY_FURNACE.get(), "alloy_furnace", "alloy_furnace_on");
         facingLitBlock(ModBlocks.NETHER_ALLOY_FURNACE.get(), "nether_alloy_furnace", "nether_alloy_furnace_on");

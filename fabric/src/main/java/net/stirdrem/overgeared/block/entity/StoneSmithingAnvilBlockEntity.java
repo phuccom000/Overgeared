@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class StoneSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;
 
     public StoneSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {

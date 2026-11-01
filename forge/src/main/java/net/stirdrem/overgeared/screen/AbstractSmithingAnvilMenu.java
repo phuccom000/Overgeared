@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.screen;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -20,8 +18,9 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedForge;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -98,14 +97,14 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
             }
         }
     };
-    public final AbstractSmithingAnvilBlockEntity blockEntity;
+    public final ForgeAbstractSmithingAnvilBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
     private Slot resultSlot;
     private final Player player;
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
 
-    public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
+    public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, ForgeAbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
         super(pMenuType, pContainerId);
         checkContainerSize(inv, 12);
         blockEntity = entity;
@@ -446,7 +445,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeWrapper> {
         return slot < (getGridWidth() * getGridHeight());
     }
 
-    public AbstractSmithingAnvilBlockEntity getBlockEntity() {
+    public ForgeAbstractSmithingAnvilBlockEntity getBlockEntity() {
         return blockEntity;
     }
 

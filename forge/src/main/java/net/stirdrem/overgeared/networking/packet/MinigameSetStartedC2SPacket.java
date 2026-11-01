@@ -5,14 +5,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
+import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.networking.ModMessages;
 
 import java.util.function.Supplier;
 
-import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerAnvilPositions;
-import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerMinigameVisibility;
+import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerAnvilPositions;
+import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerMinigameVisibility;
 
 public class MinigameSetStartedC2SPacket {
     private final BlockPos pos;
@@ -35,7 +35,7 @@ public class MinigameSetStartedC2SPacket {
             ServerPlayer sender = ctx.get().getSender();
             if (sender != null) {
                 BlockEntity be = sender.level().getBlockEntity(msg.pos);
-                if (be instanceof AbstractSmithingAnvilBlockEntity anvilEntity) {
+                if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilEntity) {
                     AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
                     ModMessages.sendToPlayer(new MinigameSetStartedS2CPacket(msg.pos), sender);
                     playerAnvilPositions.put(sender.getUUID(), msg.pos);

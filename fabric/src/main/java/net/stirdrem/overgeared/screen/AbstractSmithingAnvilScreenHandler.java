@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.util.ModTags;
@@ -26,7 +26,7 @@ import java.util.Optional;
  * rewards on take) is preserved.
  */
 public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
-    public final AbstractSmithingAnvilBlockEntity blockEntity;
+    public final FabricAbstractSmithingAnvilBlockEntity blockEntity;
     private final Level world;
     private final ContainerData data;
     private final Slot resultSlot;
@@ -34,7 +34,7 @@ public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
     private final boolean blueprintEnabled;
 
-    public AbstractSmithingAnvilScreenHandler(MenuType<?> type, int syncId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
+    public AbstractSmithingAnvilScreenHandler(MenuType<?> type, int syncId, Inventory inv, FabricAbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
         super(type, syncId);
         checkContainerSize(entity, 12);
         this.blockEntity = entity;
@@ -240,7 +240,7 @@ public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
         return ItemStack.EMPTY;
     }
 
-    public AbstractSmithingAnvilBlockEntity getBlockEntity() {
+    public FabricAbstractSmithingAnvilBlockEntity getBlockEntity() {
         return blockEntity;
     }
 
@@ -252,7 +252,7 @@ public class AbstractSmithingAnvilScreenHandler extends AbstractContainerMenu {
     private class AnvilResultSlot extends Slot {
         private int removeCount;
 
-        public AnvilResultSlot(AbstractSmithingAnvilBlockEntity inventory, int index, int x, int y, Player player) {
+        public AnvilResultSlot(FabricAbstractSmithingAnvilBlockEntity inventory, int index, int x, int y, Player player) {
             super(inventory, index, x, y);
         }
 

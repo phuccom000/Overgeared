@@ -5,18 +5,25 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.config.ServerConfigCommon;
 import net.stirdrem.overgeared.platform.Services;
+import net.stirdrem.overgeared.recipe.CoolingRecipe;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class Overgeared {
     public static final String MOD_ID = Constants.MOD_ID;
@@ -128,5 +135,30 @@ public class Overgeared {
             }
         }
 
+    }
+
+    @Unique
+    @Nullable
+    public static Item getCooledItem(@Nullable Item heatedItem, @NotNull Level level) {
+        if (heatedItem == null || level == null) return null;
+
+        // Wrap the single item in a container for recipe matching
+        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
+
+        // Find the first matching CoolingRecipe
+        Optional<CoolingRecipe> recipeOpt = level.getRecipeManager()
+                .getAllRecipesFor(CoolingRecipe.Type.INSTANCE)
+                .stream()
+                .filter(r -> r.matches(container, level))
+                .findFirst();
+
+        if (recipeOpt.isEmpty()) {
+            return heatedItem; // no cooling recipe found
+        }
+
+        // Return the result item from the recipe
+        CoolingRecipe recipe = recipeOpt.get();
+        ItemStack result = recipe.getResultItem(level.registryAccess());
+        return result.isEmpty() ? heatedItem : result.getItem();
     }
 }

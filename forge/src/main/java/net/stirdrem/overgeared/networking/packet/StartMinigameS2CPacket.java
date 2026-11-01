@@ -5,7 +5,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
+import net.stirdrem.overgeared.event.ForgeAnvilMinigameEvents;
 
 import java.util.function.Supplier;
 
@@ -42,7 +43,7 @@ public class StartMinigameS2CPacket {
             AnvilMinigameEvents.setHitsRemaining(msg.hits);
             AnvilMinigameEvents.setAnvilPos(player.getUUID(), msg.pos);
             AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
-            AnvilMinigameEvents.setIsVisible(msg.pos, true);
+            ForgeAnvilMinigameEvents.setIsVisible(msg.pos, true);
         });
 
         ctx.get().setPacketHandled(true);

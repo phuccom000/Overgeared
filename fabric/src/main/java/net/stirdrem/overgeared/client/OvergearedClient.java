@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
 import net.stirdrem.overgeared.entity.ModEntities;
@@ -29,7 +29,7 @@ public class OvergearedClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientModMessages.register();
-        AnvilMinigameEvents.register();
+        FabricAnvilMinigameEvents.register();
         AnvilMinigameOverlay.register();
         PopupOverlay.register();
         OvergearedTooltipEvents.register();
@@ -95,7 +95,7 @@ public class OvergearedClient implements ClientModInitializer {
      * directly to register(BlockEntityType<E>, BlockEntityRendererFactory<? super E>) for a
      * concrete E - the cast is safe since the renderer only ever touches the abstract type's API.
      */
-    private static <E extends AbstractSmithingAnvilBlockEntity> void registerAnvilRenderer(
+    private static <E extends FabricAbstractSmithingAnvilBlockEntity> void registerAnvilRenderer(
             BlockEntityType<E> type
     ) {
         BlockEntityRenderers.register(

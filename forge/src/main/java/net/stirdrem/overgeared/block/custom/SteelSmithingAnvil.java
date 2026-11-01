@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.block.custom;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.TagKey;
@@ -21,12 +19,13 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvil extends AbstractSmithingAnvil {
+public class SteelSmithingAnvil extends ForgeAbstractSmithingAnvil {
     private static final VoxelShape Z1 = Block.box(3, 9, 0, 13, 16, 16);
     private static final VoxelShape Z2 = Block.box(3, 0, 1, 13, 3, 15);
     private static final VoxelShape Z3 = Block.box(4, 0, 4, 12, 3, 12);

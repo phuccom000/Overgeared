@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.block.entity;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,11 +9,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class StoneSmithingAnvilBlockEntity extends ForgeAbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;
 
     public StoneSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {

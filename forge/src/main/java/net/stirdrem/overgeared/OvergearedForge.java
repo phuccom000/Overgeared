@@ -6,13 +6,11 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraftforge.api.distmarker.Dist;
@@ -66,19 +64,17 @@ import net.stirdrem.overgeared.item.armor.model.CustomCopperLeggings;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.recipe.BetterBrewingRecipe;
-import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.screen.*;
+import net.stirdrem.overgeared.sound.AnvilSoundServices;
+import net.stirdrem.overgeared.sound.ForgeAnvilSoundService;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
-import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Unique;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static net.stirdrem.overgeared.Overgeared.getColor;
 
@@ -110,6 +106,8 @@ public class OvergearedForge {
         ModLootModifiers.register(modEventBus);
 
         ModSounds.register(modEventBus);
+
+        AnvilSoundServices.register(new ForgeAnvilSoundService());
 
         ModEntities.register(modEventBus);
 
@@ -143,31 +141,6 @@ public class OvergearedForge {
                     .resolve("overgeared-common.toml");
             ServerConfig.loadConfig(configPath);
         }
-    }
-
-    @Unique
-    @Nullable
-    public static Item getCooledItem(@Nullable Item heatedItem, @NotNull Level level) {
-        if (heatedItem == null || level == null) return null;
-
-        // Wrap the single item in a container for recipe matching
-        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
-
-        // Find the first matching CoolingRecipe
-        Optional<CoolingRecipe> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())
-                .stream()
-                .filter(r -> r.matches(container, level))
-                .findFirst();
-
-        if (recipeOpt.isEmpty()) {
-            return heatedItem; // no cooling recipe found
-        }
-
-        // Return the result item from the recipe
-        CoolingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getResultItem(level.registryAccess());
-        return result.isEmpty() ? heatedItem : result.getItem();
     }
 
     public static void setItemHeated(ItemEntity entity) {

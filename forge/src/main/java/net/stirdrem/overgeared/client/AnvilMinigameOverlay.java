@@ -9,7 +9,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ClientConfig;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
 @OnlyIn(Dist.CLIENT)
 public class AnvilMinigameOverlay {

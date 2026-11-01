@@ -62,16 +62,16 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
                             CraftingBookCategory.MISC)
                             : CraftingBookCategory.MISC;
 
-            // 1️⃣ Parse & trim pattern
+            // Parse & trim pattern
             JsonArray patternArray = GsonHelper.getAsJsonArray(json, "pattern");
             var parsed = ShapedAlloySerializerUtil.parsePattern(patternArray, 2);
 
-            // 2️⃣ Parse key
+            // Parse key
             Map<Character, Ingredient> key =
                     ShapedAlloySerializerUtil.parseKey(
                             GsonHelper.getAsJsonObject(json, "key"));
 
-            // 3️⃣ Build ingredient list
+            // Build ingredient list
             NonNullList<Ingredient> ingredients =
                     ShapedAlloySerializerUtil.buildIngredientList(
                             parsed.pattern(),
@@ -80,7 +80,7 @@ public class ShapedAlloySmeltingRecipe extends AbstractShapedAlloyRecipe impleme
                             key
                     );
 
-            // 4️⃣ Output & extras
+            // Output & extras
             ItemStack output =
                     ShapedRecipe.itemStackFromJson(
                             GsonHelper.getAsJsonObject(json, "result"));

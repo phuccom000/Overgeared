@@ -3,6 +3,7 @@ package net.stirdrem.overgeared.networking.packet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
+import net.stirdrem.overgeared.client.FabricAnvilMinigameEvents;
 
 public class MinigameSetStartedS2CPacket {
     private final BlockPos pos;
@@ -21,6 +22,6 @@ public class MinigameSetStartedS2CPacket {
 
     public static void handle(MinigameSetStartedS2CPacket msg) {
         AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
-        AnvilMinigameEvents.setIsVisible(msg.pos, true);
+        FabricAnvilMinigameEvents.setIsVisible(msg.pos, true);
     }
 }

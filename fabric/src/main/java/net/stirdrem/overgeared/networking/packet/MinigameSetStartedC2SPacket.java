@@ -5,8 +5,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.networking.ModMessages;
 
 public class MinigameSetStartedC2SPacket {
@@ -28,7 +28,7 @@ public class MinigameSetStartedC2SPacket {
     public static void handle(MinigameSetStartedC2SPacket msg, MinecraftServer server, ServerPlayer sender) {
         server.execute(() -> {
             BlockEntity be = sender.level().getBlockEntity(msg.pos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilEntity) {
+            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvilEntity) {
                 // Upstream also calls AnvilMinigameEvents.setMinigameStarted(...) directly here,
                 // but that's a client-only class (imports net.minecraft.client.Minecraft) being
                 // touched from a C2S handler, which only ever runs server-side - that would throw
@@ -38,8 +38,8 @@ public class MinigameSetStartedC2SPacket {
                 FriendlyByteBuf out = ModMessages.buf();
                 MinigameSetStartedS2CPacket.encode(new MinigameSetStartedS2CPacket(msg.pos), out);
                 ModMessages.sendToPlayer(ModMessages.MINIGAME_SET_STARTED_ACK, out, sender);
-                ModItemInteractEvents.playerAnvilPositions.put(sender.getUUID(), msg.pos);
-                ModItemInteractEvents.playerMinigameVisibility.put(sender.getUUID(), true);
+                ClientAnvilMinigameData.playerAnvilPositions.put(sender.getUUID(), msg.pos);
+                ClientAnvilMinigameData.playerMinigameVisibility.put(sender.getUUID(), true);
                 anvilEntity.setPlayer(sender);
                 anvilEntity.setMinigameOn(true);
             }

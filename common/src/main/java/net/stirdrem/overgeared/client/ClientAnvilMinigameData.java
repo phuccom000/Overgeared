@@ -2,6 +2,7 @@ package net.stirdrem.overgeared.client;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.Overgeared;
@@ -12,27 +13,45 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ClientAnvilMinigameData {
+    public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
+    public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
+    public static final java.util.List<Popup> POPUPS = new java.util.ArrayList<>();
+    public static final float POPUP_DURATION_MS = 10000f;
+    public static final int TICKS_PER_PRINT = 1;
     public static UUID ownerUUID = null;
-    private static boolean isVisible = false;
     public static boolean minigameStarted = false;
     public static ItemStack resultItem = null;
     public static int hitsRemaining = 0;
-    public static float arrowPosition = 0;
-    public static float arrowSpeed = (float) Overgeared.getConfig().POOR_ARROW_SPEED();
-    public static final float maxArrowSpeed = (float) Overgeared.getConfig().POOR_MAX_ARROW_SPEED();
-    public static float speedIncreasePerHit = (float) Overgeared.getConfig().POOR_ARROW_SPEED_INCREASE();
+    public static int maxHits = 0;
+    public static float arrowPosition = 1;
+    // Initialize with placeholder defaults (will be overridden later)
+    public static float arrowSpeed = 0;
+    public static float maxArrowSpeed = 0;
+    public static float speedIncreasePerHit = 0;
     public static boolean movingRight = true;
     public static int perfectHits = 0;
     public static int goodHits = 0;
     public static int missedHits = 0;
-    public static int perfectZoneStart = (100 - Overgeared.getConfig().POOR_ZONE_STARTING_SIZE()) / 2;
-    public static int perfectZoneEnd = (100 + Overgeared.getConfig().POOR_ZONE_STARTING_SIZE()) / 2;
-    public static int goodZoneStart = perfectZoneStart - 10;
-    public static int goodZoneEnd = perfectZoneEnd + 10;
-    public static float zoneShrinkFactor = 0.80f;
+    public static int perfectZoneStart = 45;
+    public static int perfectZoneEnd = 55;
+    public static float perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+    public static int goodZoneStart = 35;
+    public static int goodZoneEnd = 65;
+    public static float zoneShrinkFactor = 0.95f;
     public static float zoneShiftAmount = 15.0f;
+    public static float minPerfectSize = 4;
     public static Map<BlockPos, UUID> occupiedAnvils = Collections.synchronizedMap(new HashMap<>());
     public static int skillLevel = 0;
+    public static boolean isVisible = false;
+    public static int tickAccumulator = 0;
+    public static boolean movingDown = false;
+    public static int lastPerfect = 0;
+    public static int lastGood = 0;
+    public static int lastMiss = 0;
+    // Add two static fields to track current sizes independently of clamped values:
+    public static float currentPerfectZoneSize = 0;
+    public static float currentGoodZoneSize = 0;
+
 
     // Visibility
     public static void setIsVisible(boolean visible) {
@@ -256,5 +275,95 @@ public class ClientAnvilMinigameData {
 
     public static int getSkillLevel() {
         return skillLevel;
+    }
+
+    public static void setupForQuality(String quality) {
+        switch (quality.toLowerCase(java.util.Locale.ROOT)) {
+            case "none" -> {
+                arrowSpeed = (float) Overgeared.getConfig().DEFAULT_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().DEFAULT_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().DEFAULT_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().DEFAULT_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().DEFAULT_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().DEFAULT_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().DEFAULT_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().DEFAULT_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().DEFAULT_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+            case "master" -> {
+                arrowSpeed = (float) Overgeared.getConfig().MASTER_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().MASTER_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().MASTER_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().MASTER_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().MASTER_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().MASTER_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().MASTER_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().MASTER_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().MASTER_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+            case "perfect" -> {
+                arrowSpeed = (float) Overgeared.getConfig().PERFECT_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().PERFECT_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().PERFECT_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().PERFECT_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().PERFECT_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().PERFECT_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().PERFECT_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().PERFECT_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().PERFECT_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+            case "expert" -> {
+                arrowSpeed = (float) Overgeared.getConfig().EXPERT_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().EXPERT_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().EXPERT_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().EXPERT_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().EXPERT_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().EXPERT_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().EXPERT_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().EXPERT_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().EXPERT_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+            case "well" -> {
+                arrowSpeed = (float) Overgeared.getConfig().WELL_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().WELL_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().WELL_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().WELL_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().WELL_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().WELL_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().WELL_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().WELL_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().WELL_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+            default -> { // poor
+                arrowSpeed = (float) Overgeared.getConfig().POOR_ARROW_SPEED();
+                speedIncreasePerHit = (float) Overgeared.getConfig().POOR_ARROW_SPEED_INCREASE();
+                maxArrowSpeed = (float) Overgeared.getConfig().POOR_MAX_ARROW_SPEED();
+                zoneShrinkFactor = (float) Overgeared.getConfig().POOR_ZONE_SHRINK_FACTOR();
+                perfectZoneStart = (100 - Overgeared.getConfig().POOR_ZONE_STARTING_SIZE()) / 2;
+                perfectZoneEnd = (100 + Overgeared.getConfig().POOR_ZONE_STARTING_SIZE()) / 2;
+                goodZoneStart = Math.max((100 - Overgeared.getConfig().POOR_ZONE_STARTING_SIZE() * 3) / 2, 1);
+                goodZoneEnd = Math.min((100 + Overgeared.getConfig().POOR_ZONE_STARTING_SIZE() * 3) / 2, 100);
+                minPerfectSize = Overgeared.getConfig().POOR_MIN_PERFECT_ZONE();
+                perfectZoneSize = perfectZoneEnd - perfectZoneStart;
+            }
+        }
+    }
+
+    // ===============================
+    // Popup class
+    // ===============================
+    public static class Popup {
+        public final Component text;
+        public float age; // milliseconds
+
+        public Popup(Component text) {
+            this.text = text;
+            this.age = 0f;
+        }
     }
 }

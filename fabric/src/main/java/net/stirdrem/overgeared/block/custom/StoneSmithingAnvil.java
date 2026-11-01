@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
  * ported - a stone smithing anvil that falls just re-places itself like any other falling block.
  * Would need a mixin into FallingBlockEntity.tick() to restore.
  */
-public class StoneSmithingAnvil extends AbstractSmithingAnvil {
+public class StoneSmithingAnvil extends FabricAbstractSmithingAnvil {
 
     public static VoxelShape rotateShape(Direction from, Direction to, VoxelShape shape) {
         VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};

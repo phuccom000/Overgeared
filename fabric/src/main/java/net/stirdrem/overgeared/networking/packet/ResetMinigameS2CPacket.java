@@ -5,9 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
-import net.stirdrem.overgeared.event.ModItemInteractEvents;
+import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 
 public class ResetMinigameS2CPacket {
     private final BlockPos anvilPos;
@@ -29,7 +29,7 @@ public class ResetMinigameS2CPacket {
             var player = Minecraft.getInstance().player;
             if (player != null) {
                 BlockEntity be = player.level().getBlockEntity(msg.anvilPos);
-                if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+                if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
                     String quality = anvil.minigameQuality();
                     Overgeared.LOGGER.info(
                             "Resetting minigame for {} at anvil {} with quality {}",
@@ -37,11 +37,11 @@ public class ResetMinigameS2CPacket {
                     );
 
                     // Only reset if the player's tracked anvil matches
-                    if (ModItemInteractEvents.playerAnvilPositions
+                    if (ClientAnvilMinigameData.playerAnvilPositions
                             .getOrDefault(player.getUUID(), BlockPos.ZERO)
                             .equals(msg.anvilPos)) {
-                        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
-                        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
+                        ClientAnvilMinigameData.playerAnvilPositions.remove(player.getUUID());
+                        ClientAnvilMinigameData.playerMinigameVisibility.remove(player.getUUID());
                         AnvilMinigameEvents.reset(quality);
                     }
                 }

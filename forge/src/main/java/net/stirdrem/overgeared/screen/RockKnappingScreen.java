@@ -115,7 +115,7 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
 
             };
 
-            // ❗ Disable the button if knapping is done or spot is already chipped
+            // Disable the button if knapping is done or spot is already chipped
             button.active = !menu.isKnappingFinished();
 
             this.addRenderableWidget(button);

@@ -9,10 +9,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -28,14 +26,14 @@ import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.networking.ModMessages;
-import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
+import net.stirdrem.overgeared.sound.AnvilSoundServices;
+import net.stirdrem.overgeared.sound.FabricAnvilSoundService;
 import net.stirdrem.overgeared.sound.ModSounds;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 
 public class OvergearedFabric implements ModInitializer {
 
@@ -84,6 +82,7 @@ public class OvergearedFabric implements ModInitializer {
         net.stirdrem.overgeared.item.ModCreativeModeTabs.register();
         ModEntities.register();
         ModSounds.register();
+        AnvilSoundServices.register(new FabricAnvilSoundService());
 
         ToolTypeRegistry.init();
         ModAdvancementTriggers.register();
@@ -103,27 +102,6 @@ public class OvergearedFabric implements ModInitializer {
         ModLootModifiers.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 ModCommands.register(dispatcher));
-    }
-
-    @Nullable
-    public static Item getCooledItem(@Nullable Item heatedItem, Level world) {
-        if (heatedItem == null || world == null) return null;
-
-        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
-
-        Optional<CoolingRecipe> recipeOpt = world.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE)
-                .stream()
-                .filter(r -> r.matches(container, world))
-                .findFirst();
-
-        if (recipeOpt.isEmpty()) {
-            return heatedItem;
-        }
-
-        CoolingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getResultItem(world.registryAccess());
-        return result.isEmpty() ? heatedItem : result.getItem();
     }
 
     public static boolean isDurabilityBlacklisted(ItemStack stack) {

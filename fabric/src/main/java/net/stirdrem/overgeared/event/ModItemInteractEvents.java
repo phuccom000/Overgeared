@@ -48,8 +48,8 @@ import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedFabric;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.custom.FabricAbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.datapack.FabricGrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.FabricRockInteractionReloadListener;
@@ -76,11 +76,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static net.stirdrem.overgeared.OvergearedFabric.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 
 public class ModItemInteractEvents {
-    public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
-    public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
 
     private static final ConcurrentMap<ItemEntity, Long> trackedSinceMs = new ConcurrentHashMap<>();
     private static final Map<ServerLevel, List<ItemEntity>> trackedEntitiesPerWorld = new HashMap<>();
@@ -153,7 +151,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -170,7 +168,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -183,7 +181,7 @@ public class ModItemInteractEvents {
         }
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -195,7 +193,7 @@ public class ModItemInteractEvents {
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -204,7 +202,7 @@ public class ModItemInteractEvents {
             return InteractionResult.SUCCESS;
         }
 
-        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
+        if (!(be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE)) {
             if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
@@ -248,8 +246,8 @@ public class ModItemInteractEvents {
             return InteractionResult.PASS;
         }
 
-        if (playerAnvilPositions.containsKey(playerUUID)
-                && !pos.equals(playerAnvilPositions.get(playerUUID))) {
+        if (ClientAnvilMinigameData.playerAnvilPositions.containsKey(playerUUID)
+                && !pos.equals(ClientAnvilMinigameData.playerAnvilPositions.get(playerUUID))) {
 
             serverPlayer.displayClientMessage(
                     Component.translatable("message.overgeared.another_anvil_in_use").withStyle(ChatFormatting.RED),
@@ -281,8 +279,8 @@ public class ModItemInteractEvents {
             anvilBE.setPlayer(player);
             anvilBE.setMinigameOn(true);
 
-            playerAnvilPositions.put(playerUUID, pos);
-            playerMinigameVisibility.put(playerUUID, true);
+            ClientAnvilMinigameData.playerAnvilPositions.put(playerUUID, pos);
+            ClientAnvilMinigameData.playerMinigameVisibility.put(playerUUID, true);
 
             int hitsRequired = anvilBE.getRequiredProgress();
             String quality = anvilBE.minigameQuality();
@@ -298,8 +296,8 @@ public class ModItemInteractEvents {
             StartMinigameS2CPacket.encode(new StartMinigameS2CPacket(pos, hitsRequired, quality), startBuf);
             ModMessages.sendToPlayer(ModMessages.START_MINIGAME, startBuf, serverPlayer);
         } else if (currentOwner.equals(playerUUID)) {
-            boolean visible = playerMinigameVisibility.get(playerUUID);
-            playerMinigameVisibility.put(playerUUID, !visible);
+            boolean visible = ClientAnvilMinigameData.playerMinigameVisibility.get(playerUUID);
+            ClientAnvilMinigameData.playerMinigameVisibility.put(playerUUID, !visible);
             FriendlyByteBuf toggleBuf = ModMessages.buf();
             ToggleMinigameS2CPacket.encode(new ToggleMinigameS2CPacket(pos, !visible), toggleBuf);
             ModMessages.sendToPlayer(ModMessages.TOGGLE_MINIGAME, toggleBuf, serverPlayer);
@@ -325,7 +323,7 @@ public class ModItemInteractEvents {
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
             BlockEntity be = client.level.getBlockEntity(pos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
+            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
                 Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> ClientAnvilMinigameData.clearPendingMinigame());
             }
@@ -334,16 +332,16 @@ public class ModItemInteractEvents {
 
     public static void releaseAnvil(ServerPlayer player, BlockPos pos) {
         UUID playerId = player.getUUID();
-        if (playerMinigameVisibility.get(playerId) != null)
-            playerMinigameVisibility.remove(playerId);
-        if (playerAnvilPositions.get(playerId) != null
-                && pos.equals(playerAnvilPositions.get(playerId))
+        if (ClientAnvilMinigameData.playerMinigameVisibility.get(playerId) != null)
+            ClientAnvilMinigameData.playerMinigameVisibility.remove(playerId);
+        if (ClientAnvilMinigameData.playerAnvilPositions.get(playerId) != null
+                && pos.equals(ClientAnvilMinigameData.playerAnvilPositions.get(playerId))
         ) {
-            playerAnvilPositions.remove(playerId);
+            ClientAnvilMinigameData.playerAnvilPositions.remove(playerId);
 
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
+            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
@@ -368,8 +366,8 @@ public class ModItemInteractEvents {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             UUID playerId = player.getUUID();
 
-            if (playerAnvilPositions.containsKey(playerId) &&
-                    playerAnvilPositions.get(playerId).equals(pos)) {
+            if (ClientAnvilMinigameData.playerAnvilPositions.containsKey(playerId) &&
+                    ClientAnvilMinigameData.playerAnvilPositions.get(playerId).equals(pos)) {
                 return player;
             }
         }

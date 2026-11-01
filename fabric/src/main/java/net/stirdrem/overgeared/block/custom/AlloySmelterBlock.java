@@ -111,7 +111,7 @@ public class AlloySmelterBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         if (world.isClientSide()) return null;
-        return AbstractSmithingAnvil.validateTicker(type, ModBlockEntities.ALLOY_FURNACE_BE, AlloySmelterBlockEntity::tick);
+        return FabricAbstractSmithingAnvil.validateTicker(type, ModBlockEntities.ALLOY_FURNACE_BE, AlloySmelterBlockEntity::tick);
     }
 
     // ----- Visual Effects -----

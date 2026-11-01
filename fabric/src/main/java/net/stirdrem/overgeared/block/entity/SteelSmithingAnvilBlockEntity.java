@@ -13,7 +13,7 @@ import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
 import net.stirdrem.overgeared.screen.SteelSmithingAnvilScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class SteelSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBlockEntity {
 
     public SteelSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
         super((SteelSmithingAnvil) state.getBlock(), AnvilTier.IRON, ModBlockEntities.STEEL_SMITHING_ANVIL_BE, pos, state);

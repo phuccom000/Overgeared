@@ -1,0 +1,95 @@
+package net.stirdrem.overgeared.recipe;
+
+import com.google.gson.JsonObject;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.Level;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.platform.Services;
+
+public class CoolingRecipe implements Recipe<SimpleContainer> {
+    private final ResourceLocation id;
+    private final Ingredient input;
+    private final ItemStack output;
+
+    public CoolingRecipe(ResourceLocation id, Ingredient input, ItemStack output) {
+        this.id = id;
+        this.input = input;
+        this.output = output;
+    }
+
+    @Override
+    public boolean matches(SimpleContainer container, Level world) {
+        return input.test(container.getItem(0));
+    }
+
+    @Override
+    public ItemStack assemble(SimpleContainer container, RegistryAccess registryAccess) {
+        return output.copy();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
+        return output.copy();
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    @Override
+    public RecipeSerializer<?> getSerializer() {
+        return Services.PLATFORM.getRecipeSerializer(Overgeared.id("cooling"));
+    }
+
+    @Override
+    public RecipeType<?> getType() {
+        return Type.INSTANCE;
+    }
+
+    public Ingredient getInput() {
+        return input;
+    }
+
+    public ItemStack getOutput() {
+        return output;
+    }
+
+    public static class Type implements RecipeType<CoolingRecipe> {
+        public static final CoolingRecipe.Type INSTANCE = new CoolingRecipe.Type();
+        public static final String ID = "cooling";
+    }
+
+    public static class Serializer implements RecipeSerializer<CoolingRecipe> {
+        @Override
+        public CoolingRecipe fromJson(ResourceLocation id, JsonObject json) {
+            Ingredient input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
+            ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "output"));
+            return new CoolingRecipe(id, input, output);
+        }
+
+        @Override
+        public CoolingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
+            Ingredient input = Ingredient.fromNetwork(buffer);
+            ItemStack output = buffer.readItem();
+            return new CoolingRecipe(id, input, output);
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf buffer, CoolingRecipe recipe) {
+            recipe.input.toNetwork(buffer);
+            buffer.writeItem(recipe.output);
+        }
+    }
+}

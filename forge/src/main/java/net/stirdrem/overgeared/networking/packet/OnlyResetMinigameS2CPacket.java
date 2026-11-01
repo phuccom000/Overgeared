@@ -3,7 +3,7 @@ package net.stirdrem.overgeared.networking.packet;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 
 import java.util.function.Supplier;
 

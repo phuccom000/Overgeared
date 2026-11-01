@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.block.entity;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,18 +9,19 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.block.custom.ForgeAbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
 import net.stirdrem.overgeared.screen.SteelSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class SteelSmithingAnvilBlockEntity extends ForgeAbstractSmithingAnvilBlockEntity {
 
     public SteelSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super((SteelSmithingAnvil) pBlockState.getBlock(), AnvilTier.IRON, ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
     }
 
-    public SteelSmithingAnvilBlockEntity(AbstractSmithingAnvil block, AnvilTier anvilTier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
+    public SteelSmithingAnvilBlockEntity(ForgeAbstractSmithingAnvil block, AnvilTier anvilTier, BlockEntityType<?> type, BlockPos pPos, BlockState pBlockState) {
         super(block, anvilTier, type, pPos, pBlockState);
     }
 

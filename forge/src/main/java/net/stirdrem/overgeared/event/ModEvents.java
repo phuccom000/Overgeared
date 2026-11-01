@@ -42,7 +42,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
+import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
@@ -97,7 +99,7 @@ public class ModEvents {
                     BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
                     BlockEntity be = serverLevel.getBlockEntity(anvilPos);
 
-                    if (be instanceof AbstractSmithingAnvilBlockEntity) {
+                    if (be instanceof ForgeAbstractSmithingAnvilBlockEntity) {
                         Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverLevel, anvilPos);
                         Vec3 playerWorldPos = player.position();
 
@@ -117,7 +119,7 @@ public class ModEvents {
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity) {
+            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
                 int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
@@ -283,12 +285,12 @@ public class ModEvents {
         UUID playerId = player.getUUID();
         ModMessages.sendToPlayer(new OnlyResetMinigameS2CPacket(), player);
         String blueprintQuality = BlueprintQuality.PERFECT.getDisplayName();
-        if (ModItemInteractEvents.playerAnvilPositions.containsKey(player.getUUID())) {
-            BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
+        if (ClientAnvilMinigameData.playerAnvilPositions.containsKey(player.getUUID())) {
+            BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
             BlockEntity be = player.level().getBlockEntity(anvilPos);
 
             // Only execute on server side
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
@@ -296,8 +298,8 @@ public class ModEvents {
                 // Send reset packet to the specific player
                 ModMessages.sendToPlayer(new ResetMinigameS2CPacket(anvilPos), player);
                 ModItemInteractEvents.releaseAnvil(player, anvilPos);
-                ModItemInteractEvents.playerAnvilPositions.remove(playerId);
-                ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
+                ClientAnvilMinigameData.playerAnvilPositions.remove(playerId);
+                ClientAnvilMinigameData.playerMinigameVisibility.remove(playerId);
                 Block block = player.level().getBlockState(anvilPos).getBlock();
                 blueprintQuality = anvil.minigameQuality();
                 /*if (block instanceof AbstractSmithingAnvilNew anvilNew) {
@@ -318,7 +320,7 @@ public class ModEvents {
         ModMessages.sendToPlayer(new OnlyResetMinigameS2CPacket(), player);
         BlockEntity be = player.level().getBlockEntity(anvilPos);
         String quality = "perfect";
-        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -329,8 +331,8 @@ public class ModEvents {
 
         // Send reset packet to the specific player
         //ModMessages.sendToPlayer(new ResetMinigameS2CPacket(anvilPos), player);
-        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
-        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
+        ClientAnvilMinigameData.playerAnvilPositions.remove(player.getUUID());
+        ClientAnvilMinigameData.playerMinigameVisibility.remove(player.getUUID());
     }
 
     // In ModEvents.java
@@ -340,7 +342,7 @@ public class ModEvents {
         String quality = "perfect";
         // Reset the anvil block entity
         BlockEntity be = level.getBlockEntity(anvilPos);
-        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -355,12 +357,12 @@ public class ModEvents {
             for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
                 UUID playerId = player.getUUID();
                 ModMessages.sendToPlayer(new ResetMinigameS2CPacket(anvilPos), player);
-                if (ModItemInteractEvents.playerAnvilPositions.getOrDefault(playerId, BlockPos.ZERO).equals(anvilPos)) {
+                if (ClientAnvilMinigameData.playerAnvilPositions.getOrDefault(playerId, BlockPos.ZERO).equals(anvilPos)) {
                     // Send reset packet only to this specific player
 
                     // Clear server-side tracking for this player
-                    ModItemInteractEvents.playerAnvilPositions.remove(playerId);
-                    ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
+                    ClientAnvilMinigameData.playerAnvilPositions.remove(playerId);
+                    ClientAnvilMinigameData.playerMinigameVisibility.remove(playerId);
                     break; // Only reset the first player found (should only be one)
                 }
             }

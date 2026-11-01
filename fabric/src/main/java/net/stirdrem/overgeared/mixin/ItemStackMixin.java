@@ -39,7 +39,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
-import static net.stirdrem.overgeared.OvergearedFabric.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
 /**

@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.mixin;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.nbt.CompoundTag;
@@ -24,6 +22,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedForge;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
@@ -39,7 +38,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
-import static net.stirdrem.overgeared.OvergearedForge.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 import static net.stirdrem.overgeared.util.BrokenHelper.isBroken;
 
 @Mixin(ItemStack.class)

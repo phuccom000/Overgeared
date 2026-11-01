@@ -25,7 +25,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
 import net.stirdrem.overgeared.datapack.FabricQualityAttributeReloadListener;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
@@ -74,10 +75,10 @@ public class ModEvents {
     private static void handleAnvilDistance(ServerPlayer player, Level world) {
         if (FabricLoader.getInstance().isModLoaded("valkyrienskies")) {
             if (world instanceof ServerLevel serverWorld) {
-                BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
+                BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
                 if (anvilPos != null) {
                     BlockEntity be = serverWorld.getBlockEntity(anvilPos);
-                    if (be instanceof AbstractSmithingAnvilBlockEntity) {
+                    if (be instanceof FabricAbstractSmithingAnvilBlockEntity) {
                         Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverWorld, anvilPos);
                         Vec3 playerWorldPos = player.position();
 
@@ -94,10 +95,10 @@ public class ModEvents {
         }
 
         // Fallback: vanilla behavior when Valkyrien Skies is not loaded
-        BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
+        BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
         if (anvilPos != null) {
             BlockEntity be = world.getBlockEntity(anvilPos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity) {
+            if (be instanceof FabricAbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
                 int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
@@ -216,11 +217,11 @@ public class ModEvents {
         UUID playerId = player.getUUID();
         ModMessages.sendToPlayer(ModMessages.ONLY_RESET_MINIGAME, ModMessages.buf(), player);
 
-        if (ModItemInteractEvents.playerAnvilPositions.containsKey(playerId)) {
-            BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(playerId);
+        if (ClientAnvilMinigameData.playerAnvilPositions.containsKey(playerId)) {
+            BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(playerId);
             BlockEntity be = player.level().getBlockEntity(anvilPos);
 
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
@@ -230,8 +231,8 @@ public class ModEvents {
                 ModMessages.sendToPlayer(ModMessages.RESET_MINIGAME, buf, player);
 
                 ModItemInteractEvents.releaseAnvil(player, anvilPos);
-                ModItemInteractEvents.playerAnvilPositions.remove(playerId);
-                ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
+                ClientAnvilMinigameData.playerAnvilPositions.remove(playerId);
+                ClientAnvilMinigameData.playerMinigameVisibility.remove(playerId);
             }
         }
         // Note: the original Forge code also called AnvilMinigameEvents.reset(...) directly here,
@@ -244,19 +245,19 @@ public class ModEvents {
         ModMessages.sendToPlayer(ModMessages.ONLY_RESET_MINIGAME, ModMessages.buf(), player);
 
         BlockEntity be = player.level().getBlockEntity(anvilPos);
-        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
         }
 
-        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
-        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
+        ClientAnvilMinigameData.playerAnvilPositions.remove(player.getUUID());
+        ClientAnvilMinigameData.playerMinigameVisibility.remove(player.getUUID());
     }
 
     public static void resetMinigameForAnvil(Level world, BlockPos anvilPos) {
         BlockEntity be = world.getBlockEntity(anvilPos);
-        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -270,9 +271,9 @@ public class ModEvents {
                 ResetMinigameS2CPacket.encode(new ResetMinigameS2CPacket(anvilPos), buf);
                 ModMessages.sendToPlayer(ModMessages.RESET_MINIGAME, buf, player);
 
-                if (anvilPos.equals(ModItemInteractEvents.playerAnvilPositions.get(playerId))) {
-                    ModItemInteractEvents.playerAnvilPositions.remove(playerId);
-                    ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
+                if (anvilPos.equals(ClientAnvilMinigameData.playerAnvilPositions.get(playerId))) {
+                    ClientAnvilMinigameData.playerAnvilPositions.remove(playerId);
+                    ClientAnvilMinigameData.playerMinigameVisibility.remove(playerId);
                     break; // Only one player should ever hold this anvil
                 }
             }

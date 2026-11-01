@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
+import net.stirdrem.overgeared.client.FabricAnvilMinigameEvents;
 
 public class StartMinigameS2CPacket {
 
@@ -36,6 +37,6 @@ public class StartMinigameS2CPacket {
         AnvilMinigameEvents.setHitsRemaining(msg.hits);
         AnvilMinigameEvents.setAnvilPos(player.getUUID(), msg.pos);
         AnvilMinigameEvents.setMinigameStarted(msg.pos, true);
-        AnvilMinigameEvents.setIsVisible(msg.pos, true);
+        FabricAnvilMinigameEvents.setIsVisible(msg.pos, true);
     }
 }

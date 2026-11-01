@@ -91,12 +91,12 @@ public class ModItems {
     public static final RegistryObject<Item> IRON_TONG = ITEMS.register("iron_tong",
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> WOODEN_TONGS = ITEMS.register("wooden_tongs",
-            () -> new Tongs(Tiers.WOOD, -1, -2f, new Item.Properties().durability(120)));
+            () -> new ForgeTongs(Tiers.WOOD, -1, -2f, new Item.Properties().durability(120)));
     public static final RegistryObject<Item> IRON_TONGS = ITEMS.register("iron_tongs",
-            () -> new Tongs(Tiers.IRON, -1, -2f, new Item.Properties().durability(512)));
+            () -> new ForgeTongs(Tiers.IRON, -1, -2f, new Item.Properties().durability(512)));
 
     public static final RegistryObject<Item> STEEL_TONGS = ITEMS.register("steel_tongs",
-            () -> new Tongs(ModToolTiers.STEEL, -1, -2f, new Item.Properties().durability(1024)));
+            () -> new ForgeTongs(ModToolTiers.STEEL, -1, -2f, new Item.Properties().durability(1024)));
 
     public static final RegistryObject<Item> STONE_HAMMER_HEAD = ITEMS.register("stone_hammer_head",
             () -> new Item(new Item.Properties()));

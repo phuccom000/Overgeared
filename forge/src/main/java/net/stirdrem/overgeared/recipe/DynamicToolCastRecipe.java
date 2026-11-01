@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.stirdrem.overgeared.Overgeared;
-
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -14,6 +12,7 @@ import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
@@ -68,7 +67,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
 
         if (cast.isEmpty() || !foundMaterial) return false;
 
-        // ❌ Overflow check
+        // Overflow check
         if (maxAmount > 0 && existingAmount + addedAmount > maxAmount) {
             return false;
         }
@@ -126,22 +125,22 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         // Sum total after adding
         int totalAmount = existingAmount + newAmount;
 
-        // ❌ Block if exceeds
+        //  Block if exceeds
         if (maxAmount > 0 && totalAmount > maxAmount) return ItemStack.EMPTY;
 
-        // ✅ Merge materials
+        //  Merge materials
         for (String mat : existingMatTag.getAllKeys()) {
             int oldVal = existingMatTag.getInt(mat);
             materialTotals.put(mat, materialTotals.getOrDefault(mat, 0) + oldVal);
         }
 
-        // ✅ Write merged data back
+        //  Write merged data back
         CompoundTag newMatTag = new CompoundTag();
         for (var entry : materialTotals.entrySet()) {
             newMatTag.putInt(entry.getKey(), entry.getValue());
         }
 
-        // ✅ Add complete item data to the "input" list, merging duplicates
+        //  Add complete item data to the "input" list, merging duplicates
         addItemStacksToInputList(castTag, inputItems);
 
         castTag.put("Materials", newMatTag);

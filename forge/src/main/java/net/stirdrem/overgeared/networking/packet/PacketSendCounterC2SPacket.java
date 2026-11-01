@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.ForgeAbstractSmithingAnvil;
 
 import java.util.function.Supplier;
 
@@ -33,11 +33,11 @@ public class PacketSendCounterC2SPacket {
     public static void handle(PacketSendCounterC2SPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer sender = ctx.get().getSender();
-            if (sender != null && sender.level().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
+            if (sender != null && sender.level().getBlockState(msg.pos).getBlock() instanceof ForgeAbstractSmithingAnvil) {
                 //sender.sendSystemMessage(Component.literal("Server Quality: " + msg.getCounter()));
 
                 // Call the static setter directly
-                AbstractSmithingAnvil.setQuality(msg.getCounter());
+                ForgeAbstractSmithingAnvil.setQuality(msg.getCounter());
             }
         });
         ctx.get().setPacketHandled(true);

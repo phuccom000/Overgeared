@@ -13,7 +13,7 @@ import net.stirdrem.overgeared.block.custom.TierBSmithingAnvil;
 import net.stirdrem.overgeared.screen.TierBSmithingAnvilScreenHandler;
 import org.jetbrains.annotations.Nullable;
 
-public class TierBSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class TierBSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBlockEntity {
 
     public TierBSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
         super((TierBSmithingAnvil) state.getBlock(), AnvilTier.ABOVE_B, ModBlockEntities.TIER_B_SMITHING_ANVIL_BE, pos, state);

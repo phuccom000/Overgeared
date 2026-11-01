@@ -151,7 +151,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.event.AnvilMinigameEvents;
+import net.stirdrem.overgeared.event.ForgeAnvilMinigameEvents;
 
 import java.util.function.Supplier;
 
@@ -172,7 +172,7 @@ public class HideMinigameS2CPacket {
             try {
                 // Update all client-side data at once
                 var player = Minecraft.getInstance().player;
-                AnvilMinigameEvents.hideMinigame(player.getUUID());
+                ForgeAnvilMinigameEvents.hideMinigame(player.getUUID());
             } catch (Exception e) {
                 Overgeared.LOGGER.error("Failed to process hide minigame packet", e);
             }

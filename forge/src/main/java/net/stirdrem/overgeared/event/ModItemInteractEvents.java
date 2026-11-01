@@ -55,8 +55,9 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
-import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.custom.ForgeAbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
@@ -84,14 +85,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static net.stirdrem.overgeared.OvergearedForge.getCooledItem;
+import static net.stirdrem.overgeared.Overgeared.getCooledItem;
+import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerAnvilPositions;
+import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerMinigameVisibility;
 
 
 @Mod.EventBusSubscriber(modid = Overgeared.MOD_ID)
 public class ModItemInteractEvents {
-    public static final Map<UUID, BlockPos> playerAnvilPositions = new HashMap<>();
-    public static final Map<UUID, Boolean> playerMinigameVisibility = new HashMap<>();
-    private static final Set<ItemEntity> trackedEntities = ConcurrentHashMap.newKeySet();
 
     private static final ConcurrentMap<ItemEntity, Long> trackedSinceMs = new ConcurrentHashMap<>();
 
@@ -146,7 +146,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -165,7 +165,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -180,7 +180,7 @@ public class ModItemInteractEvents {
         }
 
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -194,7 +194,7 @@ public class ModItemInteractEvents {
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -205,7 +205,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
+        if (!(be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE)) {
             if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
@@ -220,7 +220,7 @@ public class ModItemInteractEvents {
 
         if (level.isClientSide) return;
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        if (clickedState.getBlock() instanceof AbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
+        if (clickedState.getBlock() instanceof ForgeAbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
             serverPlayer.sendSystemMessage(
                     Component.translatable("message.overgeared.wrong_hammer")
                             .withStyle(ChatFormatting.RED),
@@ -341,7 +341,7 @@ public class ModItemInteractEvents {
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
             BlockEntity be = Minecraft.getInstance().level.getBlockEntity(pos);
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
+            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
                 Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> {
                     ClientAnvilMinigameData.clearPendingMinigame(); // ✅ Done
@@ -363,7 +363,7 @@ public class ModItemInteractEvents {
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
-            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
+            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
@@ -408,14 +408,6 @@ public class ModItemInteractEvents {
     }
 
     public static void hideMinigame(ServerPlayer player) {
-       /* if (!player.isCrouching()) {
-            player.getCapability(AnvilMinigameProvider.ANVIL_MINIGAME).ifPresent(minigame -> {
-                if (minigame.getVisible()) {
-                    minigame.setIsVisible(false, (ServerPlayer) player);
-                }
-            });
-        }*/
-        //AnvilMinigameEvents.hideMinigame(player.getUUID());
         ModMessages.sendToPlayer(new HideMinigameS2CPacket(), player);
     }
 

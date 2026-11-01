@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -27,7 +26,7 @@ public class ModRecipeTypes {
     public static final RegistryObject<RecipeType<ShapedNetherAlloySmeltingRecipe>> SHAPED_NETHER_ALLOY_SMELTING =
             RECIPE_TYPES.register(ShapedNetherAlloySmeltingRecipe.Type.ID, () -> ShapedNetherAlloySmeltingRecipe.Type.INSTANCE);
     public static final RegistryObject<RecipeType<ItemToToolTypeRecipe>> ITEM_TO_TOOLTYPE =
-            RECIPE_TYPES.register("item_to_tooltype", () -> RecipeType.simple(new ResourceLocation(Overgeared.MOD_ID, "item_to_tooltype")));
+            RECIPE_TYPES.register("item_to_tooltype", () -> RecipeType.simple(Overgeared.id("item_to_tooltype")));
     public static final RegistryObject<RecipeType<CoolingRecipe>> COOLING_RECIPE =
             RECIPE_TYPES.register("cooling", () -> CoolingRecipe.Type.INSTANCE);
     public static final RegistryObject<RecipeType<GrindingRecipe>> GRINDING_RECIPE =

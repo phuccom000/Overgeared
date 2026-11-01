@@ -22,7 +22,7 @@ public class PopupOverlay {
     private static void render(GuiGraphics context, float tickDelta) {
         if (!ClientConfig.POP_UP_TOGGLE.get()) return;
 
-        List<AnvilMinigameEvents.Popup> popups = AnvilMinigameEvents.getPopups();
+        List<ClientAnvilMinigameData.Popup> popups = AnvilMinigameEvents.getPopups();
         if (popups.isEmpty()) return;
 
         Minecraft client = Minecraft.getInstance();
@@ -31,7 +31,7 @@ public class PopupOverlay {
         Font font = client.font;
 
         for (int i = 0; i < popups.size(); i++) {
-            AnvilMinigameEvents.Popup popup = popups.get(i);
+            ClientAnvilMinigameData.Popup popup = popups.get(i);
 
             float progress = popup.age / POPUP_DURATION_MS;
             progress = Math.min(progress, 1f);
