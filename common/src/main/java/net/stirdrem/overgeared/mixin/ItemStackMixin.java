@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.OvergearedFabric;
+import net.stirdrem.overgeared.util.DurabilityHelper;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -77,7 +77,7 @@ public abstract class ItemStackMixin {
             return;
         }
 
-        boolean blacklisted = OvergearedFabric.isDurabilityBlacklisted(stack);
+        boolean blacklisted = DurabilityHelper.isDurabilityBlacklisted(stack);
 
         float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
         int newBaseDurability = blacklisted ? originalDurability : (int) (originalDurability * baseMultiplier);
@@ -200,7 +200,7 @@ public abstract class ItemStackMixin {
                 tongsStack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
                 overgeared$lastTongsHit.put(uuid, tick);
             }
-        } else {
+        } else if (!entity.isInWaterOrRain()) {
             entity.setSharedFlagOnFire(true);
             entity.setRemainingFireTicks(20);
         }

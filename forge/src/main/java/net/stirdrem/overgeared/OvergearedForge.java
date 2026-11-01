@@ -3,9 +3,6 @@ package net.stirdrem.overgeared;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.*;
@@ -50,7 +47,6 @@ import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.compat.curios.CuriosModPlugin;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
 import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
@@ -71,10 +67,8 @@ import net.stirdrem.overgeared.sound.AnvilSoundServices;
 import net.stirdrem.overgeared.sound.ForgeAnvilSoundService;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.nio.file.Path;
-import java.util.List;
 
 import static net.stirdrem.overgeared.Overgeared.getColor;
 
@@ -154,25 +148,6 @@ public class OvergearedForge {
                 stack.getOrCreateTag().putBoolean("Heated", true);
             stack.getTag().putLong("HeatedSince", now);
         });
-    }
-
-    @Unique
-    public static boolean isDurabilityBlacklisted(ItemStack stack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        List<? extends String> blacklist = Overgeared.getConfig().BASE_DURABILITY_BLACKLIST();
-
-        for (String entry : blacklist) {
-            if (entry.startsWith("#")) {
-                // Handle tag entries like "#forge:tools/hammers"
-                ResourceLocation tagId = ResourceLocation.tryParse(entry.substring(1));
-                TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
-                if (stack.is(tag)) return true;
-            } else {
-                // Handle direct item IDs
-                if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
-            }
-        }
-        return DurabilityBlacklistReloadListener.isBlacklisted(stack);
     }
 
 

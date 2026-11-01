@@ -53,6 +53,10 @@ public class OvergearedTooltipEvents {
         if (stack.hasTag() && stack.getTag().contains("Heated")) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         }
+        Component heatTimer = HeatedTooltip.getCooldownLine(stack);
+        if (heatTimer != null) {
+            tooltip.add(insertOffset++, heatTimer);
+        }
         // Add Polish status
         if (stack.hasTag() && stack.getTag().contains("Polished")) {
             boolean isPolished = stack.getTag().getBoolean("Polished");

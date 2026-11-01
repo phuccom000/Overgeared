@@ -3,7 +3,6 @@ package net.stirdrem.overgeared.networking.packet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 public class MinigameSyncS2CPacket {
@@ -28,7 +27,6 @@ public class MinigameSyncS2CPacket {
         }
 
         try {
-            ClientAnvilMinigameData.loadFromNBT(msg.minigameData);
             ModItemInteractEvents.handleAnvilOwnershipSync(msg.minigameData);
         } catch (Exception e) {
             Overgeared.LOGGER.error("Failed to process minigame sync packet", e);

@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 import java.util.function.Supplier;
@@ -34,8 +33,6 @@ public class MinigameSyncS2CPacket {
             }
 
             try {
-                // Update all client-side data at once
-                ClientAnvilMinigameData.loadFromNBT(minigameData);
                 ModItemInteractEvents.handleAnvilOwnershipSync(minigameData);
             } catch (Exception e) {
                 Overgeared.LOGGER.error("Failed to process minigame sync packet", e);

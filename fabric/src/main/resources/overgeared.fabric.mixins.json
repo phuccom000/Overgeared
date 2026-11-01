@@ -6,7 +6,6 @@
   "mixins": [
     "BrewingStandBlockEntityMixin",
     "ItemStackAttributeMixin",
-    "ItemStackMixin",
     "PlayerMixin"
   ],
   "client": [],

@@ -5,9 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -15,17 +13,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,12 +28,8 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -51,7 +41,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -59,36 +48,29 @@ import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
-import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.RockInteractionData;
 import net.stirdrem.overgeared.datapack.RockInteractionReloadListener;
 import net.stirdrem.overgeared.heatedtem.HeatedItemProvider;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.item.custom.ToolCastItem;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
 import net.stirdrem.overgeared.networking.packet.StartMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ToggleMinigameS2CPacket;
-import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
-import net.stirdrem.overgeared.recipe.GrindingRecipe;
-import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
+import net.stirdrem.overgeared.util.ItemInteractionHelper;
 import net.stirdrem.overgeared.util.ModTags;
-import net.stirdrem.overgeared.util.QualityHelper;
-import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static net.stirdrem.overgeared.Overgeared.getCooledItem;
+import static net.stirdrem.overgeared.util.ItemInteractionHelper.*;
 import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerAnvilPositions;
 import static net.stirdrem.overgeared.client.ClientAnvilMinigameData.playerMinigameVisibility;
-
 
 @Mod.EventBusSubscriber(modid = Overgeared.MOD_ID)
 public class ModItemInteractEvents {
@@ -114,9 +96,8 @@ public class ModItemInteractEvents {
 
         // Handle water cauldron interaction
         if (state.is(Blocks.WATER_CAULDRON)) {
-            handleCauldronInteraction(level, pos, player, heldStack, state);
+            ItemInteractionHelper.coolInCauldron(player, heldStack, state);
             // Remove the "Heated" tag if it exists
-
 
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
@@ -304,7 +285,6 @@ public class ModItemInteractEvents {
             int hitsRequired = anvilBE.getRequiredProgress();
             String quality = anvilBE.minigameQuality();
 
-
             // Sync ownership
             CompoundTag sync = new CompoundTag();
             sync.putUUID("anvilOwner", playerUUID);
@@ -358,7 +338,6 @@ public class ModItemInteractEvents {
                 && pos.equals(playerAnvilPositions.get(playerId))
         ) {
             playerAnvilPositions.remove(playerId);
-
 
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
@@ -419,197 +398,18 @@ public class ModItemInteractEvents {
         Player player = event.getEntity();
         ItemStack stack = event.getItemStack();
 
-        if (handleCooling(event, player, stack, world)) return;
-        if (handleGrinding(event, player, stack, world)) return;
-        handleMinigameCleanup(player, world);
-    }
-
-    private static boolean handleCooling(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world) {
-        if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
-
-        // includeFluids = true: the ray must stop at the water surface, otherwise it hits the block below
-        HitResult hit = player.pick(5.0D, 0.0F, true);
-        if (hit.getType() != HitResult.Type.BLOCK) return false;
-
-        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-        BlockState state = world.getBlockState(pos);
-
-        if (state.getFluidState().isSource() && state.getBlock() == Blocks.WATER) {
-            coolItem(player, stack);
+        if (ItemInteractionHelper.tryCoolInWater(player, stack, world)) {
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static boolean handleGrinding(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world) {
-        if (!player.isCrouching()) return false;
-
-        HitResult hit = player.pick(5.0D, 0.0F, false);
-        if (hit.getType() != HitResult.Type.BLOCK) return false;
-
-        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-        BlockState state = world.getBlockState(pos);
-
-        if (!state.is(ModTags.Blocks.GRINDSTONES)) return false;
-        if (player.getMainHandItem() != stack) return false;
-
-        // Priority order
-        if (handleGrindingRecipe(event, player, stack, world, pos)) return true;
-        if (handlePolishing(event, player, stack, world, pos)) return true;
-        if (handleDurabilityGrinding(event, stack, world, pos)) return true;
-
-        return false;
-    }
-
-    private static boolean handleGrindingRecipe(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world, BlockPos pos) {
-        if (!hasGrindingRecipe(stack.getItem(), world)) return false;
-
-        grindItem(player, stack);
-        playGrindEffects(world, pos);
-
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
-        return true;
-    }
-
-    private static boolean handlePolishing(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world, BlockPos pos) {
-        CompoundTag tag = stack.getTag();
-        if (tag == null || !tag.contains("Polished") || tag.getBoolean("Polished")) return false;
-
-        ItemStack resultItem;
-
-        if (stack.getCount() > 1) {
-            resultItem = stack.copy();
-            resultItem.setCount(1);
-            stack.shrink(1);
-        } else {
-            resultItem = stack;
-        }
-
-        CompoundTag resultTag = resultItem.getOrCreateTag();
-        resultTag.putBoolean("Polished", true);
-
-        // Quality downgrade if heated
-        if (tag.getBoolean("Heated") && tag.contains("ForgingQuality")) {
-            ForgingQuality quality = ForgingQuality.fromString(tag.getString("ForgingQuality"));
-            if (quality != null) {
-                ForgingQuality downgraded = quality.getLowerQuality();
-                if (downgraded != null) {
-                    resultTag.putString("ForgingQuality", downgraded.getDisplayName());
-                }
-            }
-        }
-
-        if (resultItem != stack && !player.getInventory().add(resultItem)) {
-            player.drop(resultItem, false);
-        }
-
-        playGrindEffects(world, pos);
-
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
-        return true;
-    }
-
-    private static boolean handleDurabilityGrinding(PlayerInteractEvent event, ItemStack stack, Level world, BlockPos pos) {
-        if (!stack.isDamageableItem() || stack.getDamageValue() <= 0) return false;
-
-        if (!Overgeared.getConfig().GRINDING_RESTORE_DURABILITY()) {
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            return true;
-        }
-
-        if (isBlacklisted(stack)) {
-            event.setCancellationResult(InteractionResult.PASS);
-            event.setCanceled(true);
-            return true;
-        }
-
-        applyDurabilityRepair(stack);
-        playGrindEffects(world, pos);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
-        return true;
-    }
-
-    private static boolean isBlacklisted(ItemStack stack) {
-        Item item = stack.getItem();
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-
-        for (String entry : Overgeared.getConfig().GRINDING_BLACKLIST()) {
-            if (entry.startsWith("#")) {
-                TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(entry.substring(1)));
-                if (stack.is(tag)) return true;
-            } else if (itemId != null && itemId.equals(ResourceLocation.parse(entry))) {
-                return true;
-            }
-        }
-
-        return GrindingBlacklistReloadListener.isBlacklisted(stack);
-    }
-
-    private static void applyDurabilityRepair(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-
-        int reducedCount = tag.getInt("ReducedMaxDurability");
-        int originalDurability = stack.getItem().getMaxDamage();
-
-        float baseMultiplier = (float) Overgeared.getConfig().BASE_DURABILITY_MULTIPLIER();
-        float reduction = (float) Overgeared.getConfig().DURABILITY_REDUCE_PER_GRIND();
-
-        float qualityMultiplier = tag.contains("ForgingQuality")
-                ? QualityHelper.getDurabilityMultiplier(stack)
-                : 1.0f;
-
-        int adjustedMax = (int) (originalDurability * baseMultiplier * qualityMultiplier);
-
-        float penalty = Math.max(0.1f, 1.0f - (reducedCount * reduction));
-        int effectiveMax = Math.max(1, (int) (adjustedMax * penalty));
-
-        int currentDamage = stack.getDamageValue();
-
-        if (currentDamage <= (adjustedMax - effectiveMax)) {
-            tag.putInt("ReducedMaxDurability", reducedCount + 1);
-            stack.setDamageValue(0);
             return;
         }
-
-        float restorePercent = (float) Overgeared.getConfig().DAMAGE_RESTORE_PER_GRIND();
-        int repairAmount = Math.max(1, (int) (adjustedMax * restorePercent));
-
-        int newDamage = Math.max(adjustedMax - effectiveMax, currentDamage - repairAmount);
-
-        stack.setDamageValue(newDamage);
-        tag.putInt("ReducedMaxDurability", reducedCount + 1);
-    }
-
-    private static void playGrindEffects(Level world, BlockPos pos) {
-        world.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0f, 1.2f);
-        spawnGrindParticles(world, pos);
-    }
-
-    private static void handleMinigameCleanup(Player player, Level world) {
-        if (!(player instanceof ServerPlayer serverPlayer)) return;
-
-        ItemStack mainHand = player.getMainHandItem();
-        HitResult hit = player.pick(5.0D, 0.0F, false);
-
-        if (hit.getType() != HitResult.Type.BLOCK) {
-            hideMinigame(serverPlayer);
+        InteractionResult grindResult = ItemInteractionHelper.tryGrind(player, stack, world);
+        if (grindResult != null) {
+            event.setCancellationResult(grindResult);
+            event.setCanceled(true);
             return;
         }
-
-        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-        BlockState state = world.getBlockState(pos);
-
-        if (!mainHand.is(ModTags.Items.SMITHING_HAMMERS) ||
-                !state.is(ModTags.Blocks.SMITHING_ANVIL)) {
-            hideMinigame(serverPlayer);
-        }
+        ItemInteractionHelper.handleMinigameCleanup(player, world);
     }
 
     @SubscribeEvent
@@ -652,213 +452,6 @@ public class ModItemInteractEvents {
         }
     }
 
-    private static void spawnGrindParticles(Level level, BlockPos pos) {
-        if (level instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                    pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
-                    10, 0.2, 0.2, 0.2, 0.1);
-        }
-    }
-
-    private static void handleCauldronInteraction(Level level, BlockPos pos, Player player,
-                                                  ItemStack heldStack, BlockState state) {
-        IntegerProperty levelProperty = LayeredCauldronBlock.LEVEL;
-        int waterLevel = state.getValue(levelProperty);
-
-        if (waterLevel > 0) {
-            // Cool the ingot
-            coolItem(player, heldStack);
-        }
-    }
-
-    private static ItemStack coolSingleStack(ItemStack stack, Level level) {
-        Item cooled = getCooledItem(stack.getItem(), level);
-        if (cooled == null) return stack;
-
-        ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
-
-        if (stack.hasTag()) {
-            CompoundTag tag = stack.getTag().copy();
-            tag.remove("Heated");
-            tag.remove("HeatedSince");
-            if (tag.isEmpty()) {
-                cooledStack.setTag(null);
-            } else {
-                cooledStack.setTag(tag);
-            }
-        }
-
-        return cooledStack;
-    }
-
-    private static void coolItem(Player player, ItemStack stack) {
-        Item cooled = getCooledItem(stack.getItem(), player.level());
-        if (cooled == null) return;
-        if (stack.getCount() <= 0) return;
-
-        // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
-            CompoundTag tag = stack.getTag();
-
-            if (tag != null && tag.contains("Output", Tag.TAG_COMPOUND)) {
-                ItemStack output = ItemStack.of(tag.getCompound("Output"));
-                ItemStack cooledOutput = coolSingleStack(output, player.level());
-                tag.put("Output", cooledOutput.save(new CompoundTag()));
-            }
-        }
-
-        // === Original logic (unchanged) ===
-        ItemStack cooledStack = new ItemStack(cooled, 1);
-        if (stack.hasTag()) {
-            cooledStack.setTag(stack.getTag().copy());
-            cooledStack.removeTagKey("HeatedSince");
-            cooledStack.removeTagKey("Heated");
-        }
-
-        stack.shrink(1);
-
-        if (stack.isEmpty()) {
-            if (player.getMainHandItem() == stack) {
-                player.setItemInHand(InteractionHand.MAIN_HAND, cooledStack);
-            } else if (player.getOffhandItem() == stack) {
-                player.setItemInHand(InteractionHand.OFF_HAND, cooledStack);
-            } else if (!player.getInventory().add(cooledStack)) {
-                player.drop(cooledStack, false);
-            }
-        } else {
-            if (!player.getInventory().add(cooledStack)) {
-                player.drop(cooledStack, false);
-            }
-        }
-
-        // Player#playSound excludes the player themselves (it assumes their client already played it);
-        // this runs server-side only, so broadcast to everyone including the player.
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1.0F, 1.0F);
-    }
-
-
-    private static void coolItemEntity(ItemEntity entity) {
-        ItemStack stack = entity.getItem();
-        Level level = entity.level();
-
-        Item cooled = getCooledItem(stack.getItem(), level);
-        if (cooled == null || stack.getCount() <= 0) return;
-
-        // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
-            CompoundTag tag = stack.getTag();
-
-            if (tag.contains("Output", Tag.TAG_COMPOUND)) {
-                ItemStack output = ItemStack.of(tag.getCompound("Output"));
-                ItemStack cooledOutput = coolSingleStack(output, level);
-                tag.put("Output", cooledOutput.save(new CompoundTag()));
-            }
-        }
-
-        // === Original entity logic ===
-        CompoundTag oldTag = stack.hasTag() ? stack.getTag().copy() : null;
-        ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
-
-        if (oldTag != null) {
-            oldTag.remove("Heated");
-            oldTag.remove("HeatedSince");
-            if (oldTag.isEmpty()) {
-                cooledStack.setTag(null);
-            } else {
-                cooledStack.setTag(oldTag);
-            }
-        }
-
-        entity.setItem(cooledStack);
-    }
-
-
-    private static void grindItem(Player player, ItemStack heldStack) {
-        Item cooledItem = getGrindable(heldStack.getItem(), player.level());
-        if (cooledItem != null) {
-            ItemStack cooledIngot = new ItemStack(cooledItem);
-            if (heldStack.hasTag()) {
-                cooledIngot.setTag(heldStack.getTag().copy());
-            }
-            cooledIngot.getOrCreateTag().putBoolean("Polished", true);
-            heldStack.shrink(1);
-
-            if (heldStack.isEmpty()) {
-                player.setItemInHand(player.getUsedItemHand(), cooledIngot);
-            } else {
-                if (!player.getInventory().add(cooledIngot)) {
-                    player.drop(cooledIngot, false);
-                }
-            }
-
-            if (player != null) {
-                // Server-side only: Player#playSound would skip this player, so broadcast to everyone
-                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                        SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
-            }
-        }
-    }
-
-    private static Item getGrindable(@Nullable Item heatedItem, @NotNull Level level) {
-        if (heatedItem == null || level == null) return null;
-
-        // Wrap the single item in a container for recipe matching
-        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
-
-        // Find the first matching GrindingRecipe
-        Optional<GrindingRecipe> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
-                .stream()
-                .filter(r -> r.matches(container, level))
-                .findFirst();
-
-        if (recipeOpt.isEmpty()) {
-            return heatedItem; // no grinding recipe found
-        }
-
-        // Return the result item from the recipe
-        GrindingRecipe recipe = recipeOpt.get();
-        ItemStack result = recipe.getResultItem(level.registryAccess());
-        return result.isEmpty() ? heatedItem : result.getItem();
-    }
-
-    public static boolean hasCoolingRecipe(@Nullable Item heatedItem, @NotNull Level level) {
-        if (heatedItem == null) return false;
-
-        // Wrap the item in a container for recipe matching
-        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
-
-        // Find the first matching CoolingRecipe
-        Optional<CoolingRecipe> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())
-                .stream()
-                .filter(r -> r.matches(container, level))
-                .findFirst();
-
-        // Return true if a recipe exists and produces a non-empty result
-        return recipeOpt.map(recipe -> !recipe.getResultItem(level.registryAccess()).isEmpty())
-                .orElse(false);
-    }
-
-    public static boolean hasGrindingRecipe(@Nullable Item heatedItem, @NotNull Level level) {
-        if (heatedItem == null) return false;
-
-        // Wrap the item in a container for recipe matching
-        SimpleContainer container = new SimpleContainer(new ItemStack(heatedItem));
-
-        // Find the first matching GrindingRecipe
-        Optional<GrindingRecipe> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
-                .stream()
-                .filter(r -> r.matches(container, level))
-                .findFirst();
-
-        // Return true if a recipe exists and produces a non-empty result
-        return recipeOpt.map(recipe -> !recipe.getResultItem(level.registryAccess()).isEmpty())
-                .orElse(false);
-    }
-
     private static final Map<ServerLevel, List<ItemEntity>> trackedEntitiesPerWorld = new HashMap<>();
 
     @SubscribeEvent
@@ -899,14 +492,6 @@ public class ModItemInteractEvents {
         trackedSinceMs.remove(event.getItem());
     }
 
-    private static final Map<Item, Boolean> COOLING_CACHE = new HashMap<>();
-
-    private static boolean hasCoolingRecipeCached(Item item, Level level) {
-        return COOLING_CACHE.computeIfAbsent(item, (i) ->
-                hasCoolingRecipe(i, level)   // your existing function
-        );
-    }
-
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -918,14 +503,13 @@ public class ModItemInteractEvents {
         for (ServerLevel level : server.getAllLevels()) {
             long now = level.getGameTime();
 
-            // Only run every 10 ticks
-            if (now % 10 != 0) continue;
-            // Check all online players
-
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                // Also check any open container
-                if (player.containerMenu != null && player.containerMenu != player.inventoryMenu) {
-                    checkContainerMenu(player, player.containerMenu);
+            // Housekeeping every 10 ticks; dropped items are checked every tick so they
+            // cool on the same tick as the rest of their stack in a player's inventory.
+            if (now % 10 == 0) {
+                for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                    if (player.containerMenu != null && player.containerMenu != player.inventoryMenu) {
+                        checkContainerMenu(player, player.containerMenu);
+                    }
                 }
             }
 
@@ -954,13 +538,8 @@ public class ModItemInteractEvents {
                     continue;
                 }
 
-                Long started = trackedSinceMs.get(entity);
-                boolean cooled = false;
-
-                // --- Time-based cooling ---
-                if (started != null && now - started > Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS()) {
-                    cooled = true;
-                }
+                long started = getOrStampHeatedSince(stack, now);
+                boolean cooled = now - started >= Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
 
                 // --- Water-based cooling ---
                 BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(
@@ -993,77 +572,6 @@ public class ModItemInteractEvents {
                 trackedEntitiesPerWorld.remove(level);
             }
         }
-    }
-
-    private static void checkContainerMenu(ServerPlayer player, AbstractContainerMenu menu) {
-        long gameTime = player.level().getGameTime();
-        int cooldown = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
-        boolean playedSound = false;
-
-        for (Slot slot : menu.slots) {
-            ItemStack stack = slot.getItem();
-            if (stack.isEmpty()) continue;
-
-            if (stack.hasTag() && stack.getTag().contains("HeatedSince")) {
-                long heatedAt = stack.getTag().getLong("HeatedSince");
-                if (gameTime - heatedAt >= cooldown) {
-                    coolItemInContainerSlot(player, slot);
-
-                    if (!playedSound) {
-                        player.level().playSound(null, player.blockPosition(),
-                                SoundEvents.FIRE_EXTINGUISH,
-                                SoundSource.PLAYERS, 0.5F, 1.0F);
-                        playedSound = true;
-                    }
-                }
-            }
-        }
-    }
-
-    private static void coolItemInContainerSlot(ServerPlayer player, Slot slot) {
-        ItemStack stack = slot.getItem();
-        if (stack.isEmpty()) return;
-
-        Item cooled = getCooledItem(stack.getItem(), player.level());
-        if (cooled == null) return;
-
-        // === Tool Cast special handling ===
-        if (stack.getItem() instanceof ToolCastItem && stack.hasTag()) {
-            CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains("Output", Tag.TAG_COMPOUND)) {
-                ItemStack output = ItemStack.of(tag.getCompound("Output"));
-
-                // Create cooled output
-                Item cooledOutputItem = getCooledItem(output.getItem(), player.level());
-                if (cooledOutputItem != null) {
-                    ItemStack cooledOutput = new ItemStack(cooledOutputItem, output.getCount());
-                    if (output.hasTag()) {
-                        cooledOutput.setTag(output.getTag().copy());
-                    }
-                    tag.put("Output", cooledOutput.save(new CompoundTag()));
-                }
-            }
-        }
-
-        // Create cooled stack
-        ItemStack cooledStack = new ItemStack(cooled, stack.getCount());
-
-        // Copy and clean NBT
-        if (stack.hasTag()) {
-            CompoundTag newTag = stack.getTag().copy();
-            newTag.remove("HeatedSince");
-            newTag.remove("Heated");
-
-            // Remove empty NBT
-            if (newTag.isEmpty()) {
-                cooledStack.setTag(null);
-            } else {
-                cooledStack.setTag(newTag);
-            }
-        }
-
-        // Update the slot
-        slot.set(cooledStack);
     }
 
     @SubscribeEvent

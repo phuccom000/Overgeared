@@ -4,36 +4,34 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
+import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.datapack.FabricDurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.entity.ModEntities;
+import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
+import net.stirdrem.overgeared.event.ReloadListenerRegistry;
+import net.stirdrem.overgeared.item.ModCreativeModeTabs;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
+import net.stirdrem.overgeared.screen.ModMenuTypes;
 import net.stirdrem.overgeared.sound.AnvilSoundServices;
 import net.stirdrem.overgeared.sound.FabricAnvilSoundService;
 import net.stirdrem.overgeared.sound.ModSounds;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 
 public class OvergearedFabric implements ModInitializer {
 
@@ -77,9 +75,9 @@ public class OvergearedFabric implements ModInitializer {
         DispenserBlock.registerBehavior(ModItems.IRON_UPGRADE_ARROW.get(), dispenseBehavior);
         DispenserBlock.registerBehavior(ModItems.STEEL_UPGRADE_ARROW.get(), dispenseBehavior);
         DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW.get(), dispenseBehavior);
-        net.stirdrem.overgeared.block.entity.ModBlockEntities.register();
-        net.stirdrem.overgeared.screen.ModMenuTypes.register();
-        net.stirdrem.overgeared.item.ModCreativeModeTabs.register();
+        ModBlockEntities.register();
+        ModMenuTypes.register();
+        ModCreativeModeTabs.register();
         ModEntities.init();
         ModSounds.init();
         AnvilSoundServices.register(new FabricAnvilSoundService());
@@ -87,9 +85,9 @@ public class OvergearedFabric implements ModInitializer {
         ToolTypeRegistry.init();
         ModAdvancementTriggers.register(net.fabricmc.fabric.api.object.builder.v1.advancement.CriterionRegistry::register);
 
-        net.stirdrem.overgeared.event.ReloadListenerRegistry.register();
+        ReloadListenerRegistry.register();
         ModItemInteractEvents.register();
-        net.stirdrem.overgeared.event.ModEvents.register();
+        ModEvents.register();
         ModMessages.register();
 
         if (FabricLoader.getInstance().isModLoaded("accessories")) {
@@ -102,21 +100,5 @@ public class OvergearedFabric implements ModInitializer {
         ModLootModifiers.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 ModCommands.register(dispatcher));
-    }
-
-    public static boolean isDurabilityBlacklisted(ItemStack stack) {
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        List<? extends String> blacklist = Overgeared.getConfig().BASE_DURABILITY_BLACKLIST();
-
-        for (String entry : blacklist) {
-            if (entry.startsWith("#")) {
-                ResourceLocation tagId = ResourceLocation.tryParse(entry.substring(1));
-                TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
-                if (stack.is(tag)) return true;
-            } else {
-                if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
-            }
-        }
-        return FabricDurabilityBlacklistReloadListener.isBlacklisted(stack);
     }
 }
