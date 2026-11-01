@@ -112,7 +112,6 @@ public abstract class ItemStackMixin {
         if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             return;
         }
-        if (player.isCreative()) return;
 
         long tick = world.getGameTime();
         int cooldownTicks = Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
@@ -157,6 +156,7 @@ public abstract class ItemStackMixin {
                 }
             }
         }
+        if (player.isCreative()) return;
 
         boolean hasHotItem = false;
         for (ItemStack s : player.getInventory().items) {
