@@ -383,19 +383,19 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
         BlueprintData blueprintData = blueprint.get(ModComponents.BLUEPRINT_DATA);
         if (blueprint.isEmpty() || blueprintData == null)
             return;
-        String currentQualityStr = blueprintData.quality();
-        int uses = blueprintData.uses();
-        int usesToLevel = BlueprintItem.getUsesToNextLevel(blueprint);
+        BlueprintQuality currentQuality = BlueprintQuality.fromString(blueprintData.quality());
 
-        BlueprintQuality currentQuality = BlueprintQuality.fromString(currentQualityStr);
-
-        // Attempt to read the ForgingQuality from result
-        ForgingQuality resultQuality = anvilBlock.getQuality();
-
+        // Max-tier blueprints don't progress (check before looking up uses-to-next-level, which they don't have)
         if (currentQuality == null
                 || currentQuality == BlueprintQuality.PERFECT
                 || currentQuality == BlueprintQuality.MASTER)
             return;
+
+        int uses = blueprintData.uses();
+        int usesToLevel = BlueprintItem.getUsesToNextLevel(blueprint);
+
+        // Attempt to read the ForgingQuality from result
+        ForgingQuality resultQuality = anvilBlock.getQuality();
         if (!ServerConfig.EXPERT_ABOVE_INCREASE_BLUEPRINT.get()
                 || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
             uses += switch (resultQuality) {

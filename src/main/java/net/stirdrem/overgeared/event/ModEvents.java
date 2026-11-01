@@ -134,30 +134,24 @@ public class ModEvents {
         if (player == null)
             return;
         UUID playerId = player.getUUID();
+        // Resets the client even if it isn't tracked at an anvil
         PacketDistributor.sendToPlayer(player, new OnlyResetMinigameS2CPacket());
-        String blueprintQuality = BlueprintQuality.PERFECT.getDisplayName();
-        if (ModItemInteractEvents.playerAnvilPositions.containsKey(player.getUUID())) {
-            BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(player.getUUID());
+        if (ModItemInteractEvents.playerAnvilPositions.containsKey(playerId)) {
+            BlockPos anvilPos = ModItemInteractEvents.playerAnvilPositions.get(playerId);
             BlockEntity be = player.level().getBlockEntity(anvilPos);
 
-            // Only execute on server side
             if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
                 anvil.clearOwner();
 
-                // Send reset packet to the specific player
-                PacketDistributor.sendToPlayer(player, new ResetMinigameS2CPacket(anvilPos));
+                // Releases ownership, syncs it to all clients and sends this player a ResetMinigameS2CPacket
                 ModItemInteractEvents.releaseAnvil(player, anvilPos);
                 ModItemInteractEvents.playerAnvilPositions.remove(playerId);
                 ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
-                blueprintQuality = anvil.minigameQuality().getDisplayName();
             }
-
         }
-
-        AnvilMinigameEvents.reset(blueprintQuality);
     }
 
     public static void resetMinigameForAnvil(Level level, BlockPos anvilPos) {
@@ -173,20 +167,16 @@ public class ModEvents {
             quality = anvil.minigameQuality().getDisplayName();
         }
 
-        AnvilMinigameEvents.reset(quality);
-        // Find the specific player using this anvil and reset only them
+        // Find the player using this anvil and reset only them
         if (level instanceof ServerLevel serverLevel) {
-
             for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
                 UUID playerId = player.getUUID();
-                PacketDistributor.sendToPlayer(player, new ResetMinigameS2CPacket(anvilPos));
                 if (ModItemInteractEvents.playerAnvilPositions.getOrDefault(playerId, BlockPos.ZERO).equals(anvilPos)) {
-                    // Send reset packet only to this specific player
-
+                    PacketDistributor.sendToPlayer(player, new ResetMinigameS2CPacket(anvilPos, quality));
                     // Clear server-side tracking for this player
                     ModItemInteractEvents.playerAnvilPositions.remove(playerId);
                     ModItemInteractEvents.playerMinigameVisibility.remove(playerId);
-                    break; // Only reset the first player found (should only be one)
+                    break; // Only one player can use an anvil
                 }
             }
         }

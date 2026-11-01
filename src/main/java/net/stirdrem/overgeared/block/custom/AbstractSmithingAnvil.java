@@ -167,6 +167,8 @@ public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock imple
                     // Send the quality result to server
                     PacketDistributor.sendToServer(new PacketSendCounterC2SPacket(hitQuality, pos,
                             ModSounds.ANVIL_HIT.getId(), ModSounds.FORGING_COMPLETE.getId(), ModSounds.FORGING_FAILED.getId()));
+                    // Intentional second speed-up: handleHit() already applies one. The minigame's
+                    // difficulty is tuned around 2x the configured arrowSpeedIncrease per hit.
                     AnvilMinigameEvents.speedUp();
                     return ItemInteractionResult.SUCCESS;
                 } else if (!anvil.hasQuality() && !anvil.needsMinigame()) {

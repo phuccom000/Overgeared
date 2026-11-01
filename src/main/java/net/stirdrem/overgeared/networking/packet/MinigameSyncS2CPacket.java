@@ -7,7 +7,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
 public record MinigameSyncS2CPacket(CompoundTag minigameData) implements CustomPacketPayload {
@@ -31,7 +30,6 @@ public record MinigameSyncS2CPacket(CompoundTag minigameData) implements CustomP
                 OvergearedMod.LOGGER.error("Received null minigame data in packet");
                 return;
             }
-            ClientAnvilMinigameData.loadFromNBT(payload.minigameData);
             ModItemInteractEvents.handleAnvilOwnershipSync(payload.minigameData);
         });
     }

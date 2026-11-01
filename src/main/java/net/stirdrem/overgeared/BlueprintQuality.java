@@ -87,6 +87,9 @@ public enum BlueprintQuality implements StringRepresentable {
     public int getUse() {
         if (this == NONE)
             return 0;
+        // PERFECT and MASTER are max tiers: they never level up, so they have no config value
+        if (configSupplier == null)
+            return defaultUse;
 
         try {
             return configSupplier.get().get();

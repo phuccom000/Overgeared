@@ -63,6 +63,7 @@ import net.stirdrem.overgeared.heateditem.HeatedItem;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.networking.packet.HideMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.MinigameSyncS2CPacket;
+import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.StartMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ToggleMinigameS2CPacket;
 import net.stirdrem.overgeared.recipe.CoolingRecipe;
@@ -550,10 +551,9 @@ public class ModItemInteractEvents {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality().getDisplayName();
             }
-            // 3. Clear client-side state
-            ClientAnvilMinigameData.putOccupiedAnvil(pos, null);
-            AnvilMinigameEvents.reset(quality);
-            // 4. Sync null ownership to all clients
+            // 2. Reset this player's client minigame
+            PacketDistributor.sendToPlayer(player, new ResetMinigameS2CPacket(pos, quality));
+            // 3. Sync null ownership to all clients (they clear their occupied-anvil entry on receipt)
             CompoundTag syncData = new CompoundTag();
             syncData.putLong("anvilPos", pos.asLong());
             syncData.putUUID("anvilOwner", new UUID(0, 0)); // special "no owner" UUID
