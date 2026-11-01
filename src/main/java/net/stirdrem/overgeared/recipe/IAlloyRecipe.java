@@ -12,4 +12,6 @@ public interface IAlloyRecipe {
     ItemStack getResultItem(HolderLookup.Provider provider);
 
     float getExperience();
+
+    boolean isShaped();
 }

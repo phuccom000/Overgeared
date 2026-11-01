@@ -105,6 +105,11 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
     }
 
     @Override
+    public boolean isShaped() {
+        return false;
+    }
+
+    @Override
     public String getGroup() {
         return group;
     }

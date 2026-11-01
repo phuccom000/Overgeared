@@ -108,6 +108,11 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
         return experience;
     }
 
+    @Override
+    public boolean isShaped() {
+        return false;
+    }
+
     public int getCookingTime() {
         return cookingTime;
     }

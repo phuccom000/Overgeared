@@ -76,7 +76,7 @@ public final class HeatedItem {
             }
         } else {
             // No tongs - damage the entity
-            if (!entity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+            if (!entity.hasEffect(MobEffects.FIRE_RESISTANCE) && !entity.isInWaterOrRain()) {
                 entity.setSharedFlagOnFire(true);
                 entity.setRemainingFireTicks(20);
             }

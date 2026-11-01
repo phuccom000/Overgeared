@@ -94,6 +94,11 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
         return experience;
     }
 
+    @Override
+    public boolean isShaped() {
+        return true;
+    }
+
     public int getCookingTime() {
         return cookingTime;
     }
@@ -122,7 +127,7 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
                 if (pattern.size() != 2) {
                     throw new IllegalArgumentException("2x2 pattern must have exactly 2 rows");
                 }
-                
+
                 NonNullList<Ingredient> ingredients = NonNullList.withSize(4, Ingredient.EMPTY);
                 for (int y = 0; y < 2; y++) {
                     String row = pattern.get(y);

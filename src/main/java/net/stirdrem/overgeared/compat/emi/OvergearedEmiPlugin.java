@@ -137,7 +137,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         }
     };
 
-    public static final EmiStack CASTING_WORKSTATION = EmiStack.of(ModBlocks.CASTING_FURNACE.get());
+    public static final EmiStack CASTING_WORKSTATION = EmiStack.of(ModBlocks.CAST_FURNACE.get());
     public static final EmiRecipeCategory CASTING_CATEGORY = new EmiRecipeCategory(
             OvergearedMod.loc("casting"),
             CASTING_WORKSTATION,

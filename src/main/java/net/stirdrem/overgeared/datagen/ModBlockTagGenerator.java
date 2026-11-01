@@ -30,7 +30,7 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         ModBlocks.STONE_SMITHING_ANVIL.get(),
                         ModBlocks.ALLOY_FURNACE.get(),
                         ModBlocks.NETHER_ALLOY_FURNACE.get(),
-                        ModBlocks.CASTING_FURNACE.get()
+                        ModBlocks.CAST_FURNACE.get()
                 );
 
         this.tag(ModTags.Blocks.SMITHING_ANVIL)

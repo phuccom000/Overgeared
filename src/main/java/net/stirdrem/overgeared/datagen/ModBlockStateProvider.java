@@ -44,7 +44,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
         facingLitBlock(ModBlocks.ALLOY_FURNACE.get(), "alloy_furnace", "alloy_furnace_on");
         facingLitBlock(ModBlocks.NETHER_ALLOY_FURNACE.get(), "nether_alloy_furnace", "nether_alloy_furnace_on");
-        facingLitBlock(ModBlocks.CASTING_FURNACE.get(), "casting_furnace", "casting_furnace_on");
+        facingLitBlock(ModBlocks.CAST_FURNACE.get(), "casting_furnace", "casting_furnace_on");
 
         // Drafting table has a manually-created blockstates/block model, just need the item model
         simpleBlockItem(ModBlocks.DRAFTING_TABLE.get(),

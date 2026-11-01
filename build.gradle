@@ -126,11 +126,11 @@ repositories {
 dependencies {
     // JEI
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    // runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
     // EMI
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
-    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    //runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
 
     // PolyMorph
     implementation "maven.modrinth:polymorph:${polymorph_version}"
@@ -154,6 +154,7 @@ dependencies {
     implementation "curse.maven:advanced-core-info-1661923:9083066"
     implementation "curse.maven:advanced-loot-info-1205426:9083071"
     implementation "curse.maven:ali-compat-1700110:9002626"
+    implementation "curse.maven:aquaculture-60028:7901588"
     /*modImplementation "curse.maven:biolith-852512:7074761"
     modImplementation "curse.maven:zeta-968868:7640154"
     modImplementation "curse.maven:quark-243121:7777937"

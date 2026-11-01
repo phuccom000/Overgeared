@@ -24,7 +24,7 @@ public class ModBlockLootTables extends BlockLootSubProvider {
         this.dropOther(ModBlocks.STONE_SMITHING_ANVIL.get(), Blocks.COBBLESTONE);
         this.dropSelf(ModBlocks.ALLOY_FURNACE.get());
         this.dropSelf(ModBlocks.NETHER_ALLOY_FURNACE.get());
-        this.dropSelf(ModBlocks.CASTING_FURNACE.get());
+        this.dropSelf(ModBlocks.CAST_FURNACE.get());
     }
 
     @Override

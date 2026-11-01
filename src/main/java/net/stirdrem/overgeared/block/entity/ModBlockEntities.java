@@ -47,7 +47,7 @@ public class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CastingSmelterBlockEntity>> CAST_FURNACE_BE =
             BLOCK_ENTITIES.register("casting_furnace_be", () ->
                     BlockEntityType.Builder.of(CastingSmelterBlockEntity::new,
-                            ModBlocks.CASTING_FURNACE.get()).build(null));
+                            ModBlocks.CAST_FURNACE.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

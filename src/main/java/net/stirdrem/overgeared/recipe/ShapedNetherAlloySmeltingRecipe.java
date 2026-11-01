@@ -90,6 +90,11 @@ public class ShapedNetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INe
         return experience;
     }
 
+    @Override
+    public boolean isShaped() {
+        return true;
+    }
+
     public int getCookingTime() {
         return cookingTime;
     }

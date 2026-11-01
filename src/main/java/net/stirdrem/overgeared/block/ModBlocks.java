@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.block;
 
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -10,12 +9,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.custom.*;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.AnvilTier;
 
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
@@ -58,7 +56,7 @@ public class ModBlocks {
                     .strength(3.5F, 6.0F)
                     .lightLevel(litBlockEmission())));
 
-    public static final DeferredBlock<CastingSmelterBlock> CASTING_FURNACE = registerBlock("casting_furnace",
+    public static final DeferredBlock<CastingSmelterBlock> CAST_FURNACE = registerBlock("casting_furnace",
             () -> new CastingSmelterBlock(BlockBehaviour.Properties
                     .ofFullCopy(Blocks.RED_NETHER_BRICKS)
                     .noOcclusion()
