@@ -11,12 +11,12 @@ import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
-import net.stirdrem.overgeared.screen.StoneSmithingAnvilScreenHandler;
+import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-public class StoneSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBlockEntity {
+public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;
 
     public StoneSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
@@ -32,7 +32,7 @@ public class StoneSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBl
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         if (!player.isShiftKeyDown()) {
-            return new StoneSmithingAnvilScreenHandler(syncId, playerInventory, this, this.data);
+            return new StoneSmithingAnvilMenu(syncId, playerInventory, this, this.data);
         } else return null;
     }
 

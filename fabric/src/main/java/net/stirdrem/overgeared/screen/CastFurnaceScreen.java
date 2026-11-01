@@ -7,12 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class CastFurnaceScreen extends AbstractContainerScreen<CastFurnaceScreenHandler> {
+public class CastFurnaceScreen extends AbstractContainerScreen<CastFurnaceMenu> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
             "textures/gui/cast_furnace.png");
 
-    public CastFurnaceScreen(CastFurnaceScreenHandler handler, Inventory inv, Component title) {
+    public CastFurnaceScreen(CastFurnaceMenu handler, Inventory inv, Component title) {
         super(handler, inv, title);
     }
 

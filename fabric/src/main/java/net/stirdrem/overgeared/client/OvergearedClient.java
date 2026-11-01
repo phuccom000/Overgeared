@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRenderer;
 import net.stirdrem.overgeared.entity.ModEntities;
@@ -53,15 +53,15 @@ public class OvergearedClient implements ClientModInitializer {
         EntityModelLayerRegistry.registerModelLayer(CustomCopperHelmet.LAYER_LOCATION, CustomCopperHelmet::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(CustomCopperLeggings.LAYER_LOCATION, CustomCopperLeggings::createBodyLayer);
         CopperArmorRenderer copperArmorRenderer = new CopperArmorRenderer();
-        ArmorRenderer.register(copperArmorRenderer, ModItems.COPPER_HELMET);
-        ArmorRenderer.register(copperArmorRenderer, ModItems.COPPER_LEGGINGS);
+        ArmorRenderer.register(copperArmorRenderer, ModItems.COPPER_HELMET.get());
+        ArmorRenderer.register(copperArmorRenderer, ModItems.COPPER_LEGGINGS.get());
 
-        EntityRendererRegistry.register(ModEntities.LINGERING_ARROW, LingeringArrowEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.UPGRADE_ARROW, UpgradeArrowEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LINGERING_ARROW.get(), LingeringArrowEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.UPGRADE_ARROW.get(), UpgradeArrowEntityRenderer::new);
 
-        registerArrowPotionTypeProvider(ModItems.IRON_UPGRADE_ARROW);
-        registerArrowPotionTypeProvider(ModItems.STEEL_UPGRADE_ARROW);
-        registerArrowPotionTypeProvider(ModItems.DIAMOND_UPGRADE_ARROW);
+        registerArrowPotionTypeProvider(ModItems.IRON_UPGRADE_ARROW.get());
+        registerArrowPotionTypeProvider(ModItems.STEEL_UPGRADE_ARROW.get());
+        registerArrowPotionTypeProvider(ModItems.DIAMOND_UPGRADE_ARROW.get());
 
         // layer0 (the "*_head" texture, despite the name - see upgradeArrowModel in the Forge
         // datagen) is the tintable potion-coating layer; layer1 ("*_base") is pre-colored art
@@ -69,14 +69,14 @@ public class OvergearedClient implements ClientModInitializer {
         ItemColor arrowColorProvider = (stack, tintIndex) ->
                 tintIndex == 0 && stack.hasTag() ? PotionUtils.getColor(stack) : 0xFFFFFFFF;
         ColorProviderRegistry.ITEM.register(arrowColorProvider,
-                ModItems.IRON_UPGRADE_ARROW, ModItems.STEEL_UPGRADE_ARROW,
-                ModItems.DIAMOND_UPGRADE_ARROW, ModItems.LINGERING_ARROW);
+                ModItems.IRON_UPGRADE_ARROW.get(), ModItems.STEEL_UPGRADE_ARROW.get(),
+                ModItems.DIAMOND_UPGRADE_ARROW.get(), ModItems.LINGERING_ARROW.get());
     }
 
     /**
      * Item model "overrides" predicate: 0 = plain arrow, 1 = tipped (Potion tag, no
      * LingeringPotion flag), 2 = lingering (Potion tag + LingeringPotion flag). Matches the
-     * NBT written by FletchingStationScreenHandler when crafting tipped/lingering results.
+     * NBT written by FletchingStationMenu when crafting tipped/lingering results.
      */
     private static void registerArrowPotionTypeProvider(Item item) {
         ItemProperties.register(item, new ResourceLocation("overgeared", "potion_type"),
@@ -95,7 +95,7 @@ public class OvergearedClient implements ClientModInitializer {
      * directly to register(BlockEntityType<E>, BlockEntityRendererFactory<? super E>) for a
      * concrete E - the cast is safe since the renderer only ever touches the abstract type's API.
      */
-    private static <E extends FabricAbstractSmithingAnvilBlockEntity> void registerAnvilRenderer(
+    private static <E extends AbstractSmithingAnvilBlockEntity> void registerAnvilRenderer(
             BlockEntityType<E> type
     ) {
         BlockEntityRenderers.register(

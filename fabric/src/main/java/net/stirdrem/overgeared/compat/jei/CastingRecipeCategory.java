@@ -144,10 +144,10 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
         tag.putDouble("Amount", total);
         tag.putDouble("MaxAmount", total);
 
-        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST);
+        ItemStack firedCast = new ItemStack(ModItems.CLAY_TOOL_CAST.get());
         firedCast.setTag(tag.copy());
 
-        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST);
+        ItemStack netherCast = new ItemStack(ModItems.NETHER_TOOL_CAST.get());
         netherCast.setTag(tag.copy());
 
         builder.addSlot(RecipeIngredientRole.INPUT, 1, 19)

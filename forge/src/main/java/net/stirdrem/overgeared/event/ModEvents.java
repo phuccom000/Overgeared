@@ -42,7 +42,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
@@ -99,7 +99,7 @@ public class ModEvents {
                     BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
                     BlockEntity be = serverLevel.getBlockEntity(anvilPos);
 
-                    if (be instanceof ForgeAbstractSmithingAnvilBlockEntity) {
+                    if (be instanceof AbstractSmithingAnvilBlockEntity) {
                         Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverLevel, anvilPos);
                         Vec3 playerWorldPos = player.position();
 
@@ -119,7 +119,7 @@ public class ModEvents {
         if (AnvilMinigameEvents.hasAnvilPosition(player.getUUID())) {
             BlockPos anvilPos = AnvilMinigameEvents.getAnvilPos(player.getUUID());
             BlockEntity be = level.getBlockEntity(anvilPos);
-            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
                 int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
@@ -290,7 +290,7 @@ public class ModEvents {
             BlockEntity be = player.level().getBlockEntity(anvilPos);
 
             // Only execute on server side
-            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
@@ -320,7 +320,7 @@ public class ModEvents {
         ModMessages.sendToPlayer(new OnlyResetMinigameS2CPacket(), player);
         BlockEntity be = player.level().getBlockEntity(anvilPos);
         String quality = "perfect";
-        if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -342,7 +342,7 @@ public class ModEvents {
         String quality = "perfect";
         // Reset the anvil block entity
         BlockEntity be = level.getBlockEntity(anvilPos);
-        if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.block.custom;
 
+import net.stirdrem.overgeared.platform.Services;
+
 import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -279,27 +281,53 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         return super.updateShape(pState, pDirection, pNeighborState, pLevel, pPos, pNeighborPos);
     }
 
-    protected abstract void sendHitPacket(BlockPos pos, String quality);
+    // ---- Loader-specific behaviour, see IAnvilHooks (subclasses may still override) ----
 
-    protected abstract void setMinigameVisible(BlockPos pos, boolean visible);
+    protected void sendHitPacket(BlockPos pos, String quality) {
+        Services.ANVIL.sendHitPacket(pos, quality);
+    }
 
-    protected abstract void resetMinigameForAnvil(Level level, BlockPos pos);
+    protected void setMinigameVisible(BlockPos pos, boolean visible) {
+        Services.ANVIL.setMinigameVisible(pos, visible);
+    }
 
-    protected abstract void resetMinigameForPlayer(ServerPlayer player, BlockPos pos);
+    protected void resetMinigameForAnvil(Level level, BlockPos pos) {
+        Services.ANVIL.resetMinigameForAnvil(level, pos);
+    }
 
-    protected abstract void hideMinigame(ServerPlayer player);
+    protected void resetMinigameForPlayer(ServerPlayer player, BlockPos pos) {
+        Services.ANVIL.resetMinigameForPlayer(player, pos);
+    }
 
-    protected abstract void releaseAnvil(ServerPlayer player, BlockPos pos);
+    protected void hideMinigame(ServerPlayer player) {
+        Services.ANVIL.hideMinigame(player);
+    }
 
-    protected abstract void openAnvilScreen(
-            ServerPlayer player,
-            AbstractSmithingAnvilBlockEntity anvil,
-            BlockPos pos
-    );
+    protected void releaseAnvil(ServerPlayer player, BlockPos pos) {
+        Services.ANVIL.releaseAnvil(player, pos);
+    }
 
-    protected abstract void damageHammer(
-            ItemStack held,
-            Player player,
-            InteractionHand hand
-    );
+    protected void openAnvilScreen(ServerPlayer player, AbstractSmithingAnvilBlockEntity anvil, BlockPos pos) {
+        Services.ANVIL.openAnvilScreen(player, anvil, pos);
+    }
+
+    protected void damageHammer(ItemStack held, Player player, InteractionHand hand) {
+        Services.ANVIL.damageHammer(held, player, hand);
+    }
+
+    @Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            Services.ANVIL.onPlayerDestroyAnvil(serverPlayer, pos);
+        }
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public void wasExploded(Level level, BlockPos pos, net.minecraft.world.level.Explosion explosion) {
+        if (!level.isClientSide()) {
+            Services.ANVIL.onAnvilExploded(level, pos);
+        }
+        super.wasExploded(level, pos, explosion);
+    }
 }

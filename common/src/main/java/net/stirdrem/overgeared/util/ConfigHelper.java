@@ -70,7 +70,7 @@ public class ConfigHelper {
     // -----------------------
     public static String getToolTypeForItem(Level world, ItemStack stack) {
         return world.getRecipeManager()
-                .getAllRecipesFor(Services.PLATFORM.getItemToToolTypeRecipeType())
+                .getAllRecipesFor(net.stirdrem.overgeared.recipe.ModRecipeTypes.ITEM_TO_TOOLTYPE.get())
                 .stream()
                 .filter(r -> r.getInput().test(stack))
                 .map(ItemToToolTypeRecipe::getToolType)

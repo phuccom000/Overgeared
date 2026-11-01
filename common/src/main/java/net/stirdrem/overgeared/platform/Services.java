@@ -15,6 +15,9 @@ public class Services {
     // mod is loaded.
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
 
+    public static final net.stirdrem.overgeared.platform.services.IAnvilHooks ANVIL =
+            load(net.stirdrem.overgeared.platform.services.IAnvilHooks.class);
+
     // This code is used to load a service for the current environment. Your implementation of the service must be defined
     // manually by including a text file in META-INF/services named with the fully qualified class name of the service.
     // Inside the file you should write the fully qualified class name of the implementation to load for the platform. For

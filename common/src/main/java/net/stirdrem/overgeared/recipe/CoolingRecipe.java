@@ -50,7 +50,7 @@ public class CoolingRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return Services.PLATFORM.getRecipeSerializer(Overgeared.id("cooling"));
+        return ModRecipes.COOLING_SERIALIZER.get();
     }
 
     @Override

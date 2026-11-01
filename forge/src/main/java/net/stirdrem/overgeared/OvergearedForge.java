@@ -91,7 +91,7 @@ public class OvergearedForge {
 
         ModCreativeModeTabs.register(modEventBus);
 
-        ModItems.register(modEventBus);
+        ModItems.init();
 
         ModBlocks.register(modEventBus);
 
@@ -99,17 +99,17 @@ public class OvergearedForge {
 
         ModMenuTypes.register(modEventBus);
 
-        ModRecipes.register(modEventBus);
+        ModRecipes.init();
 
-        ModRecipeTypes.register(modEventBus);
+        ModRecipeTypes.init();
 
         ModLootModifiers.register(modEventBus);
 
-        ModSounds.register(modEventBus);
+        ModSounds.init();
 
         AnvilSoundServices.register(new ForgeAnvilSoundService());
 
-        ModEntities.register(modEventBus);
+        ModEntities.init();
 
         ModAttributes.register(modEventBus);
 
@@ -505,7 +505,7 @@ public class OvergearedForge {
                 DispenserBlock.registerBehavior(ModItems.STEEL_UPGRADE_ARROW.get(), new UpgradeArrowDispenseBehavior());
                 DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW.get(), new UpgradeArrowDispenseBehavior());
             });
-            event.enqueueWork(ModAdvancementTriggers::register);
+            event.enqueueWork(() -> ModAdvancementTriggers.register(net.minecraft.advancements.CriteriaTriggers::register));
         }
 
         @SubscribeEvent

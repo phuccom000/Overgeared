@@ -4,7 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.screen.RockKnappingScreenHandler;
+import net.stirdrem.overgeared.screen.RockKnappingMenu;
 
 public class KnappingChipC2SPacket {
     private final int index;
@@ -23,7 +23,7 @@ public class KnappingChipC2SPacket {
 
     public static void handle(KnappingChipC2SPacket msg, MinecraftServer server, ServerPlayer player) {
         server.execute(() -> {
-            if (player.containerMenu instanceof RockKnappingScreenHandler menu) {
+            if (player.containerMenu instanceof RockKnappingMenu menu) {
                 if (msg.index >= 0 && msg.index < 9) {
                     menu.setChip(msg.index);
                     Overgeared.LOGGER.debug("Player {} chipped spot {} in knapping grid", player.getName().getString(), msg.index);

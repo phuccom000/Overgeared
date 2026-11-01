@@ -67,25 +67,25 @@ public class OvergearedFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(s -> server = null);
 
         // Force static init / registration for each registry class.
-        ModItems.register();
+        ModItems.init();
         ModBlocks.register();
-        ModRecipes.register();
-        ModRecipeTypes.register();
+        ModRecipes.init();
+        ModRecipeTypes.init();
 
         UpgradeArrowDispenseBehavior dispenseBehavior = new UpgradeArrowDispenseBehavior();
-        DispenserBlock.registerBehavior(ModItems.LINGERING_ARROW, dispenseBehavior);
-        DispenserBlock.registerBehavior(ModItems.IRON_UPGRADE_ARROW, dispenseBehavior);
-        DispenserBlock.registerBehavior(ModItems.STEEL_UPGRADE_ARROW, dispenseBehavior);
-        DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW, dispenseBehavior);
+        DispenserBlock.registerBehavior(ModItems.LINGERING_ARROW.get(), dispenseBehavior);
+        DispenserBlock.registerBehavior(ModItems.IRON_UPGRADE_ARROW.get(), dispenseBehavior);
+        DispenserBlock.registerBehavior(ModItems.STEEL_UPGRADE_ARROW.get(), dispenseBehavior);
+        DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW.get(), dispenseBehavior);
         net.stirdrem.overgeared.block.entity.ModBlockEntities.register();
         net.stirdrem.overgeared.screen.ModMenuTypes.register();
         net.stirdrem.overgeared.item.ModCreativeModeTabs.register();
-        ModEntities.register();
-        ModSounds.register();
+        ModEntities.init();
+        ModSounds.init();
         AnvilSoundServices.register(new FabricAnvilSoundService());
 
         ToolTypeRegistry.init();
-        ModAdvancementTriggers.register();
+        ModAdvancementTriggers.register(net.fabricmc.fabric.api.object.builder.v1.advancement.CriterionRegistry::register);
 
         net.stirdrem.overgeared.event.ReloadListenerRegistry.register();
         ModItemInteractEvents.register();

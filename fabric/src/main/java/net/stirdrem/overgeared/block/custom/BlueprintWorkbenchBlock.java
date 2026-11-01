@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.stirdrem.overgeared.screen.BlueprintWorkbenchScreenHandler;
+import net.stirdrem.overgeared.screen.BlueprintWorkbenchMenu;
 
 public class BlueprintWorkbenchBlock extends Block {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -64,7 +64,7 @@ public class BlueprintWorkbenchBlock extends Block {
     public MenuProvider getMenuProvider(BlockState state, Level world, BlockPos pos) {
         return new SimpleMenuProvider(
                 (syncId, inventory, player) ->
-                        new BlueprintWorkbenchScreenHandler(syncId, inventory),
+                        new BlueprintWorkbenchMenu(syncId, inventory),
                 CONTAINER_TITLE
         );
     }

@@ -279,7 +279,7 @@ public class OvergearedShapelessRecipeJsonBuilder
 
         @Override
         public RecipeSerializer<?> getType() {
-            return ModRecipes.CRAFTING_SHAPELESS;
+            return ModRecipes.CRAFTING_SHAPELESS.get();
         }
 
         @Override

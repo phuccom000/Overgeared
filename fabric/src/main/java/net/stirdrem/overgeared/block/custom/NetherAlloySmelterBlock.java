@@ -109,7 +109,7 @@ public class NetherAlloySmelterBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         if (world.isClientSide()) return null;
-        return FabricAbstractSmithingAnvil.validateTicker(type, ModBlockEntities.NETHER_ALLOY_FURNACE_BE, NetherAlloySmelterBlockEntity::tick);
+        return AbstractSmithingAnvil.createTickerHelper(type, ModBlockEntities.NETHER_ALLOY_FURNACE_BE, NetherAlloySmelterBlockEntity::tick);
     }
 
     @Override

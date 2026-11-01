@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.recipe.CastingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
-import net.stirdrem.overgeared.screen.CastFurnaceScreenHandler;
+import net.stirdrem.overgeared.screen.CastFurnaceMenu;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import net.stirdrem.overgeared.util.ItemStackHandler;
 import net.stirdrem.overgeared.util.ModTags;
@@ -156,7 +156,7 @@ public class CastFurnaceBlockEntity extends BlockEntity implements ExtendedScree
         inv.setItem(1, itemHandler.getStackInSlot(SLOT_CAST));
 
         Optional<CastingRecipe> recipeOpt =
-                level.getRecipeManager().getRecipeFor(ModRecipeTypes.CASTING, inv, level);
+                level.getRecipeManager().getRecipeFor(ModRecipeTypes.CASTING.get(), inv, level);
 
         if (recipeOpt.isEmpty()) return false;
 
@@ -219,7 +219,7 @@ public class CastFurnaceBlockEntity extends BlockEntity implements ExtendedScree
 
         CastingRecipe recipe =
                 level.getRecipeManager()
-                        .getRecipeFor(ModRecipeTypes.CASTING, inv, level)
+                        .getRecipeFor(ModRecipeTypes.CASTING.get(), inv, level)
                         .orElse(null);
 
         if (recipe == null) return;
@@ -301,7 +301,7 @@ public class CastFurnaceBlockEntity extends BlockEntity implements ExtendedScree
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
-        return new CastFurnaceScreenHandler(syncId, playerInventory, this, data);
+        return new CastFurnaceMenu(syncId, playerInventory, this, data);
     }
 
     @Override

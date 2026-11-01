@@ -10,10 +10,10 @@ import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
-import net.stirdrem.overgeared.screen.SteelSmithingAnvilScreenHandler;
+import net.stirdrem.overgeared.screen.SteelSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBlockEntity {
+public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
 
     public SteelSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
         super((SteelSmithingAnvil) state.getBlock(), AnvilTier.IRON, ModBlockEntities.STEEL_SMITHING_ANVIL_BE, pos, state);
@@ -28,7 +28,7 @@ public class SteelSmithingAnvilBlockEntity extends FabricAbstractSmithingAnvilBl
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         if (!player.isShiftKeyDown()) {
-            return new SteelSmithingAnvilScreenHandler(syncId, playerInventory, this, this.data);
+            return new SteelSmithingAnvilMenu(syncId, playerInventory, this, this.data);
         } else return null;
     }
 

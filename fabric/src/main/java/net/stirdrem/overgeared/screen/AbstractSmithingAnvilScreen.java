@@ -14,7 +14,7 @@ import net.stirdrem.overgeared.Overgeared;
  * panel) here too - dropped along with the RecipeBookMenu integration on the screen handler side,
  * since it's tied to Forge's StackedContents/SlotItemHandler system this port doesn't have.
  */
-public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilScreenHandler> extends AbstractContainerScreen<T> {
+public abstract class AbstractSmithingAnvilScreen<T extends AbstractSmithingAnvilMenu> extends AbstractContainerScreen<T> {
     protected ResourceLocation TEXTURE;
 
     public AbstractSmithingAnvilScreen(T handler, Inventory playerInv, Component title, boolean enableBlueprintSlot) {

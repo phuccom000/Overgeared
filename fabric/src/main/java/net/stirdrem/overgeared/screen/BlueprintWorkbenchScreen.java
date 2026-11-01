@@ -16,7 +16,7 @@ import net.stirdrem.overgeared.networking.packet.SelectToolTypeC2SPacket;
 
 import java.util.List;
 
-public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintWorkbenchScreenHandler> {
+public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintWorkbenchMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
             "textures/gui/blueprint_workbench.png");
 
@@ -27,7 +27,7 @@ public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintW
     private Button selectButton;
     private Component currentToolName;
 
-    public BlueprintWorkbenchScreen(BlueprintWorkbenchScreenHandler handler, Inventory inventory, Component title) {
+    public BlueprintWorkbenchScreen(BlueprintWorkbenchMenu handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;

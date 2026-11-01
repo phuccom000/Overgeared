@@ -7,11 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class FletchingStationScreen extends AbstractContainerScreen<FletchingStationScreenHandler> {
+public class FletchingStationScreen extends AbstractContainerScreen<FletchingStationMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
             "textures/gui/fletching_table.png");
 
-    public FletchingStationScreen(FletchingStationScreenHandler handler, Inventory playerInventory, Component title) {
+    public FletchingStationScreen(FletchingStationMenu handler, Inventory playerInventory, Component title) {
         super(handler, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;

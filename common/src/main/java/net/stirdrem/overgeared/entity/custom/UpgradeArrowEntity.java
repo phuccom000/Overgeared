@@ -24,6 +24,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.entity.ArrowTier;
 import net.stirdrem.overgeared.platform.Services;
@@ -43,7 +44,7 @@ public class UpgradeArrowEntity extends AbstractArrow {
     private Potion potion = Potions.EMPTY;
 
     public UpgradeArrowEntity(ArrowTier tier, Level level, LivingEntity shooter, ItemStack stack) {
-        super(Services.PLATFORM.getUpgradeArrowEntity(), shooter, level);
+        super(net.stirdrem.overgeared.entity.ModEntities.UPGRADE_ARROW.get(), shooter, level);
         this.referenceStack = stack;
         this.entityData.set(DATA_TIER, (byte) tier.ordinal());
 
@@ -62,7 +63,7 @@ public class UpgradeArrowEntity extends AbstractArrow {
     }
 
     public UpgradeArrowEntity(ArrowTier tier, Level level, double x, double y, double z, ItemStack stack) {
-        super(Services.PLATFORM.getUpgradeArrowEntity(), x, y, z, level);
+        super(net.stirdrem.overgeared.entity.ModEntities.UPGRADE_ARROW.get(), x, y, z, level);
         this.referenceStack = stack;
         this.entityData.set(DATA_TIER, (byte) tier.ordinal());
 
@@ -150,9 +151,9 @@ public class UpgradeArrowEntity extends AbstractArrow {
     protected ItemStack getPickupItem() {
         return switch (getArrowTier()) {
             case FLINT -> new ItemStack(Items.ARROW);
-            case IRON -> new ItemStack(Services.PLATFORM.getIronArrow());
-            case STEEL -> new ItemStack(Services.PLATFORM.getSteelArrow());
-            case DIAMOND -> new ItemStack(Services.PLATFORM.getDiamondArrow());
+            case IRON -> new ItemStack(ModItems.IRON_UPGRADE_ARROW.get());
+            case STEEL -> new ItemStack(ModItems.STEEL_UPGRADE_ARROW.get());
+            case DIAMOND -> new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW.get());
         };
     }
 

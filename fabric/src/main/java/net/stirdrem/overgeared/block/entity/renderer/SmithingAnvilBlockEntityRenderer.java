@@ -20,12 +20,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<FabricAbstractSmithingAnvilBlockEntity> {
+public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<AbstractSmithingAnvilBlockEntity> {
     private final ItemRenderer itemRenderer;
 
     public SmithingAnvilBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
@@ -38,7 +38,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<Fab
     private static final float BLOCK_BASE_Y_OFFSET = 0.09f;
 
     @Override
-    public void render(FabricAbstractSmithingAnvilBlockEntity blockEntity, float tickDelta, PoseStack matrices,
+    public void render(AbstractSmithingAnvilBlockEntity blockEntity, float tickDelta, PoseStack matrices,
                        MultiBufferSource vertexConsumers, int light, int overlay) {
         // Render the output item from slot 10
         ItemStack output = blockEntity.getRenderStack(10);
@@ -78,7 +78,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<Fab
         renderStack(matrices, vertexConsumers, hammer, blockEntity, 0f, 1.025f, 0.43f, 135f, 0.5f, 1.0f);
     }
 
-    private boolean areInputSlotsEmpty(FabricAbstractSmithingAnvilBlockEntity be) {
+    private boolean areInputSlotsEmpty(AbstractSmithingAnvilBlockEntity be) {
         for (int i = 0; i < 9; i++) { // assuming slots 0-8 are inputs
             if (!be.getRenderStack(i).isEmpty()) {
                 return false;
@@ -88,7 +88,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<Fab
     }
 
     private int renderPass(PoseStack matrices, MultiBufferSource vertexConsumers,
-                           FabricAbstractSmithingAnvilBlockEntity blockEntity,
+                           AbstractSmithingAnvilBlockEntity blockEntity,
                            Set<Item> renderedItems, Set<Integer> renderedSlots,
                            float zOffset, int renderedCount, boolean checkUniqueness, float heightScale) {
 
@@ -148,7 +148,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<Fab
     }
 
     private void renderStack(PoseStack matrices, MultiBufferSource vertexConsumers,
-                             ItemStack itemStack, FabricAbstractSmithingAnvilBlockEntity blockEntity,
+                             ItemStack itemStack, AbstractSmithingAnvilBlockEntity blockEntity,
                              float xOffset, float yOffset, float zOffset,
                              float rotationDegrees, float scale, float heightScale) {
 

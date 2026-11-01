@@ -31,13 +31,33 @@ public class ToolCastItem extends Item {
     private final boolean allowMaterialInsert;
     private final boolean haveDurability;
 
+    /** Config default of firedCastDurability, used when the config isn't loaded yet. */
+    private static final int DEFAULT_FIRED_CAST_DURABILITY = 5;
+
     public ToolCastItem(boolean allowMaterialInsert, boolean haveDurability, Properties settings) {
-        // Vanilla's Item#getMaxDamage() is final (derived from Settings at construction),
-        // unlike Forge's per-stack getMaxDamage(ItemStack) override, so the configured
-        // durability is baked in here instead of read dynamically on every call.
-        super(haveDurability ? settings.durability(Overgeared.getConfig().FIRED_CAST_DURABILITY()) : settings);
+        // Vanilla's Item#getMaxDamage() is final and fixed at construction, so a durability is baked in here.
+        // Items are constructed during registration, before Forge loads config files, so this must not
+        // require the config to be loaded. On Forge the configured value is applied per stack by
+        // getMaxDamage(ItemStack) below; on Fabric the config is already loaded at this point.
+        super(haveDurability ? settings.durability(initialDurability()) : settings);
         this.allowMaterialInsert = allowMaterialInsert;
         this.haveDurability = haveDurability;
+    }
+
+    private static int initialDurability() {
+        try {
+            return Math.max(1, Overgeared.getConfig().FIRED_CAST_DURABILITY());
+        } catch (IllegalStateException configNotLoaded) {
+            return DEFAULT_FIRED_CAST_DURABILITY;
+        }
+    }
+
+    /**
+     * Forge's per-stack durability hook (IForgeItem#getMaxDamage). Not an override in vanilla/Fabric, where it is
+     * simply unused; on Forge it reads the configured value every time, as the original Forge version did.
+     */
+    public int getMaxDamage(ItemStack stack) {
+        return haveDurability ? Overgeared.getConfig().FIRED_CAST_DURABILITY() : 0;
     }
 
     @Override

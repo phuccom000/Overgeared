@@ -2,7 +2,11 @@ package net.stirdrem.overgeared.platform.services;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -10,6 +14,9 @@ import net.stirdrem.overgeared.config.ServerConfigCommon;
 import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 public interface IPlatformHelper {
 
@@ -47,20 +54,40 @@ public interface IPlatformHelper {
 
     ServerConfigCommon getConfig();
 
-    <T extends Recipe<?>> RecipeSerializer<T> getRecipeSerializer(ResourceLocation id);
+    /**
+     * Builds an entity type. Vanilla's EntityType.Builder#build logs "No data fixer registered" for modded entities
+     * on Fabric, so each loader uses its own builder (Forge: vanilla builder, Fabric: FabricEntityTypeBuilder).
+     */
+    <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType<T> createEntityType(
+            String name, net.minecraft.world.entity.EntityType.EntityFactory<T> factory, net.minecraft.world.entity.MobCategory category,
+            float width, float height, int trackingRange, int updateInterval);
 
-    <T extends Recipe<?>> RecipeType<T> getRecipeType(ResourceLocation id);
+    /** The recipe-book type of the smithing anvil (an extended vanilla enum constant on both loaders). */
+    net.minecraft.world.inventory.RecipeBookType getForgingRecipeBookType();
 
-    RecipeType<ItemToToolTypeRecipe> getItemToToolTypeRecipeType();
+    /** Fires the loader's "player crafted an item" event, if it has one (Forge does, Fabric doesn't). */
+    default void onPlayerCrafted(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.item.ItemStack crafted, net.minecraft.world.Container craftMatrix) {
+    }
 
-    EntityType<LingeringArrowEntity> getLingeringArrowEntity();
+    /**
+     * Opens a menu whose type reads the block position from the opening packet
+     * (Forge {@code NetworkHooks.openScreen}, Fabric {@code ExtendedScreenHandlerFactory}).
+     */
+    void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider provider, net.minecraft.core.BlockPos pos);
 
-    EntityType<UpgradeArrowEntity> getUpgradeArrowEntity();
+    /** The running server, or null when none is running (e.g. on the title screen). */
+    @org.jetbrains.annotations.Nullable
+    net.minecraft.server.MinecraftServer getServer();
 
-    Item getIronArrow();
 
-    Item getSteelArrow();
 
-    Item getDiamondArrow();
+    /**
+     * Creates a tool tier. Forge registers it with {@code TierSortingRegistry} (sorted between {@code after}
+     * and {@code before}, mining gated by {@code needsTag}); Fabric relies on the needs_*_tool tags alone.
+     */
+    Tier createToolTier(String name, int level, int uses, float speed, float attackDamageBonus, int enchantability,
+                        TagKey<Block> needsTag, Supplier<Ingredient> repairIngredient, List<Tier> after, List<Tier> before);
 
+    /** Creates a tongs item; Forge adds its tool-action override. */
+    Item createTongs(Tier tier, int attackDamageModifier, float attackSpeedModifier, Item.Properties properties);
 }

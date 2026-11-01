@@ -4,8 +4,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class SteelSmithingAnvilScreen extends AbstractSmithingAnvilScreen<SteelSmithingAnvilScreenHandler> {
-    public SteelSmithingAnvilScreen(SteelSmithingAnvilScreenHandler handler, Inventory playerInv, Component title) {
+public class SteelSmithingAnvilScreen extends AbstractSmithingAnvilScreen<SteelSmithingAnvilMenu> {
+    public SteelSmithingAnvilScreen(SteelSmithingAnvilMenu handler, Inventory playerInv, Component title) {
         super(handler, playerInv, title, Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING());
     }
 }

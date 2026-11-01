@@ -101,10 +101,10 @@ public class OvergearedTooltipEvents {
         if (stack.is(Items.FLINT) && Overgeared.getConfig().GET_ROCK_USING_FLINT()) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.flint_flavor").withStyle(ChatFormatting.GRAY));
         }
-        if (stack.is(ModItems.DIAMOND_SHARD)) {
+        if (stack.is(ModItems.DIAMOND_SHARD.get())) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.diamond_shard").withStyle(ChatFormatting.GRAY));
         }
-        if (stack.is(ModItems.STONE_HAMMER_HEAD)) {
+        if (stack.is(ModItems.STONE_HAMMER_HEAD.get())) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.stone_hammer_head").withStyle(ChatFormatting.GRAY));
         }
         if (stack.is(ModTags.Items.KNAPPABLE)) {

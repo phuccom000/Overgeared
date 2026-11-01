@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.recipe.NetherAlloySmeltingRecipe;
 import net.stirdrem.overgeared.recipe.ShapedNetherAlloySmeltingRecipe;
-import net.stirdrem.overgeared.screen.NetherAlloySmelterScreenHandler;
+import net.stirdrem.overgeared.screen.NetherAlloySmelterMenu;
 import net.stirdrem.overgeared.util.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -298,7 +298,7 @@ public class NetherAlloySmelterBlockEntity extends BlockEntity implements Extend
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
-        return new NetherAlloySmelterScreenHandler(syncId, playerInventory, this, this.data);
+        return new NetherAlloySmelterMenu(syncId, playerInventory, this, this.data);
     }
 
     @Override

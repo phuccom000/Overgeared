@@ -51,9 +51,9 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         if (output.is(ModTags.Items.TOOL_PARTS)) return "tool_head";
         if (item instanceof TieredItem || item instanceof ProjectileWeaponItem) return "tools";
 
-        if (item == ModItems.IRON_PLATE
-                || item == ModItems.STEEL_PLATE
-                || item == ModItems.COPPER_PLATE) {
+        if (item == ModItems.IRON_PLATE.get()
+                || item == ModItems.STEEL_PLATE.get()
+                || item == ModItems.COPPER_PLATE.get()) {
             return "plate";
         }
 
@@ -234,9 +234,9 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
         ItemStack[] arrows = {
                 new ItemStack(Items.ARROW),
-                new ItemStack(ModItems.IRON_UPGRADE_ARROW),
-                new ItemStack(ModItems.STEEL_UPGRADE_ARROW),
-                new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW)
+                new ItemStack(ModItems.IRON_UPGRADE_ARROW.get()),
+                new ItemStack(ModItems.STEEL_UPGRADE_ARROW.get()),
+                new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW.get())
         };
 
         List<Potion> potions = BuiltInRegistries.POTION.stream()
@@ -318,10 +318,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     // ----------------------------
     @Override
     public void registerItemSubtypes(ISubtypeRegistration registration) {
-        registration.useNbtForSubtypes(ModItems.LINGERING_ARROW);
-        registration.useNbtForSubtypes(ModItems.IRON_UPGRADE_ARROW);
-        registration.useNbtForSubtypes(ModItems.STEEL_UPGRADE_ARROW);
-        registration.useNbtForSubtypes(ModItems.DIAMOND_UPGRADE_ARROW);
+        registration.useNbtForSubtypes(ModItems.LINGERING_ARROW.get());
+        registration.useNbtForSubtypes(ModItems.IRON_UPGRADE_ARROW.get());
+        registration.useNbtForSubtypes(ModItems.STEEL_UPGRADE_ARROW.get());
+        registration.useNbtForSubtypes(ModItems.DIAMOND_UPGRADE_ARROW.get());
     }
 
     // ----------------------------
@@ -333,23 +333,23 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 
-        registration.addRecipeTransferHandler(SteelSmithingAnvilScreenHandler.class,
+        registration.addRecipeTransferHandler(SteelSmithingAnvilMenu.class,
                 ModMenuTypes.STEEL_SMITHING_ANVIL_MENU,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
-        registration.addRecipeTransferHandler(StoneSmithingAnvilScreenHandler.class,
+        registration.addRecipeTransferHandler(StoneSmithingAnvilMenu.class,
                 ModMenuTypes.STONE_SMITHING_ANVIL_MENU,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
-        registration.addRecipeTransferHandler(TierASmithingAnvilScreenHandler.class,
+        registration.addRecipeTransferHandler(TierASmithingAnvilMenu.class,
                 ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
-        registration.addRecipeTransferHandler(TierBSmithingAnvilScreenHandler.class,
+        registration.addRecipeTransferHandler(TierBSmithingAnvilMenu.class,
                 ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
-        registration.addRecipeTransferHandler(FletchingStationScreenHandler.class,
+        registration.addRecipeTransferHandler(FletchingStationMenu.class,
                 ModMenuTypes.FLETCHING_STATION_MENU,
                 FletchingCategory.FLETCHING_RECIPE_TYPE, 0, 4, 5, 36);
     }

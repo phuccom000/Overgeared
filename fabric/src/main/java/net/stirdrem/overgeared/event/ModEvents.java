@@ -25,7 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.compat.valkyrienskies.ValkyrienSkiesCompat;
 import net.stirdrem.overgeared.datapack.FabricQualityAttributeReloadListener;
@@ -78,7 +78,7 @@ public class ModEvents {
                 BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
                 if (anvilPos != null) {
                     BlockEntity be = serverWorld.getBlockEntity(anvilPos);
-                    if (be instanceof FabricAbstractSmithingAnvilBlockEntity) {
+                    if (be instanceof AbstractSmithingAnvilBlockEntity) {
                         Vec3 anvilWorldPos = ValkyrienSkiesCompat.getActualWorldPos(serverWorld, anvilPos);
                         Vec3 playerWorldPos = player.position();
 
@@ -98,7 +98,7 @@ public class ModEvents {
         BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
         if (anvilPos != null) {
             BlockEntity be = world.getBlockEntity(anvilPos);
-            if (be instanceof FabricAbstractSmithingAnvilBlockEntity) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity) {
                 double distSq = player.blockPosition().distSqr(anvilPos);
                 int maxDist = Overgeared.getConfig().MAX_ANVIL_DISTANCE();
                 if (distSq > (double) maxDist * maxDist) {
@@ -221,7 +221,7 @@ public class ModEvents {
             BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(playerId);
             BlockEntity be = player.level().getBlockEntity(anvilPos);
 
-            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                 anvil.setProgress(0);
                 anvil.setChanged();
                 anvil.setMinigameOn(false);
@@ -245,7 +245,7 @@ public class ModEvents {
         ModMessages.sendToPlayer(ModMessages.ONLY_RESET_MINIGAME, ModMessages.buf(), player);
 
         BlockEntity be = player.level().getBlockEntity(anvilPos);
-        if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -257,7 +257,7 @@ public class ModEvents {
 
     public static void resetMinigameForAnvil(Level world, BlockPos anvilPos) {
         BlockEntity be = world.getBlockEntity(anvilPos);
-        if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvil) {
+        if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
             anvil.setProgress(0);
             anvil.setChanged();
             anvil.setMinigameOn(false);
@@ -329,48 +329,48 @@ public class ModEvents {
     private static void registerWanderingTraderTrades() {
         // Level 1 = common pool, level 2 = rare pool (vanilla's WanderingTraderTradeOffers convention)
         TradeOfferHelper.registerWanderingTraderOffers(1, trades ->
-                trades.add(new BlueprintWanderingTrade(new ItemStack(ModItems.BLUEPRINT), 1, 5)));
+                trades.add(new BlueprintWanderingTrade(new ItemStack(ModItems.BLUEPRINT.get()), 1, 5)));
         TradeOfferHelper.registerWanderingTraderOffers(2, trades ->
-                trades.add(new BlueprintWanderingTrade(new ItemStack(ModItems.BLUEPRINT), 1, 10)));
+                trades.add(new BlueprintWanderingTrade(new ItemStack(ModItems.BLUEPRINT.get()), 1, 10)));
     }
 
     private static List<Item> WEAPONSMITH_ITEMS() {
         return List.of(
-                ModItems.IRON_SWORD_BLADE, ModItems.GOLDEN_SWORD_BLADE,
-                ModItems.STEEL_SWORD_BLADE, ModItems.COPPER_SWORD_BLADE,
-                ModItems.COPPER_SWORD, ModItems.STEEL_SWORD
+                ModItems.IRON_SWORD_BLADE.get(), ModItems.GOLDEN_SWORD_BLADE.get(),
+                ModItems.STEEL_SWORD_BLADE.get(), ModItems.COPPER_SWORD_BLADE.get(),
+                ModItems.COPPER_SWORD.get(), ModItems.STEEL_SWORD.get()
         );
     }
 
     private static List<Item> TOOLSMITH_ITEMS() {
         return List.of(
-                ModItems.IRON_PICKAXE_HEAD, ModItems.GOLDEN_PICKAXE_HEAD,
-                ModItems.STEEL_PICKAXE_HEAD, ModItems.COPPER_PICKAXE_HEAD,
+                ModItems.IRON_PICKAXE_HEAD.get(), ModItems.GOLDEN_PICKAXE_HEAD.get(),
+                ModItems.STEEL_PICKAXE_HEAD.get(), ModItems.COPPER_PICKAXE_HEAD.get(),
 
-                ModItems.IRON_AXE_HEAD, ModItems.GOLDEN_AXE_HEAD,
-                ModItems.STEEL_AXE_HEAD, ModItems.COPPER_AXE_HEAD,
+                ModItems.IRON_AXE_HEAD.get(), ModItems.GOLDEN_AXE_HEAD.get(),
+                ModItems.STEEL_AXE_HEAD.get(), ModItems.COPPER_AXE_HEAD.get(),
 
-                ModItems.IRON_SHOVEL_HEAD, ModItems.GOLDEN_SHOVEL_HEAD,
-                ModItems.STEEL_SHOVEL_HEAD, ModItems.COPPER_SHOVEL_HEAD,
+                ModItems.IRON_SHOVEL_HEAD.get(), ModItems.GOLDEN_SHOVEL_HEAD.get(),
+                ModItems.STEEL_SHOVEL_HEAD.get(), ModItems.COPPER_SHOVEL_HEAD.get(),
 
-                ModItems.IRON_HOE_HEAD, ModItems.GOLDEN_HOE_HEAD,
-                ModItems.STEEL_HOE_HEAD, ModItems.COPPER_HOE_HEAD,
+                ModItems.IRON_HOE_HEAD.get(), ModItems.GOLDEN_HOE_HEAD.get(),
+                ModItems.STEEL_HOE_HEAD.get(), ModItems.COPPER_HOE_HEAD.get(),
 
-                ModItems.COPPER_PICKAXE, ModItems.COPPER_AXE,
-                ModItems.COPPER_SHOVEL, ModItems.COPPER_HOE,
+                ModItems.COPPER_PICKAXE.get(), ModItems.COPPER_AXE.get(),
+                ModItems.COPPER_SHOVEL.get(), ModItems.COPPER_HOE.get(),
 
-                ModItems.STEEL_PICKAXE, ModItems.STEEL_AXE,
-                ModItems.STEEL_SHOVEL, ModItems.STEEL_HOE
+                ModItems.STEEL_PICKAXE.get(), ModItems.STEEL_AXE.get(),
+                ModItems.STEEL_SHOVEL.get(), ModItems.STEEL_HOE.get()
         );
     }
 
     private static List<Item> ARMORER_ITEMS() {
         return List.of(
-                ModItems.COPPER_HELMET, ModItems.COPPER_CHESTPLATE,
-                ModItems.COPPER_LEGGINGS, ModItems.COPPER_BOOTS,
+                ModItems.COPPER_HELMET.get(), ModItems.COPPER_CHESTPLATE.get(),
+                ModItems.COPPER_LEGGINGS.get(), ModItems.COPPER_BOOTS.get(),
 
-                ModItems.STEEL_HELMET, ModItems.STEEL_CHESTPLATE,
-                ModItems.STEEL_LEGGINGS, ModItems.STEEL_BOOTS
+                ModItems.STEEL_HELMET.get(), ModItems.STEEL_CHESTPLATE.get(),
+                ModItems.STEEL_LEGGINGS.get(), ModItems.STEEL_BOOTS.get()
         );
     }
 

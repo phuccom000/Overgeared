@@ -31,7 +31,7 @@ public class TierASmithingAnvil extends SteelSmithingAnvil {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         if (!world.isClientSide) {
-            return validateTicker(type, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE,
+            return createTickerHelper(type, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE,
                     (lvl, pos, st, be) -> be.tick(lvl, pos, st));
         }
         return null;

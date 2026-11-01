@@ -14,6 +14,6 @@ public class FabricRockInteractionReloadListener extends RockInteractionReloadLi
 
     @Override
     protected Item getRock() {
-        return ModItems.ROCK;
+        return ModItems.ROCK.get();
     }
 }

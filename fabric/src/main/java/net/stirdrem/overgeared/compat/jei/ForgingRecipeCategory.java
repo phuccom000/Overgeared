@@ -279,7 +279,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
         List<ItemStack> stacks = new ArrayList<>();
 
         for (String type : types) {
-            ItemStack stack = new ItemStack(ModItems.BLUEPRINT);
+            ItemStack stack = new ItemStack(ModItems.BLUEPRINT.get());
             CompoundTag tag = new CompoundTag();
 
             tag.putString("ToolType", type);

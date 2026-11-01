@@ -6,7 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 
@@ -29,7 +29,7 @@ public record ResetMinigameS2CPacket(BlockPos anvilPos) {
                 var player = Minecraft.getInstance().player;
                 if (player != null) {
                     BlockEntity be = player.level().getBlockEntity(anvilPos);
-                    if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvil) {
+                    if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                         String quality = anvil.minigameQuality(); // ✅ get directly from BE
                         Overgeared.LOGGER.info(
                                 "Resetting minigame for {} at anvil {} with quality {}",

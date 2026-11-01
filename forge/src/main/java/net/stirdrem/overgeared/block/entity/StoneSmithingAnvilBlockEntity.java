@@ -14,7 +14,7 @@ import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
 import net.stirdrem.overgeared.screen.StoneSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class StoneSmithingAnvilBlockEntity extends ForgeAbstractSmithingAnvilBlockEntity {
+public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
     private int craftCount = 0;
 
     public StoneSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {

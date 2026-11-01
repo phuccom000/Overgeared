@@ -25,7 +25,7 @@ import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvil extends FabricAbstractSmithingAnvil {
+public class SteelSmithingAnvil extends AbstractSmithingAnvil {
     private static final VoxelShape Z1 = Block.box(3, 9, 0, 13, 16, 16);
     private static final VoxelShape Z2 = Block.box(3, 0, 1, 13, 3, 15);
     private static final VoxelShape Z3 = Block.box(4, 0, 4, 12, 3, 12);
@@ -83,7 +83,7 @@ public class SteelSmithingAnvil extends FabricAbstractSmithingAnvil {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         if (!world.isClientSide) {
-            return validateTicker(type, ModBlockEntities.STEEL_SMITHING_ANVIL_BE,
+            return createTickerHelper(type, ModBlockEntities.STEEL_SMITHING_ANVIL_BE,
                     (lvl, pos, st, be) -> be.tick(lvl, pos, st));
         }
         return null;

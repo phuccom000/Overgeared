@@ -55,8 +55,8 @@ import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.ForgeAbstractSmithingAnvil;
-import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
@@ -146,7 +146,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -165,7 +165,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -180,7 +180,7 @@ public class ModItemInteractEvents {
         }
 
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -194,7 +194,7 @@ public class ModItemInteractEvents {
         if (!level.isClientSide && player.isCrouching() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
                     .defaultBlockState()
-                    .setValue(ForgeAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -205,7 +205,7 @@ public class ModItemInteractEvents {
             return;
         }
 
-        if (!(be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE)) {
+        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
             if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
@@ -220,7 +220,7 @@ public class ModItemInteractEvents {
 
         if (level.isClientSide) return;
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        if (clickedState.getBlock() instanceof ForgeAbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
+        if (clickedState.getBlock() instanceof AbstractSmithingAnvil anvil && !heldItem.is(anvil.hammerTag())) {
             serverPlayer.sendSystemMessage(
                     Component.translatable("message.overgeared.wrong_hammer")
                             .withStyle(ChatFormatting.RED),
@@ -341,7 +341,7 @@ public class ModItemInteractEvents {
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
             BlockEntity be = Minecraft.getInstance().level.getBlockEntity(pos);
-            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
                 Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> {
                     ClientAnvilMinigameData.clearPendingMinigame(); // ✅ Done
@@ -363,7 +363,7 @@ public class ModItemInteractEvents {
             // 1. Clear ownership from the block entity (server-side)
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
-            if (be instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBE) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
@@ -427,7 +427,8 @@ public class ModItemInteractEvents {
     private static boolean handleCooling(PlayerInteractEvent.RightClickItem event, Player player, ItemStack stack, Level world) {
         if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
 
-        HitResult hit = player.pick(5.0D, 0.0F, false);
+        // includeFluids = true: the ray must stop at the water surface, otherwise it hits the block below
+        HitResult hit = player.pick(5.0D, 0.0F, true);
         if (hit.getType() != HitResult.Type.BLOCK) return false;
 
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
@@ -730,7 +731,10 @@ public class ModItemInteractEvents {
             }
         }
 
-        player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
+        // Player#playSound excludes the player themselves (it assumes their client already played it);
+        // this runs server-side only, so broadcast to everyone including the player.
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
 
@@ -789,7 +793,9 @@ public class ModItemInteractEvents {
             }
 
             if (player != null) {
-                player.playSound(SoundEvents.GRINDSTONE_USE, 1.0F, 1.0F);
+                // Server-side only: Player#playSound would skip this player, so broadcast to everyone
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         }
     }

@@ -7,11 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class NetherAlloySmelterScreen extends AbstractContainerScreen<NetherAlloySmelterScreenHandler> {
+public class NetherAlloySmelterScreen extends AbstractContainerScreen<NetherAlloySmelterMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
             "textures/gui/nether_alloy_furnace.png");
 
-    public NetherAlloySmelterScreen(NetherAlloySmelterScreenHandler handler, Inventory playerInventory,
+    public NetherAlloySmelterScreen(NetherAlloySmelterMenu handler, Inventory playerInventory,
             Component title) {
         super(handler, playerInventory, title);
         this.imageWidth = 176;

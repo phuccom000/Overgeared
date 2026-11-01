@@ -285,145 +285,145 @@ public class ModModelProvider extends FabricModelProviderPlus {
         // Simple items
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.CRUDE_STEEL);
-        simpleItem(generator, ModItems.HEATED_CRUDE_STEEL);
-        simpleItem(generator, ModItems.ROCK);
-        simpleItem(generator, ModItems.STEEL_INGOT);
-        simpleItem(generator, ModItems.STEEL_NUGGET);
-        simpleItem(generator, ModItems.NETHERITE_ALLOY);
-        simpleItem(generator, ModItems.COPPER_NUGGET);
-        simpleItem(generator, ModItems.DIAMOND_SHARD);
-        simpleItem(generator, ModItems.IRON_ARROW_HEAD);
-        simpleItem(generator, ModItems.STEEL_ARROW_HEAD);
-        simpleItem(generator, ModItems.UNFIRED_TOOL_CAST);
-        simpleItem(generator, ModItems.CLAY_TOOL_CAST);
-        simpleItem(generator, ModItems.NETHER_TOOL_CAST);
+        simpleItem(generator, ModItems.CRUDE_STEEL.get());
+        simpleItem(generator, ModItems.HEATED_CRUDE_STEEL.get());
+        simpleItem(generator, ModItems.ROCK.get());
+        simpleItem(generator, ModItems.STEEL_INGOT.get());
+        simpleItem(generator, ModItems.STEEL_NUGGET.get());
+        simpleItem(generator, ModItems.NETHERITE_ALLOY.get());
+        simpleItem(generator, ModItems.COPPER_NUGGET.get());
+        simpleItem(generator, ModItems.DIAMOND_SHARD.get());
+        simpleItem(generator, ModItems.IRON_ARROW_HEAD.get());
+        simpleItem(generator, ModItems.STEEL_ARROW_HEAD.get());
+        simpleItem(generator, ModItems.UNFIRED_TOOL_CAST.get());
+        simpleItem(generator, ModItems.CLAY_TOOL_CAST.get());
+        simpleItem(generator, ModItems.NETHER_TOOL_CAST.get());
 
         // ---------------------------------------------------------------------
         // Upgrade arrows
         // ---------------------------------------------------------------------
 
-        upgradeArrowModel(generator, ModItems.IRON_UPGRADE_ARROW);
-        upgradeArrowModel(generator, ModItems.STEEL_UPGRADE_ARROW);
-        upgradeArrowModel(generator, ModItems.DIAMOND_UPGRADE_ARROW);
+        upgradeArrowModel(generator, ModItems.IRON_UPGRADE_ARROW.get());
+        upgradeArrowModel(generator, ModItems.STEEL_UPGRADE_ARROW.get());
+        upgradeArrowModel(generator, ModItems.DIAMOND_UPGRADE_ARROW.get());
 
         // ---------------------------------------------------------------------
         // Heated metals
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.HEATED_COPPER_INGOT);
-        simpleItem(generator, ModItems.HEATED_IRON_INGOT);
-        simpleItem(generator, ModItems.HEATED_STEEL_INGOT);
-        simpleItem(generator, ModItems.HEATED_SILVER_INGOT);
-        simpleItem(generator, ModItems.HEATED_NETHERITE_ALLOY);
+        simpleItem(generator, ModItems.HEATED_COPPER_INGOT.get());
+        simpleItem(generator, ModItems.HEATED_IRON_INGOT.get());
+        simpleItem(generator, ModItems.HEATED_STEEL_INGOT.get());
+        simpleItem(generator, ModItems.HEATED_SILVER_INGOT.get());
+        simpleItem(generator, ModItems.HEATED_NETHERITE_ALLOY.get());
 
         // ---------------------------------------------------------------------
         // Plates / miscellaneous
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.COPPER_PLATE);
-        simpleItem(generator, ModItems.IRON_PLATE);
-        simpleItem(generator, ModItems.STEEL_PLATE);
+        simpleItem(generator, ModItems.COPPER_PLATE.get());
+        simpleItem(generator, ModItems.IRON_PLATE.get());
+        simpleItem(generator, ModItems.STEEL_PLATE.get());
 
-        simpleItem(generator, ModItems.STEEL_TONG);
-        simpleItem(generator, ModItems.IRON_TONG);
+        simpleItem(generator, ModItems.STEEL_TONG.get());
+        simpleItem(generator, ModItems.IRON_TONG.get());
 
-        simpleItem(generator, ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE);
-        simpleItem(generator, ModItems.EMPTY_BLUEPRINT);
-        simpleItem(generator, ModItems.BLUEPRINT);
+        simpleItem(generator, ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE.get());
+        simpleItem(generator, ModItems.EMPTY_BLUEPRINT.get());
+        simpleItem(generator, ModItems.BLUEPRINT.get());
 
         // ---------------------------------------------------------------------
         // Armor
         // ---------------------------------------------------------------------
 
-        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_HELMET);
-        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_BOOTS);
-        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_CHESTPLATE);
-        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_LEGGINGS);
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_HELMET.get());
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_BOOTS.get());
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_CHESTPLATE.get());
+        generator.generateArmorTrims((ArmorItem) ModItems.STEEL_LEGGINGS.get());
 
-        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_HELMET);
-        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_CHESTPLATE);
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_HELMET.get());
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_CHESTPLATE.get());
 
-        registerArmorWithOverlay(generator, (ArmorItem) ModItems.COPPER_LEGGINGS);
+        registerArmorWithOverlay(generator, (ArmorItem) ModItems.COPPER_LEGGINGS.get());
 
-        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_BOOTS);
+        generator.generateArmorTrims((ArmorItem) ModItems.COPPER_BOOTS.get());
 
         // ---------------------------------------------------------------------
         // Handheld items
         // ---------------------------------------------------------------------
 
-        handheldItem(generator, ModItems.IRON_TONGS);
-        handheldItem(generator, ModItems.STEEL_TONGS);
-        handheldItem(generator, ModItems.WOODEN_TONGS);
+        handheldItem(generator, ModItems.IRON_TONGS.get());
+        handheldItem(generator, ModItems.STEEL_TONGS.get());
+        handheldItem(generator, ModItems.WOODEN_TONGS.get());
 
-        handheldItem(generator, ModItems.STONE_HAMMER_HEAD);
-        handheldItem(generator, ModItems.COPPER_HAMMER_HEAD);
-        handheldItem(generator, ModItems.STEEL_HAMMER_HEAD);
+        handheldItem(generator, ModItems.STONE_HAMMER_HEAD.get());
+        handheldItem(generator, ModItems.COPPER_HAMMER_HEAD.get());
+        handheldItem(generator, ModItems.STEEL_HAMMER_HEAD.get());
 
-        handheldItem(generator, ModItems.SMITHING_HAMMER);
-        handheldItem(generator, ModItems.COPPER_SMITHING_HAMMER);
+        handheldItem(generator, ModItems.SMITHING_HAMMER.get());
+        handheldItem(generator, ModItems.COPPER_SMITHING_HAMMER.get());
 
-        handheldItem(generator, ModItems.STEEL_SWORD);
-        handheldItem(generator, ModItems.STEEL_PICKAXE);
-        handheldItem(generator, ModItems.STEEL_AXE);
-        handheldItem(generator, ModItems.STEEL_SHOVEL);
-        handheldItem(generator, ModItems.STEEL_HOE);
+        handheldItem(generator, ModItems.STEEL_SWORD.get());
+        handheldItem(generator, ModItems.STEEL_PICKAXE.get());
+        handheldItem(generator, ModItems.STEEL_AXE.get());
+        handheldItem(generator, ModItems.STEEL_SHOVEL.get());
+        handheldItem(generator, ModItems.STEEL_HOE.get());
 
-        handheldItem(generator, ModItems.COPPER_SWORD);
-        handheldItem(generator, ModItems.COPPER_PICKAXE);
-        handheldItem(generator, ModItems.COPPER_AXE);
-        handheldItem(generator, ModItems.COPPER_SHOVEL);
-        handheldItem(generator, ModItems.COPPER_HOE);
+        handheldItem(generator, ModItems.COPPER_SWORD.get());
+        handheldItem(generator, ModItems.COPPER_PICKAXE.get());
+        handheldItem(generator, ModItems.COPPER_AXE.get());
+        handheldItem(generator, ModItems.COPPER_SHOVEL.get());
+        handheldItem(generator, ModItems.COPPER_HOE.get());
 
         // ---------------------------------------------------------------------
         // Sword blades
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.STONE_SWORD_BLADE);
-        simpleItem(generator, ModItems.IRON_SWORD_BLADE);
-        simpleItem(generator, ModItems.GOLDEN_SWORD_BLADE);
-        simpleItem(generator, ModItems.STEEL_SWORD_BLADE);
-        simpleItem(generator, ModItems.COPPER_SWORD_BLADE);
+        simpleItem(generator, ModItems.STONE_SWORD_BLADE.get());
+        simpleItem(generator, ModItems.IRON_SWORD_BLADE.get());
+        simpleItem(generator, ModItems.GOLDEN_SWORD_BLADE.get());
+        simpleItem(generator, ModItems.STEEL_SWORD_BLADE.get());
+        simpleItem(generator, ModItems.COPPER_SWORD_BLADE.get());
 
         // ---------------------------------------------------------------------
         // Pickaxe heads
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.STONE_PICKAXE_HEAD);
-        simpleItem(generator, ModItems.IRON_PICKAXE_HEAD);
-        simpleItem(generator, ModItems.GOLDEN_PICKAXE_HEAD);
-        simpleItem(generator, ModItems.STEEL_PICKAXE_HEAD);
-        simpleItem(generator, ModItems.COPPER_PICKAXE_HEAD);
+        simpleItem(generator, ModItems.STONE_PICKAXE_HEAD.get());
+        simpleItem(generator, ModItems.IRON_PICKAXE_HEAD.get());
+        simpleItem(generator, ModItems.GOLDEN_PICKAXE_HEAD.get());
+        simpleItem(generator, ModItems.STEEL_PICKAXE_HEAD.get());
+        simpleItem(generator, ModItems.COPPER_PICKAXE_HEAD.get());
 
         // ---------------------------------------------------------------------
         // Axe heads
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.STONE_AXE_HEAD);
-        simpleItem(generator, ModItems.IRON_AXE_HEAD);
-        simpleItem(generator, ModItems.GOLDEN_AXE_HEAD);
-        simpleItem(generator, ModItems.STEEL_AXE_HEAD);
-        simpleItem(generator, ModItems.COPPER_AXE_HEAD);
+        simpleItem(generator, ModItems.STONE_AXE_HEAD.get());
+        simpleItem(generator, ModItems.IRON_AXE_HEAD.get());
+        simpleItem(generator, ModItems.GOLDEN_AXE_HEAD.get());
+        simpleItem(generator, ModItems.STEEL_AXE_HEAD.get());
+        simpleItem(generator, ModItems.COPPER_AXE_HEAD.get());
 
         // ---------------------------------------------------------------------
         // Shovel heads
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.STONE_SHOVEL_HEAD);
-        simpleItem(generator, ModItems.IRON_SHOVEL_HEAD);
-        simpleItem(generator, ModItems.GOLDEN_SHOVEL_HEAD);
-        simpleItem(generator, ModItems.STEEL_SHOVEL_HEAD);
-        simpleItem(generator, ModItems.COPPER_SHOVEL_HEAD);
+        simpleItem(generator, ModItems.STONE_SHOVEL_HEAD.get());
+        simpleItem(generator, ModItems.IRON_SHOVEL_HEAD.get());
+        simpleItem(generator, ModItems.GOLDEN_SHOVEL_HEAD.get());
+        simpleItem(generator, ModItems.STEEL_SHOVEL_HEAD.get());
+        simpleItem(generator, ModItems.COPPER_SHOVEL_HEAD.get());
 
         // ---------------------------------------------------------------------
         // Hoe heads
         // ---------------------------------------------------------------------
 
-        simpleItem(generator, ModItems.STONE_HOE_HEAD);
-        simpleItem(generator, ModItems.IRON_HOE_HEAD);
-        simpleItem(generator, ModItems.GOLDEN_HOE_HEAD);
-        simpleItem(generator, ModItems.STEEL_HOE_HEAD);
-        simpleItem(generator, ModItems.COPPER_HOE_HEAD);
+        simpleItem(generator, ModItems.STONE_HOE_HEAD.get());
+        simpleItem(generator, ModItems.IRON_HOE_HEAD.get());
+        simpleItem(generator, ModItems.GOLDEN_HOE_HEAD.get());
+        simpleItem(generator, ModItems.STEEL_HOE_HEAD.get());
+        simpleItem(generator, ModItems.COPPER_HOE_HEAD.get());
     }
 
     // =========================================================================

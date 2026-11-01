@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.recipe.AlloySmeltingRecipe;
 import net.stirdrem.overgeared.recipe.ShapedAlloySmeltingRecipe;
-import net.stirdrem.overgeared.screen.AlloySmelterScreenHandler;
+import net.stirdrem.overgeared.screen.AlloySmelterMenu;
 import net.stirdrem.overgeared.util.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -296,7 +296,7 @@ public class AlloySmelterBlockEntity extends BlockEntity implements ExtendedScre
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
-        return new AlloySmelterScreenHandler(syncId, playerInventory, this, this.data);
+        return new AlloySmelterMenu(syncId, playerInventory, this, this.data);
     }
 
     @Override

@@ -29,7 +29,7 @@ import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
-public class StoneSmithingAnvil extends ForgeAbstractSmithingAnvil {
+public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     public static VoxelShape rotateShape(Direction from, Direction to, VoxelShape shape) {
         VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};

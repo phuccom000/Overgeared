@@ -1,5 +1,14 @@
 package net.stirdrem.overgeared.platform;
 
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.stirdrem.overgeared.item.custom.Tongs;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -43,49 +52,72 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
+    public net.minecraft.server.MinecraftServer getServer() {
+        return net.stirdrem.overgeared.OvergearedFabric.getServer();
+    }
+
+    @Override
+    public void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider provider, net.minecraft.core.BlockPos pos) {
+        player.openMenu(new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory() {
+            @Override
+            public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer p, net.minecraft.network.FriendlyByteBuf buf) {
+                buf.writeBlockPos(pos);
+            }
+
+            @Override
+            public net.minecraft.network.chat.Component getDisplayName() {
+                return provider.getDisplayName();
+            }
+
+            @Override
+            public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inv, net.minecraft.world.entity.player.Player p) {
+                return provider.createMenu(id, inv, p);
+            }
+        });
+    }
+
+    @Override
+    public net.minecraft.world.inventory.RecipeBookType getForgingRecipeBookType() {
+        return net.stirdrem.overgeared.recipebook.FabricRecipeBookTypes.forging();
+    }
+
+    @Override
+    public <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType<T> createEntityType(
+            String name, net.minecraft.world.entity.EntityType.EntityFactory<T> factory, net.minecraft.world.entity.MobCategory category,
+            float width, float height, int trackingRange, int updateInterval) {
+        return net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder.<T>create(category, factory)
+                .trackable(trackingRange, updateInterval, true)
+                .dimensions(net.minecraft.world.entity.EntityDimensions.fixed(width, height))
+                .build();
+    }
+
+    @Override
     public ServerConfigCommon getConfig() {
         return config;
     }
 
+
+
+
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Recipe<?>> RecipeSerializer<T> getRecipeSerializer(ResourceLocation id) {
-        return (RecipeSerializer<T>) BuiltInRegistries.RECIPE_SERIALIZER.get(id);
+    public Tier createToolTier(String name, int level, int uses, float speed, float attackDamageBonus, int enchantability,
+                               TagKey<Block> needsTag, Supplier<Ingredient> repairIngredient, List<Tier> after, List<Tier> before) {
+        // No tier sorting on Fabric: ordering against vanilla tiers comes from the needs_*_tool tags
+        return new SimpleTier(level, uses, speed, attackDamageBonus, enchantability, repairIngredient);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Recipe<?>> RecipeType<T> getRecipeType(ResourceLocation id) {
-        return (RecipeType<T>) BuiltInRegistries.RECIPE_TYPE.get(id);
+    public Item createTongs(Tier tier, int attackDamageModifier, float attackSpeedModifier, Item.Properties properties) {
+        return new Tongs(tier, attackDamageModifier, attackSpeedModifier, properties);
     }
 
-    @Override
-    public RecipeType<ItemToToolTypeRecipe> getItemToToolTypeRecipeType() {
-        return ModRecipeTypes.ITEM_TO_TOOLTYPE;
-    }
-
-    @Override
-    public EntityType<LingeringArrowEntity> getLingeringArrowEntity() {
-        return ModEntities.LINGERING_ARROW;
-    }
-
-    @Override
-    public EntityType<UpgradeArrowEntity> getUpgradeArrowEntity() {
-        return ModEntities.UPGRADE_ARROW;
-    }
-
-    @Override
-    public Item getIronArrow() {
-        return ModItems.IRON_UPGRADE_ARROW;
-    }
-
-    @Override
-    public Item getSteelArrow() {
-        return ModItems.STEEL_UPGRADE_ARROW;
-    }
-
-    @Override
-    public Item getDiamondArrow() {
-        return ModItems.DIAMOND_UPGRADE_ARROW;
+    private record SimpleTier(int level, int uses, float speed, float attackDamageBonus, int enchantability,
+                              Supplier<Ingredient> repairIngredient) implements Tier {
+        @Override public int getUses() { return uses; }
+        @Override public float getSpeed() { return speed; }
+        @Override public float getAttackDamageBonus() { return attackDamageBonus; }
+        @Override public int getLevel() { return level; }
+        @Override public int getEnchantmentValue() { return enchantability; }
+        @Override public Ingredient getRepairIngredient() { return repairIngredient.get(); }
     }
 }

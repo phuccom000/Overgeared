@@ -245,7 +245,7 @@ public class ToolCastSmeltingRecipeBuilder extends CraftingRecipeBuilder {
 
         @Override
         public RecipeSerializer<?> getType() {
-            return ModRecipes.CAST_SMELTING;
+            return ModRecipes.CAST_SMELTING.get();
         }
 
         @Override

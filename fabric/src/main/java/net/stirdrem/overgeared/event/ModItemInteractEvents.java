@@ -48,8 +48,8 @@ import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.OvergearedFabric;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
-import net.stirdrem.overgeared.block.custom.FabricAbstractSmithingAnvil;
-import net.stirdrem.overgeared.block.entity.FabricAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 import net.stirdrem.overgeared.datapack.FabricGrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.FabricRockInteractionReloadListener;
@@ -65,7 +65,7 @@ import net.stirdrem.overgeared.recipe.CoolingRecipe;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
 import net.stirdrem.overgeared.recipe.GrindingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
-import net.stirdrem.overgeared.screen.FletchingStationScreenHandler;
+import net.stirdrem.overgeared.screen.FletchingStationMenu;
 import net.stirdrem.overgeared.screen.RockKnappingMenuProvider;
 import net.stirdrem.overgeared.util.ModTags;
 import net.stirdrem.overgeared.util.QualityHelper;
@@ -151,7 +151,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.STONE_SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -168,7 +168,7 @@ public class ModItemInteractEvents {
 
             BlockState newState = ModBlocks.SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -181,7 +181,7 @@ public class ModItemInteractEvents {
         }
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -193,7 +193,7 @@ public class ModItemInteractEvents {
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
             BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL
                     .defaultBlockState()
-                    .setValue(FabricAbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -202,7 +202,7 @@ public class ModItemInteractEvents {
             return InteractionResult.SUCCESS;
         }
 
-        if (!(be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE)) {
+        if (!(be instanceof AbstractSmithingAnvilBlockEntity anvilBE)) {
             if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
                 hideMinigame(serverPlayer);
             }
@@ -323,7 +323,7 @@ public class ModItemInteractEvents {
                 && pos.equals(ClientAnvilMinigameData.getPendingMinigamePos())) {
 
             BlockEntity be = client.level.getBlockEntity(pos);
-            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE && anvilBE.hasRecipe()) {
                 Optional<ForgingRecipe> recipeOpt = anvilBE.getCurrentRecipe();
                 recipeOpt.ifPresent(recipe -> ClientAnvilMinigameData.clearPendingMinigame());
             }
@@ -341,7 +341,7 @@ public class ModItemInteractEvents {
 
             BlockEntity be = player.level().getBlockEntity(pos);
             String quality = "perfect";
-            if (be instanceof FabricAbstractSmithingAnvilBlockEntity anvilBE) {
+            if (be instanceof AbstractSmithingAnvilBlockEntity anvilBE) {
                 anvilBE.clearOwner();
                 quality = anvilBE.minigameQuality();
             }
@@ -400,7 +400,8 @@ public class ModItemInteractEvents {
     private static boolean handleCooling(net.minecraft.world.entity.player.Player player, ItemStack stack, Level world) {
         if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
 
-        HitResult hit = player.pick(5.0D, 0.0F, false);
+        // includeFluids = true: the ray must stop at the water surface, otherwise it hits the block below
+        HitResult hit = player.pick(5.0D, 0.0F, true);
         if (hit.getType() != HitResult.Type.BLOCK) return false;
 
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
@@ -672,7 +673,10 @@ public class ModItemInteractEvents {
             }
         }
 
-        player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
+        // Player#playSound excludes the player themselves (it assumes their client already played it);
+        // this runs server-side only, so broadcast to everyone including the player.
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
 
@@ -728,7 +732,9 @@ public class ModItemInteractEvents {
                 }
             }
 
-            player.playSound(SoundEvents.GRINDSTONE_USE, 1.0F, 1.0F);
+            // Server-side only: Player#playSound would skip this player, so broadcast to everyone
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
         }
     }
 
@@ -738,7 +744,7 @@ public class ModItemInteractEvents {
         net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<GrindingRecipe> recipeOpt = world.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
@@ -758,7 +764,7 @@ public class ModItemInteractEvents {
         net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<CoolingRecipe> recipeOpt = world.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
@@ -773,7 +779,7 @@ public class ModItemInteractEvents {
         net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(new ItemStack(heatedItem));
 
         Optional<GrindingRecipe> recipeOpt = world.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE)
+                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
                 .stream()
                 .filter(r -> r.matches(container, world))
                 .findFirst();
@@ -1038,9 +1044,9 @@ public class ModItemInteractEvents {
         ItemStack otherStack = player.getItemInHand(otherHand);
 
         boolean isVanillaArrow = usedHand.is(Items.ARROW) && otherStack.is(Items.POTION);
-        boolean isCustomArrow = Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW) ||
-                usedHand.is(ModItems.STEEL_UPGRADE_ARROW) ||
-                usedHand.is(ModItems.DIAMOND_UPGRADE_ARROW)) &&
+        boolean isCustomArrow = Overgeared.getConfig().UPGRADE_ARROW_POTION_TOGGLE() && (usedHand.is(ModItems.IRON_UPGRADE_ARROW.get()) ||
+                usedHand.is(ModItems.STEEL_UPGRADE_ARROW.get()) ||
+                usedHand.is(ModItems.DIAMOND_UPGRADE_ARROW.get())) &&
                 otherStack.is(Items.POTION);
 
         if (!isVanillaArrow && !isCustomArrow) {
@@ -1126,7 +1132,7 @@ public class ModItemInteractEvents {
 
         SimpleMenuProvider provider = new SimpleMenuProvider(
                 (syncId, playerInv, p) ->
-                        new FletchingStationScreenHandler(
+                        new FletchingStationMenu(
                                 syncId,
                                 playerInv,
                                 ContainerLevelAccess.create(world, pos)

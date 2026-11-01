@@ -65,12 +65,12 @@ public class ItemToToolTypeRecipe implements Recipe<SimpleContainer> {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return Services.PLATFORM.getRecipeSerializer(Overgeared.id("item_to_tooltype"));
+        return ModRecipes.ITEM_TO_TOOLTYPE.get();
     }
 
     @Override
     public RecipeType<?> getType() {
-        return Services.PLATFORM.getItemToToolTypeRecipeType();
+        return ModRecipeTypes.ITEM_TO_TOOLTYPE.get();
     }
 
     public List<ItemStack> getItems() {

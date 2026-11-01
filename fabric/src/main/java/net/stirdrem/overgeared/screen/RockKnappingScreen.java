@@ -16,7 +16,7 @@ import net.stirdrem.overgeared.networking.packet.KnappingChipC2SPacket;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingScreenHandler> {
+public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
             "textures/gui/rock_knapping_gui.png");
     private static final ResourceLocation CHIPPED_TEXTURE = new ResourceLocation(Overgeared.MOD_ID,
@@ -28,7 +28,7 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingScre
 
     private final Set<Integer> chippedSpots = new HashSet<>();
 
-    public RockKnappingScreen(RockKnappingScreenHandler handler, Inventory playerInventory, Component title) {
+    public RockKnappingScreen(RockKnappingMenu handler, Inventory playerInventory, Component title) {
         super(handler, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;

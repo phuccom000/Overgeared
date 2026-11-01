@@ -237,7 +237,7 @@ public class CastingRecipeBuilder extends CraftingRecipeBuilder {
 
         @Override
         public RecipeSerializer<?> getType() {
-            return ModRecipes.CASTING;
+            return ModRecipes.CASTING.get();
         }
 
         @Override

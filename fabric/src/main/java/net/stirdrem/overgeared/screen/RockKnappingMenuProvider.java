@@ -15,6 +15,6 @@ public class RockKnappingMenuProvider implements MenuProvider {
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
         // The screen handler constructor will handle checking if player has knappable rocks
-        return new RockKnappingScreenHandler(syncId, inv, player.level().getRecipeManager());
+        return new RockKnappingMenu(syncId, inv, player.level().getRecipeManager());
     }
 }

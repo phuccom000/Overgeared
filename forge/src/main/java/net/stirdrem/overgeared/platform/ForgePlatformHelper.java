@@ -1,23 +1,22 @@
 package net.stirdrem.overgeared.platform;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.common.ForgeTier;
+import net.minecraftforge.common.TierSortingRegistry;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ForgeServerConfig;
 import net.stirdrem.overgeared.config.ServerConfigCommon;
-import net.stirdrem.overgeared.entity.ModEntities;
-import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
-import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
-import net.stirdrem.overgeared.item.ModItems;
+import net.stirdrem.overgeared.item.custom.ForgeTongs;
 import net.stirdrem.overgeared.platform.services.IPlatformHelper;
-import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
-import net.stirdrem.overgeared.recipe.ModRecipeTypes;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 public class ForgePlatformHelper implements IPlatformHelper {
     private final ServerConfigCommon config;
@@ -45,49 +44,53 @@ public class ForgePlatformHelper implements IPlatformHelper {
     }
 
     @Override
+    public net.minecraft.server.MinecraftServer getServer() {
+        return net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+    }
+
+    @Override
+    public void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider provider, net.minecraft.core.BlockPos pos) {
+        net.minecraftforge.network.NetworkHooks.openScreen(player, provider, pos);
+    }
+
+    @Override
+    public net.minecraft.world.inventory.RecipeBookType getForgingRecipeBookType() {
+        return net.stirdrem.overgeared.OvergearedForge.FORGING;
+    }
+
+    @Override
+    public void onPlayerCrafted(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.item.ItemStack crafted, net.minecraft.world.Container craftMatrix) {
+        net.minecraftforge.event.ForgeEventFactory.firePlayerCraftingEvent(player, crafted, craftMatrix);
+    }
+
+    @Override
+    public <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType<T> createEntityType(
+            String name, net.minecraft.world.entity.EntityType.EntityFactory<T> factory, net.minecraft.world.entity.MobCategory category,
+            float width, float height, int trackingRange, int updateInterval) {
+        return net.minecraft.world.entity.EntityType.Builder.of(factory, category)
+                .setShouldReceiveVelocityUpdates(true)
+                .sized(width, height)
+                .clientTrackingRange(trackingRange)
+                .updateInterval(updateInterval)
+                .build(name);
+    }
+
+    @Override
     public ServerConfigCommon getConfig() {
         return config;
     }
 
+
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Recipe<?>> RecipeSerializer<T> getRecipeSerializer(ResourceLocation id) {
-        return (RecipeSerializer<T>) ForgeRegistries.RECIPE_SERIALIZERS.getValue(id);
+    public Tier createToolTier(String name, int level, int uses, float speed, float attackDamageBonus, int enchantability,
+                               TagKey<Block> needsTag, Supplier<Ingredient> repairIngredient, List<Tier> after, List<Tier> before) {
+        return TierSortingRegistry.registerTier(
+                new ForgeTier(level, uses, speed, attackDamageBonus, enchantability, needsTag, repairIngredient),
+                Overgeared.id(name), List.copyOf(after), List.copyOf(before));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Recipe<?>> RecipeType<T> getRecipeType(ResourceLocation id) {
-        return (RecipeType<T>) ForgeRegistries.RECIPE_TYPES.getValue(id);
-    }
-
-    @Override
-    public RecipeType<ItemToToolTypeRecipe> getItemToToolTypeRecipeType() {
-        return ModRecipeTypes.ITEM_TO_TOOLTYPE.get();
-    }
-
-    @Override
-    public EntityType<LingeringArrowEntity> getLingeringArrowEntity() {
-        return ModEntities.LINGERING_ARROW.get();
-    }
-
-    @Override
-    public EntityType<UpgradeArrowEntity> getUpgradeArrowEntity() {
-        return ModEntities.UPGRADE_ARROW.get();
-    }
-
-    @Override
-    public Item getIronArrow() {
-        return ModItems.IRON_UPGRADE_ARROW.get();
-    }
-
-    @Override
-    public Item getSteelArrow() {
-        return ModItems.STEEL_UPGRADE_ARROW.get();
-    }
-
-    @Override
-    public Item getDiamondArrow() {
-        return ModItems.DIAMOND_UPGRADE_ARROW.get();
+    public Item createTongs(Tier tier, int attackDamageModifier, float attackSpeedModifier, Item.Properties properties) {
+        return new ForgeTongs(tier, attackDamageModifier, attackSpeedModifier, properties);
     }
 }

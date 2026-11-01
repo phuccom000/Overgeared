@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.datagen;
 
+import net.stirdrem.overgeared.registry.RegistryEntry;
+
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -144,7 +146,7 @@ public class ModItemModelProvider extends ItemModelProvider {
 
 
     // Shoutout to El_Redstoniano for making this
-    private void trimmedArmorItem(RegistryObject<Item> itemRegistryObject) {
+    private void trimmedArmorItem(RegistryEntry<Item> itemRegistryObject) {
         final String MOD_ID = Overgeared.MOD_ID; // Change this to your mod id
 
         if (itemRegistryObject.get() instanceof ArmorItem armorItem) {
@@ -191,7 +193,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         }
     }
 
-    private void trimmedArmorItemWithOverlay(RegistryObject<Item> itemRegistryObject) {
+    private void trimmedArmorItemWithOverlay(RegistryEntry<Item> itemRegistryObject) {
         final String MOD_ID = Overgeared.MOD_ID;
 
         if (itemRegistryObject.get() instanceof ArmorItem armorItem) {
@@ -248,7 +250,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         return "generic";
     }
 
-    private void polishItem(RegistryObject<Item> itemRegistryObject) {
+    private void polishItem(RegistryEntry<Item> itemRegistryObject) {
         final String MOD_ID = Overgeared.MOD_ID;
         Item item = itemRegistryObject.get();
 
@@ -279,13 +281,13 @@ public class ModItemModelProvider extends ItemModelProvider {
     }
 
 
-    private ItemModelBuilder simpleItem(RegistryObject<Item> item) {
+    private ItemModelBuilder simpleItem(RegistryEntry<Item> item) {
         return withExistingParent(item.getId().getPath(),
                 ResourceLocation.tryParse("item/generated")).texture("layer0",
                 ResourceLocation.tryBuild(Overgeared.MOD_ID, "item/" + item.getId().getPath()));
     }
 
-    private ItemModelBuilder simpleHandheld(RegistryObject<Item> item) {
+    private ItemModelBuilder simpleHandheld(RegistryEntry<Item> item) {
         return withExistingParent(item.getId().getPath(),
                 ResourceLocation.tryParse("item/handheld")).texture("layer0",
                 ResourceLocation.tryBuild(Overgeared.MOD_ID, "item/" + item.getId().getPath()));
@@ -316,7 +318,7 @@ public class ModItemModelProvider extends ItemModelProvider {
                 .texture("wall", ResourceLocation.tryBuild(Overgeared.MOD_ID, "block/" + ForgeRegistries.BLOCKS.getKey(baseBlock.get()).getPath()));
     }
 
-    private ItemModelBuilder handheldItem(RegistryObject<Item> item) {
+    private ItemModelBuilder handheldItem(RegistryEntry<Item> item) {
         return withExistingParent(item.getId().getPath(),
                 ResourceLocation.tryParse("item/handheld")).texture("layer0",
                 ResourceLocation.tryBuild(Overgeared.MOD_ID, "item/" + item.getId().getPath()));
@@ -334,7 +336,7 @@ public class ModItemModelProvider extends ItemModelProvider {
                 ResourceLocation.tryBuild(Overgeared.MOD_ID, "block/" + item.getId().getPath()));
     }
 
-    private void upgradeArrowModel(RegistryObject<Item> item) {
+    private void upgradeArrowModel(RegistryEntry<Item> item) {
         String baseName = item.getId().getPath();
 
         String head = "item/" + baseName;

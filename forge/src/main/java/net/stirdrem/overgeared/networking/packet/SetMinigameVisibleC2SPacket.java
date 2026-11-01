@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
 
 import java.util.function.Supplier;
@@ -34,7 +34,7 @@ public class SetMinigameVisibleC2SPacket {
     public static void handle(SetMinigameVisibleC2SPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer sender = ctx.get().getSender();
-            if (sender != null && sender.level().getBlockEntity(msg.pos) instanceof ForgeAbstractSmithingAnvilBlockEntity anvilBlock) {
+            if (sender != null && sender.level().getBlockEntity(msg.pos) instanceof AbstractSmithingAnvilBlockEntity anvilBlock) {
                 anvilBlock.setMinigameOn(msg.getVisible());
                 ClientAnvilMinigameData.playerMinigameVisibility.put(sender.getUUID(), msg.getVisible());
             }

@@ -27,7 +27,9 @@
     ]
   },
   "mixins": [
-    "overgeared.mixins.json"
+    "overgeared.mixins.json",
+    "overgeared.fabric.mixins.json",
+    "overgeared.fabric.recipebook.mixins.json"
   ],
   "accessWidener": "overgeared.accesswidener",
   "depends": {

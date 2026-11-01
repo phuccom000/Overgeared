@@ -21,12 +21,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.stirdrem.overgeared.block.entity.ForgeAbstractSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<ForgeAbstractSmithingAnvilBlockEntity> {
+public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<AbstractSmithingAnvilBlockEntity> {
     public SmithingAnvilBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
 
@@ -36,7 +36,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<For
     private static final float BLOCK_BASE_Y_OFFSET = 0.09f;
 
     @Override
-    public void render(ForgeAbstractSmithingAnvilBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack,
+    public void render(AbstractSmithingAnvilBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack,
                        MultiBufferSource pBuffer, int pPackedLight, int pPackedOverlay) {
         ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
@@ -79,7 +79,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<For
         renderStack(pPoseStack, pBuffer, itemRenderer, hammer, pBlockEntity, 0f, 1.025f, 0.43f, 135f, 0.5f, 1.0f);
     }
 
-    private boolean areInputSlotsEmpty(ForgeAbstractSmithingAnvilBlockEntity be) {
+    private boolean areInputSlotsEmpty(AbstractSmithingAnvilBlockEntity be) {
         for (int i = 0; i < 9; i++) {  // assuming slots 0–8 are inputs
             if (!be.getRenderStack(i).isEmpty()) {
                 return false;
@@ -89,7 +89,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<For
     }
 
     private int renderPass(PoseStack pPoseStack, MultiBufferSource pBuffer,
-                           ItemRenderer itemRenderer, ForgeAbstractSmithingAnvilBlockEntity pBlockEntity,
+                           ItemRenderer itemRenderer, AbstractSmithingAnvilBlockEntity pBlockEntity,
                            Set<Item> renderedItems, Set<Integer> renderedSlots,
                            float zOffset, int renderedCount, boolean checkUniqueness, float heightScale) {
 
@@ -155,7 +155,7 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<For
     }
 
     private void renderStack(PoseStack poseStack, MultiBufferSource buffer, ItemRenderer itemRenderer,
-                             ItemStack itemStack, ForgeAbstractSmithingAnvilBlockEntity blockEntity,
+                             ItemStack itemStack, AbstractSmithingAnvilBlockEntity blockEntity,
                              float xOffset, float yOffset, float zOffset,
                              float rotationDegrees, float scale, float heightScale) {
 

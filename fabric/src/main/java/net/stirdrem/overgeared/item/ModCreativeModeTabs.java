@@ -19,103 +19,103 @@ public class ModCreativeModeTabs {
 
     public static final CreativeModeTab OVERGEARED_TAB = register("overgeared_tab",
             FabricItemGroup.builder()
-                    .icon(() -> new ItemStack(ModItems.IRON_TONGS))
+                    .icon(() -> new ItemStack(ModItems.IRON_TONGS.get()))
                     .title(Component.translatable("creativetab.overgeared_tab"))
                     .displayItems((displayContext, entries) -> {
                         // General materials/tools
-                        entries.accept(ModItems.CRUDE_STEEL);
-                        entries.accept(ModItems.HEATED_CRUDE_STEEL);
-                        entries.accept(ModItems.ROCK);
-                        entries.accept(ModItems.COPPER_NUGGET);
-                        entries.accept(ModItems.STEEL_INGOT);
-                        entries.accept(ModItems.STEEL_NUGGET);
-                        entries.accept(ModItems.IRON_ARROW_HEAD);
-                        entries.accept(ModItems.STEEL_ARROW_HEAD);
-                        entries.accept(ModItems.DIAMOND_SHARD);
-                        entries.accept(ModItems.IRON_UPGRADE_ARROW);
-                        entries.accept(ModItems.STEEL_UPGRADE_ARROW);
-                        entries.accept(ModItems.DIAMOND_UPGRADE_ARROW);
-                        entries.accept(ModItems.HEATED_COPPER_INGOT);
-                        entries.accept(ModItems.HEATED_IRON_INGOT);
-                        entries.accept(ModItems.HEATED_SILVER_INGOT);
-                        entries.accept(ModItems.HEATED_STEEL_INGOT);
-                        entries.accept(ModItems.NETHERITE_ALLOY);
-                        entries.accept(ModItems.HEATED_NETHERITE_ALLOY);
-                        entries.accept(ModItems.COPPER_PLATE);
-                        entries.accept(ModItems.IRON_PLATE);
-                        entries.accept(ModItems.STEEL_PLATE);
-                        entries.accept(ModItems.IRON_TONG);
-                        entries.accept(ModItems.STEEL_TONG);
-                        entries.accept(ModItems.WOODEN_TONGS);
-                        entries.accept(ModItems.IRON_TONGS);
-                        entries.accept(ModItems.STEEL_TONGS);
-                        entries.accept(ModItems.STONE_HAMMER_HEAD);
-                        entries.accept(ModItems.COPPER_HAMMER_HEAD);
-                        entries.accept(ModItems.STEEL_HAMMER_HEAD);
-                        entries.accept(ModItems.COPPER_SMITHING_HAMMER);
-                        entries.accept(ModItems.SMITHING_HAMMER);
-                        entries.accept(ModItems.EMPTY_BLUEPRINT);
-                        entries.accept(ModItems.BLUEPRINT);
-                        entries.accept(ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE);
-                        entries.accept(ModItems.UNFIRED_TOOL_CAST);
-                        entries.accept(ModItems.CLAY_TOOL_CAST);
-                        entries.accept(ModItems.NETHER_TOOL_CAST);
-                        entries.accept(ModItems.COPPER_HELMET);
-                        entries.accept(ModItems.COPPER_CHESTPLATE);
-                        entries.accept(ModItems.COPPER_LEGGINGS);
-                        entries.accept(ModItems.COPPER_BOOTS);
+                        entries.accept(ModItems.CRUDE_STEEL.get());
+                        entries.accept(ModItems.HEATED_CRUDE_STEEL.get());
+                        entries.accept(ModItems.ROCK.get());
+                        entries.accept(ModItems.COPPER_NUGGET.get());
+                        entries.accept(ModItems.STEEL_INGOT.get());
+                        entries.accept(ModItems.STEEL_NUGGET.get());
+                        entries.accept(ModItems.IRON_ARROW_HEAD.get());
+                        entries.accept(ModItems.STEEL_ARROW_HEAD.get());
+                        entries.accept(ModItems.DIAMOND_SHARD.get());
+                        entries.accept(ModItems.IRON_UPGRADE_ARROW.get());
+                        entries.accept(ModItems.STEEL_UPGRADE_ARROW.get());
+                        entries.accept(ModItems.DIAMOND_UPGRADE_ARROW.get());
+                        entries.accept(ModItems.HEATED_COPPER_INGOT.get());
+                        entries.accept(ModItems.HEATED_IRON_INGOT.get());
+                        entries.accept(ModItems.HEATED_SILVER_INGOT.get());
+                        entries.accept(ModItems.HEATED_STEEL_INGOT.get());
+                        entries.accept(ModItems.NETHERITE_ALLOY.get());
+                        entries.accept(ModItems.HEATED_NETHERITE_ALLOY.get());
+                        entries.accept(ModItems.COPPER_PLATE.get());
+                        entries.accept(ModItems.IRON_PLATE.get());
+                        entries.accept(ModItems.STEEL_PLATE.get());
+                        entries.accept(ModItems.IRON_TONG.get());
+                        entries.accept(ModItems.STEEL_TONG.get());
+                        entries.accept(ModItems.WOODEN_TONGS.get());
+                        entries.accept(ModItems.IRON_TONGS.get());
+                        entries.accept(ModItems.STEEL_TONGS.get());
+                        entries.accept(ModItems.STONE_HAMMER_HEAD.get());
+                        entries.accept(ModItems.COPPER_HAMMER_HEAD.get());
+                        entries.accept(ModItems.STEEL_HAMMER_HEAD.get());
+                        entries.accept(ModItems.COPPER_SMITHING_HAMMER.get());
+                        entries.accept(ModItems.SMITHING_HAMMER.get());
+                        entries.accept(ModItems.EMPTY_BLUEPRINT.get());
+                        entries.accept(ModItems.BLUEPRINT.get());
+                        entries.accept(ModItems.DIAMOND_UPGRADE_SMITHING_TEMPLATE.get());
+                        entries.accept(ModItems.UNFIRED_TOOL_CAST.get());
+                        entries.accept(ModItems.CLAY_TOOL_CAST.get());
+                        entries.accept(ModItems.NETHER_TOOL_CAST.get());
+                        entries.accept(ModItems.COPPER_HELMET.get());
+                        entries.accept(ModItems.COPPER_CHESTPLATE.get());
+                        entries.accept(ModItems.COPPER_LEGGINGS.get());
+                        entries.accept(ModItems.COPPER_BOOTS.get());
 
-                        entries.accept(ModItems.STEEL_HELMET);
-                        entries.accept(ModItems.STEEL_CHESTPLATE);
-                        entries.accept(ModItems.STEEL_LEGGINGS);
-                        entries.accept(ModItems.STEEL_BOOTS);
+                        entries.accept(ModItems.STEEL_HELMET.get());
+                        entries.accept(ModItems.STEEL_CHESTPLATE.get());
+                        entries.accept(ModItems.STEEL_LEGGINGS.get());
+                        entries.accept(ModItems.STEEL_BOOTS.get());
 
-                        entries.accept(ModItems.COPPER_SWORD);
-                        entries.accept(ModItems.COPPER_PICKAXE);
-                        entries.accept(ModItems.COPPER_AXE);
-                        entries.accept(ModItems.COPPER_SHOVEL);
-                        entries.accept(ModItems.COPPER_HOE);
+                        entries.accept(ModItems.COPPER_SWORD.get());
+                        entries.accept(ModItems.COPPER_PICKAXE.get());
+                        entries.accept(ModItems.COPPER_AXE.get());
+                        entries.accept(ModItems.COPPER_SHOVEL.get());
+                        entries.accept(ModItems.COPPER_HOE.get());
 
-                        entries.accept(ModItems.STEEL_SWORD);
-                        entries.accept(ModItems.STEEL_PICKAXE);
-                        entries.accept(ModItems.STEEL_AXE);
-                        entries.accept(ModItems.STEEL_SHOVEL);
-                        entries.accept(ModItems.STEEL_HOE);
+                        entries.accept(ModItems.STEEL_SWORD.get());
+                        entries.accept(ModItems.STEEL_PICKAXE.get());
+                        entries.accept(ModItems.STEEL_AXE.get());
+                        entries.accept(ModItems.STEEL_SHOVEL.get());
+                        entries.accept(ModItems.STEEL_HOE.get());
 
                         // === STONE ===
-                        entries.accept(ModItems.STONE_SWORD_BLADE);
-                        entries.accept(ModItems.STONE_PICKAXE_HEAD);
-                        entries.accept(ModItems.STONE_AXE_HEAD);
-                        entries.accept(ModItems.STONE_SHOVEL_HEAD);
-                        entries.accept(ModItems.STONE_HOE_HEAD);
+                        entries.accept(ModItems.STONE_SWORD_BLADE.get());
+                        entries.accept(ModItems.STONE_PICKAXE_HEAD.get());
+                        entries.accept(ModItems.STONE_AXE_HEAD.get());
+                        entries.accept(ModItems.STONE_SHOVEL_HEAD.get());
+                        entries.accept(ModItems.STONE_HOE_HEAD.get());
 
                         // === COPPER ===
-                        entries.accept(ModItems.COPPER_SWORD_BLADE);
-                        entries.accept(ModItems.COPPER_PICKAXE_HEAD);
-                        entries.accept(ModItems.COPPER_AXE_HEAD);
-                        entries.accept(ModItems.COPPER_SHOVEL_HEAD);
-                        entries.accept(ModItems.COPPER_HOE_HEAD);
+                        entries.accept(ModItems.COPPER_SWORD_BLADE.get());
+                        entries.accept(ModItems.COPPER_PICKAXE_HEAD.get());
+                        entries.accept(ModItems.COPPER_AXE_HEAD.get());
+                        entries.accept(ModItems.COPPER_SHOVEL_HEAD.get());
+                        entries.accept(ModItems.COPPER_HOE_HEAD.get());
 
                         // === IRON ===
-                        entries.accept(ModItems.IRON_SWORD_BLADE);
-                        entries.accept(ModItems.IRON_PICKAXE_HEAD);
-                        entries.accept(ModItems.IRON_AXE_HEAD);
-                        entries.accept(ModItems.IRON_SHOVEL_HEAD);
-                        entries.accept(ModItems.IRON_HOE_HEAD);
+                        entries.accept(ModItems.IRON_SWORD_BLADE.get());
+                        entries.accept(ModItems.IRON_PICKAXE_HEAD.get());
+                        entries.accept(ModItems.IRON_AXE_HEAD.get());
+                        entries.accept(ModItems.IRON_SHOVEL_HEAD.get());
+                        entries.accept(ModItems.IRON_HOE_HEAD.get());
 
                         // === GOLD ===
-                        entries.accept(ModItems.GOLDEN_SWORD_BLADE);
-                        entries.accept(ModItems.GOLDEN_PICKAXE_HEAD);
-                        entries.accept(ModItems.GOLDEN_AXE_HEAD);
-                        entries.accept(ModItems.GOLDEN_SHOVEL_HEAD);
-                        entries.accept(ModItems.GOLDEN_HOE_HEAD);
+                        entries.accept(ModItems.GOLDEN_SWORD_BLADE.get());
+                        entries.accept(ModItems.GOLDEN_PICKAXE_HEAD.get());
+                        entries.accept(ModItems.GOLDEN_AXE_HEAD.get());
+                        entries.accept(ModItems.GOLDEN_SHOVEL_HEAD.get());
+                        entries.accept(ModItems.GOLDEN_HOE_HEAD.get());
 
                         // === STEEL ===
-                        entries.accept(ModItems.STEEL_SWORD_BLADE);
-                        entries.accept(ModItems.STEEL_PICKAXE_HEAD);
-                        entries.accept(ModItems.STEEL_AXE_HEAD);
-                        entries.accept(ModItems.STEEL_SHOVEL_HEAD);
-                        entries.accept(ModItems.STEEL_HOE_HEAD);
+                        entries.accept(ModItems.STEEL_SWORD_BLADE.get());
+                        entries.accept(ModItems.STEEL_PICKAXE_HEAD.get());
+                        entries.accept(ModItems.STEEL_AXE_HEAD.get());
+                        entries.accept(ModItems.STEEL_SHOVEL_HEAD.get());
+                        entries.accept(ModItems.STEEL_HOE_HEAD.get());
 
                         entries.accept(ModBlocks.STONE_SMITHING_ANVIL);
                         entries.accept(ModBlocks.SMITHING_ANVIL);
@@ -140,9 +140,9 @@ public class ModCreativeModeTabs {
                             return;
 
                         entries.accept(Items.ARROW);
-                        entries.accept(ModItems.IRON_UPGRADE_ARROW);
-                        entries.accept(ModItems.STEEL_UPGRADE_ARROW);
-                        entries.accept(ModItems.DIAMOND_UPGRADE_ARROW);
+                        entries.accept(ModItems.IRON_UPGRADE_ARROW.get());
+                        entries.accept(ModItems.STEEL_UPGRADE_ARROW.get());
+                        entries.accept(ModItems.DIAMOND_UPGRADE_ARROW.get());
 
                         for (Potion potion : BuiltInRegistries.POTION) {
                             if (potion == Potions.EMPTY)
@@ -158,7 +158,7 @@ public class ModCreativeModeTabs {
                             if (potion == Potions.EMPTY)
                                 continue;
 
-                            ItemStack arrow = new ItemStack(ModItems.LINGERING_ARROW);
+                            ItemStack arrow = new ItemStack(ModItems.LINGERING_ARROW.get());
                             arrow.getOrCreateTag().putString("Potion",
                                     BuiltInRegistries.POTION.getKey(potion).toString());
                             entries.accept(arrow);
@@ -168,7 +168,7 @@ public class ModCreativeModeTabs {
                             if (potion == Potions.EMPTY)
                                 continue;
 
-                            ItemStack iron = new ItemStack(ModItems.IRON_UPGRADE_ARROW);
+                            ItemStack iron = new ItemStack(ModItems.IRON_UPGRADE_ARROW.get());
                             iron.getOrCreateTag().putString("Potion",
                                     BuiltInRegistries.POTION.getKey(potion).toString());
                             entries.accept(iron);
@@ -182,7 +182,7 @@ public class ModCreativeModeTabs {
                             if (potion == Potions.EMPTY)
                                 continue;
 
-                            ItemStack steel = new ItemStack(ModItems.STEEL_UPGRADE_ARROW);
+                            ItemStack steel = new ItemStack(ModItems.STEEL_UPGRADE_ARROW.get());
                             steel.getOrCreateTag().putString("Potion",
                                     BuiltInRegistries.POTION.getKey(potion).toString());
                             entries.accept(steel);
@@ -196,7 +196,7 @@ public class ModCreativeModeTabs {
                             if (potion == Potions.EMPTY)
                                 continue;
 
-                            ItemStack diamond = new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW);
+                            ItemStack diamond = new ItemStack(ModItems.DIAMOND_UPGRADE_ARROW.get());
                             diamond.getOrCreateTag().putString("Potion",
                                     BuiltInRegistries.POTION.getKey(potion).toString());
                             entries.accept(diamond);
@@ -210,13 +210,13 @@ public class ModCreativeModeTabs {
 
     public static final CreativeModeTab BLUEPRINT_TAB = register("blueprint_tab",
             FabricItemGroup.builder()
-                    .icon(() -> new ItemStack(ModItems.BLUEPRINT))
+                    .icon(() -> new ItemStack(ModItems.BLUEPRINT.get()))
                     .title(Component.translatable("creativetab.overgeared.blueprint_tab"))
                     .displayItems((displayContext, entries) -> {
-                        entries.accept(ModItems.EMPTY_BLUEPRINT);
+                        entries.accept(ModItems.EMPTY_BLUEPRINT.get());
                         for (ToolType toolType : ToolTypeRegistry.getRegisteredTypesAll()) {
                             for (BlueprintQuality quality : BlueprintQuality.values()) {
-                                ItemStack blueprint = new ItemStack(ModItems.BLUEPRINT);
+                                ItemStack blueprint = new ItemStack(ModItems.BLUEPRINT.get());
                                 CompoundTag tag = blueprint.getOrCreateTag();
 
                                 tag.putString("ToolType", toolType.getId());
