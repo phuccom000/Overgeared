@@ -1,0 +1,11 @@
+{
+  "remove": [
+    "minecraft:raw_iron_block",
+    "minecraft:iron_ore",
+    "minecraft:deepslate_iron_ore",
+    "minecraft:iron_block"
+  ],
+  "values": [
+    "#overgeared:needs_copper_tool"
+  ]
+}

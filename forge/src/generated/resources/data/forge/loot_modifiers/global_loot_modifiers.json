@@ -1,0 +1,33 @@
+{
+  "entries": [
+    "overgeared:diamond_upgrade_from_stronghold_crossing",
+    "overgeared:steel_ingot_from_woodland_mansion",
+    "overgeared:steel_ingot_from_buried_treasure",
+    "overgeared:iron_arrow_from_jungle_temple_dispenser",
+    "overgeared:diamond_upgrade_from_stronghold_corridor",
+    "overgeared:steel_ingot_from_stronghold_crossing",
+    "overgeared:steel_ingot_from_simple_dungeon_2",
+    "overgeared:diamond_upgrade_from_stronghold_library",
+    "overgeared:diamond_upgrade_from_pillager_outpost",
+    "overgeared:diamond_upgrade_from_simple_dungeon",
+    "overgeared:diamond_upgrade_from_abandoned_mineshaft",
+    "overgeared:steel_ingot_from_simple_dungeon",
+    "overgeared:diamond_upgrade_from_buried_treasure",
+    "overgeared:diamond_upgrade_from_ancient_city",
+    "overgeared:diamond_upgrade_from_desert_pyramid",
+    "overgeared:steel_ingot_from_stronghold_library",
+    "overgeared:steel_ingot_from_desert_pyramid",
+    "overgeared:steel_ingot_from_pillager_outpost",
+    "overgeared:steel_ingot_from_abandoned_mineshaft",
+    "overgeared:steel_ingot_from_jungle_temple",
+    "overgeared:diamond_upgrade_from_woodland_mansion",
+    "overgeared:diamond_upgrade_from_jungle_temple",
+    "overgeared:steel_ingot_from_stronghold_corridor",
+    "overgeared:steel_ingot_from_abandoned_mineshaft_2",
+    "overgeared:diamond_upgrade_from_shipwreck_treasure",
+    "overgeared:all_tools_poor_quality",
+    "overgeared:steel_ingot_from_shipwreck_treasure",
+    "overgeared:steel_ingot_from_ancient_city"
+  ],
+  "replace": false
+}

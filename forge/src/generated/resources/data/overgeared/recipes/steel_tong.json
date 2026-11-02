@@ -1,0 +1,24 @@
+{
+  "type": "overgeared:forging",
+  "category": "tool_heads",
+  "group": "",
+  "hammering": 2,
+  "has_quality": false,
+  "key": {
+    "x": {
+      "item": "overgeared:heated_steel_ingot"
+    }
+  },
+  "need_quenching": true,
+  "needs_minigame": false,
+  "pattern": [
+    "  x",
+    " xx",
+    "x  "
+  ],
+  "quality_difficulty": "none",
+  "result": {
+    "item": "overgeared:steel_tong"
+  },
+  "show_notification": true
+}

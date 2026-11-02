@@ -1,0 +1,27 @@
+{
+  "type": "overgeared:forging",
+  "category": "armors",
+  "group": "",
+  "hammering": 3,
+  "has_polishing": false,
+  "has_quality": true,
+  "key": {
+    "#": {
+      "tag": "overgeared:copper_plates"
+    }
+  },
+  "minimum_quality": "poor",
+  "need_quenching": false,
+  "needs_minigame": false,
+  "pattern": [
+    "###",
+    "# #"
+  ],
+  "quality_difficulty": "none",
+  "requires_blueprint": false,
+  "result": {
+    "item": "overgeared:copper_helmet"
+  },
+  "show_notification": true,
+  "tier": "stone"
+}

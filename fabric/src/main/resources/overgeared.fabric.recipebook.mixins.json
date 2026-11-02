@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.stirdrem.overgeared.mixin.recipebook",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "RecipeBookTypeAccessor",
+    "RecipeBookTypeMixin",
+    "RecipeBookSettingsMixin"
+  ],
+  "client": [
+    "client.RecipeBookCategoriesAccessor",
+    "client.RecipeBookCategoriesMixin",
+    "client.ClientRecipeBookMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

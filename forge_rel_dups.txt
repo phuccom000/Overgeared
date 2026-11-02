@@ -1,0 +1,7 @@
+﻿net\stirdrem\overgeared\item\custom\LingeringArrowItem.java
+net\stirdrem\overgeared\item\custom\ToolCastItem.java
+net\stirdrem\overgeared\item\custom\UpgradeArrowItem.java
+net\stirdrem\overgeared\recipe\IAlloyRecipe.java
+net\stirdrem\overgeared\recipe\INetherAlloyRecipe.java
+net\stirdrem\overgeared\recipe\ItemToToolTypeRecipe.java
+net\stirdrem\overgeared\util\ConfigHelper.java

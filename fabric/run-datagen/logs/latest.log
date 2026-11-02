@@ -1,0 +1,125 @@
+[13:17:26] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 1.20.1 with Fabric Loader 0.16.9
+[13:17:26] [main/INFO] (FabricLoader) Loading 52 mods:
+	- accessories 1.0.0-beta.47+1.20.1
+	- architectury 9.2.14
+	- cloth-basic-math 0.6.1
+	- cloth-config 11.1.118
+	- fabric-api 0.92.2+1.20.1
+	- fabric-api-base 0.4.31+1802ada577
+	- fabric-api-lookup-api-v1 1.6.36+1802ada577
+	- fabric-biome-api-v1 13.0.13+1802ada577
+	- fabric-block-api-v1 1.0.11+1802ada577
+	- fabric-block-view-api-v2 1.0.1+1802ada577
+	- fabric-command-api-v1 1.2.34+f71b366f77
+	- fabric-command-api-v2 2.2.13+1802ada577
+	- fabric-commands-v0 0.2.51+df3654b377
+	- fabric-containers-v0 0.1.64+df3654b377
+	- fabric-content-registries-v0 4.0.11+1802ada577
+	- fabric-convention-tags-v1 1.5.5+1802ada577
+	- fabric-crash-report-info-v1 0.2.19+1802ada577
+	- fabric-data-attachment-api-v1 1.0.0+de0fd6d177
+	- fabric-data-generation-api-v1 12.3.4+1802ada577
+	- fabric-dimensions-v1 2.1.54+1802ada577
+	- fabric-entity-events-v1 1.6.0+1c78457f77
+	- fabric-events-interaction-v0 0.6.2+1802ada577
+	- fabric-events-lifecycle-v0 0.2.63+df3654b377
+	- fabric-game-rule-api-v1 1.0.40+1802ada577
+	- fabric-gametest-api-v1 1.2.13+1802ada577
+	- fabric-item-api-v1 2.1.28+1802ada577
+	- fabric-item-group-api-v1 4.0.12+1802ada577
+	- fabric-lifecycle-events-v1 2.2.22+1802ada577
+	- fabric-loot-api-v2 1.2.1+1802ada577
+	- fabric-loot-tables-v1 1.1.45+9e7660c677
+	- fabric-message-api-v1 5.1.9+1802ada577
+	- fabric-mining-level-api-v1 2.1.50+1802ada577
+	- fabric-networking-api-v1 1.3.11+1802ada577
+	- fabric-networking-v0 0.3.51+df3654b377
+	- fabric-object-builder-api-v1 11.1.3+1802ada577
+	- fabric-particles-v1 1.1.2+1802ada577
+	- fabric-recipe-api-v1 1.0.21+1802ada577
+	- fabric-registry-sync-v0 2.3.3+1802ada577
+	- fabric-rendering-data-attachment-v1 0.3.37+92a0d36777
+	- fabric-rendering-fluids-v1 3.0.28+1802ada577
+	- fabric-resource-conditions-api-v1 2.3.8+1802ada577
+	- fabric-resource-loader-v0 0.11.10+1802ada577
+	- fabric-screen-handler-api-v1 1.3.30+1802ada577
+	- fabric-transfer-api-v1 3.3.5+8dd72ea377
+	- fabric-transitive-access-wideners-v1 4.3.1+1802ada577
+	- fabricloader 0.16.9
+	- java 21
+	- jei 15.49.0.191
+	- magistuarmory 10.11
+	- minecraft 1.20.1
+	- mixinextras 0.5.5
+	- overgeared 1.7.0
+[13:17:26] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[13:17:27] [main/INFO] (FabricLoader/Mixin) Loaded Fabric development mappings for mixin remapper!
+[13:17:27] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_16
+[13:17:27] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_17
+[13:17:28] [main/WARN] (FabricLoader/Mixin) Error loading class: net/minecraft/client/renderer/LevelRenderer (java.lang.RuntimeException: Cannot load class net.minecraft.client.renderer.LevelRenderer in environment type SERVER)
+[13:17:28] [main/WARN] (FabricLoader/Mixin) @Mixin target net.minecraft.client.renderer.LevelRenderer was not found accessories-common.mixins.json:LevelRendererAccessor from mod accessories
+[13:17:28] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+[13:17:32] [main/WARN] (FabricLoader/Mixin) @ModifyVariable(@At("INVOKE")) Shift.BY=2 on accessories-fabric.mixins.json:LivingEntityMixin from mod accessories::localvar$zcc000$accessories$adjustLooting exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
+[13:17:35] [main/WARN] (FabricLoader/Mixin) @Inject(@At("INVOKE")) Shift.BY=2 on accessories-common.mixins.json:NbtCompoundMixin from mod accessories::handler$zcn000$accessories$adjustCheckForListVariants exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
+[13:17:41] [main/INFO] (Overgeared) Overgeared: initializing Fabric port
+[13:17:41] [main/INFO] (Overgeared) Registered tool types: sword, pickaxe, shovel, axe, hoe
+[13:17:41] [main/INFO] (Overgeared) Tool types initialized: 5
+[13:17:41] [main/INFO] (Overgeared) Accessories mod detected - AttributeModifierHandler registered
+[13:17:41] [main/INFO] (DataLoaderBase) Registering Listeners!
+[13:17:42] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_long_reach_attack
+[13:17:42] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_lance_collision
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:minicrown
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crown
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:flowercrown
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:stechhelm
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:sallet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:maximilian_helmet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:bascinet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:wingedhussarchestplate
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:grand_bascinet
+[13:17:42] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[13:17:42] [main/INFO] (FabricDataGenHelper) Running data generator for overgeared
+[13:17:42] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Recipes
+[13:17:42] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Recipes finished after 143 ms
+[13:17:42] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type
+[13:17:42] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type finished after 340 ms
+[13:17:42] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/World Gen
+[13:17:42] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/World Gen finished after 12 ms
+[13:17:42] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:block
+[13:17:42] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:block finished after 4 ms
+[13:17:42] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:item
+[13:17:43] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:item finished after 10 ms
+[13:17:43] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Block Loot Tables
+[13:17:43] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Block Loot Tables finished after 58 ms
+[13:17:43] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Model Definitions
+[13:17:43] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Model Definitions finished after 94 ms
+[13:17:43] [main/INFO] (Minecraft) All providers took: 669 ms
+[13:17:43] [main/INFO] (Minecraft) Caching: total files: 735, old count: 735, new count: 736, removed stale: 0, written: 0

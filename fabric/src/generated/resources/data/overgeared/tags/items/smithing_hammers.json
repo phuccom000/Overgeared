@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "overgeared:smithing_hammer",
+    "overgeared:copper_smithing_hammer",
+    "#overgeared:stone_smithing_hammers",
+    "#overgeared:iron_smithing_hammers",
+    "#overgeared:tier_a_smithing_hammers",
+    "#overgeared:tier_b_smithing_hammers"
+  ]
+}

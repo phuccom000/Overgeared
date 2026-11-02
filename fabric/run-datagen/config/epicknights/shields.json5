@@ -1,0 +1,84 @@
+{
+	"shields": {
+		"heaterShield": {
+			"baseDurability": 350,
+			"materialFactor": 0.800000011920929,
+			"weight": 4.0,
+			"maxBlockDamage": 10.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"target": {
+			"baseDurability": 350,
+			"materialFactor": 0.800000011920929,
+			"weight": 1.0,
+			"maxBlockDamage": 6.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"buckler": {
+			"baseDurability": 350,
+			"materialFactor": 0.800000011920929,
+			"weight": 1.0,
+			"maxBlockDamage": 6.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"rondache": {
+			"baseDurability": 420,
+			"materialFactor": 1.2000000476837158,
+			"weight": 6.0,
+			"maxBlockDamage": 13.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"tartsche": {
+			"baseDurability": 350,
+			"materialFactor": 0.800000011920929,
+			"weight": 4.0,
+			"maxBlockDamage": 10.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"ellipticalShield": {
+			"baseDurability": 370,
+			"materialFactor": 0.800000011920929,
+			"weight": 5.0,
+			"maxBlockDamage": 10.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"roundShield": {
+			"baseDurability": 350,
+			"materialFactor": 0.800000011920929,
+			"weight": 3.0,
+			"maxBlockDamage": 7.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"pavise": {
+			"baseDurability": 450,
+			"materialFactor": 0.699999988079071,
+			"weight": 10.0,
+			"maxBlockDamage": 17.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"kiteShield": {
+			"baseDurability": 370,
+			"materialFactor": 0.800000011920929,
+			"weight": 5.0,
+			"maxBlockDamage": 10.0,
+			"repairable": true,
+			"enabled": true
+		},
+		"corruptedRoundShield": {
+			"baseDurability": 100,
+			"materialFactor": 0.800000011920929,
+			"weight": 2.0,
+			"maxBlockDamage": 4.0,
+			"repairable": true,
+			"enabled": true
+		}
+	}
+}

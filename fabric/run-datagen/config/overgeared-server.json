@@ -1,0 +1,200 @@
+{
+  "enableModTooltips": true,
+  "enableCreativeTabItems": true,
+  "enableStoneToAnvil": true,
+  "enableAnvilToSmithing": true,
+  "enableBlueprintForging": true,
+  "enableTieredHammerForging": false,
+  "enableTierA": false,
+  "enableTierB": false,
+  "max_uses": 64,
+  "enableAnvilToStone": true,
+  "heatedItemCooldownTicks": 1200,
+  "enableFletchingRecipes": true,
+  "enableDragonBreathRecipe": true,
+  "enableTipping": true,
+  "enableUpgradeArrowTipping": true,
+  "maxPotionTipping": 8,
+  "enableMinigame": true,
+  "ingredientsDefineQuality": true,
+  "masterQualityChance": 0.05,
+  "masterFromIngredientChance": 0.5,
+  "maxAnvilDistance": 100,
+  "enableAuthorTooltips": true,
+  "perfectQualityScore": 0.9,
+  "expertQualityScore": 0.6,
+  "wellQualityScore": 0.3,
+  "zoneStartingSize": 12,
+  "zoneShrinkFactor": 0.7,
+  "minPerfectZone": 8,
+  "arrowSpeed": 3.5,
+  "arrowSpeedIncrease": 1.2,
+  "maxArrowSpeed": 8.0,
+  "durability": 1.0,
+  "base_durability_blacklist": [
+    "minecraft:flint_and_steel",
+    "overgeared:fired_tool_cast"
+  ],
+  "grindingToggle": true,
+  "grindingBlacklist": [
+    "minecraft:elytra",
+    "overgeared:wooden_tongs",
+    "overgeared:fired_tool_cast"
+  ],
+  "durabilityReduce": 0.05,
+  "damageRestore": 0.1,
+  "failOnWellQualityChance": 0.1,
+  "failOnExpertQualityChance": 0.05,
+  "availableToolTypes": [
+    "sword",
+    "axe",
+    "pickaxe",
+    "shovel",
+    "hoe"
+  ],
+  "hiddenToolTypes": [],
+  "expertAboveIncreaseBlueprintToggle": true,
+  "expertMaxUse": 20,
+  "wellMaxUse": 10,
+  "poorMaxUse": 5,
+  "masterDurabilityBonus": 1.6,
+  "perfectDurabilityBonus": 1.5,
+  "expertDurabilityBonus": 1.3,
+  "wellDurabilityBonus": 1.0,
+  "poorDurabilityBonus": 0.7,
+  "masterMiningSpeedBonus": 1.5,
+  "perfectMiningSpeedBonus": 1.3,
+  "expertMiningSpeedBonus": 1.15,
+  "wellMiningSpeedBonus": 1.0,
+  "poorMiningSpeedBonus": 0.7,
+  "enableQualityBreakSystem": true,
+  "qualityBreakBlacklist": [
+    "minecraft:flint_and_steel",
+    "overgeared:fired_tool_cast"
+  ],
+  "breakChancePoor": 1.0,
+  "breakChanceWell": 0.5,
+  "breakChanceExpert": 0.75,
+  "breakChancePerfect": 0.0,
+  "breakChanceMaster": 0.0,
+  "useFlintGetRock": true,
+  "rockDroppingChance": 0.1,
+  "flintBreakingChance": 0.1,
+  "enableLootQuality": true,
+  "weightPoorQuality": 50,
+  "weightWellQuality": 30,
+  "weightExpertQuality": 10,
+  "weightPerfectQuality": 5,
+  "weightMasterQuality": 1,
+  "castingToggle": true,
+  "firedCastDurability": 5,
+  "castingToolTypes": [
+    [
+      "sword",
+      18
+    ],
+    [
+      "pickaxe",
+      27
+    ],
+    [
+      "axe",
+      27
+    ],
+    [
+      "shovel",
+      9
+    ],
+    [
+      "hoe",
+      18
+    ],
+    [
+      "hammer",
+      18
+    ]
+  ],
+  "materialTypes": [
+    "iron",
+    "gold",
+    "copper",
+    "steel"
+  ],
+  "materialSetting": [
+    [
+      "minecraft:iron_nugget",
+      "iron",
+      1
+    ],
+    [
+      "minecraft:iron_ingot",
+      "iron",
+      9
+    ],
+    [
+      "minecraft:iron_block",
+      "iron",
+      81
+    ],
+    [
+      "minecraft:gold_nugget",
+      "gold",
+      1
+    ],
+    [
+      "minecraft:gold_ingot",
+      "gold",
+      9
+    ],
+    [
+      "minecraft:gold_block",
+      "gold",
+      81
+    ],
+    [
+      "minecraft:copper_ingot",
+      "copper",
+      9
+    ],
+    [
+      "#c:copper_nuggets",
+      "copper",
+      1
+    ],
+    [
+      "minecraft:copper_block",
+      "copper",
+      81
+    ],
+    [
+      "#c:steel_ingots",
+      "steel",
+      9
+    ],
+    [
+      "#c:steel_nuggets",
+      "steel",
+      1
+    ],
+    [
+      "#c:steel_blocks",
+      "steel",
+      81
+    ],
+    [
+      "#c:silver_ingots",
+      "silver",
+      9
+    ],
+    [
+      "#c:silver_nuggets",
+      "silver",
+      1
+    ],
+    [
+      "#c:silver_blocks",
+      "silver",
+      81
+    ]
+  ]
+}
