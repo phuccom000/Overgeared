@@ -378,7 +378,7 @@ public class ServerConfig {
                 .defineInRange("weightMasterQuality", 1, 0, Integer.MAX_VALUE);
         builder.pop();
         builder.push("Casting");
-        ENABLE_CASTING = builder.comment("Is casting enabled or not. Would affects normal progression due to your first smithing hammers require casting.").define("castingToggle", true);
+        ENABLE_CASTING = builder.comment("Is casting enabled or not.").define("castingToggle", true);
 
         FIRED_CAST_DURABILITY = builder
                 .comment("Durability of the Fired Tool Cast.")
