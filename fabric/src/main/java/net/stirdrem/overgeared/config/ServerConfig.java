@@ -55,6 +55,7 @@ public class ServerConfig {
     public static final ConfigSpec.ListValue<String> AVAILABLE_TOOL_TYPES;
     public static final ConfigSpec.ListValue<String> HIDDEN_TOOL_TYPES;
 
+    public static final ConfigSpec.IntValue PERFECT_MAX_USE;
     public static final ConfigSpec.IntValue EXPERT_MAX_USE;
     public static final ConfigSpec.IntValue WELL_MAX_USE;
     public static final ConfigSpec.IntValue POOR_MAX_USE;
@@ -126,6 +127,7 @@ public class ServerConfig {
 
     public static ConfigSpec.IntValue FIRED_CAST_DURABILITY;
     public static ConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
+    public static ConfigSpec.BooleanValue PERFECT_BLUEPRINT_UPGRADE_TO_MASTER;
     public static ConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
     public static ConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
     public static ConfigSpec.BooleanValue ENABLE_CREATIVE_TAB_ITEMS;
@@ -290,6 +292,8 @@ public class ServerConfig {
 
         EXPERT_ABOVE_INCREASE_BLUEPRINT = builder.comment("Only increase blueprint's use if you get Expert or above in minigame.").define("expertAboveIncreaseBlueprintToggle", true);
 
+        PERFECT_BLUEPRINT_UPGRADE_TO_MASTER = builder.comment("Whether a Perfect blueprint can keep levelling up into a Master blueprint. If false, Perfect is the highest quality a blueprint can reach through use.").define("perfectBlueprintUpgradeToMaster", false);
+        PERFECT_MAX_USE = builder.comment("Uses required to reach Master after Perfect (only used if perfectBlueprintUpgradeToMaster is true)").defineInRange("perfectMaxUse", 40, 1, 1000);
         EXPERT_MAX_USE = builder.comment("Uses required to reach the next quality after Expert").defineInRange("expertMaxUse", 20, 0, 1000);
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);

@@ -7,7 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ public class BlueprintItem extends Item {
         CompoundTag tag = stack.getOrCreateTag();
 
         // Set default quality to POOR
-        tag.putString("Quality", BlueprintQuality.POOR.name());
+        tag.putString("Quality", ForgingQuality.POOR.name());
         tag.putInt("Uses", 0);
 
         // Set default tool type to first available or SWORD
@@ -46,13 +46,13 @@ public class BlueprintItem extends Item {
 
         // Only show quality/progress if both tags are present
         if (tag.contains("Quality")) {
-            BlueprintQuality quality = getQuality(stack);
+            ForgingQuality quality = getQuality(stack);
 
             tooltip.add(Component.translatable("tooltip.overgeared.blueprint.quality")
                     .withStyle(ChatFormatting.GRAY)
-                    .append(Component.translatable(quality.getTranslationKey()).withStyle(quality.getColor())));
+                    .append(Component.translatable(quality.getBlueprintTranslationKey()).withStyle(quality.getColor())));
 
-            if (quality == BlueprintQuality.PERFECT || quality == BlueprintQuality.MASTER) {
+            if (quality.isMaxBlueprintTier()) {
                 tooltip.add(Component.translatable("tooltip.overgeared.blueprint.maxlevel")
                         .withStyle(ChatFormatting.LIGHT_PURPLE));
             }
@@ -62,7 +62,7 @@ public class BlueprintItem extends Item {
             int uses = getUses(stack);
             int usesToLevel = getUsesToNextLevel(stack);
 
-            if (!tag.contains("Quality") || (getQuality(stack) != BlueprintQuality.PERFECT && getQuality(stack) != BlueprintQuality.MASTER)) {
+            if (!tag.contains("Quality") || !getQuality(stack).isMaxBlueprintTier()) {
                 tooltip.add(Component.translatable("tooltip.overgeared.blueprint.progress", uses, usesToLevel)
                         .withStyle(ChatFormatting.GRAY));
             }
@@ -87,15 +87,15 @@ public class BlueprintItem extends Item {
     }
 
 
-    public static BlueprintQuality getQuality(ItemStack stack) {
+    public static ForgingQuality getQuality(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains("Quality")) {
-            return BlueprintQuality.POOR; // Default to POOR if not set
+            return ForgingQuality.POOR; // Default to POOR if not set
         }
         try {
-            return BlueprintQuality.fromString(tag.getString("Quality"));
+            return ForgingQuality.fromString(tag.getString("Quality"));
         } catch (IllegalArgumentException e) {
-            return BlueprintQuality.POOR; // Default to POOR if invalid
+            return ForgingQuality.POOR; // Default to POOR if invalid
         }
     }
 
@@ -116,14 +116,8 @@ public class BlueprintItem extends Item {
         return ToolType.of(id);
     }
 
-    private static int getUsesToNextLevel(BlueprintQuality quality) {
-        return switch (quality) {
-            case POOR -> BlueprintQuality.POOR.getUse();
-            case WELL -> BlueprintQuality.WELL.getUse();
-            case EXPERT -> BlueprintQuality.EXPERT.getUse();
-            case PERFECT -> BlueprintQuality.PERFECT.getUse();
-            case MASTER -> BlueprintQuality.MASTER.getUse();
-        };
+    private static int getUsesToNextLevel(ForgingQuality quality) {
+        return quality.getBlueprintUses();
     }
 
    /* @Override

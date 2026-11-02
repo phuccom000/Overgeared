@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
@@ -368,13 +367,13 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
                 int uses = tag.getInt("Uses");
                 int usesToLevel = BlueprintItem.getUsesToNextLevel(blueprint);
 
-                BlueprintQuality currentQuality = BlueprintQuality.fromString(currentQualityStr);
+                ForgingQuality currentQuality = ForgingQuality.fromString(currentQualityStr);
 
                 // Attempt to read the ForgingQuality from result
                 String forgingQualityStr = anvilBlock.getQuality();
                 ForgingQuality resultQuality = ForgingQuality.fromString(forgingQualityStr);
 
-                if (currentQuality != null && currentQuality != BlueprintQuality.PERFECT && currentQuality != BlueprintQuality.MASTER) {
+                if (currentQuality != null && !currentQuality.isMaxBlueprintTier()) {
                     if (!Overgeared.getConfig().EXPERT_ABOVE_INCREASE_BLUEPRINT() || resultQuality.ordinal() >= ForgingQuality.EXPERT.ordinal()) {
                         uses += switch (resultQuality) {
                             case PERFECT -> 2;
@@ -386,12 +385,12 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity imple
 
                     // Level up if threshold reached
                     if (uses >= usesToLevel) {
-                        BlueprintQuality nextQuality = BlueprintQuality.getNext(currentQuality);
+                        ForgingQuality nextQuality = ForgingQuality.getNext(currentQuality);
                         if (nextQuality != null) {
                             tag.putString("Quality", nextQuality.getDisplayName());
                             tag.putInt("Uses", 0);
                             if (player instanceof ServerPlayer serverPlayer) {
-                                if (nextQuality.equals(BlueprintQuality.PERFECT) || nextQuality.equals(BlueprintQuality.MASTER))
+                                if (nextQuality.isMaxBlueprintTier())
                                     ModAdvancementTriggers.MAX_LEVEL_BLUEPRINT.trigger(serverPlayer);
                                 ModAdvancementTriggers.BLUEPRINT_QUALITY.trigger(serverPlayer, nextQuality.getDisplayName());
                             }

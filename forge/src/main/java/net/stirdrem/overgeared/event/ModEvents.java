@@ -40,7 +40,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
@@ -284,7 +284,7 @@ public class ModEvents {
         if (player == null) return;
         UUID playerId = player.getUUID();
         ModMessages.sendToPlayer(new OnlyResetMinigameS2CPacket(), player);
-        String blueprintQuality = BlueprintQuality.PERFECT.getDisplayName();
+        String blueprintQuality = ForgingQuality.PERFECT.getDisplayName();
         if (ClientAnvilMinigameData.playerAnvilPositions.containsKey(player.getUUID())) {
             BlockPos anvilPos = ClientAnvilMinigameData.playerAnvilPositions.get(player.getUUID());
             BlockEntity be = player.level().getBlockEntity(anvilPos);

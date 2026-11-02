@@ -55,8 +55,8 @@ public class OvergearedFabric implements ModInitializer {
     public void onInitialize() {
         Overgeared.LOGGER.info("Overgeared: initializing Fabric port");
 
-        // Must run before any other registration: several classes (BlueprintQuality,
-        // ModToolTiers, item constructors) read config values in static initializers,
+        // Must run before any other registration: several classes (ModToolTiers,
+        // item constructors) read config values in static initializers,
         // which run the first time those classes are touched.
         ServerConfig.loadConfig(FabricLoader.getInstance().getConfigDir().resolve("overgeared-server.json"));
         ClientConfig.loadConfig(ClientConfig.CLIENT_CONFIG, FabricLoader.getInstance().getConfigDir().resolve("overgeared-client.json"));

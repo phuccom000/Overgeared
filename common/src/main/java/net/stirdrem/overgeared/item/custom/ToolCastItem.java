@@ -17,7 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.util.ConfigHelper;
 import org.jetbrains.annotations.Nullable;
@@ -268,7 +268,7 @@ public class ToolCastItem extends Item {
 
         if (tag.contains("Quality", Tag.TAG_STRING)) {
             String quality = tag.getString("Quality");
-            ChatFormatting color = BlueprintQuality.getColor(quality);
+            ChatFormatting color = ForgingQuality.getColor(quality);
             if (!quality.equals("NONE"))
                 tooltip.add(
                         Component.translatable("tooltip.overgeared.tool_cast.quality")

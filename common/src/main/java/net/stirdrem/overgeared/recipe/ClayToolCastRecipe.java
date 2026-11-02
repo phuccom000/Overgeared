@@ -14,7 +14,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
@@ -104,7 +104,7 @@ public class ClayToolCastRecipe extends CustomRecipe {
 
         // downgrade the quality one level
         if (!quality.equals("none"))
-            quality = BlueprintQuality.getPrevious(BlueprintQuality.fromString(quality)).getId();
+            quality = ForgingQuality.fromString(quality).getLowerQuality().getId();
 
         // Attach all relevant NBT data
         CompoundTag tag = result.getOrCreateTag();

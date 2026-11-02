@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolType;
 
@@ -75,7 +75,7 @@ public class BlueprintWorkbenchMenu extends AbstractContainerMenu {
         if (output.isEmpty()) {
             ItemStack newOutput = new ItemStack(ModItems.BLUEPRINT.get());
             CompoundTag tag = newOutput.getOrCreateTag();
-            BlueprintQuality quality = BlueprintQuality.WELL;
+            ForgingQuality quality = ForgingQuality.WELL;
             tag.putString("ToolType", toolType.getId());
             tag.putString("Quality", quality.getDisplayName());
             tag.putInt("Uses", 0);

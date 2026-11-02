@@ -11,7 +11,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 
@@ -215,7 +215,7 @@ public class ModCreativeModeTabs {
                     .displayItems((displayContext, entries) -> {
                         entries.accept(ModItems.EMPTY_BLUEPRINT.get());
                         for (ToolType toolType : ToolTypeRegistry.getRegisteredTypesAll()) {
-                            for (BlueprintQuality quality : BlueprintQuality.values()) {
+                            for (ForgingQuality quality : ForgingQuality.tiers()) {
                                 ItemStack blueprint = new ItemStack(ModItems.BLUEPRINT.get());
                                 CompoundTag tag = blueprint.getOrCreateTag();
 

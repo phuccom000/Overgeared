@@ -7,7 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
-import net.stirdrem.overgeared.BlueprintQuality;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.StoneSmithingAnvil;
@@ -54,7 +53,7 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
 
     @Override
     public String blueprintQuality() {
-        return BlueprintQuality.WELL.getDisplayName();
+        return ForgingQuality.WELL.getDisplayName();
     }
 
     @Override

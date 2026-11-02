@@ -59,6 +59,7 @@ public class ServerConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> AVAILABLE_TOOL_TYPES;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> HIDDEN_TOOL_TYPES;
 
+    public static final ForgeConfigSpec.IntValue PERFECT_MAX_USE;
     public static final ForgeConfigSpec.IntValue EXPERT_MAX_USE;
     public static final ForgeConfigSpec.IntValue WELL_MAX_USE;
     public static final ForgeConfigSpec.IntValue POOR_MAX_USE;
@@ -130,6 +131,7 @@ public class ServerConfig {
 
     public static ForgeConfigSpec.IntValue FIRED_CAST_DURABILITY;
     public static ForgeConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
+    public static ForgeConfigSpec.BooleanValue PERFECT_BLUEPRINT_UPGRADE_TO_MASTER;
     public static ForgeConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
     public static ForgeConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
     public static ForgeConfigSpec.BooleanValue ENABLE_CREATIVE_TAB_ITEMS;
@@ -294,6 +296,8 @@ public class ServerConfig {
 
         EXPERT_ABOVE_INCREASE_BLUEPRINT = builder.comment("Only increase blueprint's use if you get Expert or above in minigame.").define("expertAboveIncreaseBlueprintToggle", true);
 
+        PERFECT_BLUEPRINT_UPGRADE_TO_MASTER = builder.comment("Whether a Perfect blueprint can keep levelling up into a Master blueprint. If false, Perfect is the highest quality a blueprint can reach through use.").define("perfectBlueprintUpgradeToMaster", false);
+        PERFECT_MAX_USE = builder.comment("Uses required to reach Master after Perfect (only used if perfectBlueprintUpgradeToMaster is true)").defineInRange("perfectMaxUse", 40, 1, 1000);
         EXPERT_MAX_USE = builder.comment("Uses required to reach the next quality after Expert").defineInRange("expertMaxUse", 20, 0, 1000);
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +32,7 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         ItemStack result = blueprintItem.copy();
         CompoundTag tag = result.getOrCreateTag();
 
-        BlueprintQuality quality = rollQuality(random);
+        ForgingQuality quality = rollQuality(random);
 
         tag.putString("Quality", quality.name());
         tag.putInt("Uses", 0);
@@ -57,25 +57,25 @@ public class BlueprintWanderingTrade implements VillagerTrades.ItemListing {
         );
     }
 
-    private BlueprintQuality rollQuality(RandomSource random) {
+    private ForgingQuality rollQuality(RandomSource random) {
         int roll = random.nextInt(1000);
 
         // 0–9     → MASTER  (1%)
         // 10–249  → PERFECT (24%)
         // 250–999 → EXPERT  (75%)
 
-        if (roll < 10) return BlueprintQuality.MASTER;
-        if (roll < 250) return BlueprintQuality.PERFECT;
-        return BlueprintQuality.EXPERT;
+        if (roll < 10) return ForgingQuality.MASTER;
+        if (roll < 250) return ForgingQuality.PERFECT;
+        return ForgingQuality.EXPERT;
     }
 
-    private ItemStack getEmeraldCostForQuality(BlueprintQuality quality) {
+    private ItemStack getEmeraldCostForQuality(ForgingQuality quality) {
         return switch (quality) {
             case MASTER -> new ItemStack(Items.EMERALD, 128); // 2 stacks
             case PERFECT -> new ItemStack(Items.EMERALD, 64);  // 1 stack
             case EXPERT -> new ItemStack(Items.EMERALD, 32);  // half stack
             case WELL -> new ItemStack(Items.EMERALD, 16);
-            case POOR -> new ItemStack(Items.EMERALD, 8);
+            case POOR, NONE -> new ItemStack(Items.EMERALD, 8);
         };
     }
 }

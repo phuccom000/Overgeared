@@ -8,7 +8,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.item.ModItems;
 
 public class BlueprintCloningRecipe extends CustomRecipe {
@@ -62,8 +62,8 @@ public class BlueprintCloningRecipe extends CustomRecipe {
         // Reduce quality
         if (source.hasTag() && source.getTag().contains("Quality")) {
             String currentId = source.getTag().getString("Quality");
-            BlueprintQuality current = BlueprintQuality.fromString(currentId);
-            BlueprintQuality downgraded = BlueprintQuality.getPrevious(current);
+            ForgingQuality current = ForgingQuality.fromString(currentId);
+            ForgingQuality downgraded = ForgingQuality.getPrevious(current);
 
             if (downgraded != null) {
                 result.getOrCreateTag().putString("Quality", downgraded.getId());

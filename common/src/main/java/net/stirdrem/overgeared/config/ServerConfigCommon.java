@@ -196,6 +196,10 @@ public interface ServerConfigCommon {
 
     boolean EXPERT_ABOVE_INCREASE_BLUEPRINT();
 
+    boolean PERFECT_BLUEPRINT_UPGRADE_TO_MASTER();
+
+    int PERFECT_MAX_USE();
+
     boolean PLAYER_AUTHOR_TOOLTIPS();
 
     boolean ENABLE_STONE_ANVIL_BREAKING();

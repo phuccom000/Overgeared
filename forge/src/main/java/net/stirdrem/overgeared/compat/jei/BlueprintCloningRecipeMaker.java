@@ -7,7 +7,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.item.ModItems;
 
@@ -19,14 +19,14 @@ public class BlueprintCloningRecipeMaker {
     public static List<CraftingRecipe> createRecipes() {
         List<CraftingRecipe> recipes = new ArrayList<>();
 
-        List<BlueprintQuality> qualities = new ArrayList<>(List.of(BlueprintQuality.values()));
+        List<ForgingQuality> qualities = new ArrayList<>(List.of(ForgingQuality.tiers()));
         qualities.sort((a, b) -> Integer.compare(b.ordinal(), a.ordinal())); // descending order
 
-        for (BlueprintQuality quality : qualities) {
+        for (ForgingQuality quality : qualities) {
             // Optional: skip cloning master if undesired
-            // if (quality == BlueprintQuality.MASTER) continue;
+            // if (quality == ForgingQuality.MASTER) continue;
 
-            BlueprintQuality outputQuality = BlueprintQuality.getPrevious(quality);
+            ForgingQuality outputQuality = ForgingQuality.getPrevious(quality);
             if (outputQuality == null) {
                 outputQuality = quality; // lowest stays the same
             }

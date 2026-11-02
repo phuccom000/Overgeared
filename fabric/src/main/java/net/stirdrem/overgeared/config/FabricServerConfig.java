@@ -485,6 +485,16 @@ public class FabricServerConfig implements ServerConfigCommon {
     }
 
     @Override
+    public boolean PERFECT_BLUEPRINT_UPGRADE_TO_MASTER() {
+        return ServerConfig.PERFECT_BLUEPRINT_UPGRADE_TO_MASTER.get();
+    }
+
+    @Override
+    public int PERFECT_MAX_USE() {
+        return ServerConfig.PERFECT_MAX_USE.get();
+    }
+
+    @Override
     public boolean PLAYER_AUTHOR_TOOLTIPS() {
         return ServerConfig.PLAYER_AUTHOR_TOOLTIPS.get();
     }
