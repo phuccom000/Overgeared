@@ -250,6 +250,11 @@ public class ForgeServerConfig implements ServerConfigCommon {
     }
 
     @Override
+    public boolean ENABLE_MOB_DROP_QUALITY() {
+        return ServerConfig.ENABLE_MOB_DROP_QUALITY.get();
+    }
+
+    @Override
     public int QUALITY_WEIGHT_POOR() {
         return ServerConfig.QUALITY_WEIGHT_POOR.get();
     }

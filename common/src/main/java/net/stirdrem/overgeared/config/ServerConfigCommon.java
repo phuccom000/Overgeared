@@ -102,6 +102,8 @@ public interface ServerConfigCommon {
 
     boolean ENABLE_LOOT_QUALITY();
 
+    boolean ENABLE_MOB_DROP_QUALITY();
+
     int QUALITY_WEIGHT_POOR();
 
     int QUALITY_WEIGHT_WELL();

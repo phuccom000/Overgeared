@@ -82,6 +82,7 @@ public class ServerConfig {
     public static final ForgeConfigSpec.DoubleValue FLINT_BREAKING_CHANCE;
     public static final ForgeConfigSpec.BooleanValue ENABLE_FLETCHING_RECIPES;
     public static final ForgeConfigSpec.BooleanValue ENABLE_LOOT_QUALITY;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_MOB_DROP_QUALITY;
     public static final ForgeConfigSpec.IntValue QUALITY_WEIGHT_POOR;
     public static final ForgeConfigSpec.IntValue QUALITY_WEIGHT_WELL;
     public static final ForgeConfigSpec.IntValue QUALITY_WEIGHT_EXPERT;
@@ -364,6 +365,7 @@ public class ServerConfig {
         builder.pop();
         builder.push("Loot Quality");
         ENABLE_LOOT_QUALITY = builder.comment("Toggle for loot quality").define("enableLootQuality", true);
+        ENABLE_MOB_DROP_QUALITY = builder.comment("Whether items dropped by mobs (weapons, tools, armor - anything quality applies to) can roll a quality. Covers both mob loot tables and equipment the mob was holding/wearing. Only applies when enableLootQuality is true; chest, block, fishing etc. loot is unaffected.").define("enableMobDropQuality", true);
 
         QUALITY_WEIGHT_POOR = builder
                 .comment("Weight for Poor quality for loot-tools/weapons. Set to 0 to disable.")
