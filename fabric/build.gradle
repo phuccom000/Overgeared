@@ -1,0 +1,67 @@
+plugins {
+    id 'fabric-loom'
+}
+
+apply from: rootProject.file('gradle/multiloader-loader.gradle')
+
+base {
+    archivesName = "${mod_id}-fabric"
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        // fabric-api-deprecated (via fabric-loot-api-v2) asks for builds of these made for 1.21.2
+        // snapshots, which win version conflicts and crash 1.21.1. Use the versions fabric-api declares.
+        force "net.fabricmc.fabric-api:fabric-resource-loader-v0:${fabric_resource_loader_version}"
+        force "net.fabricmc.fabric-api:fabric-api-base:${fabric_api_base_version}"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${minecraft_version}:${parchment_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+
+    // Provides NeoForge's ModConfigSpec API on Fabric
+    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
+        // Its POM drags in Fabric API modules built for 1.21.2 snapshots, which break 1.21.1
+        exclude group: 'net.fabricmc.fabric-api'
+    }
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    // Only referenced behind a runtime check (Sable is NeoForge-only)
+    compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
+
+    // JEI
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+    modLocalRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
+
+    // EMI
+    modCompileOnly "dev.emi:emi-fabric:${emi_version}:api"
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/overgeared.accesswidener')
+    mixin {
+        defaultRefmapName = "${mod_id}.refmap.json"
+    }
+    runs {
+        client {
+            client()
+            configName = 'Fabric Client'
+            ideConfigGenerated(true)
+            runDir('runs/client')
+        }
+        server {
+            server()
+            configName = 'Fabric Server'
+            ideConfigGenerated(true)
+            runDir('runs/server')
+        }
+    }
+}

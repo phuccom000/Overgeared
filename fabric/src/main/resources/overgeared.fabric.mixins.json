@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "net.stirdrem.overgeared.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "refmap": "overgeared.refmap.json",
+  "mixins": [
+    "ItemStackBreakMixin",
+    "ItemStackFabricMixin",
+    "LootTableMixin",
+    "PlayerSweepMixin",
+    "PotionBrewingMixin",
+    "RecipeBookSettingsMixin",
+    "RecipeBookTypeMixin"
+  ],
+  "client": [
+    "client.ClientRecipeBookMixin",
+    "client.RecipeBookCategoriesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "net.stirdrem.overgeared.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "refmap": "overgeared.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+    "BrewingStandBlockEntityMixin",
+    "ContainerCoolingMixin",
+    "InventoryCoolingMixin",
+    "ItemEntityCoolingMixin",
+    "ItemStackMixin",
+    "ItemStackStackingMixin",
+    "MobHeatedItemMixin",
+    "PotionItemMixin",
+    "SlotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
