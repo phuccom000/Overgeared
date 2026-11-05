@@ -29,6 +29,7 @@ import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.sable.SableCompat;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.heateditem.HeatedItem;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.networking.packet.OnlyResetMinigameS2CPacket;
 import net.stirdrem.overgeared.networking.packet.ResetMinigameS2CPacket;
@@ -198,6 +199,19 @@ public class ModEvents {
         if (Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT.get()))) {
             tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.heated")
                     .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+        }
+
+        // Cooling countdown for heated items (tag-based or component-based)
+        if (HeatedItem.isHeated(stack)) {
+            Long heatedSince = stack.get(ModComponents.HEATED_TIME.get());
+            Level clientLevel = net.minecraft.client.Minecraft.getInstance().level;
+            if (heatedSince != null && clientLevel != null) {
+                long remainingTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get()
+                        - (clientLevel.getGameTime() - heatedSince);
+                long seconds = Math.max(0, (remainingTicks + 19) / 20);
+                tooltip.add(insertOffset++, Component.translatable("tooltip.overgeared.cools_in", seconds)
+                        .withStyle(ChatFormatting.GOLD));
+            }
         }
 
         // Add Polish status

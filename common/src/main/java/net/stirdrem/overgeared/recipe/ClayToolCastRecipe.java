@@ -16,11 +16,16 @@ import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 public class ClayToolCastRecipe extends CustomRecipe {
 
     private static final int[] CLAY_SLOTS = {1, 3, 5, 7}; // N, E, S, W around center
+
+    // Level seen by the last matches() call, used by assemble() (which has no Level parameter).
+    // Weak so a recipe instance never keeps an unloaded world alive.
+    private WeakReference<Level> lastLevel = new WeakReference<>(null);
 
     public ClayToolCastRecipe(CraftingBookCategory category) {
         super(category);
@@ -29,6 +34,8 @@ public class ClayToolCastRecipe extends CustomRecipe {
     @Override
     public boolean matches(CraftingInput input, Level level) {
         if (input.size() != 9) return false;
+
+        this.lastLevel = new WeakReference<>(level);
 
         ItemStack center = input.getItem(4);
         if (center.isEmpty()) return false;
@@ -65,10 +72,12 @@ public class ClayToolCastRecipe extends CustomRecipe {
         ItemStack center = input.getItem(4);
         if (center.isEmpty()) return ItemStack.EMPTY;
 
-        // Extract tool type directly from the center item's metadata/ID
-        // We can't use ConfigHelper.getToolTypeForItem here because we don't have Level access
-        // Instead, use a fallback method or extract from item properties
-        String toolType = ConfigHelper.getToolTypeFromItemDirect(center);
+        // Look the tool type up with the level from matches() (as in 1.20.1);
+        // fall back to the cached mapping if that level is gone.
+        Level level = lastLevel.get();
+        String toolType = level != null
+                ? ConfigHelper.getToolTypeForItem(level, center)
+                : ConfigHelper.getToolTypeFromItemDirect(center);
         if ("none".equals(toolType) || toolType.isBlank()) return ItemStack.EMPTY;
 
         // detect if nether bricks were used
