@@ -441,8 +441,9 @@ public class ForgingRecipe implements Recipe<Container> {
             boolean hasPolishing = GsonHelper.getAsBoolean(json, "has_polishing", true);
 
             boolean showNotification = GsonHelper.getAsBoolean(json, "show_notification", true);
+            // "minimum_quality" matches the other snake_case keys and what datagen writes;
             ForgingQuality minimumQuality = ForgingQuality.fromString(
-                    GsonHelper.getAsString(json, "minimumQuality", ForgingQuality.POOR.getDisplayName())
+                    GsonHelper.getAsString(json, "minimum_quality", ForgingQuality.POOR.getDisplayName())
             );
             ForgingQuality qualityDifficulty = ForgingQuality.fromString(
                     GsonHelper.getAsString(json, "quality_difficulty", ForgingQuality.NONE.getDisplayName())
