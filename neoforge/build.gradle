@@ -79,6 +79,10 @@ dependencies {
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
     //runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
 
+    // KubeJS (optional: anvil tiers from startup scripts)
+    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    compileOnly "dev.latvian.mods:rhino:${rhino_version}"
+
     // PolyMorph
     implementation "maven.modrinth:polymorph:${polymorph_version}"
 

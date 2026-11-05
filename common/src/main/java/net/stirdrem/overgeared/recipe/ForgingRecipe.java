@@ -468,7 +468,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Codec.BOOL.optionalFieldOf("requires_blueprint", false).forGetter(ForgingRecipe::requiresBlueprint),
                     BLUEPRINT_TYPES_CODEC.optionalFieldOf("blueprint", Set.of()).forGetter(ForgingRecipe::getBlueprintTypes),
-                    Codec.STRING.optionalFieldOf("tier", AnvilTier.IRON.getDisplayName()).forGetter(ForgingRecipe::getAnvilTier),
+                    Codec.STRING.optionalFieldOf("tier", AnvilTier.IRON_ID).forGetter(ForgingRecipe::getAnvilTier),
                     Codec.list(Codec.STRING).fieldOf("pattern").forGetter(ForgingRecipe::getPattern),
                     Codec.unboundedMap(Codec.STRING, ForgingIngredient.CODEC).fieldOf("key").forGetter(ForgingRecipe::getKey),
                     ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),

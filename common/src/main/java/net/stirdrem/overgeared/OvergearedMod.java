@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.core.registries.Registries;
+import net.stirdrem.overgeared.platform.Services;
 import net.stirdrem.overgeared.config.ModConfigs;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -52,8 +54,19 @@ public final class OvergearedMod {
         ModRecipeSerializers.register();
         ModCreativeModeTabs.register();
         ModAdvancementTriggers.register();
+        registerAliases();
 
         ModCompat.init();
+    }
+
+    /** Ids renamed since earlier versions, so existing worlds keep their blocks, items and block entities. */
+    private static void registerAliases() {
+        // The iron smithing anvil was "smithing_anvil" before anvil tiers became configurable
+        Services.PLATFORM.registerAlias(Registries.BLOCK, loc("smithing_anvil"), loc("iron_smithing_anvil"));
+        Services.PLATFORM.registerAlias(Registries.ITEM, loc("smithing_anvil"), loc("iron_smithing_anvil"));
+        // All tiered anvils now share the iron anvil's block entity type
+        Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_a_smithing_table_be"), loc("smithing_table_be"));
+        Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_b_smithing_table_be"), loc("smithing_table_be"));
     }
 
     public static void commonSetup() {

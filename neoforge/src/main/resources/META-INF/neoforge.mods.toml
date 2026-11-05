@@ -42,6 +42,14 @@ versionRange = "[2.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
+# Optional: KubeJS startup scripts can add anvil tiers. AFTER makes KubeJS (and its scripts) load before our blocks register.
+[[dependencies.${ mod_id }]]
+modId = "kubejs"
+type = "optional"
+versionRange = "[2101.7,)"
+ordering = "AFTER"
+side = "BOTH"
+
 [[mixins]]
 config = "overgeared.mixins.json"
 

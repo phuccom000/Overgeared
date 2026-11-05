@@ -56,6 +56,16 @@ subprojects {
             url = "https://maven.terraformersmc.com/"
         }
         exclusiveContent {
+            // KubeJS, Rhino
+            forRepository {
+                maven {
+                    name = "LatvianModder"
+                    url = "https://maven.latvian.dev/releases"
+                }
+            }
+            filter { includeGroup "dev.latvian.mods" }
+        }
+        exclusiveContent {
             forRepository {
                 maven { url "https://cursemaven.com" }
             }

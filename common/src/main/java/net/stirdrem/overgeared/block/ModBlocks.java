@@ -14,6 +14,9 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.custom.*;
 import net.stirdrem.overgeared.item.ModItems;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
@@ -21,14 +24,11 @@ public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS =
             DeferredRegister.createBlocks(OvergearedMod.MOD_ID);
 
-    public static final DeferredBlock<SteelSmithingAnvil> SMITHING_ANVIL = registerBlock("smithing_anvil",
-            () -> new SteelSmithingAnvil(AnvilTier.IRON, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion()));
+    /** One smithing anvil per configured tier, in tier order. */
+    public static final Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> TIERED_ANVILS = registerTieredAnvils();
 
-    public static final DeferredBlock<TierASmithingAnvil> TIER_A_SMITHING_ANVIL = registerBlock("tier_a_smithing_anvil",
-            () -> new TierASmithingAnvil(AnvilTier.ABOVE_A, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion()));
-
-    public static final DeferredBlock<TierBSmithingAnvil> TIER_B_SMITHING_ANVIL = registerBlock("tier_b_smithing_anvil",
-            () -> new TierBSmithingAnvil(AnvilTier.ABOVE_B, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion()));
+    /** The iron smithing anvil, the default tier. */
+    public static final DeferredBlock<TieredSmithingAnvil> IRON_SMITHING_ANVIL = TIERED_ANVILS.get(AnvilTier.iron());
 
     public static final DeferredBlock<StoneSmithingAnvil> STONE_SMITHING_ANVIL = registerBlock("stone_anvil",
             () -> new StoneSmithingAnvil(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
@@ -62,6 +62,20 @@ public class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .strength(3.5F, 6.0F)
                     .lightLevel(litBlockEmission())));
+
+    private static Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> registerTieredAnvils() {
+        Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> anvils = new LinkedHashMap<>();
+        for (AnvilTier tier : AnvilTier.configured()) {
+            anvils.put(tier, registerBlock(tier.blockName(),
+                    () -> new TieredSmithingAnvil(tier, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion())));
+        }
+        return Collections.unmodifiableMap(anvils);
+    }
+
+    /** The smithing anvil block of a configured tier. */
+    public static TieredSmithingAnvil anvilFor(AnvilTier tier) {
+        return TIERED_ANVILS.get(tier).get();
+    }
 
     private static ToIntFunction<BlockState> litBlockEmission() {
         return (p_50763_) -> p_50763_.getValue(BlockStateProperties.LIT) ? 13 : 0;

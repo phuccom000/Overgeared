@@ -165,4 +165,10 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix) {
         // Fabric has no equivalent event.
     }
+
+    @Override
+    public void registerAlias(net.minecraft.resources.ResourceKey<? extends Registry<?>> registry,
+                              net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId) {
+        RegistryAliases.add(registry, oldId, newId);
+    }
 }

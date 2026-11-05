@@ -88,9 +88,7 @@ public final class OvergearedFabricClient implements ClientModInitializer {
     }
 
     private static void registerScreens() {
-        MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(), SteelSmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(), TierASmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(), TierBSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(), TieredSmithingAnvilScreen::new);
         MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), StoneSmithingAnvilScreen::new);
         MenuScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU.get(), RockKnappingScreen::new);
         MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU.get(), BlueprintWorkbenchScreen::new);
@@ -107,10 +105,8 @@ public final class OvergearedFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.LINGERING_ARROW.get(), LingeringArrowEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.UPGRADE_ARROW.get(), UpgradeArrowEntityRenderer::new);
 
-        BlockEntityRenderers.register(ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
+        BlockEntityRenderers.register(ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
         BlockEntityRenderers.register(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
-        BlockEntityRenderers.register(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
-        BlockEntityRenderers.register(ModBlockEntities.TIER_B_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
 
         registerArmorModel(OvergearedClient::copperHelmetModel, ModItems.COPPER_HELMET.get());
         registerArmorModel(OvergearedClient::copperLeggingsModel, ModItems.COPPER_LEGGINGS.get());

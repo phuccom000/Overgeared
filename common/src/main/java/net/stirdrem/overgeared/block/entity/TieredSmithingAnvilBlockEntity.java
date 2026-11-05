@@ -10,18 +10,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
-import net.stirdrem.overgeared.block.custom.SteelSmithingAnvil;
+import net.stirdrem.overgeared.block.custom.TieredSmithingAnvil;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.screen.SteelSmithingAnvilMenu;
+import net.stirdrem.overgeared.screen.TieredSmithingAnvilMenu;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+public class TieredSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
 
-    public SteelSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super((SteelSmithingAnvil) pBlockState.getBlock(), AnvilTier.IRON, ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
+    public TieredSmithingAnvilBlockEntity(BlockPos pPos, BlockState pBlockState) {
+        this((TieredSmithingAnvil) pBlockState.getBlock(), pPos, pBlockState);
     }
 
-    public SteelSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
+    private TieredSmithingAnvilBlockEntity(TieredSmithingAnvil block, BlockPos pPos, BlockState pBlockState) {
+        super(block, block.getAnvilTier(), ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), pPos, pBlockState);
+    }
+
+    public TieredSmithingAnvilBlockEntity(AbstractSmithingAnvil anvilBlock, AnvilTier tier, BlockEntityType<?> type,
                                          BlockPos pPos, BlockState pBlockState) {
         super(anvilBlock, tier, type, pPos, pBlockState);
 
@@ -36,7 +40,7 @@ public class SteelSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
         if (!pPlayer.isCrouching()) {
-            return new SteelSmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
+            return new TieredSmithingAnvilMenu(pContainerId, pPlayerInventory, this, this.data);
         }
         return null;
     }

@@ -25,10 +25,8 @@ public final class NeoForgeCapabilities {
         registerSmelter(event, ModBlockEntities.ALLOY_FURNACE_BE.get(), be -> be.getItemHandler());
         registerSmelter(event, ModBlockEntities.NETHER_ALLOY_FURNACE_BE.get(), be -> be.getItemHandler());
 
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), SidedInvWrapper::new);
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), SidedInvWrapper::new);
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), SidedInvWrapper::new);
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), SidedInvWrapper::new);
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.TIER_B_SMITHING_ANVIL_BE.get(), SidedInvWrapper::new);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity & net.minecraft.world.WorldlyContainer> void registerSmelter(

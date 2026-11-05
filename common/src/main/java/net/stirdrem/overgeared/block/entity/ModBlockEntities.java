@@ -1,7 +1,9 @@
 package net.stirdrem.overgeared.block.entity;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.stirdrem.overgeared.registry.DeferredBlock;
 import net.stirdrem.overgeared.registry.DeferredHolder;
 import net.stirdrem.overgeared.registry.DeferredRegister;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -11,22 +13,11 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, OvergearedMod.MOD_ID);
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteelSmithingAnvilBlockEntity>> STEEL_SMITHING_ANVIL_BE =
+    /** Shared by every tiered smithing anvil; keeps the id of the original iron anvil's block entity. */
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TieredSmithingAnvilBlockEntity>> TIERED_SMITHING_ANVIL_BE =
             BLOCK_ENTITIES.register("smithing_table_be", () ->
-                    BlockEntityType.Builder.of(SteelSmithingAnvilBlockEntity::new,
-                                    ModBlocks.SMITHING_ANVIL.get()).
-                            build(null));
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TierASmithingAnvilBlockEntity>> TIER_A_SMITHING_ANVIL_BE =
-            BLOCK_ENTITIES.register("tier_a_smithing_table_be", () ->
-                    BlockEntityType.Builder.of(TierASmithingAnvilBlockEntity::new,
-                                    ModBlocks.TIER_A_SMITHING_ANVIL.get()).
-                            build(null));
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TierBSmithingAnvilBlockEntity>> TIER_B_SMITHING_ANVIL_BE =
-            BLOCK_ENTITIES.register("tier_b_smithing_table_be", () ->
-                    BlockEntityType.Builder.of(TierBSmithingAnvilBlockEntity::new,
-                                    ModBlocks.TIER_B_SMITHING_ANVIL.get()).
+                    BlockEntityType.Builder.of(TieredSmithingAnvilBlockEntity::new,
+                                    ModBlocks.TIERED_ANVILS.values().stream().map(DeferredBlock::get).toArray(Block[]::new)).
                             build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StoneSmithingAnvilBlockEntity>> STONE_SMITHING_ANVIL_BE =

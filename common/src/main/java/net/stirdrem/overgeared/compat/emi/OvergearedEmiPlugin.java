@@ -18,6 +18,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
@@ -37,7 +38,7 @@ import java.util.Map;
 @EmiEntrypoint
 public class OvergearedEmiPlugin implements EmiPlugin {
 
-    public static final EmiStack WORKSTATION = EmiStack.of(ModBlocks.SMITHING_ANVIL.get());
+    public static final EmiStack WORKSTATION = EmiStack.of(ModBlocks.IRON_SMITHING_ANVIL.get());
 
     public static final EmiRecipeCategory FORGING_CATEGORY = new EmiRecipeCategory(
             OvergearedMod.loc("forging"),
@@ -175,13 +176,13 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         // Register the forging category
         registry.addCategory(FORGING_CATEGORY);
 
-        // Register all smithing anvil blocks as workstations (ordered by tier: Stone -> Iron -> A -> B)
+        // Register all smithing anvil blocks as workstations (in tier order)
         registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.STONE_SMITHING_ANVIL.get()));
-        registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.SMITHING_ANVIL.get()));
-        if (ServerConfig.ENABLE_TIER_A.get())
-            registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.TIER_A_SMITHING_ANVIL.get()));
-        if (ServerConfig.ENABLE_TIER_B.get())
-            registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.TIER_B_SMITHING_ANVIL.get()));
+        for (AnvilTier tier : AnvilTier.configured()) {
+            if (tier.isEnabled()) {
+                registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.anvilFor(tier)));
+            }
+        }
 
         // Register how to get Rock
         registry.addCategory(ROCK_GETTING_CATEGORY);

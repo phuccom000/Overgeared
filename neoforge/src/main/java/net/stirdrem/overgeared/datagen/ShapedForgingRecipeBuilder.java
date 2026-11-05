@@ -252,7 +252,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         ForgingQuality actualMinQuality = this.minimumQuality != null ? this.minimumQuality : ForgingQuality.POOR;
         ForgingQuality actualQualityDiff = this.qualityDifficulty != null ? this.qualityDifficulty
                 : ForgingQuality.NONE;
-        String actualTier = this.tier == null ? AnvilTier.IRON.getDisplayName() : this.tier;
+        String actualTier = this.tier == null ? AnvilTier.IRON_ID : this.tier;
 
         ItemStack actualFailedResult = this.failedResult != null
                 ? new ItemStack(this.failedResult, this.failedResultCount)

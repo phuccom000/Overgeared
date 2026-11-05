@@ -9,10 +9,8 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.TieredSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.block.entity.TierASmithingAnvilBlockEntity;
-import net.stirdrem.overgeared.block.entity.TierBSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.compat.polymorph.client.PolymorphClient;
 import net.stirdrem.overgeared.compat.polymorph.client.PolymorphClientHelper;
 import net.stirdrem.overgeared.recipe.ForgingRecipe;
@@ -39,9 +37,7 @@ public class PolymorphIntegration {
         // Register all smithing anvil block entity types
         List.of(
             StoneSmithingAnvilBlockEntity.class,
-            SteelSmithingAnvilBlockEntity.class,
-            TierASmithingAnvilBlockEntity.class,
-            TierBSmithingAnvilBlockEntity.class
+            TieredSmithingAnvilBlockEntity.class
         ).forEach(clazz -> api.registerBlockEntity(clazz, 
             be -> be instanceof AbstractSmithingAnvilBlockEntity anvil 
                 ? new SmithingAnvilRecipeData(anvil) : null));

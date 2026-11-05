@@ -119,4 +119,23 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     public void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix) {
         EventHooks.firePlayerCraftingEvent(player, crafted, craftMatrix);
     }
+
+    @Override
+    public void registerAlias(net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<?>> registry,
+                              net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId) {
+        Objects.requireNonNull(modBus, "Mod event bus is not set yet");
+        modBus.addListener(RegisterEvent.class, event -> {
+            if (event.getRegistryKey().equals(registry)) {
+                event.getRegistry().addAlias(oldId, newId);
+            }
+        });
+    }
+
+    @Override
+    public void modifyAnvilTiers(java.util.List<net.stirdrem.overgeared.AnvilTier.Definition> tiers) {
+        // KubeJS loads its startup scripts in its constructor, which runs before ours (see neoforge.mods.toml)
+        if (isModLoaded("kubejs")) {
+            net.stirdrem.overgeared.compat.kubejs.OvergearedKubeJSPlugin.modifyAnvilTiers(tiers);
+        }
+    }
 }

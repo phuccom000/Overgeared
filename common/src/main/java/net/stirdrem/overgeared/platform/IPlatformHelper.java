@@ -74,6 +74,17 @@ public interface IPlatformHelper {
     /** Fires the loader's "item crafted" hook, if it has one. */
     void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix);
 
+    /**
+     * Lets other mods change the anvil tiers read from config before they are registered
+     * (KubeJS startup scripts on NeoForge). The list may be edited in place.
+     */
+    default void modifyAnvilTiers(java.util.List<net.stirdrem.overgeared.AnvilTier.Definition> tiers) {
+    }
+
+    /** Makes {@code oldId} resolve to {@code newId} in the registry, so saved worlds keep renamed entries. */
+    void registerAlias(net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<?>> registry,
+                       net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId);
+
     @FunctionalInterface
     interface MenuFactory<T extends AbstractContainerMenu> {
         T create(int containerId, Inventory inventory, RegistryFriendlyByteBuf data);

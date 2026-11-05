@@ -195,7 +195,7 @@ public class ForgingEmiRecipe implements EmiRecipe {
         AnvilTier tierEnum = AnvilTier.fromDisplayName(tierRaw);
         Component tierText = Component.translatable("tooltip.overgeared.recipe.tier")
                 .append(Component.literal(" "))
-                .append(Component.translatable(tierEnum.getLang()));
+                .append(tierEnum != null ? tierEnum.displayName() : Component.literal(tierRaw));
         widgets.addText(tierText, X_OFFSET + 82, 54, 0xFF808080, false);
     }
 

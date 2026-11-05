@@ -56,11 +56,11 @@ public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock imple
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     protected static ForgingQuality quality = null;
-    protected static AnvilTier tier;
+    protected final AnvilTier tier;
 
     public AbstractSmithingAnvil(AnvilTier anvilTier, Properties properties) {
         super(properties);
-        tier = anvilTier;
+        this.tier = anvilTier;
     }
 
     @Override
@@ -274,8 +274,8 @@ public abstract class AbstractSmithingAnvil extends BaseSmithingAnvilBlock imple
         super.onExplosionHit(state, level, pos, explosion, dropConsumer);
     }
 
-    public static String getTier() {
-        return tier.getDisplayName();
+    public AnvilTier getAnvilTier() {
+        return tier;
     }
 
     @Override

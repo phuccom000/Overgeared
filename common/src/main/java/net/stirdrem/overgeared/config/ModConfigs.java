@@ -20,6 +20,7 @@ public final class ModConfigs {
     public static void load() {
         Path configDir = Services.PLATFORM.getConfigDir();
         ServerConfig.SERVER_CONFIG.load(configDir.resolve(COMMON_FILE));
+        AnvilTierConfig.load(configDir);
         ConfigWatcher.watch(ServerConfig.SERVER_CONFIG);
         if (Services.PLATFORM.isPhysicalClient()) {
             ClientConfig.CLIENT_CONFIG.load(configDir.resolve(CLIENT_FILE));

@@ -113,9 +113,9 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
         List<ForgingRecipe> combined = new ArrayList<>();
         combined.addAll(filterByTier(all, AnvilTier.STONE));
-        combined.addAll(filterByTier(all, AnvilTier.IRON));
-        combined.addAll(filterByTier(all, AnvilTier.ABOVE_A));
-        combined.addAll(filterByTier(all, AnvilTier.ABOVE_B));
+        for (AnvilTier tier : AnvilTier.configured()) {
+            combined.addAll(filterByTier(all, tier));
+        }
 
         combined.sort(Comparator
                 .comparing((ForgingRecipe r) -> CATEGORY_PRIORITY.getOrDefault(categorizeRecipe(r, registries), 999))
@@ -164,7 +164,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         }
         if (ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) {
             registration.addRecipes(SteelAnvilCategory.STEEL_ANVIL_GET,
-                    List.of(new ExplanationRecipe(new ItemStack(ModBlocks.SMITHING_ANVIL.get()))));
+                    List.of(new ExplanationRecipe(new ItemStack(ModBlocks.IRON_SMITHING_ANVIL.get()))));
         }
 
         registration.addRecipes(DraftingTableCategory.DRAFTING,
@@ -205,7 +205,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
     private static List<ForgingRecipe> filterByTier(List<ForgingRecipe> list, AnvilTier tier) {
         return list.stream()
-                .filter(r -> r.getAnvilTier().equalsIgnoreCase(tier.getDisplayName()))
+                .filter(r -> AnvilTier.fromDisplayName(r.getAnvilTier()) == tier)
                 .toList();
     }
 
@@ -266,11 +266,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         if (EMI_LOADED) return;
         registration.addRecipeClickArea(StoneSmithingAnvilScreen.class, 90, 35, 22, 15,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        registration.addRecipeClickArea(SteelSmithingAnvilScreen.class, 90, 35, 22, 15,
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        registration.addRecipeClickArea(TierASmithingAnvilScreen.class, 90, 35, 22, 15,
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        registration.addRecipeClickArea(TierBSmithingAnvilScreen.class, 90, 35, 22, 15,
+        registration.addRecipeClickArea(TieredSmithingAnvilScreen.class, 90, 35, 22, 15,
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
         registration.addRecipeClickArea(AlloySmelterScreen.class, 86, 35, 22, 15,
                 AlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE);
@@ -318,18 +314,12 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         if (EMI_LOADED) return;
-        registration.addRecipeTransferHandler(SteelSmithingAnvilMenu.class,
-                ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(),
+        registration.addRecipeTransferHandler(TieredSmithingAnvilMenu.class,
+                ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 38, 9, 0, 36);
         registration.addRecipeTransferHandler(StoneSmithingAnvilMenu.class,
                 ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 37, 9, 0, 36);
-        registration.addRecipeTransferHandler(TierASmithingAnvilMenu.class,
-                ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE, 38, 9, 0, 36);
-        registration.addRecipeTransferHandler(TierBSmithingAnvilMenu.class,
-                ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE, 38, 9, 0, 36);
         registration.addRecipeTransferHandler(FletchingStationMenu.class,
                 ModMenuTypes.FLETCHING_STATION_MENU.get(),
                 FletchingCategory.FLETCHING_RECIPE_TYPE, 0, 4, 5, 36);
@@ -352,13 +342,11 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.STONE_SMITHING_ANVIL.get()),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.SMITHING_ANVIL.get()),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        if (ServerConfig.ENABLE_TIER_A.get())
-            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL.get()),
-                    ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        if (ServerConfig.ENABLE_TIER_B.get())
-            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL.get()),
-                    ForgingRecipeCategory.FORGING_RECIPE_TYPE);
+        for (AnvilTier tier : AnvilTier.configured()) {
+            if (tier.isEnabled()) {
+                registration.addRecipeCatalyst(new ItemStack(ModBlocks.anvilFor(tier)),
+                        ForgingRecipeCategory.FORGING_RECIPE_TYPE);
+            }
+        }
     }
 }

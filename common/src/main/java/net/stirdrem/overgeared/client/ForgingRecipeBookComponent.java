@@ -59,9 +59,9 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
             return;
         ItemStack result = recipe.value().getResultItem(this.minecraft.level.registryAccess());
         AnvilTier anvilTier = forgingMenu.getBlockEntity().getAnvilTier();
-        AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase());
+        AnvilTier requiredTier = AnvilTier.fromDisplayName(forgingRecipe.getAnvilTier());
 
-        if (!anvilTier.isAtLeast(requiredTier)) {
+        if (requiredTier == null || !anvilTier.isAtLeast(requiredTier)) {
             // Show red message in action bar
             this.minecraft.player.displayClientMessage(
                     Component.literal("Anvil tier not high enough")

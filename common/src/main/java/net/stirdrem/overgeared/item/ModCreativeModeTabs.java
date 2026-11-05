@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.item;
 
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.platform.Services;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -126,11 +127,9 @@ public class ModCreativeModeTabs {
                                 output.accept(ModItems.STEEL_HOE_HEAD.get());
 
                                 output.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
-                                output.accept(ModBlocks.SMITHING_ANVIL.get());
-                                if (ServerConfig.ENABLE_TIER_A.get())
-                                    output.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
-                                if (ServerConfig.ENABLE_TIER_B.get())
-                                    output.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+                                for (AnvilTier tier : AnvilTier.configured()) {
+                                    if (tier.isEnabled()) output.accept(ModBlocks.anvilFor(tier));
+                                }
                                 output.accept(ModBlocks.STEEL_BLOCK.get());
                                 output.accept(ModBlocks.DRAFTING_TABLE.get());
                                 output.accept(ModBlocks.ALLOY_FURNACE.get());

@@ -22,12 +22,12 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
-import net.stirdrem.overgeared.block.entity.SteelSmithingAnvilBlockEntity;
+import net.stirdrem.overgeared.block.entity.TieredSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.config.ServerConfig;
-import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
-public class SteelSmithingAnvil extends AbstractSmithingAnvil {
+/** The smithing anvil of a configured {@link AnvilTier}; one block is registered per tier. */
+public class TieredSmithingAnvil extends AbstractSmithingAnvil {
 
     private static final VoxelShape Z1 = Block.box(3, 9, 0, 13, 16, 16);
     private static final VoxelShape Z2 = Block.box(3, 0, 1, 13, 3, 15);
@@ -43,7 +43,7 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
     private static final VoxelShape X_AXIS_AABB = Shapes.or(X1, X2, X3, X4, X5);
     private static final VoxelShape Z_AXIS_AABB = Shapes.or(Z1, Z2, Z3, Z4, Z5);
 
-    public SteelSmithingAnvil(AnvilTier tier, Properties properties) {
+    public TieredSmithingAnvil(AnvilTier tier, Properties properties) {
         super(tier, properties);
     }
 
@@ -82,14 +82,14 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return new SteelSmithingAnvilBlockEntity(pPos, pState);
+        return new TieredSmithingAnvilBlockEntity(pPos, pState);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        if (!pLevel.isClientSide && pBlockEntityType == ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get()) {
-            return createTickerHelper(pBlockEntityType, ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(),
+        if (!pLevel.isClientSide && pBlockEntityType == ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get()) {
+            return createTickerHelper(pBlockEntityType, ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(),
                     (level, pos, state, blockEntity) -> blockEntity.tick(level, pos, state));
         }
         return null;
@@ -98,7 +98,7 @@ public class SteelSmithingAnvil extends AbstractSmithingAnvil {
     @Override
     public TagKey<Item> hammerTag() {
         if (ServerConfig.ENABLE_TIERED_HAMMERS.get()) {
-            return ModTags.Items.IRON_SMITHING_HAMMERS;
+            return tier.hammerTag();
         }
         return super.hammerTag();
     }

@@ -13,7 +13,7 @@ public class SteelAnvilCategory extends ExplanationCategory {
             new RecipeType<>(OvergearedMod.loc("steel_anvil"), ExplanationRecipe.class);
 
     public SteelAnvilCategory(IGuiHelper guiHelper) {
-        super(guiHelper, STEEL_ANVIL_GET, new ItemStack(ModBlocks.SMITHING_ANVIL.get()),
+        super(guiHelper, STEEL_ANVIL_GET, new ItemStack(ModBlocks.IRON_SMITHING_ANVIL.get()),
                 "jei.overgeared.category.steel_anvil",
                 "jei.overgeared.steel_anvil.description");
     }

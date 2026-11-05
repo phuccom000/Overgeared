@@ -388,7 +388,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         /*ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.STEEL_PLATE.get(), 4)
-                .tier(AnvilTier.IRON)
+                .tier(AnvilTier.iron())
                 .setQuality(false)
                 .pattern("#")
                 .define('#', ModItems.STEEL_INGOT.get())
@@ -692,7 +692,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, Items.NETHERITE_INGOT, 10)
-                .tier(AnvilTier.IRON)
+                .tier(AnvilTier.iron())
                 .needsMinigame(true)
                 .failedResult(Items.NETHERITE_SCRAP, 4)
                 .qualityDifficulty(ForgingQuality.MASTER)
@@ -890,7 +890,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy(getHasName(Items.IRON_INGOT), has(Items.IRON_INGOT))
                 .save(pWriter);
 
-        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.STEEL_ARROW_HEAD.get(), 3).tier(AnvilTier.IRON)
+        ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.STEEL_ARROW_HEAD.get(), 3).tier(AnvilTier.iron())
                 .setPolishing(false)
                 .setQuality(false)
                 .setNeedQuenching(false)

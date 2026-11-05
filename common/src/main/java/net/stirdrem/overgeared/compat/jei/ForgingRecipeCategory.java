@@ -48,7 +48,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
     public ForgingRecipeCategory(IGuiHelper helper) {
         this.background = helper.createDrawable(TEXTURE, 7, 16, imageWidth, imageHeight);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.SMITHING_ANVIL.get()));
+        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.IRON_SMITHING_ANVIL.get()));
         arrowStatic = helper.createDrawable(TEXTURE, 176, 0, 24, 17);
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
     }
@@ -76,7 +76,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         Component tierText = Component.translatable("tooltip.overgeared.recipe.tier")
                 .append(Component.literal(" "))
-                .append(tierName != null ? Component.translatable(tierName.getLang()) : Component.literal(tierRaw));
+                .append(tierName != null ? tierName.displayName() : Component.literal(tierRaw));
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
             guiGraphics.blit(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);

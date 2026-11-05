@@ -4,9 +4,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.config.ServerConfig;
 
-public class TierASmithingAnvilScreen extends AbstractSmithingAnvilScreen<TierASmithingAnvilMenu> {
+public class TieredSmithingAnvilScreen extends AbstractSmithingAnvilScreen<TieredSmithingAnvilMenu> {
 
-    public TierASmithingAnvilScreen(TierASmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
+    public TieredSmithingAnvilScreen(TieredSmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle, ServerConfig.ENABLE_BLUEPRINT_FORGING.get());
     }
 }

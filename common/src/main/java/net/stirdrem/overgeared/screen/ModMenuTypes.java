@@ -15,16 +15,9 @@ public class ModMenuTypes {
             DeferredRegister.create(Registries.MENU, OvergearedMod.MOD_ID);
 
 
-    public static final DeferredHolder<MenuType<?>, MenuType<SteelSmithingAnvilMenu>> STEEL_SMITHING_ANVIL_MENU =
-            registerMenuType("smithing_anvil_menu", SteelSmithingAnvilMenu::new);
+    public static final DeferredHolder<MenuType<?>, MenuType<TieredSmithingAnvilMenu>> TIERED_SMITHING_ANVIL_MENU =
+            registerMenuType("smithing_anvil_menu", TieredSmithingAnvilMenu::new);
 
-
-    public static final DeferredHolder<MenuType<?>, MenuType<TierASmithingAnvilMenu>> TIER_A_SMITHING_ANVIL_MENU =
-            registerMenuType("tier_a_smithing_anvil_menu", TierASmithingAnvilMenu::new);
-
-
-    public static final DeferredHolder<MenuType<?>, MenuType<TierBSmithingAnvilMenu>> TIER_B_SMITHING_ANVIL_MENU =
-            registerMenuType("tier_b_smithing_anvil_menu", TierBSmithingAnvilMenu::new);
 
     public static final DeferredHolder<MenuType<?>, MenuType<StoneSmithingAnvilMenu>> STONE_SMITHING_ANVIL_MENU =
             registerMenuType("stone_smithing_anvil_menu", StoneSmithingAnvilMenu::new);
