@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.platform.services;
 
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.tags.TagKey;
@@ -10,11 +12,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.config.ServerConfigCommon;
 import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -129,6 +133,19 @@ public interface IPlatformHelper {
     /** A block entity type for the given blocks. Vanilla's builder is not accessible from common code. */
     <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
             BlockEntityFactory<T> factory, Block... blocks);
+
+    /** The game's config directory. */
+    Path getConfigDir();
+
+    /**
+     * Makes {@code oldId} resolve to {@code newId} in the registry, so worlds saved before a rename keep their
+     * blocks, items and block entities. Call from the mod entrypoint, before registration.
+     */
+    void registerAlias(ResourceKey<? extends Registry<?>> registry, ResourceLocation oldId, ResourceLocation newId);
+
+    /** Lets other mods change the anvil tiers read from config before they are registered (KubeJS on Forge). */
+    default void modifyAnvilTiers(List<AnvilTier.Definition> tiers) {
+    }
 
     @FunctionalInterface
     interface SimpleMenuFactory<T extends AbstractContainerMenu> {

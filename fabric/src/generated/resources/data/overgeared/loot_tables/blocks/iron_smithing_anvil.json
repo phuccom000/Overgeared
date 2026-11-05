@@ -11,11 +11,10 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "minecraft:cobblestone"
+          "name": "overgeared:iron_smithing_anvil"
         }
       ],
       "rolls": 1.0
     }
-  ],
-  "random_sequence": "overgeared:blocks/stone_anvil"
+  ]
 }

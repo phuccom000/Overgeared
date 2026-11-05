@@ -40,16 +40,6 @@ public class FabricServerConfig implements ServerConfigCommon {
     }
 
     @Override
-    public boolean ENABLE_TIER_A() {
-        return ServerConfig.ENABLE_TIER_A.get();
-    }
-
-    @Override
-    public boolean ENABLE_TIER_B() {
-        return ServerConfig.ENABLE_TIER_B.get();
-    }
-
-    @Override
     public int HEATED_ITEM_COOLDOWN_TICKS() {
         return ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get();
     }

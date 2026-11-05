@@ -34,9 +34,7 @@ public class OvergearedClient implements ClientModInitializer {
         PopupOverlay.register();
         OvergearedTooltipEvents.register();
 
-        MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(), SteelSmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(), TierASmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(), TierBSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(), TieredSmithingAnvilScreen::new);
         MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), StoneSmithingAnvilScreen::new);
         MenuScreens.register(ModMenuTypes.ALLOY_SMELTER_MENU.get(), AlloySmelterScreen::new);
         MenuScreens.register(ModMenuTypes.NETHER_ALLOY_SMELTER_MENU.get(), NetherAlloySmelterScreen::new);
@@ -45,9 +43,7 @@ public class OvergearedClient implements ClientModInitializer {
         MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU.get(), BlueprintWorkbenchScreen::new);
         MenuScreens.register(ModMenuTypes.FLETCHING_STATION_MENU.get(), FletchingStationScreen::new);
 
-        registerAnvilRenderer(ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get());
-        registerAnvilRenderer(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get());
-        registerAnvilRenderer(ModBlockEntities.TIER_B_SMITHING_ANVIL_BE.get());
+        registerAnvilRenderer(ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get());
         registerAnvilRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get());
 
         EntityModelLayerRegistry.registerModelLayer(CustomCopperHelmet.LAYER_LOCATION, CustomCopperHelmet::createBodyLayer);

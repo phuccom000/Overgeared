@@ -48,7 +48,7 @@ public class SteelAnvilCategory implements IRecipeCategory<ExplanationRecipe> {
         this.background = guiHelper.drawableBuilder(BACKGROUND_LOCATION, 0, 0, 150, 120)
                 .setTextureSize(150, 120) // This ensures the texture isn't stretched
                 .build();
-        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModBlocks.SMITHING_ANVIL.get()));
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModBlocks.IRON_SMITHING_ANVIL.get()));
         this.title = Component.translatable("jei.overgeared.category.steel_anvil");
 
         // Get all items from the smithing hammers tag

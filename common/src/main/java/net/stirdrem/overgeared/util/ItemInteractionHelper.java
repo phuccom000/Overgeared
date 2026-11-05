@@ -27,8 +27,12 @@ import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
+import net.stirdrem.overgeared.block.ModBlocks;
+import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 import net.stirdrem.overgeared.datapack.DurabilityBlacklistReloadListener;
 import net.stirdrem.overgeared.datapack.GrindingBlacklistReloadListener;
 import net.stirdrem.overgeared.item.custom.ToolCastItem;
@@ -66,6 +70,32 @@ public final class ItemInteractionHelper {
     /**
      * Cools a held heated metal when the player right-clicks a water source. Returns true if it did.
      */
+    /**
+     * Turns an anvil base (a block in an enabled tier's base tag, e.g. stone or a vanilla anvil) into the smithing
+     * anvil of that tier, lowest tier first. Server side only.
+     *
+     * @return true if the block was converted
+     */
+    public static boolean tryBuildSmithingAnvil(Player player, Level level, BlockPos pos, BlockState state) {
+        for (AnvilTier tier : AnvilTier.all()) {
+            if (!tier.isEnabled() || !state.is(tier.baseTag())) continue;
+            if (tier.isStone() && !Overgeared.getConfig().ENABLE_STONE_TO_ANVIL()) continue;
+            if (tier.id().equals(AnvilTier.IRON_ID) && !Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING()) continue;
+
+            BlockState newState = ModBlocks.anvilFor(tier)
+                    .defaultBlockState()
+                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            level.setBlock(pos, newState, 3);
+            level.playSound(null, pos, tier.isStone() ? SoundEvents.STONE_BREAK : SoundEvents.ANVIL_USE,
+                    SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, tier.id());
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static boolean tryCoolInWater(Player player, ItemStack stack, Level level) {
         if (!stack.is(ModTags.Items.HEATED_METALS)) return false;
 

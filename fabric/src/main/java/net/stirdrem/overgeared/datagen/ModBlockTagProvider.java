@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.datagen;
 
+import net.stirdrem.overgeared.registry.RegistryEntry;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.fabricmc.fabric.api.mininglevel.v1.MiningLevelManager;
@@ -28,24 +29,18 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(
                         ModBlocks.STEEL_BLOCK.get(),
-                        ModBlocks.SMITHING_ANVIL.get(),
                         ModBlocks.STONE_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_A_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_B_SMITHING_ANVIL.get(),
                         ModBlocks.ALLOY_FURNACE.get(),
                         ModBlocks.NETHER_ALLOY_FURNACE.get()
-                );
+                )
+                .add(ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new));
 
         /*
          * Smithing anvils
          */
         getOrCreateTagBuilder(ModTags.Blocks.SMITHING_ANVIL)
-                .add(
-                        ModBlocks.SMITHING_ANVIL.get(),
-                        ModBlocks.STONE_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_A_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_B_SMITHING_ANVIL.get()
-                );
+                .add(ModBlocks.STONE_SMITHING_ANVIL.get())
+                .add(ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new));
 
         /*
          * Stone anvil bases

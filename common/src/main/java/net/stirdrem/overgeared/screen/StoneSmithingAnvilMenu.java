@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.stirdrem.overgeared.block.entity.StoneSmithingAnvilBlockEntity;
 
 public class StoneSmithingAnvilMenu extends AbstractSmithingAnvilMenu {
+
     private StoneSmithingAnvilMenu(int syncId, Inventory inv, StoneSmithingAnvilBlockEntity entity) {
         this(syncId, inv, entity, new SimpleContainerData(entity.getContainerData().getCount()));
     }
@@ -19,6 +20,6 @@ public class StoneSmithingAnvilMenu extends AbstractSmithingAnvilMenu {
     }
 
     public StoneSmithingAnvilMenu(int syncId, Inventory inv, StoneSmithingAnvilBlockEntity entity, ContainerData data) {
-        super(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), syncId, inv, entity, data, false);
+        super(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), syncId, inv, entity, data);
     }
 }

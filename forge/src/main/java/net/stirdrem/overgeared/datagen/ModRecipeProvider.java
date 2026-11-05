@@ -461,7 +461,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
          */
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.IRON_PLATE.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setNeedQuenching(false)
                 .setQuality(false)
                 .pattern("#")
@@ -470,7 +470,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.COPPER_PLATE.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setNeedQuenching(false)
                 .setQuality(false)
                 .pattern("#")
@@ -481,7 +481,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
         /*
          * ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC,
          * ModItems.STEEL_PLATE.get(), 4)
-         * .tier(AnvilTier.IRON)
+         * .tier(AnvilTier.iron())
          * .setQuality(false)
          * .pattern("#")
          * .define('#', ModItems.STEEL_INGOT.get())
@@ -492,7 +492,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
 
         // Iron Tools
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_PICKAXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.PICKAXE.getId())
                 .pattern("###")
                 .define('#', ModItems.HEATED_IRON_INGOT.get())
@@ -500,7 +500,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_SWORD_BLADE.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SWORD.getId())
                 .pattern("#")
                 .pattern("#")
@@ -509,7 +509,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_SHOVEL_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SHOVEL.getId())
                 .pattern("#")
                 .define('#', ModItems.HEATED_IRON_INGOT.get())
@@ -517,7 +517,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_HOE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.HOE.getId())
                 .pattern("##")
                 .define('#', ModItems.HEATED_IRON_INGOT.get())
@@ -525,7 +525,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .pattern("##")
                 .pattern("# ")
@@ -534,7 +534,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .pattern("##")
                 .pattern(" #")
@@ -545,7 +545,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
         // Copper Tools
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_PICKAXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.PICKAXE.getId())
                 .pattern("###")
                 .define('#', ModItems.HEATED_COPPER_INGOT.get())
@@ -553,7 +553,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_HAMMER_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setQuality(true)
                 .pattern("# ")
@@ -563,7 +563,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_SWORD_BLADE.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SWORD.getId())
                 .pattern("#")
                 .pattern("#")
@@ -572,7 +572,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_SHOVEL_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SHOVEL.getId())
                 .pattern("#")
                 .define('#', ModItems.HEATED_COPPER_INGOT.get())
@@ -580,7 +580,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_HOE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.HOE.getId())
                 .pattern("##")
                 .define('#', ModItems.HEATED_COPPER_INGOT.get())
@@ -588,7 +588,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .pattern("##")
                 .pattern("# ")
@@ -597,7 +597,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.COPPER_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .pattern("##")
                 .pattern(" #")
@@ -676,7 +676,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
 
         // Gold Tools
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_PICKAXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.PICKAXE.getId())
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -685,7 +685,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_SWORD_BLADE.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SWORD.getId())
                 .setNeedQuenching(false)
                 .pattern("#")
@@ -695,7 +695,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_SHOVEL_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.SHOVEL.getId())
                 .setNeedQuenching(false)
                 .pattern("#")
@@ -704,7 +704,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_HOE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.HOE.getId())
                 .setNeedQuenching(false)
                 .pattern("##")
@@ -713,7 +713,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .setNeedQuenching(false)
                 .pattern("##")
@@ -723,7 +723,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.GOLDEN_AXE_HEAD.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setBlueprint(ToolType.AXE.getId())
                 .setNeedQuenching(false)
                 .pattern("##")
@@ -733,7 +733,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter, new ResourceLocation(Overgeared.MOD_ID, "golden_axe_head_2"));
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.TOOL_HEADS, ModItems.IRON_TONG.get(), 2)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setQuality(false)
                 .pattern("  x")
                 .pattern(" xx")
@@ -777,7 +777,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, Items.BUCKET, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setQuality(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -787,7 +787,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, Items.SHEARS, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .needsMinigame(true)
                 .failedResult(Items.IRON_INGOT)
                 .setQuality(false)
@@ -799,7 +799,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, Items.NETHERITE_INGOT, 10)
-                .tier(AnvilTier.IRON)
+                .tier(AnvilTier.iron())
                 .needsMinigame(true)
                 .failedResult(Items.NETHERITE_SCRAP, 4)
                 .qualityDifficulty(ForgingQuality.MASTER)
@@ -821,7 +821,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.IRON_HELMET, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -831,7 +831,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.IRON_CHESTPLATE, 5)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -842,7 +842,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.IRON_LEGGINGS, 4)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -853,7 +853,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.IRON_BOOTS, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -901,7 +901,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, ModItems.COPPER_HELMET.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -911,7 +911,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, ModItems.COPPER_CHESTPLATE.get(), 5)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -922,7 +922,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, ModItems.COPPER_LEGGINGS.get(), 4)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -933,7 +933,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, ModItems.COPPER_BOOTS.get(), 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -943,7 +943,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.GOLDEN_HELMET, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -953,7 +953,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.GOLDEN_CHESTPLATE, 5)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -964,7 +964,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.GOLDEN_LEGGINGS, 4)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("###")
@@ -975,7 +975,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.ARMORS, Items.GOLDEN_BOOTS, 3)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setNeedQuenching(false)
                 .pattern("# #")
@@ -985,7 +985,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.IRON_ARROW_HEAD.get(), 2)
-                .tier(AnvilTier.STONE)
+                .tier(AnvilTier.stone())
                 .setPolishing(false)
                 .setQuality(false)
                 .setNeedQuenching(false)
@@ -997,7 +997,7 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pWriter);
 
         ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC, ModItems.STEEL_ARROW_HEAD.get(), 3)
-                .tier(AnvilTier.IRON)
+                .tier(AnvilTier.iron())
                 .setPolishing(false)
                 .setQuality(false)
                 .setNeedQuenching(false)

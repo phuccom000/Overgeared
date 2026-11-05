@@ -7,11 +7,14 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.stirdrem.overgeared.item.custom.Tongs;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Supplier;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -75,6 +78,16 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public boolean isDevelopmentEnvironment() {
 
         return FabricLoader.getInstance().isDevelopmentEnvironment();
+    }
+
+    @Override
+    public Path getConfigDir() {
+        return FabricLoader.getInstance().getConfigDir();
+    }
+
+    @Override
+    public void registerAlias(ResourceKey<? extends Registry<?>> registry, ResourceLocation oldId, ResourceLocation newId) {
+        RegistryAliases.add(registry, oldId, newId);
     }
 
     @Override

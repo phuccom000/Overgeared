@@ -12,6 +12,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 
@@ -117,12 +118,9 @@ public class ModCreativeModeTabs {
                         entries.accept(ModItems.STEEL_SHOVEL_HEAD.get());
                         entries.accept(ModItems.STEEL_HOE_HEAD.get());
 
-                        entries.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
-                        entries.accept(ModBlocks.SMITHING_ANVIL.get());
-                        if (Overgeared.getConfig().ENABLE_TIER_A())
-                            entries.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
-                        if (Overgeared.getConfig().ENABLE_TIER_B())
-                            entries.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+                        for (AnvilTier tier : AnvilTier.all()) {
+                            if (tier.isEnabled()) entries.accept(ModBlocks.anvilFor(tier));
+                        }
                         entries.accept(ModBlocks.STEEL_BLOCK.get());
                         entries.accept(ModBlocks.DRAFTING_TABLE.get());
                         entries.accept(ModBlocks.ALLOY_FURNACE.get());

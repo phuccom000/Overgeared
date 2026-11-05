@@ -10,15 +10,23 @@ import net.minecraftforge.common.ForgeTier;
 import net.minecraftforge.common.TierSortingRegistry;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.config.ForgeServerConfig;
 import net.stirdrem.overgeared.config.ServerConfigCommon;
 import net.stirdrem.overgeared.item.custom.ForgeTongs;
+import net.stirdrem.overgeared.compat.kubejs.OvergearedKubeJSPlugin;
 import net.stirdrem.overgeared.platform.services.IPlatformHelper;
+
+import java.nio.file.Path;
 
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -64,6 +72,24 @@ public class ForgePlatformHelper implements IPlatformHelper {
     public boolean isDevelopmentEnvironment() {
 
         return !FMLLoader.isProduction();
+    }
+
+    @Override
+    public Path getConfigDir() {
+        return FMLPaths.CONFIGDIR.get();
+    }
+
+    @Override
+    public void registerAlias(ResourceKey<? extends Registry<?>> registry, ResourceLocation oldId, ResourceLocation newId) {
+        ForgeRegistryAliases.add(registry, oldId, newId);
+    }
+
+    @Override
+    public void modifyAnvilTiers(List<AnvilTier.Definition> tiers) {
+        // Tiers are read when blocks register, after every mod (and KubeJS's startup scripts) has loaded
+        if (isModLoaded("kubejs")) {
+            OvergearedKubeJSPlugin.modifyAnvilTiers(tiers);
+        }
     }
 
     @Override

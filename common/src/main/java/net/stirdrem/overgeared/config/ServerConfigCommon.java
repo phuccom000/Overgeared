@@ -18,10 +18,6 @@ public interface ServerConfigCommon {
 
     boolean ENABLE_TIERED_HAMMERS();
 
-    boolean ENABLE_TIER_A();
-
-    boolean ENABLE_TIER_B();
-
     int HEATED_ITEM_COOLDOWN_TICKS();
 
     boolean ENABLE_DRAGON_BREATH_RECIPE();

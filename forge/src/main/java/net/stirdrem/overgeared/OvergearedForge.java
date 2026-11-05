@@ -3,6 +3,7 @@ package net.stirdrem.overgeared;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.*;
@@ -20,6 +21,7 @@ import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -33,6 +35,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
@@ -45,6 +48,7 @@ import net.stirdrem.overgeared.client.PopupOverlay;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.compat.curios.CuriosModPlugin;
+import net.stirdrem.overgeared.config.AnvilTierConfig;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.entity.ModEntities;
@@ -59,6 +63,7 @@ import net.stirdrem.overgeared.item.armor.model.CustomCopperHelmet;
 import net.stirdrem.overgeared.item.armor.model.CustomCopperLeggings;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 import net.stirdrem.overgeared.networking.ModMessages;
+import net.stirdrem.overgeared.platform.ForgeRegistryAliases;
 import net.stirdrem.overgeared.recipe.BetterBrewingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
 import net.stirdrem.overgeared.recipe.ModRecipes;
@@ -79,6 +84,8 @@ public class OvergearedForge {
     public static boolean polymorph;
 
     public OvergearedForge() {
+        // Before the common config loads: the default tiers take the old enableTierA/enableTierB options from it
+        AnvilTierConfig.createDefaultFileIfMissing();
         //ServerConfig.registerConfig();
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         //IEventBus modEventBus = context.getModEventBus();
@@ -88,6 +95,14 @@ public class OvergearedForge {
         ModItems.init();
 
         ModBlocks.init();
+        ModBlocks.registerAliases();
+        ForgeRegistryAliases.register(modEventBus);
+        // The tiered anvils register when blocks do, so KubeJS startup scripts (loaded by its constructor) can add tiers
+        modEventBus.addListener(EventPriority.HIGHEST, (RegisterEvent event) -> {
+            if (event.getRegistryKey().equals(Registries.BLOCK)) {
+                ModBlocks.registerTieredAnvils();
+            }
+        });
 
         ModBlockEntities.init();
 
@@ -504,9 +519,7 @@ public class OvergearedForge {
         public static void onClientSetup(FMLClientSetupEvent event) {
             DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientInit::init);
 
-            MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(), SteelSmithingAnvilScreen::new);
-            MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(), TierASmithingAnvilScreen::new);
-            MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(), TierBSmithingAnvilScreen::new);
+            MenuScreens.register(ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(), TieredSmithingAnvilScreen::new);
             MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), StoneSmithingAnvilScreen::new);
             MenuScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU.get(), RockKnappingScreen::new);
             MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU.get(), BlueprintWorkbenchScreen::new);
@@ -534,10 +547,8 @@ public class OvergearedForge {
 
         @SubscribeEvent
         public static void registerBER(EntityRenderersEvent.RegisterRenderers event) {
-            event.registerBlockEntityRenderer(ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
-            event.registerBlockEntityRenderer(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
-            event.registerBlockEntityRenderer(ModBlockEntities.TIER_B_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
         }
 
         @SubscribeEvent

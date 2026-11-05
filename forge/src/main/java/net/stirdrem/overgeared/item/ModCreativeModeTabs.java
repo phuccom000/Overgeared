@@ -14,6 +14,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 
@@ -128,12 +129,9 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.DIAMOND_SHOVEL_HEAD.get());
                         pOutput.accept(ModItems.DIAMOND_HOE_HEAD.get());
 */
-                        pOutput.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
-                        pOutput.accept(ModBlocks.SMITHING_ANVIL.get());
-                        if (Overgeared.getConfig().ENABLE_TIER_A())
-                            pOutput.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
-                        if (Overgeared.getConfig().ENABLE_TIER_B())
-                            pOutput.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+                        for (AnvilTier tier : AnvilTier.all()) {
+                            if (tier.isEnabled()) pOutput.accept(ModBlocks.anvilFor(tier));
+                        }
                         pOutput.accept(ModBlocks.STEEL_BLOCK.get());
                         pOutput.accept(ModBlocks.DRAFTING_TABLE.get());
                         pOutput.accept(ModBlocks.ALLOY_FURNACE.get());

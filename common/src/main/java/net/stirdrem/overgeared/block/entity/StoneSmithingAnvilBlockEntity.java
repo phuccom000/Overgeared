@@ -19,7 +19,7 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     private int craftCount = 0;
 
     public StoneSmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
-        super((StoneSmithingAnvil) state.getBlock(), AnvilTier.STONE, ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), pos, state);
+        super((StoneSmithingAnvil) state.getBlock(), AnvilTier.stone(), ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), pos, state);
     }
 
     @Override
@@ -54,8 +54,16 @@ public class StoneSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEnt
     }
 
     @Override
+    public boolean hasRecipe() {
+        return anvilTier.hasBlueprint() ? super.hasRecipeWithBlueprint() : super.hasRecipe();
+    }
+
+    @Override
     protected void craftItem() {
         super.craftItem();
+        if (anvilTier.hasBlueprint()) {
+            super.craftItemWithBlueprint();
+        }
         if (Overgeared.getConfig().STONE_ANVIL_MAX_USES() == 0) return;
         craftCount++;
 

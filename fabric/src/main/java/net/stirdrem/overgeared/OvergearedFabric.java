@@ -14,6 +14,7 @@ import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.compat.accessories.AttributeModifierHandler;
 import net.stirdrem.overgeared.config.ClientConfig;
+import net.stirdrem.overgeared.config.AnvilTierConfig;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.event.ModEvents;
@@ -55,6 +56,9 @@ public class OvergearedFabric implements ModInitializer {
     public void onInitialize() {
         Overgeared.LOGGER.info("Overgeared: initializing Fabric port");
 
+        // Before the main config loads: the default tiers take the old enableTierA/enableTierB options from it
+        AnvilTierConfig.createDefaultFileIfMissing();
+
         // Must run before any other registration: several classes (ModToolTiers,
         // item constructors) read config values in static initializers,
         // which run the first time those classes are touched.
@@ -67,6 +71,8 @@ public class OvergearedFabric implements ModInitializer {
         // Force static init / registration for each registry class.
         ModItems.init();
         ModBlocks.init();
+        ModBlocks.registerAliases();
+        ModBlocks.registerTieredAnvils();
         ModRecipes.init();
         ModRecipeTypes.init();
 

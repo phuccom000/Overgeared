@@ -1,13 +1,13 @@
 [
   {
-    "block": "overgeared:smithing_anvil",
+    "block": "overgeared:iron_smithing_anvil",
     "mass": 7000.0,
     "friction": 0.2,
     "elasticity": 1.0,
     "priority": 101
   },
   {
-    "block": "overgeared:stone_anvil",
+    "block": "overgeared:stone_smithing_anvil",
     "mass": 2500.0,
     "friction": 0.6,
     "elasticity": 1.0,

@@ -66,28 +66,14 @@ public class ModModelProvider extends FabricModelProviderPlus {
         // Horizontal blocks
         // ---------------------------------------------------------------------
 
-        horizontalBlock(
-                generator,
-                ModBlocks.SMITHING_ANVIL.get(),
-                modLoc("block/smithing_anvil")
-        );
-
-        horizontalBlock(
-                generator,
-                ModBlocks.TIER_A_SMITHING_ANVIL.get(),
-                modLoc("block/tier_a_smithing_anvil")
-        );
-
-        horizontalBlock(
-                generator,
-                ModBlocks.TIER_B_SMITHING_ANVIL.get(),
-                modLoc("block/tier_b_smithing_anvil")
-        );
+        // One model per tier, named like the block (block/<tier>_smithing_anvil)
+        ModBlocks.TIERED_ANVILS.forEach((tier, anvil) ->
+                horizontalBlock(generator, anvil.get(), modLoc("block/" + tier.blockName())));
 
         horizontalBlock(
                 generator,
                 ModBlocks.STONE_SMITHING_ANVIL.get(),
-                modLoc("block/stone_anvil")
+                modLoc("block/stone_smithing_anvil")
         );
 
         horizontalBlock(

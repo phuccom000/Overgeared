@@ -55,7 +55,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
     public ForgingRecipeCategory(IGuiHelper helper) {
         this.background = helper.createDrawable(TEXTURE, 7, 16, imageWidth, imageHeight);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.SMITHING_ANVIL.get()));
+        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.IRON_SMITHING_ANVIL.get()));
         arrowStatic = helper.createDrawable(TEXTURE, 176, 0, 24, 17);
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);
     }
@@ -89,7 +89,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         if (tierName != null) {
             tierText = tierText.append(
-                    Component.translatable(tierName.getLang())
+                    tierName.displayName()
             );
         } else {
             tierText = tierText.append(

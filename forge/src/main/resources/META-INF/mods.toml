@@ -53,6 +53,14 @@ versionRange = "[3.2.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
+# Optional: KubeJS startup scripts can add anvil tiers (OvergearedEvents.anvilTiers)
+[[dependencies.${ mod_id }]]
+modId = "kubejs"
+mandatory = false
+versionRange = "[2001.6,)"
+ordering = "AFTER"
+side = "BOTH"
+
 [[dependencies.${ mod_id }]]
 modId = "valkyrienskies"
 mandatory = false

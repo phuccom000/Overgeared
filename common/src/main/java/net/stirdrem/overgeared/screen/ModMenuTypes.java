@@ -15,12 +15,8 @@ import net.stirdrem.overgeared.registry.RegistryEntry;
 public class ModMenuTypes {
     public static final RegistrationProvider<MenuType<?>> MENUS = RegistrationProvider.get(Registries.MENU);
 
-    public static final RegistryEntry<MenuType<SteelSmithingAnvilMenu>> STEEL_SMITHING_ANVIL_MENU =
-            withBlockPos("smithing_anvil_menu", SteelSmithingAnvilMenu::new);
-    public static final RegistryEntry<MenuType<TierASmithingAnvilMenu>> TIER_A_SMITHING_ANVIL_MENU =
-            withBlockPos("tier_a_smithing_anvil_menu", TierASmithingAnvilMenu::new);
-    public static final RegistryEntry<MenuType<TierBSmithingAnvilMenu>> TIER_B_SMITHING_ANVIL_MENU =
-            withBlockPos("tier_b_smithing_anvil_menu", TierBSmithingAnvilMenu::new);
+    public static final RegistryEntry<MenuType<TieredSmithingAnvilMenu>> TIERED_SMITHING_ANVIL_MENU =
+            withBlockPos("smithing_anvil_menu", TieredSmithingAnvilMenu::new);
     public static final RegistryEntry<MenuType<StoneSmithingAnvilMenu>> STONE_SMITHING_ANVIL_MENU =
             withBlockPos("stone_smithing_anvil_menu", StoneSmithingAnvilMenu::new);
     public static final RegistryEntry<MenuType<AlloySmelterMenu>> ALLOY_SMELTER_MENU =

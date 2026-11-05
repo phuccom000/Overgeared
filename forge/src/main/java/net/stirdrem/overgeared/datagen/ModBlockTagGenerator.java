@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.datagen;
 
+import net.stirdrem.overgeared.registry.RegistryEntry;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -23,19 +25,15 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
     protected void addTags(HolderLookup.Provider pProvider) {
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModBlocks.STEEL_BLOCK.get(),
-                        ModBlocks.SMITHING_ANVIL.get(),
                         ModBlocks.STONE_SMITHING_ANVIL.get(),
                         ModBlocks.ALLOY_FURNACE.get(),
                         ModBlocks.NETHER_ALLOY_FURNACE.get()
-                );
+                )
+                .add(ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new));
 
         this.tag(ModTags.Blocks.SMITHING_ANVIL)
-                .add(
-                        ModBlocks.SMITHING_ANVIL.get(),
-                        ModBlocks.STONE_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_A_SMITHING_ANVIL.get(),
-                        ModBlocks.TIER_B_SMITHING_ANVIL.get()
-                );
+                .add(ModBlocks.STONE_SMITHING_ANVIL.get())
+                .add(ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new));
         this.tag(ModTags.Blocks.NEEDS_STEEL_TOOL)
                 .add(
                         Blocks.OBSIDIAN,

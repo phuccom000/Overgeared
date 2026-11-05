@@ -18,7 +18,6 @@ import net.stirdrem.overgeared.screen.AbstractSmithingAnvilMenu;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Locale;
 
 public class ForgingRecipeBookComponent extends RecipeBookComponent {
     protected static final ResourceLocation RECIPE_BOOK_BUTTONS = ResourceLocation.tryBuild(Overgeared.MOD_ID,
@@ -51,11 +50,11 @@ public class ForgingRecipeBookComponent extends RecipeBookComponent {
         if (!(this.menu instanceof AbstractSmithingAnvilMenu forgingMenu))
             return;
         AnvilTier anvilTier = forgingMenu.getBlockEntity().getAnvilTier();
-        AnvilTier requiredTier = AnvilTier.valueOf(forgingRecipe.getAnvilTier().toUpperCase(Locale.ROOT));
+        AnvilTier requiredTier = AnvilTier.fromDisplayName(forgingRecipe.getAnvilTier());
         int gridWidth = 3;
         int gridHeight = 3;
 
-        if (!anvilTier.isAtLeast(requiredTier)) {
+        if (requiredTier == null || !anvilTier.isAtLeast(requiredTier)) {
             // Show red message in action bar
             this.minecraft.player.displayClientMessage(
                     Component.literal("Anvil tier not high enough")

@@ -15,12 +15,11 @@ import java.util.function.Supplier;
 public class ModBlockEntities {
     public static final RegistrationProvider<BlockEntityType<?>> BLOCK_ENTITIES = RegistrationProvider.get(Registries.BLOCK_ENTITY_TYPE);
 
-    public static final RegistryEntry<BlockEntityType<SteelSmithingAnvilBlockEntity>> STEEL_SMITHING_ANVIL_BE =
-            register("smithing_table_be", SteelSmithingAnvilBlockEntity::new, ModBlocks.SMITHING_ANVIL);
-    public static final RegistryEntry<BlockEntityType<TierASmithingAnvilBlockEntity>> TIER_A_SMITHING_ANVIL_BE =
-            register("tier_a_smithing_table_be", TierASmithingAnvilBlockEntity::new, ModBlocks.TIER_A_SMITHING_ANVIL);
-    public static final RegistryEntry<BlockEntityType<TierBSmithingAnvilBlockEntity>> TIER_B_SMITHING_ANVIL_BE =
-            register("tier_b_smithing_table_be", TierBSmithingAnvilBlockEntity::new, ModBlocks.TIER_B_SMITHING_ANVIL);
+    /** Shared by every tiered anvil; keeps the iron anvil's old id so placed anvils keep their contents. */
+    public static final RegistryEntry<BlockEntityType<TieredSmithingAnvilBlockEntity>> TIERED_SMITHING_ANVIL_BE =
+            BLOCK_ENTITIES.register("smithing_table_be", () -> Services.PLATFORM.createBlockEntityType(
+                    TieredSmithingAnvilBlockEntity::new,
+                    ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new)));
     public static final RegistryEntry<BlockEntityType<StoneSmithingAnvilBlockEntity>> STONE_SMITHING_ANVIL_BE =
             register("stone_smithing_table_be", StoneSmithingAnvilBlockEntity::new, ModBlocks.STONE_SMITHING_ANVIL);
     public static final RegistryEntry<BlockEntityType<AlloySmelterBlockEntity>> ALLOY_FURNACE_BE =

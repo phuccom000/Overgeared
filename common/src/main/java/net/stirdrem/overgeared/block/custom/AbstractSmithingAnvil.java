@@ -54,11 +54,11 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     protected static final int HAMMER_SOUND_DURATION_TICKS = 6; // adjust to match your sound
 
     protected static String quality = null;
-    protected static AnvilTier tier;
+    protected final AnvilTier tier;
 
     public AbstractSmithingAnvil(AnvilTier anvilTier, Properties properties) {
         super(properties);
-        tier = anvilTier;
+        this.tier = anvilTier;
     }
 
     // In your SmithingAnvil class, ensure getQuality() never returns null:
@@ -95,7 +95,11 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
         super.onRemove(pState, pLevel, pPos, pNewState, pIsMoving);
     }
 
+    /** The hammers that work on this anvil: the tier's hammers with tiered hammer forging on, otherwise any. */
     public TagKey<Item> hammerTag() {
+        if (Overgeared.getConfig().ENABLE_TIERED_HAMMERS()) {
+            return tier.hammerTag();
+        }
         return ModTags.Items.SMITHING_HAMMERS;
     }
 
@@ -231,8 +235,8 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     @Override
     public abstract BlockEntity newBlockEntity(BlockPos pPos, BlockState pState);
 
-    public static String getTier() {
-        return tier.getDisplayName();
+    public AnvilTier getAnvilTier() {
+        return tier;
     }
 
     @Override

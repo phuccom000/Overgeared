@@ -434,7 +434,7 @@ public class ForgingRecipe implements Recipe<Container> {
 
             boolean requiresBlueprint = GsonHelper.getAsBoolean(json, "requires_blueprint", false);
 
-            String tier = GsonHelper.getAsString(json, "tier", AnvilTier.IRON.getDisplayName());
+            String tier = GsonHelper.getAsString(json, "tier", AnvilTier.IRON_ID);
             int hammering = GsonHelper.getAsInt(json, "hammering", 1);
             boolean hasQuality = GsonHelper.getAsBoolean(json, "has_quality", true);
             boolean needsMinigame = GsonHelper.getAsBoolean(json, "needs_minigame", false);

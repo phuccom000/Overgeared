@@ -131,59 +131,8 @@ public class ModItemInteractEvents {
         // Convert blocks to anvils
         // =========================
 
-        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
-                && Overgeared.getConfig().ENABLE_STONE_TO_ANVIL()) {
-
-            BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
-                    .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
-
-            world.setBlock(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
-
-            if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "stone");
-            }
-
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
-                && Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING()) {
-
-            BlockState newState = ModBlocks.SMITHING_ANVIL.get()
-                    .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
-
-            world.setBlock(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-
-            if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "iron");
-            }
-
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
-            world.setBlock(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_a");
-            }
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
-                    .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
-            world.setBlock(pos, newState, 3);
-            world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.trigger(serverPlayer, "tier_b");
-            }
+        if (!world.isClientSide && player.isShiftKeyDown()
+                && ItemInteractionHelper.tryBuildSmithingAnvil(player, world, pos, clickedState)) {
             return InteractionResult.SUCCESS;
         }
 
