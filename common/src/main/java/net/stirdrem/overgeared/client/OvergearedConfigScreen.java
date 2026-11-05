@@ -1,7 +1,5 @@
 package net.stirdrem.overgeared.client;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -10,20 +8,22 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.config.ServerConfig;
+import net.stirdrem.overgeared.config.core.ConfigSpec;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class OvergearedConfigScreen extends Screen {
     private final Screen parent;
-    private CommentedFileConfig configFile;
-    private ModConfigSpec configSpec;
+    private final ConfigSpec configSpec = ServerConfig.SERVER_CONFIG;
+    /** Edits made in this screen, applied to the config on "Done". */
+    private final Map<String, Object> pending = new LinkedHashMap<>();
     private double scrollPosition;
 
     private ConfigList configList;
@@ -31,22 +31,6 @@ public class OvergearedConfigScreen extends Screen {
     public OvergearedConfigScreen(Screen parent) {
         super(Component.literal("Overgeared Configuration"));
         this.parent = parent;
-        loadConfig();
-    }
-
-    private void loadConfig() {
-        Path configPath = Minecraft.getInstance().gameDirectory.toPath()
-                .resolve("config")
-                .resolve("overgeared-common.toml");
-
-        this.configFile = CommentedFileConfig.builder(configPath)
-                .sync()
-                .writingMode(WritingMode.REPLACE)
-                .preserveInsertionOrder()
-                .build();
-        this.configFile.load();
-
-        this.configSpec = ServerConfig.SERVER_CONFIG;
     }
 
 
@@ -83,13 +67,7 @@ public class OvergearedConfigScreen extends Screen {
     @Override
     public void onClose() {
         super.onClose();
-        if (configFile != null) {
-            try {
-                configFile.close();
-            } catch (Exception e) {
-                OvergearedMod.LOGGER.error("Error closing config file", e);
-            }
-        }
+        pending.clear(); // Closed without "Done": discard edits
     }
 
     public void restoreScrollPosition() {
@@ -536,8 +514,9 @@ public class OvergearedConfigScreen extends Screen {
 
     private void save() {
         try {
-            configFile.save();
-            configSpec.correct(configFile);
+            pending.forEach(configSpec::setValue);
+            pending.clear();
+            configSpec.save();
         } catch (Exception e) {
             OvergearedMod.LOGGER.error("Failed to save config", e);
         }
@@ -558,41 +537,44 @@ public class OvergearedConfigScreen extends Screen {
 
 // --- Config Get/Set Helpers ---
 
+    private Object get(String path) {
+        return pending.containsKey(path) ? pending.get(path) : configSpec.getValue(path);
+    }
+
     private boolean getBoolean(String path) {
-        Boolean v = configFile.get(path);
-        return v != null && v;
+        return get(path) instanceof Boolean b && b;
     }
 
     private void setBoolean(String path, boolean val) {
-        configFile.set(path, val);
+        pending.put(path, val);
     }
 
     private int getInt(String path) {
-        Integer v = configFile.get(path);
-        return v == null ? 0 : v;
+        return get(path) instanceof Number n ? n.intValue() : 0;
     }
 
     private void setInt(String path, int val) {
-        configFile.set(path, val);
+        pending.put(path, val);
     }
 
     private double getDouble(String path) {
-        Double v = configFile.get(path);
-        return v == null ? 0.0 : v;
+        return get(path) instanceof Number n ? n.doubleValue() : 0.0;
     }
 
     private void setDouble(String path, double val) {
-        configFile.set(path, val);
+        pending.put(path, val);
     }
 
     private List<String> getStringList(String path) {
-        List<? extends String> list = configFile.get(path);
-        if (list == null) return new ArrayList<>();
-        return new ArrayList<>(list);
+        List<String> result = new ArrayList<>();
+        if (get(path) instanceof List<?> list) {
+            for (Object o : list) result.add(String.valueOf(o));
+        }
+        return result;
     }
 
     private void setStringList(String path, List<? extends String> values) {
-        configFile.set(path, values);
+        pending.put(path, new ArrayList<>(values));
     }
 
     public void setScrollPosition(double scrollPosition) {

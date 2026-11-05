@@ -7,7 +7,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.stirdrem.overgeared.config.core.ConfigSpec;
 import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
@@ -27,7 +27,7 @@ public enum ForgingQuality implements StringRepresentable {
     private final ChatFormatting color;
     /** Fallback blueprint uses-to-next-level, used before the config is loaded. */
     private final int defaultBlueprintUses;
-    private final Supplier<ModConfigSpec.IntValue> blueprintUsesConfig;
+    private final Supplier<ConfigSpec.IntValue> blueprintUsesConfig;
 
     // Codec for persistence (saves as string)
     public static final Codec<ForgingQuality> CODEC = Codec.STRING.xmap(
@@ -42,7 +42,7 @@ public enum ForgingQuality implements StringRepresentable {
     );
 
     ForgingQuality(String displayName, ChatFormatting color, int defaultBlueprintUses,
-                   Supplier<ModConfigSpec.IntValue> blueprintUsesConfig) {
+                   Supplier<ConfigSpec.IntValue> blueprintUsesConfig) {
         this.displayName = displayName;
         this.color = color;
         this.defaultBlueprintUses = defaultBlueprintUses;

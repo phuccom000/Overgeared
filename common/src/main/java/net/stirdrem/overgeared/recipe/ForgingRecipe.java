@@ -334,6 +334,19 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 ForgingQuality::getDisplayName
         );
 
+        // Reads "minimum_quality" (matching the other snake_case keys), falling back to the
+        // older "minimumQuality" key so existing datapacks keep working. Always writes "minimum_quality".
+        private static final MapCodec<ForgingQuality> MINIMUM_QUALITY_FIELD = Codec.mapPair(
+                FORGING_QUALITY_CODEC.optionalFieldOf("minimum_quality"),
+                FORGING_QUALITY_CODEC.optionalFieldOf("minimumQuality")
+        ).xmap(
+                pair -> pair.getFirst().or(pair::getSecond).orElse(ForgingQuality.POOR),
+                quality -> Pair.of(
+                        quality == ForgingQuality.POOR ? Optional.empty() : Optional.of(quality),
+                        Optional.empty()
+                )
+        );
+
         // Codec for Set<String> of blueprint types
         private static final Codec<Set<String>> BLUEPRINT_TYPES_CODEC = Codec.either(
                 Codec.STRING,
@@ -466,7 +479,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     Codec.BOOL.optionalFieldOf("has_polishing", true).forGetter(ForgingRecipe::hasPolishing),
                     Codec.BOOL.optionalFieldOf("need_quenching", true).forGetter(ForgingRecipe::needQuenching),
                     Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(ForgingRecipe::showNotification),
-                    FORGING_QUALITY_CODEC.optionalFieldOf("minimumQuality", ForgingQuality.POOR).forGetter(ForgingRecipe::getMinimumQuality),
+                    MINIMUM_QUALITY_FIELD.forGetter(ForgingRecipe::getMinimumQuality),
                     FORGING_QUALITY_CODEC.optionalFieldOf("quality_difficulty", ForgingQuality.NONE).forGetter(ForgingRecipe::getQualityDifficulty),
                     TAB_CODEC.optionalFieldOf("category", ForgingBookCategory.MISC).forGetter(ForgingRecipe::getRecipeBookTab)
             ).apply(instance, (requiresBlueprint, blueprintTypes, tier, pattern, key, result, failedResult,

@@ -1,17 +1,17 @@
 package net.stirdrem.overgeared.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.stirdrem.overgeared.config.core.ConfigSpec;
 
 public class ClientConfig {
 
-    public static final ModConfigSpec CLIENT_CONFIG;
+    public static final ConfigSpec CLIENT_CONFIG;
 
-    public static final ModConfigSpec.IntValue MINIGAME_OVERLAY_HEIGHT;
-    public static final ModConfigSpec.BooleanValue POP_UP_TOGGLE;
-    public static final ModConfigSpec.BooleanValue ENABLE_ANVIL_RECIPE_BOOK;
+    public static final ConfigSpec.IntValue MINIGAME_OVERLAY_HEIGHT;
+    public static final ConfigSpec.BooleanValue POP_UP_TOGGLE;
+    public static final ConfigSpec.BooleanValue ENABLE_ANVIL_RECIPE_BOOK;
 
     static {
-        final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        final ConfigSpec.Builder builder = new ConfigSpec.Builder();
         builder.push("Minigame Config");
 
         MINIGAME_OVERLAY_HEIGHT = builder

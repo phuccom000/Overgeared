@@ -55,11 +55,6 @@ subprojects {
             name = "TerraformersMC"
             url = "https://maven.terraformersmc.com/"
         }
-        maven {
-            // Forge Config API Port
-            name = "Fuzs Mod Resources"
-            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
-        }
         exclusiveContent {
             forRepository {
                 maven { url "https://cursemaven.com" }
@@ -103,7 +98,6 @@ subprojects {
             neo_version               : neo_version,
             fabric_loader_version     : fabric_loader_version,
             fabric_version            : fabric_version,
-            forge_config_api_port_version: forge_config_api_port_version,
     ]
     tasks.withType(ProcessResources).configureEach {
         inputs.properties expandProps

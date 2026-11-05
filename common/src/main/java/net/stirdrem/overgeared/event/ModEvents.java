@@ -204,7 +204,7 @@ public class ModEvents {
         // Cooling countdown for heated items (tag-based or component-based)
         if (HeatedItem.isHeated(stack)) {
             Long heatedSince = stack.get(ModComponents.HEATED_TIME.get());
-            Level clientLevel = net.minecraft.client.Minecraft.getInstance().level;
+            Level clientLevel = net.stirdrem.overgeared.client.ClientLevelAccess.getLevel();
             if (heatedSince != null && clientLevel != null) {
                 long remainingTicks = ServerConfig.HEATED_ITEM_COOLDOWN_TICKS.get()
                         - (clientLevel.getGameTime() - heatedSince);

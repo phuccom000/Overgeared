@@ -32,6 +32,9 @@ public interface IPlatformHelper {
 
     boolean isDevelopmentEnvironment();
 
+    /** The loader's config directory (usually {@code .minecraft/config}). */
+    java.nio.file.Path getConfigDir();
+
     /** @return true when running on the physical client */
     boolean isPhysicalClient();
 

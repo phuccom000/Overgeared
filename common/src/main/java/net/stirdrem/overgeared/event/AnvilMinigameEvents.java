@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.stirdrem.overgeared.config.core.ConfigSpec;
 import net.stirdrem.overgeared.networking.PacketDistributor;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.config.ServerConfig;
@@ -71,12 +71,12 @@ public class AnvilMinigameEvents {
     private static float currentGoodZoneSize = 0;
 
     /** Config values for one blueprint quality tier. */
-    private record QualitySettings(ModConfigSpec.DoubleValue arrowSpeed,
-                                   ModConfigSpec.DoubleValue arrowSpeedIncrease,
-                                   ModConfigSpec.DoubleValue maxArrowSpeed,
-                                   ModConfigSpec.DoubleValue zoneShrinkFactor,
-                                   ModConfigSpec.IntValue zoneStartingSize,
-                                   ModConfigSpec.IntValue minPerfectZone) {
+    private record QualitySettings(ConfigSpec.DoubleValue arrowSpeed,
+                                   ConfigSpec.DoubleValue arrowSpeedIncrease,
+                                   ConfigSpec.DoubleValue maxArrowSpeed,
+                                   ConfigSpec.DoubleValue zoneShrinkFactor,
+                                   ConfigSpec.IntValue zoneStartingSize,
+                                   ConfigSpec.IntValue minPerfectZone) {
     }
 
     private static QualitySettings settingsFor(String quality) {

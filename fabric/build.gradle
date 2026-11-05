@@ -26,12 +26,6 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
-    // Provides NeoForge's ModConfigSpec API on Fabric
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}") {
-        // Its POM drags in Fabric API modules built for 1.21.2 snapshots, which break 1.21.1
-        exclude group: 'net.fabricmc.fabric-api'
-    }
-
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     // Only referenced behind a runtime check (Sable is NeoForge-only)
     compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
@@ -48,6 +42,8 @@ dependencies {
 loom {
     accessWidenerPath = file('src/main/resources/overgeared.accesswidener')
     mixin {
+        // Loom 1.14 no longer runs the mixin annotation processor by default; keep it so a refmap is generated
+        useLegacyMixinAp = true
         defaultRefmapName = "${mod_id}.refmap.json"
     }
     runs {

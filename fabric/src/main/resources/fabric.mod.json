@@ -37,10 +37,9 @@
   ],
   "accessWidener": "overgeared.accesswidener",
   "depends": {
-    "fabricloader": ">=0.16.0",
+    "fabricloader": ">=0.17.2",
     "fabric-api": "*",
     "minecraft": "~${minecraft_version}",
-    "java": ">=21",
-    "forgeconfigapiport": ">=${forge_config_api_port_version}"
+    "java": ">=21"
   }
 }

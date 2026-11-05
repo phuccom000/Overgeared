@@ -2,8 +2,8 @@
   "required": true,
   "package": "net.stirdrem.overgeared.fabric.mixin",
   "compatibilityLevel": "JAVA_21",
-  "minVersion": "0.8",
   "refmap": "overgeared.refmap.json",
+  "minVersion": "0.8",
   "mixins": [
     "ItemStackBreakMixin",
     "ItemStackFabricMixin",
@@ -17,6 +17,9 @@
     "client.ClientRecipeBookMixin",
     "client.RecipeBookCategoriesMixin"
   ],
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
   "injectors": {
     "defaultRequire": 1
   }

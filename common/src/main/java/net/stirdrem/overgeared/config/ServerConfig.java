@@ -1,6 +1,6 @@
 package net.stirdrem.overgeared.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.stirdrem.overgeared.config.core.ConfigSpec;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,141 +8,141 @@ import java.util.List;
 public class ServerConfig {
 
     public static final int DEFAULT_WOODEN_BUCKET_BREAK_TEMPERATURE = 1000;
-    public static final ModConfigSpec SERVER_CONFIG;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
-    public static final ModConfigSpec.BooleanValue REQUIRE_CROUCH_FOR_FORGING_GRINDING;
+    public static final ConfigSpec SERVER_CONFIG;
+    public static final ConfigSpec.BooleanValue ENABLE_MOD_TOOLTIPS;
+    public static final ConfigSpec.BooleanValue REQUIRE_CROUCH_FOR_FORGING_GRINDING;
 
 
     // --- Core Anvil Configs ---
-    public static final ModConfigSpec.IntValue MAX_ANVIL_DISTANCE;
-    public static final ModConfigSpec.IntValue STONE_ANVIL_MAX_USES;
-    public static final ModConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
-    public static final ModConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
-    public static final ModConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
-    public static final ModConfigSpec.BooleanValue ENABLE_TIERED_HAMMERS;
-    public static final ModConfigSpec.BooleanValue ENABLE_TIER_A;
-    public static final ModConfigSpec.BooleanValue ENABLE_TIER_B;
+    public static final ConfigSpec.IntValue MAX_ANVIL_DISTANCE;
+    public static final ConfigSpec.IntValue STONE_ANVIL_MAX_USES;
+    public static final ConfigSpec.BooleanValue ENABLE_STONE_TO_ANVIL;
+    public static final ConfigSpec.BooleanValue ENABLE_ANVIL_TO_SMITHING;
+    public static final ConfigSpec.BooleanValue ENABLE_BLUEPRINT_FORGING;
+    public static final ConfigSpec.BooleanValue ENABLE_TIERED_HAMMERS;
+    public static final ConfigSpec.BooleanValue ENABLE_TIER_A;
+    public static final ConfigSpec.BooleanValue ENABLE_TIER_B;
 
     // --- Heated Items ---
-    public static final ModConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
-    public static ModConfigSpec.ConfigValue<List<? extends String>> COOLING_BLOCK_ENTITY_BLACKLIST;
+    public static final ConfigSpec.IntValue HEATED_ITEM_COOLDOWN_TICKS;
+    public static ConfigSpec.ConfigValue<List<? extends String>> COOLING_BLOCK_ENTITY_BLACKLIST;
 
     // --- Arrow Settings ---
-    public static final ModConfigSpec.BooleanValue ENABLE_DRAGON_BREATH_RECIPE;
-    public static final ModConfigSpec.BooleanValue TIPPING_TOGGLE;
-    public static final ModConfigSpec.BooleanValue UPGRADE_ARROW_POTION_TOGGLE;
-    public static final ModConfigSpec.IntValue MAX_POTION_TIPPING_USE;
+    public static final ConfigSpec.BooleanValue ENABLE_DRAGON_BREATH_RECIPE;
+    public static final ConfigSpec.BooleanValue TIPPING_TOGGLE;
+    public static final ConfigSpec.BooleanValue UPGRADE_ARROW_POTION_TOGGLE;
+    public static final ConfigSpec.IntValue MAX_POTION_TIPPING_USE;
 
     // --- Minigame Settings ---
-    public static final ModConfigSpec.BooleanValue ENABLE_MINIGAME;
-    public static final ModConfigSpec.BooleanValue INGREDIENTS_DEFINE_MAX_QUALITY;
-    public static final ModConfigSpec.DoubleValue MASTER_QUALITY_CHANCE;
-    public static final ModConfigSpec.DoubleValue MASTER_FROM_INGREDIENT_CHANCE;
+    public static final ConfigSpec.BooleanValue ENABLE_MINIGAME;
+    public static final ConfigSpec.BooleanValue INGREDIENTS_DEFINE_MAX_QUALITY;
+    public static final ConfigSpec.DoubleValue MASTER_QUALITY_CHANCE;
+    public static final ConfigSpec.DoubleValue MASTER_FROM_INGREDIENT_CHANCE;
 
 
-    public static final ModConfigSpec.DoubleValue PERFECT_QUALITY_SCORE;
-    public static final ModConfigSpec.DoubleValue EXPERT_QUALITY_SCORE;
-    public static final ModConfigSpec.DoubleValue WELL_QUALITY_SCORE;
+    public static final ConfigSpec.DoubleValue PERFECT_QUALITY_SCORE;
+    public static final ConfigSpec.DoubleValue EXPERT_QUALITY_SCORE;
+    public static final ConfigSpec.DoubleValue WELL_QUALITY_SCORE;
 
 
     // --- Durability & Grinding ---
-    public static final ModConfigSpec.DoubleValue BASE_DURABILITY_MULTIPLIER;
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> BASE_DURABILITY_BLACKLIST;
-    public static final ModConfigSpec.BooleanValue GRINDING_RESTORE_DURABILITY;
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> GRINDING_BLACKLIST;
-    public static final ModConfigSpec.DoubleValue DURABILITY_REDUCE_PER_GRIND;
-    public static final ModConfigSpec.DoubleValue DAMAGE_RESTORE_PER_GRIND;
+    public static final ConfigSpec.DoubleValue BASE_DURABILITY_MULTIPLIER;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> BASE_DURABILITY_BLACKLIST;
+    public static final ConfigSpec.BooleanValue GRINDING_RESTORE_DURABILITY;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> GRINDING_BLACKLIST;
+    public static final ConfigSpec.DoubleValue DURABILITY_REDUCE_PER_GRIND;
+    public static final ConfigSpec.DoubleValue DAMAGE_RESTORE_PER_GRIND;
     // --- Quality & Failure Chances ---
-    public static final ModConfigSpec.DoubleValue FAIL_ON_WELL_QUALITY_CHANCE;
-    public static final ModConfigSpec.DoubleValue FAIL_ON_EXPERT_QUALITY_CHANCE;
+    public static final ConfigSpec.DoubleValue FAIL_ON_WELL_QUALITY_CHANCE;
+    public static final ConfigSpec.DoubleValue FAIL_ON_EXPERT_QUALITY_CHANCE;
     // --- Tool/Blueprint Settings ---
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> AVAILABLE_TOOL_TYPES;
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_TOOL_TYPES;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> AVAILABLE_TOOL_TYPES;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> HIDDEN_TOOL_TYPES;
 
-    public static final ModConfigSpec.IntValue EXPERT_MAX_USE;
-    public static final ModConfigSpec.IntValue WELL_MAX_USE;
-    public static final ModConfigSpec.IntValue POOR_MAX_USE;
-    public static final ModConfigSpec.IntValue PERFECT_MAX_USE;
-    public static final ModConfigSpec.BooleanValue PERFECT_BLUEPRINT_UPGRADE_TO_MASTER;
+    public static final ConfigSpec.IntValue EXPERT_MAX_USE;
+    public static final ConfigSpec.IntValue WELL_MAX_USE;
+    public static final ConfigSpec.IntValue POOR_MAX_USE;
+    public static final ConfigSpec.IntValue PERFECT_MAX_USE;
+    public static final ConfigSpec.BooleanValue PERFECT_BLUEPRINT_UPGRADE_TO_MASTER;
 
     // --- Durability Bonuses ---
-    public static final ModConfigSpec.DoubleValue MASTER_DURABILITY_BONUS;
-    public static final ModConfigSpec.DoubleValue PERFECT_DURABILITY_BONUS;
-    public static final ModConfigSpec.DoubleValue EXPERT_DURABILITY_BONUS;
-    public static final ModConfigSpec.DoubleValue WELL_DURABILITY_BONUS;
-    public static final ModConfigSpec.DoubleValue POOR_DURABILITY_BONUS;
+    public static final ConfigSpec.DoubleValue MASTER_DURABILITY_BONUS;
+    public static final ConfigSpec.DoubleValue PERFECT_DURABILITY_BONUS;
+    public static final ConfigSpec.DoubleValue EXPERT_DURABILITY_BONUS;
+    public static final ConfigSpec.DoubleValue WELL_DURABILITY_BONUS;
+    public static final ConfigSpec.DoubleValue POOR_DURABILITY_BONUS;
     // --- Mining Speed Bonuses ---
-    public static final ModConfigSpec.DoubleValue MASTER_MINING_SPEED_BONUS;
-    public static final ModConfigSpec.DoubleValue PERFECT_MINING_SPEED_BONUS;
-    public static final ModConfigSpec.DoubleValue EXPERT_MINING_SPEED_BONUS;
-    public static final ModConfigSpec.DoubleValue WELL_MINING_SPEED_BONUS;
-    public static final ModConfigSpec.DoubleValue POOR_MINING_SPEED_BONUS;
+    public static final ConfigSpec.DoubleValue MASTER_MINING_SPEED_BONUS;
+    public static final ConfigSpec.DoubleValue PERFECT_MINING_SPEED_BONUS;
+    public static final ConfigSpec.DoubleValue EXPERT_MINING_SPEED_BONUS;
+    public static final ConfigSpec.DoubleValue WELL_MINING_SPEED_BONUS;
+    public static final ConfigSpec.DoubleValue POOR_MINING_SPEED_BONUS;
     // --- Knapping Settings ---
-    public static final ModConfigSpec.BooleanValue GET_ROCK_USING_FLINT;
-    public static final ModConfigSpec.DoubleValue ROCK_DROPPING_CHANCE;
-    public static final ModConfigSpec.DoubleValue FLINT_BREAKING_CHANCE;
-    public static final ModConfigSpec.BooleanValue ENABLE_FLETCHING_RECIPES;
-    public static final ModConfigSpec.BooleanValue ENABLE_LOOT_QUALITY;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOB_DROP_QUALITY;
-    public static final ModConfigSpec.IntValue QUALITY_WEIGHT_POOR;
-    public static final ModConfigSpec.IntValue QUALITY_WEIGHT_WELL;
-    public static final ModConfigSpec.IntValue QUALITY_WEIGHT_EXPERT;
-    public static final ModConfigSpec.IntValue QUALITY_WEIGHT_PERFECT;
-    public static final ModConfigSpec.IntValue QUALITY_WEIGHT_MASTER;
-    public static final ModConfigSpec.ConfigValue<List<? extends List<?>>> CASTING_TOOL_TYPES;
-    public static final ModConfigSpec.ConfigValue<List<? extends List<?>>> MATERIAL_SETTING;
-    public static final ModConfigSpec.BooleanValue ENABLE_CASTING;
-    public static ModConfigSpec.IntValue DEFAULT_ZONE_STARTING_SIZE;
-    public static ModConfigSpec.DoubleValue DEFAULT_ZONE_SHRINK_FACTOR;
-    public static ModConfigSpec.IntValue DEFAULT_MIN_PERFECT_ZONE;
-    public static ModConfigSpec.DoubleValue DEFAULT_ARROW_SPEED;
-    public static ModConfigSpec.DoubleValue DEFAULT_ARROW_SPEED_INCREASE;
-    public static ModConfigSpec.DoubleValue DEFAULT_MAX_ARROW_SPEED;
-    public static final ModConfigSpec.IntValue POOR_ZONE_STARTING_SIZE;
-    public static final ModConfigSpec.IntValue POOR_MIN_PERFECT_ZONE;
-    public static final ModConfigSpec.DoubleValue POOR_ZONE_SHRINK_FACTOR;
-    public static final ModConfigSpec.DoubleValue POOR_ARROW_SPEED;
-    public static final ModConfigSpec.DoubleValue POOR_ARROW_SPEED_INCREASE;
-    public static final ModConfigSpec.DoubleValue POOR_MAX_ARROW_SPEED;
-    public static ModConfigSpec.IntValue WELL_ZONE_STARTING_SIZE;
-    public static ModConfigSpec.DoubleValue WELL_ZONE_SHRINK_FACTOR;
-    public static ModConfigSpec.IntValue WELL_MIN_PERFECT_ZONE;
-    public static ModConfigSpec.DoubleValue WELL_ARROW_SPEED;
-    public static ModConfigSpec.DoubleValue WELL_ARROW_SPEED_INCREASE;
-    public static ModConfigSpec.DoubleValue WELL_MAX_ARROW_SPEED;
-    public static ModConfigSpec.IntValue EXPERT_ZONE_STARTING_SIZE;
-    public static ModConfigSpec.DoubleValue EXPERT_ZONE_SHRINK_FACTOR;
-    public static ModConfigSpec.IntValue EXPERT_MIN_PERFECT_ZONE;
-    public static ModConfigSpec.DoubleValue EXPERT_ARROW_SPEED;
-    public static ModConfigSpec.DoubleValue EXPERT_ARROW_SPEED_INCREASE;
-    public static ModConfigSpec.DoubleValue EXPERT_MAX_ARROW_SPEED;
-    public static ModConfigSpec.IntValue PERFECT_ZONE_STARTING_SIZE;
-    public static ModConfigSpec.DoubleValue PERFECT_ZONE_SHRINK_FACTOR;
-    public static ModConfigSpec.IntValue PERFECT_MIN_PERFECT_ZONE;
-    public static ModConfigSpec.DoubleValue PERFECT_ARROW_SPEED;
-    public static ModConfigSpec.DoubleValue PERFECT_ARROW_SPEED_INCREASE;
-    public static ModConfigSpec.DoubleValue PERFECT_MAX_ARROW_SPEED;
-    public static ModConfigSpec.IntValue MASTER_ZONE_STARTING_SIZE;
-    public static ModConfigSpec.DoubleValue MASTER_ZONE_SHRINK_FACTOR;
-    public static ModConfigSpec.IntValue MASTER_MIN_PERFECT_ZONE;
-    public static ModConfigSpec.DoubleValue MASTER_ARROW_SPEED;
-    public static ModConfigSpec.DoubleValue MASTER_ARROW_SPEED_INCREASE;
-    public static ModConfigSpec.DoubleValue MASTER_MAX_ARROW_SPEED;
+    public static final ConfigSpec.BooleanValue GET_ROCK_USING_FLINT;
+    public static final ConfigSpec.DoubleValue ROCK_DROPPING_CHANCE;
+    public static final ConfigSpec.DoubleValue FLINT_BREAKING_CHANCE;
+    public static final ConfigSpec.BooleanValue ENABLE_FLETCHING_RECIPES;
+    public static final ConfigSpec.BooleanValue ENABLE_LOOT_QUALITY;
+    public static final ConfigSpec.BooleanValue ENABLE_MOB_DROP_QUALITY;
+    public static final ConfigSpec.IntValue QUALITY_WEIGHT_POOR;
+    public static final ConfigSpec.IntValue QUALITY_WEIGHT_WELL;
+    public static final ConfigSpec.IntValue QUALITY_WEIGHT_EXPERT;
+    public static final ConfigSpec.IntValue QUALITY_WEIGHT_PERFECT;
+    public static final ConfigSpec.IntValue QUALITY_WEIGHT_MASTER;
+    public static final ConfigSpec.ConfigValue<List<? extends List<?>>> CASTING_TOOL_TYPES;
+    public static final ConfigSpec.ConfigValue<List<? extends List<?>>> MATERIAL_SETTING;
+    public static final ConfigSpec.BooleanValue ENABLE_CASTING;
+    public static ConfigSpec.IntValue DEFAULT_ZONE_STARTING_SIZE;
+    public static ConfigSpec.DoubleValue DEFAULT_ZONE_SHRINK_FACTOR;
+    public static ConfigSpec.IntValue DEFAULT_MIN_PERFECT_ZONE;
+    public static ConfigSpec.DoubleValue DEFAULT_ARROW_SPEED;
+    public static ConfigSpec.DoubleValue DEFAULT_ARROW_SPEED_INCREASE;
+    public static ConfigSpec.DoubleValue DEFAULT_MAX_ARROW_SPEED;
+    public static final ConfigSpec.IntValue POOR_ZONE_STARTING_SIZE;
+    public static final ConfigSpec.IntValue POOR_MIN_PERFECT_ZONE;
+    public static final ConfigSpec.DoubleValue POOR_ZONE_SHRINK_FACTOR;
+    public static final ConfigSpec.DoubleValue POOR_ARROW_SPEED;
+    public static final ConfigSpec.DoubleValue POOR_ARROW_SPEED_INCREASE;
+    public static final ConfigSpec.DoubleValue POOR_MAX_ARROW_SPEED;
+    public static ConfigSpec.IntValue WELL_ZONE_STARTING_SIZE;
+    public static ConfigSpec.DoubleValue WELL_ZONE_SHRINK_FACTOR;
+    public static ConfigSpec.IntValue WELL_MIN_PERFECT_ZONE;
+    public static ConfigSpec.DoubleValue WELL_ARROW_SPEED;
+    public static ConfigSpec.DoubleValue WELL_ARROW_SPEED_INCREASE;
+    public static ConfigSpec.DoubleValue WELL_MAX_ARROW_SPEED;
+    public static ConfigSpec.IntValue EXPERT_ZONE_STARTING_SIZE;
+    public static ConfigSpec.DoubleValue EXPERT_ZONE_SHRINK_FACTOR;
+    public static ConfigSpec.IntValue EXPERT_MIN_PERFECT_ZONE;
+    public static ConfigSpec.DoubleValue EXPERT_ARROW_SPEED;
+    public static ConfigSpec.DoubleValue EXPERT_ARROW_SPEED_INCREASE;
+    public static ConfigSpec.DoubleValue EXPERT_MAX_ARROW_SPEED;
+    public static ConfigSpec.IntValue PERFECT_ZONE_STARTING_SIZE;
+    public static ConfigSpec.DoubleValue PERFECT_ZONE_SHRINK_FACTOR;
+    public static ConfigSpec.IntValue PERFECT_MIN_PERFECT_ZONE;
+    public static ConfigSpec.DoubleValue PERFECT_ARROW_SPEED;
+    public static ConfigSpec.DoubleValue PERFECT_ARROW_SPEED_INCREASE;
+    public static ConfigSpec.DoubleValue PERFECT_MAX_ARROW_SPEED;
+    public static ConfigSpec.IntValue MASTER_ZONE_STARTING_SIZE;
+    public static ConfigSpec.DoubleValue MASTER_ZONE_SHRINK_FACTOR;
+    public static ConfigSpec.IntValue MASTER_MIN_PERFECT_ZONE;
+    public static ConfigSpec.DoubleValue MASTER_ARROW_SPEED;
+    public static ConfigSpec.DoubleValue MASTER_ARROW_SPEED_INCREASE;
+    public static ConfigSpec.DoubleValue MASTER_MAX_ARROW_SPEED;
 
-    public static ModConfigSpec.IntValue FIRED_CAST_DURABILITY;
-    public static ModConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
-    public static ModConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
-    public static ModConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
-    public static ModConfigSpec.BooleanValue ENABLE_QUALITY_BREAK_SYSTEM;
+    public static ConfigSpec.IntValue FIRED_CAST_DURABILITY;
+    public static ConfigSpec.BooleanValue EXPERT_ABOVE_INCREASE_BLUEPRINT;
+    public static ConfigSpec.BooleanValue PLAYER_AUTHOR_TOOLTIPS;
+    public static ConfigSpec.BooleanValue ENABLE_STONE_ANVIL_BREAKING;
+    public static ConfigSpec.BooleanValue ENABLE_QUALITY_BREAK_SYSTEM;
 
-    public static ModConfigSpec.DoubleValue BREAK_CHANCE_POOR;
-    public static ModConfigSpec.DoubleValue BREAK_CHANCE_WELL;
-    public static ModConfigSpec.DoubleValue BREAK_CHANCE_EXPERT;
-    public static ModConfigSpec.DoubleValue BREAK_CHANCE_PERFECT;
-    public static ModConfigSpec.DoubleValue BREAK_CHANCE_MASTER;
+    public static ConfigSpec.DoubleValue BREAK_CHANCE_POOR;
+    public static ConfigSpec.DoubleValue BREAK_CHANCE_WELL;
+    public static ConfigSpec.DoubleValue BREAK_CHANCE_EXPERT;
+    public static ConfigSpec.DoubleValue BREAK_CHANCE_PERFECT;
+    public static ConfigSpec.DoubleValue BREAK_CHANCE_MASTER;
 
     static {
-        final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        final ConfigSpec.Builder builder = new ConfigSpec.Builder();
         builder.push("General Configs");
         ENABLE_MOD_TOOLTIPS = builder.comment("Toggle for the mod's custom tooltips").define("enableModTooltips", true);
         REQUIRE_CROUCH_FOR_FORGING_GRINDING = builder.comment("Toggle the need to crouch to initiate/cancel the mining minigame for forging + weapon polishing").define("requireCrouchForForgingGrinding", true);
@@ -309,7 +309,7 @@ public class ServerConfig {
         WELL_MAX_USE = builder.comment("Uses required to reach the next quality after Well").defineInRange("wellMaxUse", 10, 0, 1000);
         POOR_MAX_USE = builder.comment("Uses required to reach the next quality after Poor").defineInRange("poorMaxUse", 5, 0, 1000);
         PERFECT_BLUEPRINT_UPGRADE_TO_MASTER = builder.comment("Allow Perfect blueprints to keep leveling up into Master blueprints. If false, Perfect is the max blueprint level.").define("perfectBlueprintUpgradeToMaster", false);
-        PERFECT_MAX_USE = builder.comment("Uses required to reach Master after Perfect (only used when perfectBlueprintUpgradeToMaster is true)").defineInRange("perfectMaxUse", 50, 0, 1000);
+        PERFECT_MAX_USE = builder.comment("Uses required to reach Master after Perfect (only used when perfectBlueprintUpgradeToMaster is true)").defineInRange("perfectMaxUse", 40, 0, 1000);
         builder.pop();
 
         builder.push("Durability Bonuses");

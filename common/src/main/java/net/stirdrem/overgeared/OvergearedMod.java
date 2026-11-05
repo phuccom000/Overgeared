@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.stirdrem.overgeared.config.ModConfigs;
 import net.stirdrem.overgeared.advancement.ModAdvancementTriggers;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.block.UpgradeArrowDispenseBehavior;
@@ -36,6 +37,9 @@ public final class OvergearedMod {
     }
 
     public static void init() {
+        // Load configs first: registration and later setup read config values
+        ModConfigs.load();
+
         // Order matters on Fabric, where entries are registered immediately.
         ModSounds.register();
         ModComponents.register();

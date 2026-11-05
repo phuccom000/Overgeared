@@ -1,6 +1,5 @@
 package net.stirdrem.overgeared.fabric;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
@@ -32,11 +31,8 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.neoforged.fml.config.ModConfig;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.command.ModCommands;
-import net.stirdrem.overgeared.config.ClientConfig;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.event.ModEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.event.ReloadListeners;
@@ -54,9 +50,6 @@ public final class OvergearedFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        NeoForgeConfigRegistry.INSTANCE.register(OvergearedMod.MOD_ID, ModConfig.Type.COMMON, ServerConfig.SERVER_CONFIG);
-        NeoForgeConfigRegistry.INSTANCE.register(OvergearedMod.MOD_ID, ModConfig.Type.CLIENT, ClientConfig.CLIENT_CONFIG);
-
         OvergearedMod.init();
         OvergearedMod.commonSetup();
 

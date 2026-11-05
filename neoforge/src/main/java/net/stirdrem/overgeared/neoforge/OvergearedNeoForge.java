@@ -3,11 +3,8 @@ package net.stirdrem.overgeared.neoforge;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.stirdrem.overgeared.OvergearedMod;
-import net.stirdrem.overgeared.config.ClientConfig;
-import net.stirdrem.overgeared.config.ServerConfig;
 import net.stirdrem.overgeared.loot.ModLootModifiers;
 
 @Mod(OvergearedMod.MOD_ID)
@@ -19,9 +16,6 @@ public final class OvergearedNeoForge {
         OvergearedMod.init();
         ModLootModifiers.register(modEventBus);
         NeoForgeCapabilities.register(modEventBus);
-
-        modContainer.registerConfig(ModConfig.Type.COMMON, ServerConfig.SERVER_CONFIG);
-        modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.CLIENT_CONFIG);
 
         modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(OvergearedMod::commonSetup));
     }

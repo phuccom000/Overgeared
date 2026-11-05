@@ -49,6 +49,11 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
+    public java.nio.file.Path getConfigDir() {
+        return FabricLoader.getInstance().getConfigDir();
+    }
+
+    @Override
     public boolean isDevelopmentEnvironment() {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
