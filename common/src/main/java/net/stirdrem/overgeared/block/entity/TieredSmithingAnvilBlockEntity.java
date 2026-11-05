@@ -48,17 +48,19 @@ public class TieredSmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEn
     @Override
     public void craftItem() {
         super.craftItem();
-        super.craftItemWithBlueprint();
+        if (anvilTier.hasBlueprint()) {
+            super.craftItemWithBlueprint();
+        }
     }
 
     @Override
     public boolean hasRecipe() {
-        return super.hasRecipeWithBlueprint();
+        return anvilTier.hasBlueprint() ? super.hasRecipeWithBlueprint() : super.hasRecipe();
     }
 
     @Override
     protected ForgingQuality determineForgingQuality() {
-        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get()) {
+        if (!ServerConfig.ENABLE_BLUEPRINT_FORGING.get() || !anvilTier.hasBlueprint()) {
             return super.determineForgingQualityNoBlueprint();
         } else return super.determineForgingQuality();
     }

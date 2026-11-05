@@ -24,13 +24,13 @@ public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS =
             DeferredRegister.createBlocks(OvergearedMod.MOD_ID);
 
-    /** One smithing anvil per configured tier, in tier order. */
+    /** One smithing anvil per tier except stone, in tier order. */
     public static final Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> TIERED_ANVILS = registerTieredAnvils();
 
     /** The iron smithing anvil, the default tier. */
     public static final DeferredBlock<TieredSmithingAnvil> IRON_SMITHING_ANVIL = TIERED_ANVILS.get(AnvilTier.iron());
 
-    public static final DeferredBlock<StoneSmithingAnvil> STONE_SMITHING_ANVIL = registerBlock("stone_anvil",
+    public static final DeferredBlock<StoneSmithingAnvil> STONE_SMITHING_ANVIL = registerBlock(AnvilTier.stone().blockName(),
             () -> new StoneSmithingAnvil(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
     public static final DeferredBlock<Block> STEEL_BLOCK = registerBlock("steel_block",
@@ -65,16 +65,17 @@ public class ModBlocks {
 
     private static Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> registerTieredAnvils() {
         Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> anvils = new LinkedHashMap<>();
-        for (AnvilTier tier : AnvilTier.configured()) {
+        for (AnvilTier tier : AnvilTier.all()) {
+            if (tier.isStone()) continue; // has its own block, STONE_SMITHING_ANVIL
             anvils.put(tier, registerBlock(tier.blockName(),
                     () -> new TieredSmithingAnvil(tier, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion())));
         }
         return Collections.unmodifiableMap(anvils);
     }
 
-    /** The smithing anvil block of a configured tier. */
-    public static TieredSmithingAnvil anvilFor(AnvilTier tier) {
-        return TIERED_ANVILS.get(tier).get();
+    /** The smithing anvil block of a tier. */
+    public static AbstractSmithingAnvil anvilFor(AnvilTier tier) {
+        return tier.isStone() ? STONE_SMITHING_ANVIL.get() : TIERED_ANVILS.get(tier).get();
     }
 
     private static ToIntFunction<BlockState> litBlockEmission() {

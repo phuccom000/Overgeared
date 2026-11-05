@@ -61,9 +61,11 @@ public final class OvergearedMod {
 
     /** Ids renamed since earlier versions, so existing worlds keep their blocks, items and block entities. */
     private static void registerAliases() {
-        // The iron smithing anvil was "smithing_anvil" before anvil tiers became configurable
+        // Before anvil tiers became configurable the iron anvil was "smithing_anvil" and the stone one "stone_anvil"
         Services.PLATFORM.registerAlias(Registries.BLOCK, loc("smithing_anvil"), loc("iron_smithing_anvil"));
         Services.PLATFORM.registerAlias(Registries.ITEM, loc("smithing_anvil"), loc("iron_smithing_anvil"));
+        Services.PLATFORM.registerAlias(Registries.BLOCK, loc("stone_anvil"), loc("stone_smithing_anvil"));
+        Services.PLATFORM.registerAlias(Registries.ITEM, loc("stone_anvil"), loc("stone_smithing_anvil"));
         // All tiered anvils now share the iron anvil's block entity type
         Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_a_smithing_table_be"), loc("smithing_table_be"));
         Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_b_smithing_table_be"), loc("smithing_table_be"));

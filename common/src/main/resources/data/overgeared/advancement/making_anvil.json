@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "id": "overgeared:stone_anvil"
+      "id": "overgeared:stone_smithing_anvil"
     },
     "title": "Anvil Acquired",
     "description": "Convert a stone block or a vanilla anvil into your first smithing anvil",

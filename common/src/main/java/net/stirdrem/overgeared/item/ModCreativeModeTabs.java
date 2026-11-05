@@ -126,8 +126,7 @@ public class ModCreativeModeTabs {
                                 output.accept(ModItems.STEEL_SHOVEL_HEAD.get());
                                 output.accept(ModItems.STEEL_HOE_HEAD.get());
 
-                                output.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
-                                for (AnvilTier tier : AnvilTier.configured()) {
+                                for (AnvilTier tier : AnvilTier.all()) {
                                     if (tier.isEnabled()) output.accept(ModBlocks.anvilFor(tier));
                                 }
                                 output.accept(ModBlocks.STEEL_BLOCK.get());

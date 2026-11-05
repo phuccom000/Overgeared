@@ -26,11 +26,13 @@ import java.util.regex.Pattern;
  * so the list is read once at startup and must match between client and server.
  * <pre>
  * [
+ *   {"id": "stone", "blueprint": false},
  *   {"id": "iron"},
  *   {"id": "tier_a", "aliases": ["above_a"], "enabled": false},
  *   {"id": "mythril", "hammer_tag": "overgeared:mythril_smithing_hammers", "base_tag": "overgeared:mythril_anvil_bases"}
  * ]
  * </pre>
+ * {@code blueprint} (default true, false for stone) controls whether the anvil has a blueprint slot.
  */
 public final class AnvilTierConfig {
     public static final String FILE = OvergearedMod.MOD_ID + "-anvil-tiers.json";
@@ -53,7 +55,7 @@ public final class AnvilTierConfig {
         Services.PLATFORM.modifyAnvilTiers(tiers);
         tiers = validate(tiers);
         AnvilTier.setTiers(tiers);
-        OvergearedMod.LOGGER.info("Anvil tiers: stone, {}", tiers.stream().map(t -> t.id).toList());
+        OvergearedMod.LOGGER.info("Anvil tiers: {}", tiers.stream().map(t -> t.id).toList());
     }
 
     private static List<AnvilTier.Definition> read(Path file) {
@@ -69,6 +71,7 @@ public final class AnvilTierConfig {
                 if (obj.has("enabled")) def.enabled = obj.get("enabled").getAsBoolean();
                 if (obj.has("hammer_tag")) def.hammerTag = ResourceLocation.parse(obj.get("hammer_tag").getAsString());
                 if (obj.has("base_tag")) def.baseTag = ResourceLocation.parse(obj.get("base_tag").getAsString());
+                if (obj.has("blueprint")) def.blueprint = obj.get("blueprint").getAsBoolean();
                 tiers.add(def);
             }
             return tiers;
@@ -78,24 +81,28 @@ public final class AnvilTierConfig {
         }
     }
 
-    /** Drops invalid and duplicate tiers and makes sure the iron tier exists. */
+    /** Drops invalid and duplicate tiers and makes sure the stone and iron tiers exist. */
     private static List<AnvilTier.Definition> validate(List<AnvilTier.Definition> tiers) {
         List<AnvilTier.Definition> valid = new ArrayList<>();
         Set<String> names = new HashSet<>();
-        names.add(AnvilTier.STONE.id());
         for (AnvilTier.Definition def : tiers) {
             if (def.id == null || !ID.matcher(def.id).matches()) {
                 OvergearedMod.LOGGER.error("Skipping anvil tier with invalid id '{}' (use a-z, 0-9 and _)", def.id);
             } else if (!names.add(def.id)) {
-                OvergearedMod.LOGGER.error("Skipping duplicate or reserved anvil tier '{}'", def.id);
+                OvergearedMod.LOGGER.error("Skipping duplicate anvil tier '{}'", def.id);
             } else {
                 def.aliases.removeIf(alias -> !names.add(alias.toLowerCase(java.util.Locale.ROOT)));
                 valid.add(def);
             }
         }
+        // Stone and iron have their own blocks and are used as recipe defaults, so they cannot be removed (only disabled)
         if (valid.stream().noneMatch(def -> def.id.equals(AnvilTier.IRON_ID))) {
             OvergearedMod.LOGGER.warn("Anvil tier 'iron' is required; adding it as the lowest tier");
             valid.add(0, new AnvilTier.Definition(AnvilTier.IRON_ID));
+        }
+        if (valid.stream().noneMatch(def -> def.id.equals(AnvilTier.STONE_ID))) {
+            OvergearedMod.LOGGER.warn("Anvil tier 'stone' is required; adding it as the lowest tier");
+            valid.add(0, new AnvilTier.Definition(AnvilTier.STONE_ID));
         }
         return valid;
     }
@@ -112,6 +119,7 @@ public final class AnvilTierConfig {
             } catch (IOException ignored) {
             }
         }
+        AnvilTier.Definition stone = new AnvilTier.Definition(AnvilTier.STONE_ID);
         AnvilTier.Definition iron = new AnvilTier.Definition(AnvilTier.IRON_ID);
         AnvilTier.Definition tierA = new AnvilTier.Definition("tier_a");
         tierA.aliases.add("above_a");
@@ -119,7 +127,7 @@ public final class AnvilTierConfig {
         AnvilTier.Definition tierB = new AnvilTier.Definition("tier_b");
         tierB.aliases.add("above_b");
         tierB.enabled = Pattern.compile("enableTierB\\s*=\\s*true").matcher(old).find();
-        return new ArrayList<>(List.of(iron, tierA, tierB));
+        return new ArrayList<>(List.of(stone, iron, tierA, tierB));
     }
 
     private static void write(Path file, List<AnvilTier.Definition> tiers) {
@@ -133,6 +141,7 @@ public final class AnvilTierConfig {
                 obj.add("aliases", aliases);
             }
             obj.addProperty("enabled", def.enabled);
+            obj.addProperty("blueprint", def.blueprint);
             if (def.hammerTag != null) obj.addProperty("hammer_tag", def.hammerTag.toString());
             if (def.baseTag != null) obj.addProperty("base_tag", def.baseTag.toString());
             array.add(obj);

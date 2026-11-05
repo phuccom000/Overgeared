@@ -59,7 +59,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
     private static final VoxelShape SHAPE_X = Shapes.or(X1, X2);
 
     public StoneSmithingAnvil(BlockBehaviour.Properties properties) {
-        super(AnvilTier.STONE, properties);
+        super(AnvilTier.stone(), properties);
     }
 
     @Override

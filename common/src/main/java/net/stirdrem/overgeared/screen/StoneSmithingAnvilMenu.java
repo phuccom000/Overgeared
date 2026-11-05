@@ -13,7 +13,7 @@ public class StoneSmithingAnvilMenu extends AbstractSmithingAnvilMenu {
     }
 
     public StoneSmithingAnvilMenu(int containerId, Inventory inv, StoneSmithingAnvilBlockEntity entity, ContainerData data) {
-        super(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), containerId, inv, entity, data, false);
+        super(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), containerId, inv, entity, data);
     }
 
     // You can override any methods from the parent class here if you need custom behavior

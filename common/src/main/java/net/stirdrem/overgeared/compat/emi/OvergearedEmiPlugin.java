@@ -177,8 +177,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         registry.addCategory(FORGING_CATEGORY);
 
         // Register all smithing anvil blocks as workstations (in tier order)
-        registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.STONE_SMITHING_ANVIL.get()));
-        for (AnvilTier tier : AnvilTier.configured()) {
+        for (AnvilTier tier : AnvilTier.all()) {
             if (tier.isEnabled()) {
                 registry.addWorkstation(FORGING_CATEGORY, EmiStack.of(ModBlocks.anvilFor(tier)));
             }

@@ -7,7 +7,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -18,18 +17,16 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * A smithing anvil tier. {@link #STONE} is built in; every other tier comes from
- * {@code config/overgeared-anvil-tiers.json} (and KubeJS on NeoForge), in ascending order.
- * Each configured tier gets its own {@code overgeared:<id>_smithing_anvil} block.
+ * A smithing anvil tier, read from {@code config/overgeared-anvil-tiers.json} (and KubeJS on NeoForge), lowest first.
+ * Each tier gets its own {@code overgeared:<id>_smithing_anvil} block. The {@code stone} and {@code iron} tiers
+ * always exist; stone keeps its own fragile anvil block.
  */
 public final class AnvilTier implements StringRepresentable {
+    public static final String STONE_ID = "stone";
     public static final String IRON_ID = "iron";
 
-    public static final AnvilTier STONE = new AnvilTier("stone", 0, List.of(), true,
-            ModTags.Items.STONE_SMITHING_HAMMERS, ModTags.Blocks.ANVIL_BASES);
-
     private static final Map<String, AnvilTier> BY_NAME = new LinkedHashMap<>();
-    private static List<AnvilTier> configured = List.of();
+    private static List<AnvilTier> all = List.of();
     private static boolean frozen;
 
     private final String id;
@@ -38,15 +35,17 @@ public final class AnvilTier implements StringRepresentable {
     private final boolean enabled;
     private final TagKey<Item> hammerTag;
     private final TagKey<Block> baseTag;
+    private final boolean blueprint;
 
     private AnvilTier(String id, int order, List<String> aliases, boolean enabled,
-                      TagKey<Item> hammerTag, TagKey<Block> baseTag) {
+                      TagKey<Item> hammerTag, TagKey<Block> baseTag, boolean blueprint) {
         this.id = id;
         this.order = order;
         this.aliases = List.copyOf(aliases);
         this.enabled = enabled;
         this.hammerTag = hammerTag;
         this.baseTag = baseTag;
+        this.blueprint = blueprint;
     }
 
     /** Sets the configured tiers, lowest first. Called once before registration. */
@@ -56,25 +55,30 @@ public final class AnvilTier implements StringRepresentable {
         }
         frozen = true;
         BY_NAME.clear();
-        BY_NAME.put(STONE.id, STONE);
         List<AnvilTier> tiers = new ArrayList<>();
-        int order = 1;
+        int order = 0;
         for (Definition def : definitions) {
             AnvilTier tier = new AnvilTier(def.id, order++, def.aliases, def.enabled,
                     TagKey.create(Registries.ITEM, def.hammerTag != null ? def.hammerTag : OvergearedMod.loc(def.id + "_smithing_hammers")),
-                    TagKey.create(Registries.BLOCK, def.baseTag != null ? def.baseTag : OvergearedMod.loc(def.id + "_anvil_bases")));
+                    TagKey.create(Registries.BLOCK, def.baseTag != null ? def.baseTag : OvergearedMod.loc(def.id + "_anvil_bases")),
+                    def.blueprint);
             tiers.add(tier);
             BY_NAME.put(tier.id, tier);
             for (String alias : tier.aliases) {
                 BY_NAME.putIfAbsent(alias.toLowerCase(Locale.ROOT), tier);
             }
         }
-        configured = Collections.unmodifiableList(tiers);
+        all = Collections.unmodifiableList(tiers);
     }
 
-    /** All configured tiers (not including {@link #STONE}), lowest first. */
-    public static List<AnvilTier> configured() {
-        return configured;
+    /** All tiers, lowest first. */
+    public static List<AnvilTier> all() {
+        return all;
+    }
+
+    /** The stone tier; always present. */
+    public static AnvilTier stone() {
+        return BY_NAME.get(STONE_ID);
     }
 
     /** The default tier of forging recipes; always present. */
@@ -127,6 +131,15 @@ public final class AnvilTier implements StringRepresentable {
         return baseTag;
     }
 
+    /** Whether anvils of this tier have a blueprint slot (and forge with blueprints, if blueprint forging is on). */
+    public boolean hasBlueprint() {
+        return blueprint;
+    }
+
+    public boolean isStone() {
+        return id.equals(STONE_ID);
+    }
+
     public String blockName() {
         return id + "_smithing_anvil";
     }
@@ -154,9 +167,11 @@ public final class AnvilTier implements StringRepresentable {
         public ResourceLocation hammerTag;
         @Nullable
         public ResourceLocation baseTag;
+        public boolean blueprint;
 
         public Definition(String id) {
             this.id = id;
+            this.blueprint = !STONE_ID.equals(id);
         }
     }
 }

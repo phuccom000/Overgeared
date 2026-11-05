@@ -15,6 +15,7 @@ import java.util.List;
  * OvergearedEvents.anvilTiers(event => {
  *   event.add('mythril').aliases('above_c').hammerTag('overgeared:mythril_smithing_hammers')
  *   event.get('tier_a').enabled(true)
+ *   event.get('stone').blueprint(true)
  *   event.remove('tier_b')
  * })
  * </pre>

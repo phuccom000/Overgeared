@@ -10,6 +10,6 @@ public class StoneSmithingAnvilScreen extends AbstractSmithingAnvilScreen<StoneS
             ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "textures/gui/stone_smithing_anvil.png");
 
     public StoneSmithingAnvilScreen(StoneSmithingAnvilMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
-        super(pMenu, pPlayerInventory, pTitle, false);
+        super(pMenu, pPlayerInventory, pTitle, pMenu.hasBlueprintSlot());
     }
 }

@@ -34,7 +34,10 @@ public class AnvilTiersKubeEvent implements KubeEvent {
         return null;
     }
 
-    /** Removes a tier. Its block will no longer exist, so worlds lose any placed anvils of it. */
+    /**
+     * Removes a tier. Its block will no longer exist, so worlds lose any placed anvils of it.
+     * Stone and iron are always added back; disable them with {@code enabled(false)} instead.
+     */
     public boolean remove(String id) {
         return tiers.removeIf(def -> def.id.equals(id));
     }
@@ -58,6 +61,12 @@ public class AnvilTiersKubeEvent implements KubeEvent {
 
         public TierBuilder enabled(boolean enabled) {
             def.enabled = enabled;
+            return this;
+        }
+
+        /** Whether the anvil has a blueprint slot. */
+        public TierBuilder blueprint(boolean blueprint) {
+            def.blueprint = blueprint;
             return this;
         }
 

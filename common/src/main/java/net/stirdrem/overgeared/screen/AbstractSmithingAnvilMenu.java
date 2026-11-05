@@ -134,9 +134,12 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     private Slot resultSlot;
     private final Player player;
     private final List<Integer> craftingSlotIndices = new ArrayList<>();
+    /** Whether slot 1 is the blueprint slot: the anvil's tier has one and blueprint forging is enabled. */
+    private final boolean hasBlueprintSlot;
 
-    public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data, boolean hasBlueprint) {
+    public AbstractSmithingAnvilMenu(MenuType<?> pMenuType, int pContainerId, Inventory inv, AbstractSmithingAnvilBlockEntity entity, ContainerData data) {
         super(pMenuType, pContainerId);
+        this.hasBlueprintSlot = entity.getAnvilTier().hasBlueprint() && ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
         checkContainerSize(inv, 12);
         blockEntity = entity;
         this.level = inv.player.level();
@@ -157,7 +160,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
             }
         }); //hammer
 
-        if (hasBlueprint && ServerConfig.ENABLE_BLUEPRINT_FORGING.get())
+        if (hasBlueprintSlot)
             this.addSlot(new SlotItemHandler(iItemHandler, 11, 95, 53) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
@@ -258,6 +261,16 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         addDataSlots(data);
     }
 
+    public boolean hasBlueprintSlot() {
+        return hasBlueprintSlot;
+    }
+
+    /** The player inventory and hotbar slots, which come after the result slot. */
+    public List<Slot> getPlayerSlots() {
+        int first = this.resultSlot.index + 1;
+        return new ArrayList<>(this.slots.subList(first, first + 36));
+    }
+
     public List<Integer> getInputSlots() {
         return new ArrayList<>(craftingSlotIndices);
     }
@@ -283,9 +296,6 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
     private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
-    private static int blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get() ? 1 : 0;
-    private static int VANILLA_FIRST_SLOT_INDEX = 11 + blueprintEnabled;
-    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
     private static final int TE_INVENTORY_SLOT_COUNT = 12;  // must be the number of slots you have!
@@ -308,7 +318,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         // Player inventory always starts after result slot
         firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
         Slot hammerSlot = this.slots.get(0); // first slot added
-        boolean blueprintEnabled = ServerConfig.ENABLE_BLUEPRINT_FORGING.get();
+        boolean blueprintEnabled = this.hasBlueprintSlot;
         Slot blueprintSlot = blueprintEnabled ? this.slots.get(1) : null;
 
         if (clickedSlot == hammerSlot || (blueprintEnabled && clickedSlot == blueprintSlot)) {

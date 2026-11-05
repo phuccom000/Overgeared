@@ -13,6 +13,6 @@ public class TieredSmithingAnvilMenu extends AbstractSmithingAnvilMenu {
     }
 
     public TieredSmithingAnvilMenu(int containerId, Inventory inv, TieredSmithingAnvilBlockEntity entity, ContainerData data) {
-        super(ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(), containerId, inv, entity, data, true);
+        super(ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(), containerId, inv, entity, data);
     }
 }

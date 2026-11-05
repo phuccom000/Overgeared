@@ -125,34 +125,19 @@ public class ModItemInteractEvents {
             return;
         }
 
-        // Shift-right-click to convert stone into smithing anvil
-        if (player.isCrouching() && state.is(ModTags.Blocks.ANVIL_BASES) && ServerConfig.ENABLE_STONE_TO_ANVIL.get()) {
-            BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
-                    .defaultBlockState()
-                    .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
-            level.setBlock(pos, newState, 3);
-            level.playSound(null, pos, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (player instanceof ServerPlayer serverPlayer) {
-                ModAdvancementTriggers.MAKE_SMITHING_ANVIL.get()
-                        .trigger(serverPlayer, "stone");
-            }
-
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            return;
-        }
-
-        // Shift-right-click an anvil base (e.g. a vanilla anvil) to build the smithing anvil of that tier
+        // Shift-right-click an anvil base (e.g. stone, a vanilla anvil) to build the smithing anvil of that tier
         if (player.isCrouching()) {
-            for (AnvilTier tier : AnvilTier.configured()) {
+            for (AnvilTier tier : AnvilTier.all()) {
                 if (!tier.isEnabled() || !state.is(tier.baseTag())) continue;
+                if (tier.isStone() && !ServerConfig.ENABLE_STONE_TO_ANVIL.get()) continue;
                 if (tier.id().equals(AnvilTier.IRON_ID) && !ServerConfig.ENABLE_ANVIL_TO_SMITHING.get()) continue;
 
                 BlockState newState = ModBlocks.anvilFor(tier)
                         .defaultBlockState()
                         .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
                 level.setBlock(pos, newState, 3);
-                level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                level.playSound(null, pos, tier.isStone() ? SoundEvents.STONE_BREAK : SoundEvents.ANVIL_USE,
+                        SoundSource.BLOCKS, 1.0f, 1.0f);
                 if (player instanceof ServerPlayer serverPlayer) {
                     ModAdvancementTriggers.MAKE_SMITHING_ANVIL.get()
                             .trigger(serverPlayer, tier.id());

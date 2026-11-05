@@ -12,6 +12,7 @@ import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.stirdrem.overgeared.registry.DeferredHolder;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.block.ModBlocks;
 
 public class ModBlockStateProvider extends BlockStateProvider {
@@ -29,12 +30,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
             horizontalBlock(block.get(), model);
             simpleBlockItem(block.get(), model);
         });
-        horizontalBlock(ModBlocks.STONE_SMITHING_ANVIL.get(),
-                new ModelFile.UncheckedModelFile(modLoc("block/stone_anvil")));
+        ModelFile stoneModel = new ModelFile.UncheckedModelFile(modLoc("block/" + AnvilTier.stone().blockName()));
+        horizontalBlock(ModBlocks.STONE_SMITHING_ANVIL.get(), stoneModel);
+        simpleBlockItem(ModBlocks.STONE_SMITHING_ANVIL.get(), stoneModel);
 
         // Register item models for anvils using their block models
-        simpleBlockItem(ModBlocks.STONE_SMITHING_ANVIL.get(),
-                new ModelFile.UncheckedModelFile(modLoc("block/stone_anvil")));
 
         facingLitBlock(ModBlocks.ALLOY_FURNACE.get(), "alloy_furnace", "alloy_furnace_on");
         facingLitBlock(ModBlocks.NETHER_ALLOY_FURNACE.get(), "nether_alloy_furnace", "nether_alloy_furnace_on");

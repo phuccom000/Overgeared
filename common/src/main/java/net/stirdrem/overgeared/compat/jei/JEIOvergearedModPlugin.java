@@ -112,8 +112,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         List<ForgingRecipe> all = unwrap(manager.getAllRecipesFor(ModRecipeTypes.FORGING.get()));
 
         List<ForgingRecipe> combined = new ArrayList<>();
-        combined.addAll(filterByTier(all, AnvilTier.STONE));
-        for (AnvilTier tier : AnvilTier.configured()) {
+        for (AnvilTier tier : AnvilTier.all()) {
             combined.addAll(filterByTier(all, tier));
         }
 
@@ -314,12 +313,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         if (EMI_LOADED) return;
-        registration.addRecipeTransferHandler(TieredSmithingAnvilMenu.class,
-                ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get(),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE, 38, 9, 0, 36);
-        registration.addRecipeTransferHandler(StoneSmithingAnvilMenu.class,
-                ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE, 37, 9, 0, 36);
+        registration.addRecipeTransferHandler(new SmithingAnvilTransferInfo<>(TieredSmithingAnvilMenu.class,
+                ModMenuTypes.TIERED_SMITHING_ANVIL_MENU.get()));
+        registration.addRecipeTransferHandler(new SmithingAnvilTransferInfo<>(StoneSmithingAnvilMenu.class,
+                ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get()));
         registration.addRecipeTransferHandler(FletchingStationMenu.class,
                 ModMenuTypes.FLETCHING_STATION_MENU.get(),
                 FletchingCategory.FLETCHING_RECIPE_TYPE, 0, 4, 5, 36);
@@ -340,9 +337,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModItems.ROCK.get()), KnappingRecipeCategory.KNAPPING_RECIPE_TYPE);
         registration.addRecipeCatalyst(new ItemStack(ModBlocks.DRAFTING_TABLE.get()), DraftingTableCategory.DRAFTING);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.STONE_SMITHING_ANVIL.get()),
-                ForgingRecipeCategory.FORGING_RECIPE_TYPE);
-        for (AnvilTier tier : AnvilTier.configured()) {
+        for (AnvilTier tier : AnvilTier.all()) {
             if (tier.isEnabled()) {
                 registration.addRecipeCatalyst(new ItemStack(ModBlocks.anvilFor(tier)),
                         ForgingRecipeCategory.FORGING_RECIPE_TYPE);
