@@ -334,23 +334,23 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 
         registration.addRecipeTransferHandler(SteelSmithingAnvilMenu.class,
-                ModMenuTypes.STEEL_SMITHING_ANVIL_MENU,
+                ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
         registration.addRecipeTransferHandler(StoneSmithingAnvilMenu.class,
-                ModMenuTypes.STONE_SMITHING_ANVIL_MENU,
+                ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
         registration.addRecipeTransferHandler(TierASmithingAnvilMenu.class,
-                ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU,
+                ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
         registration.addRecipeTransferHandler(TierBSmithingAnvilMenu.class,
-                ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU,
+                ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE, 2, 9, 12, 36);
 
         registration.addRecipeTransferHandler(FletchingStationMenu.class,
-                ModMenuTypes.FLETCHING_STATION_MENU,
+                ModMenuTypes.FLETCHING_STATION_MENU.get(),
                 FletchingCategory.FLETCHING_RECIPE_TYPE, 0, 4, 5, 36);
     }
 
@@ -360,7 +360,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.ALLOY_FURNACE),
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.ALLOY_FURNACE.get()),
                 AlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE);
 
         registration.addRecipeCatalyst(new ItemStack(Blocks.GRINDSTONE),
@@ -372,27 +372,27 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(Blocks.WATER_CAULDRON),
                 CoolingRecipeCategory.TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE),
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE.get()),
                 NetherAlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.STONE_SMITHING_ANVIL),
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.STONE_SMITHING_ANVIL.get()),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.SMITHING_ANVIL),
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.SMITHING_ANVIL.get()),
                 ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
         if (Overgeared.getConfig().ENABLE_TIER_A())
-            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL),
+            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_A_SMITHING_ANVIL.get()),
                     ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
         if (Overgeared.getConfig().ENABLE_TIER_B())
-            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL),
+            registration.addRecipeCatalyst(new ItemStack(ModBlocks.TIER_B_SMITHING_ANVIL.get()),
                     ForgingRecipeCategory.FORGING_RECIPE_TYPE);
 
         registration.addRecipeCatalyst(new ItemStack(Blocks.FLETCHING_TABLE),
                 FletchingCategory.FLETCHING_RECIPE_TYPE);
 
-        registration.addRecipeCatalyst(new ItemStack(ModBlocks.CAST_FURNACE),
+        registration.addRecipeCatalyst(new ItemStack(ModBlocks.CAST_FURNACE.get()),
                 CastingRecipeCategory.CASTING_TYPE);
     }
 }

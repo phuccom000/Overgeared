@@ -13,6 +13,7 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraftforge.registries.RegistryObject;
 import net.stirdrem.overgeared.block.ModBlocks;
+import net.stirdrem.overgeared.registry.RegistryEntry;
 
 import java.util.Set;
 
@@ -44,6 +45,6 @@ public class ModBlockLootTables extends BlockLootSubProvider {
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return ModBlocks.BLOCKS.getEntries().stream().map(RegistryObject::get)::iterator;
+        return ModBlocks.BLOCKS.getEntries().stream().<Block>map(RegistryEntry::get)::iterator;
     }
 }

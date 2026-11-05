@@ -46,7 +46,7 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.ALLOY_FURNACE));
+                new ItemStack(ModBlocks.ALLOY_FURNACE.get()));
 
         arrowStatic = helper.drawableBuilder(TEXTURE, 107, 14, 22, 16).setTextureSize(130, 43).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);

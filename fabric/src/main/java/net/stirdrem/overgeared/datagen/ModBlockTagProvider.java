@@ -27,13 +27,13 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
          */
         getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(
-                        ModBlocks.STEEL_BLOCK,
-                        ModBlocks.SMITHING_ANVIL,
-                        ModBlocks.STONE_SMITHING_ANVIL,
-                        ModBlocks.TIER_A_SMITHING_ANVIL,
-                        ModBlocks.TIER_B_SMITHING_ANVIL,
-                        ModBlocks.ALLOY_FURNACE,
-                        ModBlocks.NETHER_ALLOY_FURNACE
+                        ModBlocks.STEEL_BLOCK.get(),
+                        ModBlocks.SMITHING_ANVIL.get(),
+                        ModBlocks.STONE_SMITHING_ANVIL.get(),
+                        ModBlocks.TIER_A_SMITHING_ANVIL.get(),
+                        ModBlocks.TIER_B_SMITHING_ANVIL.get(),
+                        ModBlocks.ALLOY_FURNACE.get(),
+                        ModBlocks.NETHER_ALLOY_FURNACE.get()
                 );
 
         /*
@@ -41,10 +41,10 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
          */
         getOrCreateTagBuilder(ModTags.Blocks.SMITHING_ANVIL)
                 .add(
-                        ModBlocks.SMITHING_ANVIL,
-                        ModBlocks.STONE_SMITHING_ANVIL,
-                        ModBlocks.TIER_A_SMITHING_ANVIL,
-                        ModBlocks.TIER_B_SMITHING_ANVIL
+                        ModBlocks.SMITHING_ANVIL.get(),
+                        ModBlocks.STONE_SMITHING_ANVIL.get(),
+                        ModBlocks.TIER_A_SMITHING_ANVIL.get(),
+                        ModBlocks.TIER_B_SMITHING_ANVIL.get()
                 );
 
         /*
@@ -88,7 +88,7 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
                 )
         );
         getOrCreateTagBuilder(                STEEL_STORAGE_BLOCKS        )
-                .add(                ModBlocks.STEEL_BLOCK
+                .add(                ModBlocks.STEEL_BLOCK.get()
                 );
     }
 

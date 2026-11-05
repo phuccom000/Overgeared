@@ -117,17 +117,17 @@ public class ModCreativeModeTabs {
                         entries.accept(ModItems.STEEL_SHOVEL_HEAD.get());
                         entries.accept(ModItems.STEEL_HOE_HEAD.get());
 
-                        entries.accept(ModBlocks.STONE_SMITHING_ANVIL);
-                        entries.accept(ModBlocks.SMITHING_ANVIL);
+                        entries.accept(ModBlocks.STONE_SMITHING_ANVIL.get());
+                        entries.accept(ModBlocks.SMITHING_ANVIL.get());
                         if (Overgeared.getConfig().ENABLE_TIER_A())
-                            entries.accept(ModBlocks.TIER_A_SMITHING_ANVIL);
+                            entries.accept(ModBlocks.TIER_A_SMITHING_ANVIL.get());
                         if (Overgeared.getConfig().ENABLE_TIER_B())
-                            entries.accept(ModBlocks.TIER_B_SMITHING_ANVIL);
-                        entries.accept(ModBlocks.STEEL_BLOCK);
-                        entries.accept(ModBlocks.DRAFTING_TABLE);
-                        entries.accept(ModBlocks.ALLOY_FURNACE);
-                        entries.accept(ModBlocks.NETHER_ALLOY_FURNACE);
-                        entries.accept(ModBlocks.CAST_FURNACE);
+                            entries.accept(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+                        entries.accept(ModBlocks.STEEL_BLOCK.get());
+                        entries.accept(ModBlocks.DRAFTING_TABLE.get());
+                        entries.accept(ModBlocks.ALLOY_FURNACE.get());
+                        entries.accept(ModBlocks.NETHER_ALLOY_FURNACE.get());
+                        entries.accept(ModBlocks.CAST_FURNACE.get());
                     })
                     .build());
 

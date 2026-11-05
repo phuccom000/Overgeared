@@ -134,7 +134,7 @@ public class ModItemInteractEvents {
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.STONE_ANVIL_BASES)
                 && Overgeared.getConfig().ENABLE_STONE_TO_ANVIL()) {
 
-            BlockState newState = ModBlocks.STONE_SMITHING_ANVIL
+            BlockState newState = ModBlocks.STONE_SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
@@ -151,7 +151,7 @@ public class ModItemInteractEvents {
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.IRON_ANVIL_BASES)
                 && Overgeared.getConfig().ENABLE_ANVIL_TO_SMITHING()) {
 
-            BlockState newState = ModBlocks.SMITHING_ANVIL
+            BlockState newState = ModBlocks.SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
 
@@ -166,7 +166,7 @@ public class ModItemInteractEvents {
         }
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_A_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
+            BlockState newState = ModBlocks.TIER_A_SMITHING_ANVIL.get().defaultBlockState().setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);
             world.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -176,7 +176,7 @@ public class ModItemInteractEvents {
         }
 
         if (!world.isClientSide && player.isShiftKeyDown() && clickedState.is(ModTags.Blocks.TIER_B_ANVIL_BASES)) {
-            BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL
+            BlockState newState = ModBlocks.TIER_B_SMITHING_ANVIL.get()
                     .defaultBlockState()
                     .setValue(AbstractSmithingAnvil.FACING, player.getDirection().getClockWise());
             world.setBlock(pos, newState, 3);

@@ -6,6 +6,7 @@ import net.stirdrem.overgeared.Constants;
 import net.stirdrem.overgeared.platform.Services;
 
 import java.util.function.Supplier;
+import java.util.Collection;
 
 /**
  * Loader-agnostic registration for one registry, e.g.
@@ -27,6 +28,9 @@ public interface RegistrationProvider<T> {
     }
 
     <I extends T> RegistryEntry<I> register(String name, Supplier<? extends I> supplier);
+
+    /** Everything registered through this provider, in registration order. */
+    Collection<RegistryEntry<? extends T>> getEntries();
 
     /** Implemented per loader and found through {@link java.util.ServiceLoader}. */
     interface Factory {

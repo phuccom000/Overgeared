@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.platform;
 
+import net.stirdrem.overgeared.config.ClientConfig;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -26,6 +27,31 @@ import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.platform.services.IPlatformHelper;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.RecipeBookType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.stirdrem.overgeared.OvergearedFabric;
+import net.stirdrem.overgeared.recipebook.FabricRecipeBookTypes;
 
 public class FabricPlatformHelper implements IPlatformHelper {
     private final ServerConfigCommon config;
@@ -52,42 +78,42 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public net.minecraft.server.MinecraftServer getServer() {
-        return net.stirdrem.overgeared.OvergearedFabric.getServer();
+    public MinecraftServer getServer() {
+        return OvergearedFabric.getServer();
     }
 
     @Override
-    public void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider provider, net.minecraft.core.BlockPos pos) {
-        player.openMenu(new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory() {
+    public void openMenu(ServerPlayer player, MenuProvider provider, BlockPos pos) {
+        player.openMenu(new ExtendedScreenHandlerFactory() {
             @Override
-            public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer p, net.minecraft.network.FriendlyByteBuf buf) {
+            public void writeScreenOpeningData(ServerPlayer p, FriendlyByteBuf buf) {
                 buf.writeBlockPos(pos);
             }
 
             @Override
-            public net.minecraft.network.chat.Component getDisplayName() {
+            public Component getDisplayName() {
                 return provider.getDisplayName();
             }
 
             @Override
-            public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inv, net.minecraft.world.entity.player.Player p) {
+            public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
                 return provider.createMenu(id, inv, p);
             }
         });
     }
 
     @Override
-    public net.minecraft.world.inventory.RecipeBookType getForgingRecipeBookType() {
-        return net.stirdrem.overgeared.recipebook.FabricRecipeBookTypes.forging();
+    public RecipeBookType getForgingRecipeBookType() {
+        return FabricRecipeBookTypes.forging();
     }
 
     @Override
-    public <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType<T> createEntityType(
-            String name, net.minecraft.world.entity.EntityType.EntityFactory<T> factory, net.minecraft.world.entity.MobCategory category,
+    public <T extends Entity> EntityType<T> createEntityType(
+            String name, EntityType.EntityFactory<T> factory, MobCategory category,
             float width, float height, int trackingRange, int updateInterval) {
-        return net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder.<T>create(category, factory)
+        return FabricEntityTypeBuilder.<T>create(category, factory)
                 .trackable(trackingRange, updateInterval, true)
-                .dimensions(net.minecraft.world.entity.EntityDimensions.fixed(width, height))
+                .dimensions(EntityDimensions.fixed(width, height))
                 .build();
     }
 
@@ -119,5 +145,37 @@ public class FabricPlatformHelper implements IPlatformHelper {
         @Override public int getLevel() { return level; }
         @Override public int getEnchantmentValue() { return enchantability; }
         @Override public Ingredient getRepairIngredient() { return repairIngredient.get(); }
+    }
+
+    @Override
+    public int getBurnTime(ItemStack stack) {
+        Integer time = FuelRegistry.INSTANCE.get(stack.getItem());
+        return time == null ? 0 : time;
+    }
+
+    @Override
+    public ItemStack getCraftingRemainder(ItemStack stack) {
+        return stack.getRecipeRemainder();
+    }
+
+    @Override
+    public <T extends AbstractContainerMenu> MenuType<T> createMenuType(MenuFactory<T> factory) {
+        return new ExtendedScreenHandlerType<>(factory::create);
+    }
+
+    @Override
+    public <T extends AbstractContainerMenu> MenuType<T> createSimpleMenuType(SimpleMenuFactory<T> factory) {
+        return new MenuType<>(factory::create, FeatureFlags.VANILLA_SET);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
+            BlockEntityFactory<T> factory, Block... blocks) {
+        return FabricBlockEntityTypeBuilder.create(factory::create, blocks).build();
+    }
+
+    @Override
+    public boolean isAnvilRecipeBookEnabled() {
+        return ClientConfig.ENABLE_ANVIL_RECIPE_BOOK.get();
     }
 }

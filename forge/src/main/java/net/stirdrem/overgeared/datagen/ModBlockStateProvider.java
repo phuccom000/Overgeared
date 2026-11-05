@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.RegistryObject;
+import net.stirdrem.overgeared.registry.RegistryEntry;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.ModBlocks;
 
@@ -54,7 +54,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 new ModelFile.UncheckedModelFile(modLoc("block/water_barrel")));*/
     }
 
-    private void blockWithItem(RegistryObject<Block> blockRegistryObject) {
+    private void blockWithItem(RegistryEntry<Block> blockRegistryObject) {
         simpleBlockWithItem(blockRegistryObject.get(), cubeAll(blockRegistryObject.get()));
     }
 
@@ -79,6 +79,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
     }
 
 
-    private void blockWithItemDirectional(RegistryObject<Block> blockRegistryObject) {
+    private void blockWithItemDirectional(RegistryEntry<Block> blockRegistryObject) {
     }
 }

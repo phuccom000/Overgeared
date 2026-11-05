@@ -23,15 +23,15 @@ public class ModLootTableProvider extends FabricBlockLootTableProvider {
 
     @Override
     public void generate() {
-        dropSelf(ModBlocks.STEEL_BLOCK);
-        dropSelf(ModBlocks.DRAFTING_TABLE);
-        dropSelf(ModBlocks.SMITHING_ANVIL);
-        dropSelf(ModBlocks.TIER_A_SMITHING_ANVIL);
-        dropSelf(ModBlocks.TIER_B_SMITHING_ANVIL);
-        dropOther(ModBlocks.STONE_SMITHING_ANVIL, Blocks.COBBLESTONE);
-        dropSelf(ModBlocks.ALLOY_FURNACE);
-        dropSelf(ModBlocks.NETHER_ALLOY_FURNACE);
-        dropSelf(ModBlocks.CAST_FURNACE);
+        dropSelf(ModBlocks.STEEL_BLOCK.get());
+        dropSelf(ModBlocks.DRAFTING_TABLE.get());
+        dropSelf(ModBlocks.SMITHING_ANVIL.get());
+        dropSelf(ModBlocks.TIER_A_SMITHING_ANVIL.get());
+        dropSelf(ModBlocks.TIER_B_SMITHING_ANVIL.get());
+        dropOther(ModBlocks.STONE_SMITHING_ANVIL.get(), Blocks.COBBLESTONE);
+        dropSelf(ModBlocks.ALLOY_FURNACE.get());
+        dropSelf(ModBlocks.NETHER_ALLOY_FURNACE.get());
+        dropSelf(ModBlocks.CAST_FURNACE.get());
     }
 
     public LootTable.Builder copperLikeOreDrops(Block drop, Item item) {

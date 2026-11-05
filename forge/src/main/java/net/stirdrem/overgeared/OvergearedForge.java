@@ -87,11 +87,11 @@ public class OvergearedForge {
 
         ModItems.init();
 
-        ModBlocks.register(modEventBus);
+        ModBlocks.init();
 
-        ModBlockEntities.register(modEventBus);
+        ModBlockEntities.init();
 
-        ModMenuTypes.register(modEventBus);
+        ModMenuTypes.init();
 
         ModRecipes.init();
 

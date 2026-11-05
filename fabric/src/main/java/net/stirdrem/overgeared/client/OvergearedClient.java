@@ -34,21 +34,21 @@ public class OvergearedClient implements ClientModInitializer {
         PopupOverlay.register();
         OvergearedTooltipEvents.register();
 
-        MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU, SteelSmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU, TierASmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU, TierBSmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU, StoneSmithingAnvilScreen::new);
-        MenuScreens.register(ModMenuTypes.ALLOY_SMELTER_MENU, AlloySmelterScreen::new);
-        MenuScreens.register(ModMenuTypes.NETHER_ALLOY_SMELTER_MENU, NetherAlloySmelterScreen::new);
-        MenuScreens.register(ModMenuTypes.CAST_FURNACE, CastFurnaceScreen::new);
-        MenuScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU, RockKnappingScreen::new);
-        MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU, BlueprintWorkbenchScreen::new);
-        MenuScreens.register(ModMenuTypes.FLETCHING_STATION_MENU, FletchingStationScreen::new);
+        MenuScreens.register(ModMenuTypes.STEEL_SMITHING_ANVIL_MENU.get(), SteelSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIER_A_SMITHING_ANVIL_MENU.get(), TierASmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.TIER_B_SMITHING_ANVIL_MENU.get(), TierBSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.STONE_SMITHING_ANVIL_MENU.get(), StoneSmithingAnvilScreen::new);
+        MenuScreens.register(ModMenuTypes.ALLOY_SMELTER_MENU.get(), AlloySmelterScreen::new);
+        MenuScreens.register(ModMenuTypes.NETHER_ALLOY_SMELTER_MENU.get(), NetherAlloySmelterScreen::new);
+        MenuScreens.register(ModMenuTypes.CAST_FURNACE.get(), CastFurnaceScreen::new);
+        MenuScreens.register(ModMenuTypes.ROCK_KNAPPING_MENU.get(), RockKnappingScreen::new);
+        MenuScreens.register(ModMenuTypes.BLUEPRINT_WORKBENCH_MENU.get(), BlueprintWorkbenchScreen::new);
+        MenuScreens.register(ModMenuTypes.FLETCHING_STATION_MENU.get(), FletchingStationScreen::new);
 
-        registerAnvilRenderer(ModBlockEntities.STEEL_SMITHING_ANVIL_BE);
-        registerAnvilRenderer(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE);
-        registerAnvilRenderer(ModBlockEntities.TIER_B_SMITHING_ANVIL_BE);
-        registerAnvilRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE);
+        registerAnvilRenderer(ModBlockEntities.STEEL_SMITHING_ANVIL_BE.get());
+        registerAnvilRenderer(ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get());
+        registerAnvilRenderer(ModBlockEntities.TIER_B_SMITHING_ANVIL_BE.get());
+        registerAnvilRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get());
 
         EntityModelLayerRegistry.registerModelLayer(CustomCopperHelmet.LAYER_LOCATION, CustomCopperHelmet::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(CustomCopperLeggings.LAYER_LOCATION, CustomCopperLeggings::createBodyLayer);

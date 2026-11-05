@@ -10,6 +10,10 @@ import net.stirdrem.overgeared.registry.RegistrationProvider;
 import net.stirdrem.overgeared.registry.RegistryEntry;
 
 import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /** Forge implementation: one {@link DeferredRegister} per registry, attached to the mod event bus on creation. */
 public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
@@ -19,14 +23,22 @@ public class ForgeRegistrationFactory implements RegistrationProvider.Factory {
         DeferredRegister<T> register = DeferredRegister.create(registryKey, modId);
         // Registry classes are class-loaded from the mod constructor, so the loading context is valid here
         register.register(FMLJavaModLoadingContext.get().getModEventBus());
-        return new Provider<>(register);
+        return new Provider<>(register, new ArrayList<>());
     }
 
-    private record Provider<T>(DeferredRegister<T> register) implements RegistrationProvider<T> {
+    private record Provider<T>(DeferredRegister<T> register, List<RegistryEntry<? extends T>> entries)
+            implements RegistrationProvider<T> {
         @Override
         public <I extends T> RegistryEntry<I> register(String name, Supplier<? extends I> supplier) {
             RegistryObject<I> object = register.register(name, supplier);
-            return new Entry<>(object);
+            Entry<I> entry = new Entry<>(object);
+            entries.add(entry);
+            return entry;
+        }
+
+        @Override
+        public Collection<RegistryEntry<? extends T>> getEntries() {
+            return Collections.unmodifiableList(entries);
         }
     }
 

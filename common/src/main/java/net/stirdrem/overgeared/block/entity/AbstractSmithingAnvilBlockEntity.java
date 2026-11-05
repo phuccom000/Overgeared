@@ -44,7 +44,7 @@ import static net.stirdrem.overgeared.Overgeared.getCooledItem;
 /**
  * Shared smithing anvil block entity (forging logic, inventory, sync). Hoppers use the vanilla
  * {@link WorldlyContainer} implementation; on Forge the same rules are exposed as an item-handler
- * capability by {@code ForgeAnvilCapabilities}.
+ * capability by {@code ForgeInventoryCapabilities}.
  */
 public abstract class AbstractSmithingAnvilBlockEntity extends BlockEntity implements MenuProvider, WorldlyContainer {
     protected static final int INPUT_SLOT = 0;

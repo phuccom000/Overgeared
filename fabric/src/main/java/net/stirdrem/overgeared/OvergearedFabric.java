@@ -66,7 +66,7 @@ public class OvergearedFabric implements ModInitializer {
 
         // Force static init / registration for each registry class.
         ModItems.init();
-        ModBlocks.register();
+        ModBlocks.init();
         ModRecipes.init();
         ModRecipeTypes.init();
 
@@ -75,8 +75,8 @@ public class OvergearedFabric implements ModInitializer {
         DispenserBlock.registerBehavior(ModItems.IRON_UPGRADE_ARROW.get(), dispenseBehavior);
         DispenserBlock.registerBehavior(ModItems.STEEL_UPGRADE_ARROW.get(), dispenseBehavior);
         DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW.get(), dispenseBehavior);
-        ModBlockEntities.register();
-        ModMenuTypes.register();
+        ModBlockEntities.init();
+        ModMenuTypes.init();
         ModCreativeModeTabs.register();
         ModEntities.init();
         ModSounds.init();

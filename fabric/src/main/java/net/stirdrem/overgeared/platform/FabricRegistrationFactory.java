@@ -8,6 +8,10 @@ import net.stirdrem.overgeared.registry.RegistrationProvider;
 import net.stirdrem.overgeared.registry.RegistryEntry;
 
 import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /** Fabric implementation: registers immediately, so entries are resolved as soon as they're created. */
 public class FabricRegistrationFactory implements RegistrationProvider.Factory {
@@ -19,15 +23,23 @@ public class FabricRegistrationFactory implements RegistrationProvider.Factory {
         if (registry == null) {
             throw new IllegalArgumentException("Unknown registry " + registryKey.location());
         }
-        return new Provider<>(registry, modId);
+        return new Provider<>(registry, modId, new ArrayList<>());
     }
 
-    private record Provider<T>(Registry<T> registry, String modId) implements RegistrationProvider<T> {
+    private record Provider<T>(Registry<T> registry, String modId, List<RegistryEntry<? extends T>> entries)
+            implements RegistrationProvider<T> {
         @Override
         public <I extends T> RegistryEntry<I> register(String name, Supplier<? extends I> supplier) {
             ResourceLocation id = new ResourceLocation(modId, name);
             I value = Registry.register(registry, id, supplier.get());
-            return new Entry<>(value, id);
+            Entry<I> entry = new Entry<>(value, id);
+            entries.add(entry);
+            return entry;
+        }
+
+        @Override
+        public Collection<RegistryEntry<? extends T>> getEntries() {
+            return Collections.unmodifiableList(entries);
         }
     }
 

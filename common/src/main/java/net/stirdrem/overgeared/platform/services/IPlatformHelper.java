@@ -17,6 +17,23 @@ import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
 
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.RecipeBookType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 public interface IPlatformHelper {
 
@@ -58,26 +75,26 @@ public interface IPlatformHelper {
      * Builds an entity type. Vanilla's EntityType.Builder#build logs "No data fixer registered" for modded entities
      * on Fabric, so each loader uses its own builder (Forge: vanilla builder, Fabric: FabricEntityTypeBuilder).
      */
-    <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType<T> createEntityType(
-            String name, net.minecraft.world.entity.EntityType.EntityFactory<T> factory, net.minecraft.world.entity.MobCategory category,
+    <T extends Entity> EntityType<T> createEntityType(
+            String name, EntityType.EntityFactory<T> factory, MobCategory category,
             float width, float height, int trackingRange, int updateInterval);
 
     /** The recipe-book type of the smithing anvil (an extended vanilla enum constant on both loaders). */
-    net.minecraft.world.inventory.RecipeBookType getForgingRecipeBookType();
+    RecipeBookType getForgingRecipeBookType();
 
     /** Fires the loader's "player crafted an item" event, if it has one (Forge does, Fabric doesn't). */
-    default void onPlayerCrafted(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.item.ItemStack crafted, net.minecraft.world.Container craftMatrix) {
+    default void onPlayerCrafted(ServerPlayer player, ItemStack crafted, Container craftMatrix) {
     }
 
     /**
      * Opens a menu whose type reads the block position from the opening packet
      * (Forge {@code NetworkHooks.openScreen}, Fabric {@code ExtendedScreenHandlerFactory}).
      */
-    void openMenu(net.minecraft.server.level.ServerPlayer player, net.minecraft.world.MenuProvider provider, net.minecraft.core.BlockPos pos);
+    void openMenu(ServerPlayer player, MenuProvider provider, BlockPos pos);
 
     /** The running server, or null when none is running (e.g. on the title screen). */
-    @org.jetbrains.annotations.Nullable
-    net.minecraft.server.MinecraftServer getServer();
+    @Nullable
+    MinecraftServer getServer();
 
 
 
@@ -90,4 +107,41 @@ public interface IPlatformHelper {
 
     /** Creates a tongs item; Forge adds its tool-action override. */
     Item createTongs(Tier tier, int attackDamageModifier, float attackSpeedModifier, Item.Properties properties);
+
+    /** Client config: whether the smithing anvil screen shows the recipe book button. */
+    boolean isAnvilRecipeBookEnabled();
+
+    /** Furnace burn time of the stack in ticks; 0 if it is not a fuel. */
+    int getBurnTime(ItemStack stack);
+
+    /** What is left behind when the stack is used up in a recipe (e.g. an empty bucket). */
+    ItemStack getCraftingRemainder(ItemStack stack);
+
+    /**
+     * A menu type whose client-side constructor gets the data written by {@link #openMenu} (the block position)
+     * (Forge {@code IForgeMenuType}, Fabric {@code ExtendedScreenHandlerType}).
+     */
+    <T extends AbstractContainerMenu> MenuType<T> createMenuType(MenuFactory<T> factory);
+
+    /** A menu type without extra data. Vanilla's constructor is not accessible from common code. */
+    <T extends AbstractContainerMenu> MenuType<T> createSimpleMenuType(SimpleMenuFactory<T> factory);
+
+    /** A block entity type for the given blocks. Vanilla's builder is not accessible from common code. */
+    <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(
+            BlockEntityFactory<T> factory, Block... blocks);
+
+    @FunctionalInterface
+    interface SimpleMenuFactory<T extends AbstractContainerMenu> {
+        T create(int containerId, Inventory inventory);
+    }
+
+    @FunctionalInterface
+    interface BlockEntityFactory<T extends BlockEntity> {
+        T create(BlockPos pos, BlockState state);
+    }
+
+    @FunctionalInterface
+    interface MenuFactory<T extends AbstractContainerMenu> {
+        T create(int containerId, Inventory inventory, FriendlyByteBuf data);
+    }
 }

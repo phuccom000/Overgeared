@@ -48,7 +48,7 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE));
+                new ItemStack(ModBlocks.NETHER_ALLOY_FURNACE.get()));
 
         arrowStatic = helper.drawableBuilder(TEXTURE, 120, 14, 23, 16).setTextureSize(textureWidth, textureHeight).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);

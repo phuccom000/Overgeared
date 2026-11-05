@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 
 public class ModRecipeProvider extends FabricRecipeProvider {
     /* private static final List<ItemConvertible> RUBY_SMELTABLES = List.of(ModItems.RAW_RUBY,
-             ModBlocks.RUBY_ORE, ModBlocks.DEEPSLATE_RUBY_ORE, ModBlocks.NETHER_RUBY_ORE, ModBlocks.END_STONE_RUBY_ORE);*/
+             ModBlocks.RUBY_ORE.get(), ModBlocks.DEEPSLATE_RUBY_ORE.get(), ModBlocks.NETHER_RUBY_ORE.get(), ModBlocks.END_STONE_RUBY_ORE.get());*/
     private static final List<ItemLike> STEEL_SMELTABLES = List.of(
             ModItems.CRUDE_STEEL.get());
 
@@ -126,7 +126,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 0.7f, 100, "ruby");
 
         offerReversibleCompactingRecipes(exporter, RecipeCategory.BUILDING_BLOCKS, ModItems.RUBY, RecipeCategory.DECORATIONS,
-                ModBlocks.RUBY_BLOCK);
+                ModBlocks.RUBY_BLOCK.get());
 
         ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, ModItems.RAW_RUBY, 1)
                 .pattern("SSS")
@@ -139,7 +139,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 .offerTo(exporter, new Identifier(getRecipeName(ModItems.RAW_RUBY)));*/
 
         nineBlockStorageRecipes(exporter, RecipeCategory.BUILDING_BLOCKS, ModItems.STEEL_INGOT.get(), RecipeCategory.DECORATIONS,
-                ModBlocks.STEEL_BLOCK);
+                ModBlocks.STEEL_BLOCK.get());
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.STEEL_INGOT.get())
                 .pattern("###")
@@ -178,7 +178,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(exporter);
 
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModBlocks.DRAFTING_TABLE)
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModBlocks.DRAFTING_TABLE.get())
                 .requires(Blocks.CRAFTING_TABLE)
                 .requires(ModItems.EMPTY_BLUEPRINT.get())
                 .unlockedBy(getHasName(Blocks.CRAFTING_TABLE), has(Items.CRAFTING_TABLE))
@@ -379,7 +379,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
          */
         /*
          * ShapedForgingRecipeBuilder.shaped(ForgingBookCategory.MISC,
-         * ModBlocks.STEEL_BLOCK, 5)
+         * ModBlocks.STEEL_BLOCK.get(), 5)
          * .pattern("###")
          * .pattern("###")
          * .pattern("###")
@@ -387,7 +387,7 @@ public class ModRecipeProvider extends FabricRecipeProvider {
          * .criterion("has_steel_ingot",
          * conditionsFromItem(ItemTags.create(Identifier.of("forge", "ingots/steel"))))
          * .offerTo(exporter, Overgeared.MOD_ID + ":" +
-         * getItemName(ModBlocks.STEEL_BLOCK) + "_from_forging_" +
+         * getItemName(ModBlocks.STEEL_BLOCK.get()) + "_from_forging_" +
          * getItemName(ModItems.STEEL_INGOT.get()));
          */
 

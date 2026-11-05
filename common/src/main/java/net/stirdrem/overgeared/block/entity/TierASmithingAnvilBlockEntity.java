@@ -1,0 +1,59 @@
+package net.stirdrem.overgeared.block.entity;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.state.BlockState;
+import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.ForgingQuality;
+import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.block.custom.TierASmithingAnvil;
+import net.stirdrem.overgeared.screen.TierASmithingAnvilMenu;
+import org.jetbrains.annotations.Nullable;
+
+public class TierASmithingAnvilBlockEntity extends AbstractSmithingAnvilBlockEntity {
+
+    public TierASmithingAnvilBlockEntity(BlockPos pos, BlockState state) {
+        super((TierASmithingAnvil) state.getBlock(), AnvilTier.ABOVE_A, ModBlockEntities.TIER_A_SMITHING_ANVIL_BE.get(), pos, state);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("gui.overgeared.smithing_anvil");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
+        if (!player.isShiftKeyDown()) {
+            return new TierASmithingAnvilMenu(syncId, playerInventory, this, this.data);
+        } else return null;
+    }
+
+    @Override
+    protected String determineForgingQuality() {
+        if (!Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING()) {
+            return super.determineForgingQualityNoBlueprint();
+        } else return super.determineForgingQuality();
+    }
+
+    @Override
+    public String blueprintQuality() {
+        if (!Overgeared.getConfig().ENABLE_BLUEPRINT_FORGING())
+            return ForgingQuality.PERFECT.getDisplayName();
+        else return super.blueprintQuality();
+    }
+
+    @Override
+    protected void craftItem() {
+        super.craftItem();
+        super.craftItemWithBlueprint();
+    }
+
+    @Override
+    public boolean hasRecipe() {
+        return super.hasRecipeWithBlueprint();
+    }
+}

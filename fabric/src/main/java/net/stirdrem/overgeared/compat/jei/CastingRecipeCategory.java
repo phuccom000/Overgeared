@@ -52,7 +52,7 @@ public class CastingRecipeCategory implements IRecipeCategory<CastingRecipe> {
                 .build();
 
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(ModBlocks.CAST_FURNACE));
+                new ItemStack(ModBlocks.CAST_FURNACE.get()));
 
         arrowStatic = helper.drawableBuilder(TEXTURE, 89, 14, 22, 16).setTextureSize(112, 43).build();
         arrowAnimated = helper.createAnimatedDrawable(arrowStatic, animationTime, IDrawableAnimated.StartDirection.LEFT, false);

@@ -60,7 +60,7 @@ public class ModModelProvider extends FabricModelProviderPlus {
         // Simple blocks
         // ---------------------------------------------------------------------
 
-        generator.createTrivialCube(ModBlocks.STEEL_BLOCK);
+        generator.createTrivialCube(ModBlocks.STEEL_BLOCK.get());
 
         // ---------------------------------------------------------------------
         // Horizontal blocks
@@ -68,31 +68,31 @@ public class ModModelProvider extends FabricModelProviderPlus {
 
         horizontalBlock(
                 generator,
-                ModBlocks.SMITHING_ANVIL,
+                ModBlocks.SMITHING_ANVIL.get(),
                 modLoc("block/smithing_anvil")
         );
 
         horizontalBlock(
                 generator,
-                ModBlocks.TIER_A_SMITHING_ANVIL,
+                ModBlocks.TIER_A_SMITHING_ANVIL.get(),
                 modLoc("block/tier_a_smithing_anvil")
         );
 
         horizontalBlock(
                 generator,
-                ModBlocks.TIER_B_SMITHING_ANVIL,
+                ModBlocks.TIER_B_SMITHING_ANVIL.get(),
                 modLoc("block/tier_b_smithing_anvil")
         );
 
         horizontalBlock(
                 generator,
-                ModBlocks.STONE_SMITHING_ANVIL,
+                ModBlocks.STONE_SMITHING_ANVIL.get(),
                 modLoc("block/stone_anvil")
         );
 
         horizontalBlock(
                 generator,
-                ModBlocks.DRAFTING_TABLE,
+                ModBlocks.DRAFTING_TABLE.get(),
                 modLoc("block/drafting_table")
         );
 
@@ -102,21 +102,21 @@ public class ModModelProvider extends FabricModelProviderPlus {
 
         facingLitBlock(
                 generator,
-                ModBlocks.ALLOY_FURNACE,
+                ModBlocks.ALLOY_FURNACE.get(),
                 "alloy_furnace",
                 "alloy_furnace_on"
         );
 
         facingLitBlock(
                 generator,
-                ModBlocks.NETHER_ALLOY_FURNACE,
+                ModBlocks.NETHER_ALLOY_FURNACE.get(),
                 "nether_alloy_furnace",
                 "nether_alloy_furnace_on"
         );
 
         facingLitBlock(
                 generator,
-                ModBlocks.CAST_FURNACE,
+                ModBlocks.CAST_FURNACE.get(),
                 "casting_furnace",
                 "casting_furnace_on"
         );
