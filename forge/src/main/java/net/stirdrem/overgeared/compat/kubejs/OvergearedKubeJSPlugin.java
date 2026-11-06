@@ -3,12 +3,14 @@ package net.stirdrem.overgeared.compat.kubejs;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
+import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
 import net.stirdrem.overgeared.AnvilTier;
 
 import java.util.List;
 
 /**
- * KubeJS integration, listed in {@code kubejs.plugins.txt}. Adds the startup event {@code OvergearedEvents.anvilTiers}:
+ * KubeJS integration, listed in {@code kubejs.plugins.txt}. Adds recipe schemas for Overgeared's recipe types
+ * ({@link OvergearedRecipeSchemas}) and the startup event {@code OvergearedEvents.anvilTiers}:
  * <pre>
  * // kubejs/startup_scripts/anvil_tiers.js
  * OvergearedEvents.anvilTiers(event => {
@@ -26,6 +28,12 @@ public class OvergearedKubeJSPlugin extends KubeJSPlugin {
     @Override
     public void registerEvents() {
         GROUP.register();
+    }
+
+    /** {@code event.recipes.overgeared.<type>(...)} for each Overgeared recipe type; see {@link OvergearedRecipeSchemas}. */
+    @Override
+    public void registerRecipeSchemas(RegisterRecipeSchemasEvent event) {
+        OvergearedRecipeSchemas.register(event);
     }
 
     /** Runs the {@code anvilTiers} startup scripts on the tiers read from config. */
