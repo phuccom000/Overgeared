@@ -1,6 +1,7 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.stirdrem.overgeared.OvergearedFabric;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -28,6 +29,7 @@ import net.stirdrem.overgeared.screen.*;
 public class OvergearedClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        OvergearedFabric.registerTieredAnvils();
         ClientModMessages.register();
         FabricAnvilMinigameEvents.register();
         AnvilMinigameOverlay.register();

@@ -15,11 +15,17 @@ import java.util.function.Supplier;
 public class ModBlockEntities {
     public static final RegistrationProvider<BlockEntityType<?>> BLOCK_ENTITIES = RegistrationProvider.get(Registries.BLOCK_ENTITY_TYPE);
 
-    /** Shared by every tiered anvil; keeps the iron anvil's old id so placed anvils keep their contents. */
-    public static final RegistryEntry<BlockEntityType<TieredSmithingAnvilBlockEntity>> TIERED_SMITHING_ANVIL_BE =
-            BLOCK_ENTITIES.register("smithing_table_be", () -> Services.PLATFORM.createBlockEntityType(
-                    TieredSmithingAnvilBlockEntity::new,
-                    ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new)));
+    private static RegistryEntry<BlockEntityType<TieredSmithingAnvilBlockEntity>> tieredSmithingAnvil;
+    /**
+     * Shared by every tiered anvil; keeps the iron anvil's old id so placed anvils keep their contents.
+     * Registered with the tiered anvils by {@link ModBlocks#registerTieredAnvils()}.
+     */
+    public static final Supplier<BlockEntityType<TieredSmithingAnvilBlockEntity>> TIERED_SMITHING_ANVIL_BE = () -> {
+        if (tieredSmithingAnvil == null) {
+            throw new IllegalStateException("The tiered smithing anvils are not registered yet");
+        }
+        return tieredSmithingAnvil.get();
+    };
     public static final RegistryEntry<BlockEntityType<StoneSmithingAnvilBlockEntity>> STONE_SMITHING_ANVIL_BE =
             register("stone_smithing_table_be", StoneSmithingAnvilBlockEntity::new, ModBlocks.STONE_SMITHING_ANVIL);
     public static final RegistryEntry<BlockEntityType<AlloySmelterBlockEntity>> ALLOY_FURNACE_BE =
@@ -37,6 +43,13 @@ public class ModBlockEntities {
             for (int i = 0; i < blocks.length; i++) valid[i] = blocks[i].get();
             return Services.PLATFORM.createBlockEntityType(factory, valid);
         });
+    }
+
+    /** Registers the block entity type of the tiered anvils; called by {@link ModBlocks#registerTieredAnvils()}. */
+    public static void registerTieredAnvilBlockEntity() {
+        tieredSmithingAnvil = BLOCK_ENTITIES.register("smithing_table_be", () -> Services.PLATFORM.createBlockEntityType(
+                TieredSmithingAnvilBlockEntity::new,
+                ModBlocks.TIERED_ANVILS.values().stream().map(RegistryEntry::get).toArray(Block[]::new)));
     }
 
     /** Class-loads this registry; call from the loader entrypoint after {@link ModBlocks#init()}. */

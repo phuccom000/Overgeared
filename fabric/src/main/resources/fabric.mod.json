@@ -19,6 +19,9 @@
     "client": [
       "net.stirdrem.overgeared.client.OvergearedClient"
     ],
+    "server": [
+      "net.stirdrem.overgeared.OvergearedFabricServer"
+    ],
     "fabric-datagen": [
       "net.stirdrem.overgeared.OvergearedDataGenerator"
     ],

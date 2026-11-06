@@ -17,7 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * A smithing anvil tier, read from {@code config/overgeared-anvil-tiers.json} (and KubeJS on Forge), lowest first.
+ * A smithing anvil tier, read from {@code config/overgeared-anvil-tiers.json} (and KubeJS startup scripts), lowest first.
  * Each tier gets its own {@code overgeared:<id>_smithing_anvil} block. The {@code stone} and {@code iron} tiers
  * always exist; stone keeps its own fragile anvil block.
  */

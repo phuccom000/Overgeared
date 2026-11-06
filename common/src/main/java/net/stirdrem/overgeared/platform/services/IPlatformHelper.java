@@ -143,7 +143,7 @@ public interface IPlatformHelper {
      */
     void registerAlias(ResourceKey<? extends Registry<?>> registry, ResourceLocation oldId, ResourceLocation newId);
 
-    /** Lets other mods change the anvil tiers read from config before they are registered (KubeJS on Forge). */
+    /** Lets other mods change the anvil tiers read from config before they are registered (KubeJS). */
     default void modifyAnvilTiers(List<AnvilTier.Definition> tiers) {
     }
 

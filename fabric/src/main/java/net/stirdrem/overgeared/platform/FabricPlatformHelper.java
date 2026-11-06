@@ -27,6 +27,8 @@ import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.entity.custom.LingeringArrowEntity;
 import net.stirdrem.overgeared.entity.custom.UpgradeArrowEntity;
 import net.stirdrem.overgeared.item.ModItems;
+import net.stirdrem.overgeared.AnvilTier;
+import net.stirdrem.overgeared.compat.kubejs.OvergearedKubeJSPlugin;
 import net.stirdrem.overgeared.platform.services.IPlatformHelper;
 import net.stirdrem.overgeared.recipe.ItemToToolTypeRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
@@ -83,6 +85,14 @@ public class FabricPlatformHelper implements IPlatformHelper {
     @Override
     public Path getConfigDir() {
         return FabricLoader.getInstance().getConfigDir();
+    }
+
+    @Override
+    public void modifyAnvilTiers(List<AnvilTier.Definition> tiers) {
+        // Tiers are read in the client/server entrypoint, after KubeJS's main entrypoint loaded the startup scripts
+        if (isModLoaded("kubejs")) {
+            OvergearedKubeJSPlugin.modifyAnvilTiers(tiers);
+        }
     }
 
     @Override

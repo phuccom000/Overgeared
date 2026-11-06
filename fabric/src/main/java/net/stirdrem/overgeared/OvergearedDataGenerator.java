@@ -8,6 +8,7 @@ import net.stirdrem.overgeared.datagen.*;
 public class OvergearedDataGenerator implements DataGeneratorEntrypoint {
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
+        OvergearedFabric.registerTieredAnvils();
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(ModRecipeProvider::new);
         pack.addProvider(ModPoiTagProvider::new);

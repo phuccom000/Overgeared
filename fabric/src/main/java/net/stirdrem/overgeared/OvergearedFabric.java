@@ -38,6 +38,19 @@ public class OvergearedFabric implements ModInitializer {
 
     @Nullable
     private static MinecraftServer server;
+    private static boolean tieredAnvilsRegistered;
+
+    /**
+     * Registers the tiered smithing anvils. Called from the client, dedicated server and datagen entrypoints, which
+     * Fabric runs after every mod's main entrypoint: KubeJS loads its startup scripts in its main entrypoint, and
+     * those can add anvil tiers. (KubeJS registers its own blocks at the same point.)
+     */
+    public static synchronized void registerTieredAnvils() {
+        if (!tieredAnvilsRegistered) {
+            tieredAnvilsRegistered = true;
+            ModBlocks.registerTieredAnvils();
+        }
+    }
 
     public static ResourceLocation id(String path) {
         return new ResourceLocation(Overgeared.MOD_ID, path);
@@ -72,7 +85,7 @@ public class OvergearedFabric implements ModInitializer {
         ModItems.init();
         ModBlocks.init();
         ModBlocks.registerAliases();
-        ModBlocks.registerTieredAnvils();
+        // The tiered anvils register later, in registerTieredAnvils()
         ModRecipes.init();
         ModRecipeTypes.init();
 

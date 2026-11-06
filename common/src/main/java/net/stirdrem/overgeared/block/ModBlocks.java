@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.*;
+import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.platform.Services;
 import net.stirdrem.overgeared.registry.RegistrationProvider;
@@ -28,7 +29,8 @@ public class ModBlocks {
 
     /**
      * One smithing anvil per tier except stone, in tier order. Filled by {@link #registerTieredAnvils()}, which the
-     * loaders call once the tiers can be read (Forge waits for registration so KubeJS startup scripts can add tiers).
+     * loaders call once KubeJS startup scripts have run, as they can add tiers (Forge: when blocks register,
+     * Fabric: in the client/dedicated server entrypoint, after every mod's main entrypoint).
      */
     public static final Map<AnvilTier, RegistryEntry<TieredSmithingAnvil>> TIERED_ANVILS = new LinkedHashMap<>();
 
@@ -48,7 +50,7 @@ public class ModBlocks {
     public static final RegistryEntry<Block> CAST_FURNACE = registerBlock("casting_furnace",
             () -> new CastFurnaceBlock(BlockBehaviour.Properties.copy(Blocks.RED_NETHER_BRICKS).noOcclusion().requiresCorrectToolForDrops().strength(3.5F, 6.0F).lightLevel(litBlockEmission(13))));
 
-    /** Registers a smithing anvil for each tier except stone. */
+    /** Registers a smithing anvil for each tier except stone, and their shared block entity type. */
     public static void registerTieredAnvils() {
         if (!TIERED_ANVILS.isEmpty()) {
             throw new IllegalStateException("Tiered smithing anvils are already registered");
@@ -58,6 +60,7 @@ public class ModBlocks {
             TIERED_ANVILS.put(tier, registerBlock(tier.blockName(),
                     () -> new TieredSmithingAnvil(tier, BlockBehaviour.Properties.copy(Blocks.ANVIL).noOcclusion())));
         }
+        ModBlockEntities.registerTieredAnvilBlockEntity();
     }
 
     /** The smithing anvil block of a tier. */
