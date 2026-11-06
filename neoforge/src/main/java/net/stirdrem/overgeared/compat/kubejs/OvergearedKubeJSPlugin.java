@@ -4,12 +4,15 @@ import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventGroupRegistry;
 import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
+import dev.latvian.mods.kubejs.recipe.component.RecipeComponentTypeRegistry;
+import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaRegistry;
 import net.stirdrem.overgeared.AnvilTier;
 
 import java.util.List;
 
 /**
- * KubeJS integration, listed in {@code kubejs.plugins.txt}. Adds the startup event {@code OvergearedEvents.anvilTiers}:
+ * KubeJS integration, listed in {@code kubejs.plugins.txt}. Adds recipe schemas for Overgeared's recipe types
+ * ({@link OvergearedRecipeSchemas}) and the startup event {@code OvergearedEvents.anvilTiers}:
  * <pre>
  * // kubejs/startup_scripts/anvil_tiers.js
  * OvergearedEvents.anvilTiers(event => {
@@ -27,6 +30,17 @@ public class OvergearedKubeJSPlugin implements KubeJSPlugin {
     @Override
     public void registerEvents(EventGroupRegistry registry) {
         registry.register(GROUP);
+    }
+
+    @Override
+    public void registerRecipeComponents(RecipeComponentTypeRegistry registry) {
+        OvergearedRecipeSchemas.registerComponents(registry);
+    }
+
+    /** {@code event.recipes.overgeared.<type>(...)} for each Overgeared recipe type; see {@link OvergearedRecipeSchemas}. */
+    @Override
+    public void registerRecipeSchemas(RecipeSchemaRegistry registry) {
+        OvergearedRecipeSchemas.registerSchemas(registry);
     }
 
     /** Runs the {@code anvilTiers} startup scripts on the tiers read from config. */
