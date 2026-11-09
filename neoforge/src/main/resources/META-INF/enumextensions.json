@@ -1,0 +1,46 @@
+{
+  "entries": [
+    {
+      "enum": "net/minecraft/world/inventory/RecipeBookType",
+      "name": "OVERGEARED_FORGING",
+      "constructor": "()V",
+      "parameters": []
+    },
+    {
+      "enum": "net/minecraft/client/RecipeBookCategories",
+      "name": "OVERGEARED_FORGING_SEARCH",
+      "constructor": "(Ljava/util/function/Supplier;)V",
+      "parameters": {
+        "class": "net/stirdrem/overgeared/client/EnumParams",
+        "field": "FORGING_SEARCH"
+      }
+    },
+    {
+      "enum": "net/minecraft/client/RecipeBookCategories",
+      "name": "OVERGEARED_FORGING_TOOLS",
+      "constructor": "(Ljava/util/function/Supplier;)V",
+      "parameters": {
+        "class": "net/stirdrem/overgeared/client/EnumParams",
+        "field": "FORGING_TOOLS"
+      }
+    },
+    {
+      "enum": "net/minecraft/client/RecipeBookCategories",
+      "name": "OVERGEARED_FORGING_ARMORS",
+      "constructor": "(Ljava/util/function/Supplier;)V",
+      "parameters": {
+        "class": "net/stirdrem/overgeared/client/EnumParams",
+        "field": "FORGING_ARMORS"
+      }
+    },
+    {
+      "enum": "net/minecraft/client/RecipeBookCategories",
+      "name": "OVERGEARED_FORGING_MISC",
+      "constructor": "(Ljava/util/function/Supplier;)V",
+      "parameters": {
+        "class": "net/stirdrem/overgeared/client/EnumParams",
+        "field": "FORGING_MISC"
+      }
+    }
+  ]
+}

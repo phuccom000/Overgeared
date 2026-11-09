@@ -1,0 +1,53 @@
+plugins {
+    id 'net.neoforged.moddev'
+}
+
+base {
+    archivesName = "${mod_id}-common"
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+// Vanilla-only mode: compiles against Mojang-mapped Minecraft without any loader.
+neoForge {
+    neoFormVersion = neo_form_version
+    accessTransformers.from(file('accesstransformer.cfg'))
+    parchment {
+        minecraftVersion = minecraft_version
+        mappingsVersion = parchment_version
+    }
+}
+
+dependencies {
+    compileOnly 'org.spongepowered:mixin:0.8.7'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.4.1'
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.4.1'
+
+    // Recipe viewers (multiplatform APIs)
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "dev.emi:emi-xplat-mojmap:${emi_version}:api"
+
+    // Sable sub-level support (only used when Sable is present)
+    compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
+}
+
+// Expose the common sources and resources to the loader projects, which compile them in.
+configurations {
+    commonJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    sourceSets.main.resources.sourceDirectories.files.each { dir ->
+        commonResources dir
+    }
+}

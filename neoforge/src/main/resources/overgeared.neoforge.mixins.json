@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "net.stirdrem.overgeared.neoforge.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "mixins": [
+    "IItemStackExtensionMixin",
+    "ItemStackBreakMixin",
+    "PlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

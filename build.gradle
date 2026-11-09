@@ -1,72 +1,118 @@
 plugins {
-    id 'fabric-loom' version '1.7.4'
-    id 'maven-publish'
+    // Loaded once here so the subprojects share the plugin classes.
+    id 'fabric-loom' version "${fabric_loom_version}" apply false
+    id 'net.neoforged.moddev' version "${moddev_version}" apply false
 }
 
-version = project.mod_version
-group = project.maven_group
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'idea'
 
-base { archivesName = "${project.archives_base_name}-fabric" }
+    group = project.maven_group
+    version = project.mod_version
 
-repositories {
-    mavenCentral()
-    maven { url 'https://maven.wispforest.io/releases' }     // Accessories
-    maven { url 'https://maven.shedaniel.me/' }               // Cloth Config (Accessories transitive dep)
-    maven { url 'https://maven.blamejared.com/' }             // JEI
-    maven { url 'https://maven.terraformersmc.com/releases/' } // Mod Menu
-    // maven { url 'https://maven.valkyrienskies.org' }        // Valkyrien Skies - not yet integrated
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
+    java {
+        toolchain.languageVersion = JavaLanguageVersion.of(21)
+        withSourcesJar()
+    }
+
+    repositories {
+        mavenCentral()
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'Sponge'
+                    url = 'https://repo.spongepowered.org/repository/maven-public'
+                }
+            }
+            filter { includeGroupAndSubgroups('org.spongepowered') }
+        }
+        exclusiveContent {
+            forRepositories(
+                    maven {
+                        name = 'ParchmentMC'
+                        url = 'https://maven.parchmentmc.org/'
+                    },
+                    maven {
+                        name = 'NeoForge'
+                        url = 'https://maven.neoforged.net/releases'
+                    }
+            )
+            filter { includeGroup('org.parchmentmc.data') }
+        }
+        maven {
+            // JEI, CraftTweaker, Bookshelf
+            name = "BlameJared"
+            url = "https://maven.blamejared.com/"
+        }
+        maven {
+            // JEI mirror
+            name = "ModMaven"
+            url = "https://modmaven.dev"
+        }
+        maven {
+            // EMI, ModMenu
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/"
+        }
+        exclusiveContent {
+            // KubeJS, Rhino
+            forRepository {
+                maven {
+                    name = "LatvianModder"
+                    url = "https://maven.latvian.dev/releases"
+                }
+            }
+            filter { includeGroup "dev.latvian.mods" }
+        }
+        exclusiveContent {
+            forRepository {
+                maven { url "https://cursemaven.com" }
+            }
+            filter { includeGroup "curse.maven" }
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = "https://api.modrinth.com/maven"
+                }
+            }
+            filter { includeGroup "maven.modrinth" }
+        }
+        maven {
+            name = "RyanHCode Maven"
+            url = "https://maven.ryanhcode.dev/releases"
         }
     }
-}
 
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 21
+    }
 
-    modImplementation "io.wispforest:accessories-fabric:${project.accessories_version}"
+    tasks.named('jar', Jar) {
+        exclude '.cache'
+    }
 
-    // Mod Menu / Cloth Config are optional - OvergearedConfigScreen is only classloaded when Mod
-    // Menu calls the "modmenu" entrypoint, so the mod must still run without either installed.
-    modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
-    modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-    modLocalRuntime "com.terraformersmc:modmenu:${project.mod_menu_version}"
-    modLocalRuntime "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-
-    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
-    modLocalRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
-
-    modImplementation "curse.maven:architectury-api-419699:5137936"
-    modImplementation "curse.maven:epic-knights-armor-and-weapons-509041:7756532"
-    // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
-    // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
-    // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is
-    // designed to support multiple mods each embedding a copy safely.
-    include(modImplementation("io.github.llamalad7:mixinextras-fabric:0.5.4"))
-}
-
-fabricApi {
-    configureDataGeneration()
-}
-
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") { expand "version": project.version }
-}
-
-tasks.withType(JavaCompile).configureEach { it.options.release = 17 }
-
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/overgeared.accesswidener")
+    // Values substituted into fabric.mod.json / neoforge.mods.toml.
+    def expandProps = [
+            mod_id                    : mod_id,
+            mod_name                  : mod_name,
+            mod_version               : mod_version,
+            mod_authors               : mod_authors,
+            mod_license               : mod_license,
+            mod_description           : mod_description,
+            minecraft_version         : minecraft_version,
+            minecraft_version_range   : minecraft_version_range,
+            neo_version               : neo_version,
+            fabric_loader_version     : fabric_loader_version,
+            fabric_version            : fabric_version,
+    ]
+    tasks.withType(ProcessResources).configureEach {
+        inputs.properties expandProps
+        filesMatching(['META-INF/neoforge.mods.toml', 'fabric.mod.json']) {
+            expand expandProps
+        }
+    }
 }

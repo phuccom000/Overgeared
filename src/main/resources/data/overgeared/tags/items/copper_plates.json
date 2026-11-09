@@ -1,9 +1,0 @@
-{
-  "values": [
-    "overgeared:copper_plate",
-    {
-      "id": "create:copper_sheet",
-      "required": false
-    }
-  ]
-}

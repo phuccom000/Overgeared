@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contributors": [
+    "Everyone in waccyy's Fantasia Discord server"
+  ],
+  "contact": {
+    "issues": "https://github.com/phuccom000/Overgeared-1.20.1/issues",
+    "sources": "https://github.com/phuccom000/Overgeared-1.20.1"
+  },
+  "license": "${mod_license}",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.stirdrem.overgeared.fabric.OvergearedFabric"
+    ],
+    "client": [
+      "net.stirdrem.overgeared.fabric.client.OvergearedFabricClient"
+    ],
+    "jei_mod_plugin": [
+      "net.stirdrem.overgeared.compat.jei.JEIOvergearedModPlugin"
+    ],
+    "emi": [
+      "net.stirdrem.overgeared.compat.emi.OvergearedEmiPlugin"
+    ]
+  },
+  "mixins": [
+    "overgeared.mixins.json",
+    "overgeared.fabric.mixins.json"
+  ],
+  "accessWidener": "overgeared.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21"
+  }
+}

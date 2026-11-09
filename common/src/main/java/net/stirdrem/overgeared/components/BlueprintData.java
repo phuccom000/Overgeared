@@ -1,0 +1,58 @@
+package net.stirdrem.overgeared.components;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.stirdrem.overgeared.ForgingQuality;
+
+public record BlueprintData(
+        String quality,
+        String toolType,
+        int uses
+) {
+    private static final String DEFAULT_TOOL_TYPE = "sword";
+
+    public static final Codec<BlueprintData> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    Codec.STRING.optionalFieldOf("quality", ForgingQuality.POOR.getDisplayName()).forGetter(BlueprintData::quality),
+                    Codec.STRING.optionalFieldOf("tool_type", DEFAULT_TOOL_TYPE).forGetter(BlueprintData::toolType),
+                    Codec.INT.optionalFieldOf("uses", 0).forGetter(BlueprintData::uses)
+            ).apply(instance, BlueprintData::new)
+    );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, BlueprintData::quality,
+            ByteBufCodecs.STRING_UTF8, BlueprintData::toolType,
+            ByteBufCodecs.VAR_INT, BlueprintData::uses,
+            BlueprintData::new
+    );
+
+    /**
+     * Creates a default BlueprintData instance.
+     */
+    public static BlueprintData createDefault() {
+        return new BlueprintData(
+                ForgingQuality.NONE.getDisplayName(),
+                DEFAULT_TOOL_TYPE,
+                0
+        );
+    }
+
+    public BlueprintData withQuality(String quality) {
+        return new BlueprintData(quality, this.toolType, this.uses);
+    }
+
+    public BlueprintData withToolType(String toolType) {
+        return new BlueprintData(this.quality, toolType, this.uses);
+    }
+
+    public BlueprintData withUses(int uses) {
+        return new BlueprintData(this.quality, this.toolType, uses);
+    }
+
+    public ForgingQuality getQualityEnum() {
+        return ForgingQuality.fromBlueprintString(quality);
+    }
+}

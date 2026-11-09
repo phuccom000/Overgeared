@@ -1,9 +1,0 @@
-{
-  "values": [
-    "overgeared:iron_plate",
-    {
-      "id": "create:iron_sheet",
-      "required": false
-    }
-  ]
-}
