@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "category": "armors",
+  "hammering": 3,
+  "has_polishing": false,
+  "key": {
+    "#": "#overgeared:copper_plates"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "# #",
+    "# #"
+  ],
+  "result": {
+    "id": "minecraft:copper_boots"
+  },
+  "tier": "stone"
+}

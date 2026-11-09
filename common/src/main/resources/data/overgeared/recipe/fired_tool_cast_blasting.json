@@ -1,9 +1,7 @@
 {
   "type": "overgeared:nbt_blasting",
   "category": "misc",
-  "ingredient": {
-    "item": "overgeared:unfired_tool_cast"
-  },
+  "ingredient": "overgeared:unfired_tool_cast",
   "result": {
     "id": "overgeared:clay_tool_cast"
   },

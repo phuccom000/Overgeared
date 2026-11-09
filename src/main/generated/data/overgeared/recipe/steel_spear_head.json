@@ -1,0 +1,20 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "spear"
+  ],
+  "category": "tool_heads",
+  "hammering": 4,
+  "key": {
+    "#": "overgeared:heated_steel_ingot",
+    "n": "overgeared:steel_nugget"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "n",
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:steel_spear_head"
+  }
+}

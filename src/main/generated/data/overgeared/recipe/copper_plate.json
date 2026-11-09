@@ -1,0 +1,16 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 3,
+  "has_quality": false,
+  "key": {
+    "#": "minecraft:copper_ingot"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:copper_plate"
+  },
+  "tier": "stone"
+}

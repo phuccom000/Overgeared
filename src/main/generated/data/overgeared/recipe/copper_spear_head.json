@@ -1,0 +1,21 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "spear"
+  ],
+  "category": "tool_heads",
+  "hammering": 3,
+  "key": {
+    "#": "overgeared:heated_copper_ingot",
+    "n": "minecraft:copper_nugget"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "n",
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:copper_spear_head"
+  },
+  "tier": "stone"
+}

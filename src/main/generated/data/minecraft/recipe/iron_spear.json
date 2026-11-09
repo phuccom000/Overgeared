@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "overgeared:iron_spear_head",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "minecraft:iron_spear"
+  }
+}

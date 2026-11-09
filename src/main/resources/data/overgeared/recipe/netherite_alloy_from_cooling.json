@@ -1,0 +1,7 @@
+{
+  "type": "overgeared:cooling",
+  "input": "overgeared:heated_netherite_alloy",
+  "output": {
+    "id": "overgeared:netherite_alloy"
+  }
+}

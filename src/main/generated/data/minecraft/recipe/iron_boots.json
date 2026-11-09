@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "category": "armors",
+  "hammering": 3,
+  "has_polishing": false,
+  "key": {
+    "#": "#overgeared:iron_plates"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "# #",
+    "# #"
+  ],
+  "result": {
+    "id": "minecraft:iron_boots"
+  },
+  "tier": "stone"
+}

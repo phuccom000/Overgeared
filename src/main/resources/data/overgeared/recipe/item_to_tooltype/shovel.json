@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:item_to_tooltype",
+  "item": [
+    "overgeared:stone_shovel_head",
+    "overgeared:iron_shovel_head",
+    "overgeared:golden_shovel_head",
+    "overgeared:copper_shovel_head",
+    "overgeared:steel_shovel_head"
+  ],
+  "tooltype": "shovel"
+}

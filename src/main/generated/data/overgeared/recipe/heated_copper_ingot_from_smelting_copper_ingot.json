@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 140,
+  "group": "copper_ingot",
+  "ingredient": "minecraft:copper_ingot",
+  "result": {
+    "id": "overgeared:heated_copper_ingot"
+  }
+}

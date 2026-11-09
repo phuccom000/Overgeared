@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:diamond",
+  "base": "overgeared:steel_helmet",
+  "result": {
+    "id": "minecraft:diamond_helmet"
+  },
+  "template": "overgeared:diamond_upgrade_smithing_template"
+}

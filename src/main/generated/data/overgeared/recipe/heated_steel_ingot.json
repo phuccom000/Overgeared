@@ -1,0 +1,15 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 3,
+  "has_quality": false,
+  "key": {
+    "#": "overgeared:heated_crude_steel"
+  },
+  "need_quenching": false,
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "overgeared:heated_steel_ingot"
+  }
+}

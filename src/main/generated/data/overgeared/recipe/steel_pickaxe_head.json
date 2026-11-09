@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "blueprint": [
+    "pickaxe"
+  ],
+  "category": "tool_heads",
+  "hammering": 4,
+  "key": {
+    "#": "overgeared:heated_steel_ingot"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "overgeared:steel_pickaxe_head"
+  }
+}

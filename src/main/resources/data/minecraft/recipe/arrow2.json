@@ -1,0 +1,22 @@
+{
+  "type": "overgeared:fletching",
+  "material": {
+    "feather": "minecraft:feather",
+    "shaft": "minecraft:stick",
+    "tip": "minecraft:flint"
+  },
+  "result": {
+    "id": "minecraft:arrow",
+    "count": 4
+  },
+  "result_lingering": {
+    "id": "overgeared:lingering_arrow",
+    "count": 4,
+    "tag": "Potion"
+  },
+  "result_tipped": {
+    "id": "minecraft:tipped_arrow",
+    "count": 4,
+    "tag": "Potion"
+  }
+}

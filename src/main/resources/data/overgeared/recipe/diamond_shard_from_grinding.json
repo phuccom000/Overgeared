@@ -1,0 +1,7 @@
+{
+  "type": "overgeared:grinding",
+  "input": "minecraft:diamond",
+  "output": {
+    "id": "overgeared:diamond_shard"
+  }
+}

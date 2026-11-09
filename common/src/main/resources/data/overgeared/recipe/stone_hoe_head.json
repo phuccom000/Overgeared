@@ -3,12 +3,14 @@
   "pattern": [
     "xx"
   ],
-  "ingredient": {
-    "item": "overgeared:knappable_rock"
-  },
+  "ingredient": "overgeared:knappable_rock",
   "result": {
+<<<<<<<< HEAD:common/src/main/resources/data/overgeared/recipe/stone_hoe_head.json
     "id": "overgeared:stone_hoe_head",
     "Count": 1
+========
+    "id": "overgeared:stone_hoe_head"
+>>>>>>>> 53cded36b04f2bd290f147e012bd66705fbee7c9:src/main/resources/data/overgeared/recipe/stone_hoe_head.json
   },
   "show_notification": true
 }

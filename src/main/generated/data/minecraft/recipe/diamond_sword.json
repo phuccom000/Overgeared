@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:diamond",
+  "base": "overgeared:steel_sword",
+  "result": {
+    "id": "minecraft:diamond_sword"
+  },
+  "template": "overgeared:diamond_upgrade_smithing_template"
+}

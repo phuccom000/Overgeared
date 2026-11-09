@@ -1,5 +1,5 @@
 {
-  "attribute": "minecraft:generic.armor_toughness",
+  "attribute": "minecraft:armor_toughness",
   "targets": [
     {
       "type": "item_all"

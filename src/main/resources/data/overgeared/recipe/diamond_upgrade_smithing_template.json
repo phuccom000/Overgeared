@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": "minecraft:diamond",
+    "b": "#c:ingots/steel",
+    "x": "overgeared:diamond_upgrade_smithing_template"
+  },
+  "pattern": [
+    "axa",
+    "aba",
+    "aaa"
+  ],
+  "result": {
+    "id": "overgeared:diamond_upgrade_smithing_template",
+    "count": 2
+  },
+  "show_notification": true
+}
