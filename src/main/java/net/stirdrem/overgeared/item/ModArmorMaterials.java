@@ -1,83 +1,38 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.util.ModTags;
 
-import java.util.function.Supplier;
+import java.util.EnumMap;
+import java.util.Map;
 
-public enum ModArmorMaterials implements ArmorMaterial {
-    STEEL("steel", 26, new int[]{3, 7, 5, 2}, 12,
-            SoundEvents.ITEM_ARMOR_EQUIP_IRON, 1f, 0f, () -> Ingredient.ofItems(ModItems.STEEL_INGOT)),
+public class ModArmorMaterials {
+    public static final ResourceKey<EquipmentAsset> STEEL_ASSET = asset("steel");
 
-    COPPER("copper", 10, new int[]{1, 4, 3, 1}, 15,
-            SoundEvents.ITEM_ARMOR_EQUIP_IRON, 0f, 0f, () -> Ingredient.ofItems(Items.COPPER_INGOT));
+    // Durability is a multiplier on ArmorType's base durability, as in 1.20.1.
+    public static final ArmorMaterial STEEL = new ArmorMaterial(
+            26, defense(3, 7, 5, 2, 7), 12, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F,
+            ModTags.Items.REPAIRS_STEEL_ARMOR, STEEL_ASSET);
 
-    private final String name;
-    private final int durabilityMultiplier;
-    private final int[] protectionAmounts;
-    private final int enchantmentValue;
-    private final SoundEvent equipSound;
-    private final float toughness;
-    private final float knockbackResistance;
-    private final Supplier<Ingredient> repairIngredient;
-
-    // Ordinal order of ArmorItem.Type in 1.20.1: HELMET, CHESTPLATE, LEGGINGS, BOOTS
-    private static final int[] BASE_DURABILITY = {11, 16, 15, 13};
-
-    ModArmorMaterials(String name, int durabilityMultiplier, int[] protectionAmounts, int enchantmentValue, SoundEvent equipSound,
-                       float toughness, float knockbackResistance, Supplier<Ingredient> repairIngredient) {
-        this.name = name;
-        this.durabilityMultiplier = durabilityMultiplier;
-        this.protectionAmounts = protectionAmounts;
-        this.enchantmentValue = enchantmentValue;
-        this.equipSound = equipSound;
-        this.toughness = toughness;
-        this.knockbackResistance = knockbackResistance;
-        this.repairIngredient = repairIngredient;
+    private static Map<ArmorType, Integer> defense(int helmet, int chestplate, int leggings, int boots, int body) {
+        Map<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
+        map.put(ArmorType.HELMET, helmet);
+        map.put(ArmorType.CHESTPLATE, chestplate);
+        map.put(ArmorType.LEGGINGS, leggings);
+        map.put(ArmorType.BOOTS, boots);
+        map.put(ArmorType.BODY, body);
+        return map;
     }
 
-    @Override
-    public int getDurability(ArmorItem.Type type) {
-        return BASE_DURABILITY[type.ordinal()] * this.durabilityMultiplier;
-    }
-
-    @Override
-    public int getProtection(ArmorItem.Type type) {
-        return this.protectionAmounts[type.ordinal()];
-    }
-
-    @Override
-    public int getEnchantability() {
-        return enchantmentValue;
-    }
-
-    @Override
-    public SoundEvent getEquipSound() {
-        return this.equipSound;
-    }
-
-    @Override
-    public Ingredient getRepairIngredient() {
-        return this.repairIngredient.get();
-    }
-
-    @Override
-    public String getName() {
-        return Overgeared.MOD_ID + ":" + this.name;
-    }
-
-    @Override
-    public float getToughness() {
-        return this.toughness;
-    }
-
-    @Override
-    public float getKnockbackResistance() {
-        return this.knockbackResistance;
+    private static ResourceKey<EquipmentAsset> asset(String name) {
+        return ResourceKey.create(EquipmentAssets.ROOT_ID, Overgeared.id(name));
     }
 }

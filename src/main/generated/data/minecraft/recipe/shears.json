@@ -1,0 +1,21 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 3,
+  "has_quality": false,
+  "key": {
+    "#": "minecraft:iron_ingot"
+  },
+  "need_quenching": false,
+  "needs_minigame": true,
+  "pattern": [
+    " #",
+    "# "
+  ],
+  "result": {
+    "id": "minecraft:shears"
+  },
+  "result_failed": {
+    "id": "minecraft:iron_ingot"
+  },
+  "tier": "stone"
+}

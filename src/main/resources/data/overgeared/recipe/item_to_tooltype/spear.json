@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:item_to_tooltype",
+  "item": [
+    "overgeared:stone_spear_head",
+    "overgeared:iron_spear_head",
+    "overgeared:golden_spear_head",
+    "overgeared:copper_spear_head",
+    "overgeared:steel_spear_head"
+  ],
+  "tooltype": "spear"
+}

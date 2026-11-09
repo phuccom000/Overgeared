@@ -1,104 +1,53 @@
 package net.stirdrem.overgeared.recipe.nbtcooking;
 
-import com.google.gson.JsonObject;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.CookingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.stirdrem.overgeared.recipe.ModRecipes;
-import net.stirdrem.overgeared.util.JsonToNBT;
 
-public class NBTCampfireRecipe extends CampfireCookingRecipe {
+/** {@code overgeared:nbt_add_campfire_cooking} - see {@link AbstractNBTCookingRecipe}. Type: {@code minecraft:campfire_cooking}. */
+public class NBTCampfireRecipe extends CampfireCookingRecipe implements AbstractNBTCookingRecipe {
 
-    private final NbtCompound resultTag;
+    private final CompoundTag resultTag;
 
-    public NBTCampfireRecipe(Identifier id, String group, CookingRecipeCategory category,
-                              Ingredient ingredient, ItemStack result,
-                              float xp, int time, NbtCompound tag) {
-        super(id, group, category, ingredient, result, xp, time);
-        this.resultTag = tag;
+    public NBTCampfireRecipe(Recipe.CommonInfo commonInfo, AbstractCookingRecipe.CookingBookInfo bookInfo, Ingredient ingredient,
+                             ItemStackTemplate result, float xp, int time, CompoundTag tag) {
+        super(commonInfo, bookInfo, ingredient, result, xp, time);
+        this.resultTag = tag == null ? new CompoundTag() : tag;
     }
 
     @Override
-    public ItemStack craft(Inventory inventory, DynamicRegistryManager registryAccess) {
-        ItemStack result = super.craft(inventory, registryAccess).copy();
-
-        if (resultTag != null && !resultTag.isEmpty()) {
-            result.getOrCreateNbt().copyFrom(resultTag);
-        }
-
-        return result;
+    public ItemStack assemble(SingleRecipeInput input) {
+        return AbstractNBTCookingRecipe.applyResultTag(result(), resultTag);
     }
 
-    public NbtCompound getResultTag() {
+    @Override
+    public CompoundTag getResultTag() {
         return resultTag;
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.NBT_ADD_CAMPFIRE;
+    public ItemStackTemplate resultTemplate() {
+        return result();
     }
 
-    public static class Serializer implements RecipeSerializer<NBTCampfireRecipe> {
-        public static final Serializer INSTANCE = new Serializer();
-
-        @Override
-        public NBTCampfireRecipe read(Identifier id, JsonObject json) {
-            String group = JsonHelper.getString(json, "group", "");
-
-            CookingRecipeCategory category = CookingRecipeCategory.CODEC.byId(
-                    JsonHelper.getString(json, "category", "misc"),
-                    CookingRecipeCategory.MISC
-            );
-
-            Ingredient ingredient = Ingredient.fromJson(
-                    JsonHelper.getObject(json, "ingredient")
-            );
-
-            ItemStack result = ShapedRecipe.outputFromJson(
-                    JsonHelper.getObject(json, "result")
-            );
-
-            float xp = JsonHelper.getFloat(json, "experience", 0.0f);
-            int time = JsonHelper.getInt(json, "cookingtime", 200);
-
-            NbtCompound tag = new NbtCompound();
-            if (json.has("nbt")) {
-                tag = JsonToNBT.parseCompound(
-                        JsonHelper.getObject(json, "nbt")
-                );
-            }
-
-            return new NBTCampfireRecipe(id, group, category, ingredient, result, xp, time, tag);
-        }
-
-        @Override
-        public NBTCampfireRecipe read(Identifier id, PacketByteBuf buf) {
-            String group = buf.readString();
-            CookingRecipeCategory category = buf.readEnumConstant(CookingRecipeCategory.class);
-            Ingredient ingredient = Ingredient.fromPacket(buf);
-            ItemStack result = buf.readItemStack();
-            float xp = buf.readFloat();
-            int time = buf.readVarInt();
-            NbtCompound tag = buf.readNbt();
-
-            return new NBTCampfireRecipe(id, group, category, ingredient, result, xp, time, tag);
-        }
-
-        @Override
-        public void write(PacketByteBuf buf, NBTCampfireRecipe recipe) {
-            buf.writeString(recipe.getGroup());
-            buf.writeEnumConstant(recipe.getCategory());
-            recipe.getIngredients().get(0).write(buf);
-            buf.writeItemStack(recipe.getOutput(null));
-            buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookTime());
-            buf.writeNbt(recipe.getResultTag());
-        }
+    @Override
+    public RecipeSerializer<CampfireCookingRecipe> getSerializer() {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        RecipeSerializer<CampfireCookingRecipe> s = (RecipeSerializer) ModRecipes.NBT_ADD_CAMPFIRE;
+        return s;
     }
+
+    public static final MapCodec<NBTCampfireRecipe> MAP_CODEC = AbstractNBTCookingRecipe.mapCodec(NBTCampfireRecipe::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NBTCampfireRecipe> STREAM_CODEC = AbstractNBTCookingRecipe.streamCodec(NBTCampfireRecipe::new);
+    public static final RecipeSerializer<NBTCampfireRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 }

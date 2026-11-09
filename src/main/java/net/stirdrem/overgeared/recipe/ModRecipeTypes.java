@@ -1,8 +1,8 @@
 package net.stirdrem.overgeared.recipe;
 
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.stirdrem.overgeared.Overgeared;
 
 public class ModRecipeTypes {
@@ -35,8 +35,8 @@ public class ModRecipeTypes {
     public static final RecipeType<CastingRecipe> CASTING =
             register("casting", CastingRecipe.Type.INSTANCE);
 
-    private static <T extends net.minecraft.recipe.Recipe<?>> RecipeType<T> register(String name, RecipeType<T> type) {
-        return Registry.register(Registries.RECIPE_TYPE, Overgeared.id(name), type);
+    private static <T extends net.minecraft.world.item.crafting.Recipe<?>> RecipeType<T> register(String name, RecipeType<T> type) {
+        return Registry.register(BuiltInRegistries.RECIPE_TYPE, Overgeared.id(name), type);
     }
 
     public static void register() {

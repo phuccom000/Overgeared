@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cast": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#overgeared:tool_casts"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "overgeared:steel_spear_head_from_cast_furnace"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cast"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "overgeared:steel_spear_head_from_cast_furnace"
+    ]
+  }
+}

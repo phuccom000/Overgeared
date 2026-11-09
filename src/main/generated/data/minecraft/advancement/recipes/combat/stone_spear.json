@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_stone_spear_head": {
+      "conditions": {
+        "items": [
+          {
+            "items": "overgeared:stone_spear_head"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "minecraft:stone_spear"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_stone_spear_head"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:stone_spear"
+    ]
+  }
+}

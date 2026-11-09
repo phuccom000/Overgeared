@@ -1,0 +1,7 @@
+{
+  "type": "overgeared:cooling",
+  "input": "overgeared:heated_copper_ingot",
+  "output": {
+    "id": "minecraft:copper_ingot"
+  }
+}

@@ -1,52 +1,45 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
 
-public class NetherAlloySmelterScreen extends HandledScreen<NetherAlloySmelterScreenHandler> {
+public class NetherAlloySmelterScreen extends AbstractContainerScreen<NetherAlloySmelterScreenHandler> {
     private static final Identifier TEXTURE =
-            new Identifier(Overgeared.MOD_ID, "textures/gui/nether_alloy_furnace.png");
+            Identifier.fromNamespaceAndPath(Overgeared.MOD_ID, "textures/gui/nether_alloy_furnace.png");
 
-    public NetherAlloySmelterScreen(NetherAlloySmelterScreenHandler handler, PlayerInventory playerInventory, Text title) {
-        super(handler, playerInventory, title);
-        this.backgroundWidth = 176;
-        this.backgroundHeight = 166;
+    public NetherAlloySmelterScreen(NetherAlloySmelterScreenHandler handler, Inventory playerInventory, Component title) {
+        super(handler, playerInventory, title, 176, 166);
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float partialTick, int mouseX, int mouseY) {
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(context, mouseX, mouseY, partialTick);
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
 
-        context.drawTexture(TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
-        if (this.handler.isLit()) {
-            int litHeight = this.handler.getLitProgress();
-            context.drawTexture(TEXTURE, x + 8, y + 36 + 13 - litHeight,
-                    176, 13 - litHeight, 14, litHeight + 1);
+        if (this.menu.isLit()) {
+            int litHeight = this.menu.getLitProgress();
+            context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x + 8, y + 36 + 13 - litHeight,
+                    176.0F, 13 - litHeight, 14, litHeight + 1, 256, 256);
         }
 
-        int progress = this.handler.getCookProgress();
-        context.drawTexture(TEXTURE, x + 89, y + 34, 176, 14, progress + 1, 16);
+        int progress = this.menu.getCookProgress();
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x + 89, y + 34, 176.0F, 14.0F, progress + 1, 16, 256, 256);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
-        super.render(context, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(context, mouseX, mouseY);
-    }
+    protected void extractLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        int titleWidth = this.font.width(this.title);
+        int titleX = (this.imageWidth - titleWidth) / 2;
+        context.text(this.font, this.title, titleX, this.titleLabelY, 0xFF404040, false);
 
-    @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        int titleWidth = this.textRenderer.getWidth(this.title);
-        int titleX = (this.backgroundWidth - titleWidth) / 2;
-        context.drawText(this.textRenderer, this.title, titleX, this.titleY, 4210752, false);
-
-        context.drawText(this.textRenderer, this.playerInventoryTitle, this.playerInventoryTitleX, this.backgroundHeight - 94, 4210752, false);
+        context.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.imageHeight - 94, 0xFF404040, false);
     }
 }

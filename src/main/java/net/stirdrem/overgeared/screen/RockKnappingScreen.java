@@ -1,26 +1,27 @@
 package net.stirdrem.overgeared.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.client.sound.SoundManager;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.Overgeared;
-import net.stirdrem.overgeared.client.ClientModMessages;
-import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.KnappingChipC2SPacket;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class RockKnappingScreen extends HandledScreen<RockKnappingScreenHandler> {
+public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingScreenHandler> {
     private static final Identifier TEXTURE =
-            new Identifier(Overgeared.MOD_ID, "textures/gui/rock_knapping_gui.png");
+            Identifier.fromNamespaceAndPath(Overgeared.MOD_ID, "textures/gui/rock_knapping_gui.png");
     private static final Identifier CHIPPED_TEXTURE =
-            new Identifier(Overgeared.MOD_ID, "textures/gui/blank.png");
+            Identifier.fromNamespaceAndPath(Overgeared.MOD_ID, "textures/gui/blank.png");
 
     private static final int GRID_ORIGIN_X = 32;
     private static final int GRID_ORIGIN_Y = 19;
@@ -28,17 +29,15 @@ public class RockKnappingScreen extends HandledScreen<RockKnappingScreenHandler>
 
     private final Set<Integer> chippedSpots = new HashSet<>();
 
-    public RockKnappingScreen(RockKnappingScreenHandler handler, PlayerInventory playerInventory, Text title) {
-        super(handler, playerInventory, title);
-        this.backgroundWidth = 176;
-        this.backgroundHeight = 166;
-        this.playerInventoryTitleY = this.backgroundHeight - 94;
+    public RockKnappingScreen(RockKnappingScreenHandler handler, Inventory playerInventory, Component title) {
+        super(handler, playerInventory, title, 176, 166);
+        this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
     protected void init() {
         super.init();
-        this.titleX = (this.backgroundWidth - this.textRenderer.getWidth(this.title)) / 2;
+        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
 
         chippedSpots.clear();
 
@@ -46,61 +45,66 @@ public class RockKnappingScreen extends HandledScreen<RockKnappingScreenHandler>
     }
 
     @Override
-    protected void handledScreenTick() {
-        super.handledScreenTick();
-        if (!handler.isKnappingFinished()) {
+    protected void containerTick() {
+        super.containerTick();
+        if (!menu.isKnappingFinished()) {
             addKnappingButtons();
-        } else this.clearChildren();
+        } else this.clearWidgets();
     }
 
     private void addKnappingButtons() {
-        this.clearChildren();
+        this.clearWidgets();
 
-        if (handler.isKnappingFinished()) return;
+        if (menu.isKnappingFinished()) return;
 
-        boolean hasResult = !handler.getSlot(9).getStack().isEmpty();
-        boolean resultCollected = handler.isResultCollected();
+        boolean hasResult = !menu.getSlot(9).getItem().isEmpty();
+        boolean resultCollected = menu.isResultCollected();
 
         boolean canContinueKnapping = hasResult && !resultCollected;
 
         for (int i = 0; i < 9; i++) {
             int col = i % 3;
             int row = i / 3;
-            int x = this.x + GRID_ORIGIN_X + col * SLOT_SIZE;
-            int y = this.y + GRID_ORIGIN_Y + row * SLOT_SIZE;
+            int x = this.leftPos + GRID_ORIGIN_X + col * SLOT_SIZE;
+            int y = this.topPos + GRID_ORIGIN_Y + row * SLOT_SIZE;
 
             final int index = i;
-            Identifier texture = handler.isChipped(i) || resultCollected
+            Identifier texture = menu.isChipped(i) || resultCollected
                     ? CHIPPED_TEXTURE
-                    : handler.getUnchippedTexture();
+                    : menu.getUnchippedTexture();
 
-            boolean isChipped = handler.isChipped(i);
+            boolean isChipped = menu.isChipped(i);
 
-            TexturedButtonWidget button = new TexturedButtonWidget(
+            // ImageButton now only takes GUI sprites; the unchipped texture is a datapack-defined
+            // full texture, so the button blits it directly.
+            Button button = new Button(
                     x, y,
                     SLOT_SIZE, SLOT_SIZE,
-                    0, 0, 0,
-                    texture,
-                    SLOT_SIZE, SLOT_SIZE,
+                    Component.empty(),
                     btn -> {
                         if ((!hasResult || canContinueKnapping) && !isChipped) {
-                            handler.setChip(index);
+                            menu.setChip(index);
                             chippedSpots.add(index);
                             if (!resultCollected) {
-                                var buf = ModMessages.buf();
-                                KnappingChipC2SPacket.encode(new KnappingChipC2SPacket(index), buf);
-                                ClientModMessages.sendToServer(ModMessages.KNAPPING_CHIP, buf);
+                                ClientPlayNetworking.send(new KnappingChipC2SPacket(index));
 
-                                client.player.playSound(handler.getSound(), 1.0F, 1.0F);
+                                minecraft.player.playSound(menu.getSound(), 1.0F, 1.0F);
                             }
                             addKnappingButtons();
                         }
-                    }
+                    },
+                    narration -> narration.get()
             ) {
                 @Override
-                public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                    if (!handler.isKnappingFinished()) {
-                        return super.mouseClicked(mouseX, mouseY, button);
+                protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+                    graphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.getX(), this.getY(), 0.0F, 0.0F,
+                            SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+                }
+
+                @Override
+                public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+                    if (!menu.isKnappingFinished()) {
+                        return super.mouseClicked(event, doubleClick);
                     }
                     return false;
                 }
@@ -110,52 +114,44 @@ public class RockKnappingScreen extends HandledScreen<RockKnappingScreenHandler>
                 }
             };
 
-            button.active = !handler.isKnappingFinished();
+            button.active = !menu.isKnappingFinished();
 
-            this.addDrawableChild(button);
+            this.addRenderableWidget(button);
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float partialTick) {
-        renderBackground(context);
-        super.render(context, mouseX, mouseY, partialTick);
-        drawMouseoverTooltip(context, mouseX, mouseY);
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(context, mouseX, mouseY, partialTick);
+        int x = this.leftPos;
+        int y = this.topPos;
+
+        context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float partialTick, int mouseX, int mouseY) {
-        int x = this.x;
-        int y = this.y;
-
-        context.drawTexture(TEXTURE, x, y, 0, 0, backgroundWidth, backgroundHeight);
-    }
-
-    @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0x404040, false);
-        context.drawText(this.textRenderer, this.playerInventoryTitle, 8, this.playerInventoryTitleY, 0x404040, false);
+    protected void extractLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        context.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+        context.text(this.font, this.playerInventoryTitle, 8, this.inventoryLabelY, 0xFF404040, false);
     }
 
     private void handleKnappingDrag(double mouseX, double mouseY) {
         for (int i = 0; i < 9; i++) {
             int col = i % 3;
             int row = i / 3;
-            int x = this.x + GRID_ORIGIN_X + col * SLOT_SIZE;
-            int y = this.y + GRID_ORIGIN_Y + row * SLOT_SIZE;
+            int x = this.leftPos + GRID_ORIGIN_X + col * SLOT_SIZE;
+            int y = this.topPos + GRID_ORIGIN_Y + row * SLOT_SIZE;
 
             if (mouseX >= x && mouseX < x + SLOT_SIZE &&
                     mouseY >= y && mouseY < y + SLOT_SIZE &&
-                    !handler.isKnappingFinished() &&
-                    !handler.isChipped(i)) {
+                    !menu.isKnappingFinished() &&
+                    !menu.isChipped(i)) {
 
-                handler.setChip(i);
+                menu.setChip(i);
                 chippedSpots.add(i);
-                if (!handler.isResultCollected()) {
-                    var buf = ModMessages.buf();
-                    KnappingChipC2SPacket.encode(new KnappingChipC2SPacket(i), buf);
-                    ClientModMessages.sendToServer(ModMessages.KNAPPING_CHIP, buf);
-                    client.player.playSound(SoundEvents.BLOCK_STONE_BREAK, 1.0F, 1.0F);
+                if (!menu.isResultCollected()) {
+                    ClientPlayNetworking.send(new KnappingChipC2SPacket(i));
+                    minecraft.player.playSound(SoundEvents.STONE_BREAK, 1.0F, 1.0F);
                 }
 
                 addKnappingButtons();

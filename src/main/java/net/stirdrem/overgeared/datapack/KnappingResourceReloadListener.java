@@ -4,24 +4,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.Overgeared;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class KnappingResourceReloadListener extends JsonDataLoader implements IdentifiableResourceReloadListener {
+public class KnappingResourceReloadListener extends OvergearedJsonReloadListener {
 
     private static final Gson GSON = new Gson();
 
@@ -35,16 +33,14 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
 
     /* ---------- FALLBACKS ---------- */
     public static final Identifier FALLBACK_TEXTURE =
-            new Identifier("minecraft", "textures/block/stone.png");
+            Identifier.fromNamespaceAndPath("minecraft", "textures/block/stone.png");
 
     public static final SoundEvent FALLBACK_SOUND =
-            SoundEvent.of(new Identifier("minecraft", "block.stone.break"));
+            SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath("minecraft", "block.stone.break"));
 
     public KnappingResourceReloadListener() {
-        super(GSON, "knapping_resources");
+        super("knapping_resources");
     }
-
-    @Override
     public Identifier getFabricId() {
         return Overgeared.id("knapping_resources_listener");
     }
@@ -52,7 +48,7 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
     @Override
     protected void apply(Map<Identifier, JsonElement> jsons,
                           ResourceManager resourceManager,
-                          Profiler profiler) {
+                          ProfilerFiller profiler) {
 
         ITEM_TEXTURES.clear();
         TAG_TEXTURES.clear();
@@ -60,27 +56,27 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
         TAG_SOUNDS.clear();
 
         for (Map.Entry<Identifier, JsonElement> entry : jsons.entrySet()) {
-            JsonObject root = JsonHelper.asObject(entry.getValue(), "root");
+            JsonObject root = GsonHelper.convertToJsonObject(entry.getValue(), "root");
 
             if (!root.has("knapping")) continue;
 
-            JsonArray array = JsonHelper.getArray(root, "knapping");
+            JsonArray array = GsonHelper.getAsJsonArray(root, "knapping");
 
             for (JsonElement element : array) {
                 JsonObject obj = element.getAsJsonObject();
 
                 /* ---------- TEXTURE ---------- */
                 Identifier texture = obj.has("texture")
-                        ? Identifier.tryParse(JsonHelper.getString(obj, "texture"))
+                        ? Identifier.tryParse(GsonHelper.getAsString(obj, "texture"))
                         : null;
 
                 /* ---------- SOUND ---------- */
                 SoundEvent sound = null;
                 if (obj.has("sound")) {
                     Identifier soundId =
-                            Identifier.tryParse(JsonHelper.getString(obj, "sound"));
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "sound"));
 
-                    sound = Registries.SOUND_EVENT.get(soundId);
+                    sound = BuiltInRegistries.SOUND_EVENT.getValue(soundId);
 
                     if (sound == null) {
                         Overgeared.LOGGER.warn(
@@ -94,9 +90,9 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
                 /* ---------- ITEM ---------- */
                 if (obj.has("item")) {
                     Identifier itemId =
-                            Identifier.tryParse(JsonHelper.getString(obj, "item"));
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "item"));
 
-                    Item item = Registries.ITEM.get(itemId);
+                    Item item = BuiltInRegistries.ITEM.getOptional(itemId).orElse(null);
 
                     if (item == null) {
                         Overgeared.LOGGER.warn(
@@ -113,9 +109,9 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
                 /* ---------- TAG ---------- */
                 if (obj.has("tag")) {
                     Identifier tagId =
-                            Identifier.tryParse(JsonHelper.getString(obj, "tag"));
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "tag"));
 
-                    TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
+                    TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
 
                     if (texture != null) TAG_TEXTURES.put(tag, texture);
                     if (sound != null) TAG_SOUNDS.put(tag, sound);
@@ -143,7 +139,7 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
         if (tex != null) return tex;
 
         for (var entry : TAG_TEXTURES.entrySet()) {
-            if (stack.isIn(entry.getKey())) {
+            if (stack.is(entry.getKey())) {
                 return entry.getValue();
             }
         }
@@ -158,7 +154,7 @@ public class KnappingResourceReloadListener extends JsonDataLoader implements Id
         if (snd != null) return snd;
 
         for (var entry : TAG_SOUNDS.entrySet()) {
-            if (stack.isIn(entry.getKey())) {
+            if (stack.is(entry.getKey())) {
                 return entry.getValue();
             }
         }

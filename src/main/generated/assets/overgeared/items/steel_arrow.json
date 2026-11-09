@@ -1,0 +1,49 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "component": "minecraft:potion_contents",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "overgeared:item/steel_arrow"
+    },
+    "on_true": {
+      "type": "minecraft:select",
+      "cases": [
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "overgeared:item/steel_arrow_lingering",
+            "tints": [
+              {
+                "type": "minecraft:potion",
+                "default": -13083194
+              },
+              {
+                "type": "minecraft:constant",
+                "value": -1
+              }
+            ]
+          },
+          "when": true
+        }
+      ],
+      "component": "overgeared:lingering_status",
+      "fallback": {
+        "type": "minecraft:model",
+        "model": "overgeared:item/steel_arrow_tipped",
+        "tints": [
+          {
+            "type": "minecraft:potion",
+            "default": -13083194
+          },
+          {
+            "type": "minecraft:constant",
+            "value": -1
+          }
+        ]
+      },
+      "property": "minecraft:component"
+    },
+    "property": "minecraft:has_component"
+  }
+}

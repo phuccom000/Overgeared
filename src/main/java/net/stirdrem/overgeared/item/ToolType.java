@@ -1,9 +1,8 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-
 import java.util.Locale;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public class ToolType {
 
@@ -14,6 +13,7 @@ public class ToolType {
     public static final ToolType PICKAXE = new ToolType("PICKAXE");
     public static final ToolType SHOVEL = new ToolType("SHOVEL");
     public static final ToolType HOE = new ToolType("HOE");
+    public static final ToolType SPEAR = new ToolType("SPEAR");
 
     // Overgeared example
     public static final ToolType MULTITOOL = new ToolType("MULTITOOL");
@@ -36,8 +36,8 @@ public class ToolType {
         return id.toLowerCase(Locale.ROOT);
     }
 
-    public MutableText getDisplayName() {
-        return Text.translatable(translationKey).copy();
+    public MutableComponent getDisplayName() {
+        return Component.translatable(translationKey).copy();
     }
 
     public static ToolType of(String id) {

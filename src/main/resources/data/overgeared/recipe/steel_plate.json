@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "category": "misc",
+  "hammering": 4,
+  "has_quality": false,
+  "needs_minigame": false,
+  "need_quenching": false,
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "#c:ingots/steel"
+  },
+  "result": {
+    "id": "overgeared:steel_plate"
+  },
+  "show_notification": true
+}

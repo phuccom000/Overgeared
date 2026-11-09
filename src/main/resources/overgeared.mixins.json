@@ -2,16 +2,20 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.stirdrem.overgeared.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "BrewingStandBlockEntityMixin",
     "ItemStackAttributeMixin",
     "ItemStackMixin",
     "PlayerMixin",
-    "BrewingStandBlockEntityMixin",
-    "PotionItemMixin"
+    "VillagerTradeMixin"
   ],
   "client": [],
   "server": [],
-  "injectors": { "defaultRequire": 1 },
-  "mixinextras": { "minVersion": "0.5.4" }
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixinextras": {
+    "minVersion": "0.5.4"
+  }
 }

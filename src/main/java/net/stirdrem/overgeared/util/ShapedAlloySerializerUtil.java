@@ -3,13 +3,16 @@ package net.stirdrem.overgeared.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.util.collection.DefaultedList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.stirdrem.overgeared.datapack.OvergearedJsonReloadListener;
 
 public final class ShapedAlloySerializerUtil {
 
@@ -60,32 +63,37 @@ public final class ShapedAlloySerializerUtil {
         return new ParsedPattern(pattern, width, height);
     }
 
-    public static Map<Character, Ingredient> parseKey(JsonObject keyJson) {
-        Map<Character, Ingredient> map = new HashMap<>();
-        map.put(' ', Ingredient.EMPTY);
+    /**
+     * 26.3 port: Ingredient.EMPTY no longer exists - empty cells are {@code Optional.empty()}
+     * (same convention as vanilla ShapedRecipePattern). Accepts legacy and 1.21+ ingredient JSON.
+     */
+    public static Map<Character, Optional<Ingredient>> parseKey(JsonObject keyJson) {
+        return parseKey(keyJson, BuiltInRegistries.ITEM);
+    }
+
+    public static Map<Character, Optional<Ingredient>> parseKey(JsonObject keyJson, HolderGetter<Item> items) {
+        Map<Character, Optional<Ingredient>> map = new HashMap<>();
+        map.put(' ', Optional.empty());
 
         for (var e : keyJson.entrySet()) {
             if (e.getKey().length() != 1)
                 throw new JsonSyntaxException("Invalid key: " + e.getKey());
-            map.put(e.getKey().charAt(0), Ingredient.fromJson(e.getValue()));
+            map.put(e.getKey().charAt(0), Optional.of(OvergearedJsonReloadListener.parseIngredient(e.getValue(), items)));
         }
         return map;
     }
 
-    public static DefaultedList<Ingredient> buildIngredientList(
+    public static List<Optional<Ingredient>> buildIngredientList(
             String[] pattern,
             int width,
             int height,
-            Map<Character, Ingredient> key
+            Map<Character, Optional<Ingredient>> key
     ) {
-        DefaultedList<Ingredient> list = DefaultedList.ofSize(width * height, Ingredient.EMPTY);
+        List<Optional<Ingredient>> list = new ArrayList<>(width * height);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                list.set(
-                        y * width + x,
-                        key.getOrDefault(pattern[y].charAt(x), Ingredient.EMPTY)
-                );
+                list.add(key.getOrDefault(pattern[y].charAt(x), Optional.empty()));
             }
         }
         return list;

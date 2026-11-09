@@ -1,0 +1,12 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 160,
+  "experience": 0.5,
+  "input": {
+    "copper": 18.0
+  },
+  "result": {
+    "id": "overgeared:copper_hammer_head"
+  },
+  "tool_type": "hammer"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 190,
+  "experience": 0.7,
+  "input": {
+    "iron": 18.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:iron_sword_blade"
+  },
+  "tool_type": "sword"
+}

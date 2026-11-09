@@ -1,0 +1,12 @@
+{
+  "gives": {
+    "id": "overgeared:blueprint"
+  },
+  "max_uses": 1,
+  "reputation_discount": 0.05,
+  "wants": {
+    "count": 32,
+    "id": "minecraft:emerald"
+  },
+  "xp": 5
+}

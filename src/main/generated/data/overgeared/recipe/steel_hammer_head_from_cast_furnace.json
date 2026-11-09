@@ -1,0 +1,12 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 240,
+  "experience": 0.9,
+  "input": {
+    "steel": 18.0
+  },
+  "result": {
+    "id": "overgeared:steel_hammer_head"
+  },
+  "tool_type": "hammer"
+}

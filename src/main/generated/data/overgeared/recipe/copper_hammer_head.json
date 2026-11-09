@@ -1,0 +1,18 @@
+{
+  "type": "overgeared:forging",
+  "category": "tool_heads",
+  "hammering": 3,
+  "has_polishing": false,
+  "key": {
+    "#": "overgeared:heated_copper_ingot"
+  },
+  "need_quenching": true,
+  "pattern": [
+    "# ",
+    " #"
+  ],
+  "result": {
+    "id": "overgeared:copper_hammer_head"
+  },
+  "tier": "stone"
+}

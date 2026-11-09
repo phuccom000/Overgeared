@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 200,
+  "experience": 0.1,
+  "ingredient": "overgeared:iron_sword_blade",
+  "result": {
+    "id": "minecraft:iron_nugget"
+  }
+}

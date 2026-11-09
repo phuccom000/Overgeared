@@ -1,1 +1,10 @@
-// 1.20.1	2026-08-29T23:34:00.0270913	Overgeared: A Blacksmith Mod/Block Loot Tables
+// 26.3	-999999999-01-01T00:00:00	Overgeared: A Blacksmith Mod/Block Loot Tables
+a31f7eaa98b70021393ea5925496559c2c4f3798 data/overgeared/loot_table/blocks/alloy_furnace.json
+143a47a9ad91309bb49f05bd1488a507149c0679 data/overgeared/loot_table/blocks/casting_furnace.json
+eb49b4281d7dc4890465b0206569c8e48691154d data/overgeared/loot_table/blocks/drafting_table.json
+2a823415481285359323d1f898358769312c2e4b data/overgeared/loot_table/blocks/nether_alloy_furnace.json
+d72d5a6943a751a418d4020bf2e06e8677c45c7c data/overgeared/loot_table/blocks/smithing_anvil.json
+ae1ad7182cfdcdf6706108b36e7d4a7d905f6ee1 data/overgeared/loot_table/blocks/steel_block.json
+5756a3c6449c239b27646613262fa20f3716dd89 data/overgeared/loot_table/blocks/stone_anvil.json
+00dba482318fb307baf27487bdbc0a60591954b5 data/overgeared/loot_table/blocks/tier_a_smithing_anvil.json
+2bfd3a002108507f1be045b56496052ef0f832e1 data/overgeared/loot_table/blocks/tier_b_smithing_anvil.json

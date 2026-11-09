@@ -1,0 +1,21 @@
+{
+  "type": "overgeared:forging",
+  "hammering": 10,
+  "has_quality": false,
+  "key": {
+    "#": "overgeared:heated_netherite_alloy"
+  },
+  "need_quenching": false,
+  "needs_minigame": true,
+  "pattern": [
+    "#"
+  ],
+  "quality_difficulty": "master",
+  "result": {
+    "id": "minecraft:netherite_ingot"
+  },
+  "result_failed": {
+    "count": 4,
+    "id": "minecraft:netherite_scrap"
+  }
+}

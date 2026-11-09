@@ -1,0 +1,11 @@
+{
+  "type": "overgeared:item_to_tooltype",
+  "item": [
+    "overgeared:stone_hoe_head",
+    "overgeared:iron_hoe_head",
+    "overgeared:golden_hoe_head",
+    "overgeared:copper_hoe_head",
+    "overgeared:steel_hoe_head"
+  ],
+  "tooltype": "hoe"
+}

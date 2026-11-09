@@ -1,0 +1,13 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 140,
+  "experience": 0.5,
+  "input": {
+    "iron": 10.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:iron_spear_head"
+  },
+  "tool_type": "spear"
+}

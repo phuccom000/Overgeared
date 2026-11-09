@@ -1,5 +1,5 @@
 {
-  "attribute": "minecraft:generic.armor",
+  "attribute": "minecraft:armor",
   "targets": [
     {
       "type": "item_all"

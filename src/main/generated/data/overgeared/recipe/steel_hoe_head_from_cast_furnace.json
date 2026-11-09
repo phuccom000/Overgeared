@@ -1,0 +1,13 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 160,
+  "experience": 0.7,
+  "input": {
+    "steel": 18.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:steel_hoe_head"
+  },
+  "tool_type": "hoe"
+}

@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "overgeared:toolsmith/3/emerald_steel_pickaxe_head",
+    "overgeared:toolsmith/3/emerald_steel_axe_head",
+    "overgeared:toolsmith/3/emerald_steel_shovel_head",
+    "overgeared:toolsmith/3/emerald_steel_hoe_head",
+    "overgeared:toolsmith/3/emerald_steel_pickaxe",
+    "overgeared:toolsmith/3/emerald_steel_axe",
+    "overgeared:toolsmith/3/emerald_steel_shovel",
+    "overgeared:toolsmith/3/emerald_steel_hoe"
+  ]
+}

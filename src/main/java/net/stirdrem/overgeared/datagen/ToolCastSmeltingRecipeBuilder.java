@@ -1,65 +1,41 @@
 package net.stirdrem.overgeared.datagen;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.AdvancementRewards;
-import net.minecraft.advancement.CriterionMerger;
-import net.minecraft.advancement.criterion.CriterionConditions;
-import net.minecraft.advancement.criterion.RecipeUnlockedCriterion;
-import net.minecraft.data.server.recipe.RecipeJsonBuilder;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.stirdrem.overgeared.recipe.ModRecipes;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.ItemLike;
+import net.stirdrem.overgeared.recipe.castcooking.CastSmeltingRecipe;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.ROOT;
-import static net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder.getItemId;
+/** Datagen builder for {@code overgeared:cast_smelting} recipes. Ids get the suffix {@code _from_cast_smelting}. */
+public class ToolCastSmeltingRecipeBuilder {
 
-public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
-
-    private final ItemConvertible result;
+    private final ItemLike result;
     private final float experience;
     private final int cookTime;
 
-    private final Map<String, Integer> materialInput = new HashMap<>();
-    private final Advancement.Builder advancement =
-            Advancement.Builder.createUntelemetered();
+    private final Map<String, Integer> materialInput = new LinkedHashMap<>();
+    private final RecipeBuilderSupport.Unlocks unlocks = new RecipeBuilderSupport.Unlocks();
 
     private String toolType;
-
-    @Nullable
-    private Boolean needPolishing = null;
-
+    private boolean needPolishing = false;
     @Nullable
     private String group = "misc";
 
-    @Nullable
-    private String category = "misc";
-
-    public ToolCastSmeltingRecipeBuilder(
-            ItemConvertible result,
-            float experience,
-            int cookTime
-    ) {
+    public ToolCastSmeltingRecipeBuilder(ItemLike result, float experience, int cookTime) {
         this.result = result;
         this.experience = experience;
         this.cookTime = cookTime;
     }
 
-    public static ToolCastSmeltingRecipeBuilder cast(
-            ItemConvertible result,
-            float xp,
-            int time
-    ) {
+    public static ToolCastSmeltingRecipeBuilder cast(ItemLike result, float xp, int time) {
         return new ToolCastSmeltingRecipeBuilder(result, xp, time);
     }
 
@@ -68,10 +44,7 @@ public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
         return this;
     }
 
-    public ToolCastSmeltingRecipeBuilder material(
-            String material,
-            int amount
-    ) {
+    public ToolCastSmeltingRecipeBuilder material(String material, int amount) {
         this.materialInput.put(material, amount);
         return this;
     }
@@ -81,11 +54,8 @@ public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
         return this;
     }
 
-    public ToolCastSmeltingRecipeBuilder criterion(
-            String name,
-            CriterionConditions conditions
-    ) {
-        this.advancement.criterion(name, conditions);
+    public ToolCastSmeltingRecipeBuilder criterion(String name, Criterion<?> conditions) {
+        unlocks.add(name, conditions);
         return this;
     }
 
@@ -94,8 +64,8 @@ public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
         return this;
     }
 
+    /** 26.3 port: cast cooking recipes always use the MISC cooking category; kept for source compatibility. */
     public ToolCastSmeltingRecipeBuilder category(String category) {
-        this.category = category;
         return this;
     }
 
@@ -103,166 +73,21 @@ public class ToolCastSmeltingRecipeBuilder extends RecipeJsonBuilder {
         return result.asItem();
     }
 
-    public void offerTo(Consumer<RecipeJsonProvider> exporter) {
-        offerTo(exporter, getItemId(this.getOutputItem()));
+    public void offerTo(RecipeOutput output) {
+        offerTo(output, RecipeBuilderSupport.defaultId(result));
     }
 
-    public void offerTo(
-            Consumer<RecipeJsonProvider> exporter,
-            Identifier id
-    ) {
-        ensureValid(id);
+    public void offerTo(RecipeOutput output, Identifier id) {
+        if (toolType == null) throw new IllegalStateException("Tool type missing for " + id);
+        if (materialInput.isEmpty()) throw new IllegalStateException("No material input for " + id);
 
-        Identifier recipeId = new Identifier(
-                id.getNamespace(),
-                id.getPath() + "_from_cast_smelting"
-        );
+        Map<String, Double> materials = new LinkedHashMap<>();
+        materialInput.forEach((k, v) -> materials.put(k, v.doubleValue()));
 
-        this.advancement
-                .parent(ROOT)
-                .criterion(
-                        "has_the_recipe",
-                        RecipeUnlockedCriterion.create(id)
-                )
-                .rewards(
-                        AdvancementRewards.Builder.recipe(id)
-                )
-                .criteriaMerger(CriterionMerger.OR);
+        CastSmeltingRecipe recipe = new CastSmeltingRecipe(group == null ? "" : group, new ItemStackTemplate(result.asItem()),
+                experience, cookTime, materials, toolType, needPolishing);
 
-        exporter.accept(new Result(
-                recipeId,
-                result,
-                group,
-                category,
-                toolType,
-                materialInput,
-                experience,
-                cookTime,
-                needPolishing,
-                advancement,
-                recipeId.withPrefixedPath("recipes/misc/")
-        ));
-    }
-
-    private void ensureValid(Identifier id) {
-        if (toolType == null) {
-            throw new IllegalStateException(
-                    "Tool type missing for " + id
-            );
-        }
-
-        if (materialInput.isEmpty()) {
-            throw new IllegalStateException(
-                    "No material input for " + id
-            );
-        }
-
-        if (advancement.getCriteria().isEmpty()) {
-            throw new IllegalStateException(
-                    "No unlock criteria for " + id
-            );
-        }
-    }
-
-    public static class Result implements RecipeJsonProvider {
-
-        private final Identifier id;
-        private final ItemConvertible result;
-        private final String group;
-        private final String category;
-        private final String toolType;
-        private final Map<String, Integer> input;
-        private final float xp;
-        private final int time;
-        private final Boolean needPolishing;
-        private final Advancement.Builder advancement;
-        private final Identifier advancementId;
-
-        public Result(
-                Identifier id,
-                ItemConvertible result,
-                String group,
-                String category,
-                String toolType,
-                Map<String, Integer> input,
-                float xp,
-                int time,
-                Boolean needPolishing,
-                Advancement.Builder advancement,
-                Identifier advancementId
-        ) {
-            this.id = id;
-            this.result = result;
-            this.group = group;
-            this.category = category;
-            this.toolType = toolType;
-            this.input = input;
-            this.xp = xp;
-            this.time = time;
-            this.needPolishing = needPolishing;
-            this.advancement = advancement;
-            this.advancementId = advancementId;
-        }
-
-        @Override
-        public void serialize(JsonObject json) {
-            if (group != null && !group.isEmpty()) {
-                json.addProperty("group", group);
-            }
-
-            if (category != null) {
-                json.addProperty("category", category);
-            }
-
-            json.addProperty("tool_type", toolType);
-
-            JsonObject inputObj = new JsonObject();
-
-            input.forEach((material, amount) ->
-                    inputObj.add(material, new JsonPrimitive(amount))
-            );
-
-            json.add("input", inputObj);
-
-            JsonObject resultObj = new JsonObject();
-            resultObj.addProperty(
-                    "item",
-                    Registries.ITEM.getId(result.asItem()).toString()
-            );
-
-            json.add("result", resultObj);
-
-            if (needPolishing != null) {
-                json.addProperty(
-                        "need_polishing",
-                        needPolishing
-                );
-            }
-
-            json.addProperty("experience", xp);
-            json.addProperty("cookingtime", time);
-        }
-
-        @Override
-        public RecipeSerializer<?> getSerializer() {
-            return ModRecipes.CAST_SMELTING;
-        }
-
-        @Override
-        public Identifier getRecipeId() {
-            return id;
-        }
-
-        @Nullable
-        @Override
-        public JsonObject toAdvancementJson() {
-            return advancement.toJson();
-        }
-
-        @Nullable
-        @Override
-        public Identifier getAdvancementId() {
-            return advancementId;
-        }
+        ResourceKey<Recipe<?>> key = RecipeBuilderSupport.key(Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_cast_smelting"));
+        output.accept(key, recipe, unlocks.build(output, key, "misc"));
     }
 }

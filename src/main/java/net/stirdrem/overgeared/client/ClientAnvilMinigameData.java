@@ -1,9 +1,12 @@
 package net.stirdrem.overgeared.client;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.config.ServerConfig;
 
 import java.util.Collections;
@@ -181,55 +184,46 @@ public class ClientAnvilMinigameData {
         return ClientAnvilMinigameData.zoneShiftAmount;
     }
 
-    public static void loadFromNbt(NbtCompound nbt) {
-        isVisible = nbt.contains("isVisible") && nbt.getBoolean("isVisible");
+    public static void loadFromNbt(CompoundTag nbt) {
+        isVisible = nbt.getBooleanOr("isVisible", false);
 
-        if (nbt.containsUuid("ownerUUID")) {
-            ownerUUID = nbt.getUuid("ownerUUID");
-        } else {
-            ownerUUID = null;
+        ownerUUID = nbt.read("ownerUUID", UUIDUtil.CODEC).orElse(null);
+
+        minigameStarted = nbt.getBooleanOr("minigameStarted", false);
+
+        resultItem = ItemStack.EMPTY;
+        Minecraft mc = Minecraft.getInstance();
+        if (nbt.contains("resultItem") && mc.level != null) {
+            resultItem = nbt.read("resultItem", ItemStack.CODEC,
+                    mc.level.registryAccess().createSerializationContext(NbtOps.INSTANCE)).orElse(ItemStack.EMPTY);
         }
 
-        minigameStarted = nbt.contains("minigameStarted") && nbt.getBoolean("minigameStarted");
+        hitsRemaining = nbt.getIntOr("hitsRemaining", 0);
+        perfectHits = nbt.getIntOr("perfectHits", 0);
+        goodHits = nbt.getIntOr("goodHits", 0);
+        missedHits = nbt.getIntOr("missedHits", 0);
 
-        if (nbt.contains("resultItem")) {
-            resultItem = ItemStack.fromNbt(nbt.getCompound("resultItem"));
-        } else {
-            resultItem = ItemStack.EMPTY;
-        }
+        arrowPosition = nbt.getFloatOr("arrowPosition", 0f);
+        arrowSpeed = nbt.getFloatOr("arrowSpeed", ServerConfig.POOR_ARROW_SPEED.get().floatValue());
+        speedIncreasePerHit = nbt.getFloatOr("speedIncreasePerHit", ServerConfig.POOR_ARROW_SPEED_INCREASE.get().floatValue());
 
-        hitsRemaining = nbt.contains("hitsRemaining") ? nbt.getInt("hitsRemaining") : 0;
-        perfectHits = nbt.contains("perfectHits") ? nbt.getInt("perfectHits") : 0;
-        goodHits = nbt.contains("goodHits") ? nbt.getInt("goodHits") : 0;
-        missedHits = nbt.contains("missedHits") ? nbt.getInt("missedHits") : 0;
+        movingRight = nbt.getBooleanOr("movingRight", true);
 
-        arrowPosition = nbt.contains("arrowPosition") ? nbt.getFloat("arrowPosition") : 0f;
-        arrowSpeed = nbt.contains("arrowSpeed") ? nbt.getFloat("arrowSpeed") : ServerConfig.POOR_ARROW_SPEED.get().floatValue();
-        speedIncreasePerHit = nbt.contains("speedIncreasePerHit")
-                ? nbt.getFloat("speedIncreasePerHit")
-                : ServerConfig.POOR_ARROW_SPEED_INCREASE.get().floatValue();
+        perfectZoneStart = nbt.getIntOr("perfectZoneStart", (100 - ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2);
+        perfectZoneEnd = nbt.getIntOr("perfectZoneEnd", (100 + ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2);
+        goodZoneStart = nbt.getIntOr("goodZoneStart", Mth.clamp(perfectZoneStart - 20, 0, 100));
+        goodZoneEnd = nbt.getIntOr("goodZoneEnd", Mth.clamp(perfectZoneEnd + 20, goodZoneStart, 100));
 
-        movingRight = !nbt.contains("movingRight") || nbt.getBoolean("movingRight");
-
-        perfectZoneStart = nbt.contains("perfectZoneStart") ? nbt.getInt("perfectZoneStart") : (100 - ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2;
-        perfectZoneEnd = nbt.contains("perfectZoneEnd") ? nbt.getInt("perfectZoneEnd") : (100 + ServerConfig.POOR_ZONE_STARTING_SIZE.get()) / 2;
-        goodZoneStart = nbt.contains("goodZoneStart") ? nbt.getInt("goodZoneStart") : MathHelper.clamp(perfectZoneStart - 20, 0, 100);
-        goodZoneEnd = nbt.contains("goodZoneEnd") ? nbt.getInt("goodZoneEnd") : MathHelper.clamp(perfectZoneEnd + 20, goodZoneStart, 100);
-
-        if (nbt.contains("zoneShrinkFactor")) {
-            zoneShrinkFactor = nbt.getFloat("zoneShrinkFactor");
-        }
-        if (nbt.contains("zoneShiftAmount")) {
-            zoneShiftAmount = nbt.getFloat("zoneShiftAmount");
-        }
+        zoneShrinkFactor = nbt.getFloatOr("zoneShrinkFactor", zoneShrinkFactor);
+        zoneShiftAmount = nbt.getFloatOr("zoneShiftAmount", zoneShiftAmount);
 
         // Clamp values
         arrowSpeed = Math.min(arrowSpeed, maxArrowSpeed);
-        arrowPosition = MathHelper.clamp(arrowPosition, 0f, 100f);
-        perfectZoneStart = MathHelper.clamp(perfectZoneStart, 0, 100);
-        perfectZoneEnd = MathHelper.clamp(perfectZoneEnd, perfectZoneStart, 100);
-        goodZoneStart = MathHelper.clamp(goodZoneStart, 0, 100);
-        goodZoneEnd = MathHelper.clamp(goodZoneEnd, goodZoneStart, 100);
+        arrowPosition = Mth.clamp(arrowPosition, 0f, 100f);
+        perfectZoneStart = Mth.clamp(perfectZoneStart, 0, 100);
+        perfectZoneEnd = Mth.clamp(perfectZoneEnd, perfectZoneStart, 100);
+        goodZoneStart = Mth.clamp(goodZoneStart, 0, 100);
+        goodZoneEnd = Mth.clamp(goodZoneEnd, goodZoneStart, 100);
     }
 
     public static UUID getOccupiedAnvil(BlockPos pos) {

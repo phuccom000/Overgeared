@@ -1,0 +1,20 @@
+{
+  "type": "overgeared:nether_alloy_smelting",
+  "category": "misc",
+  "group": "misc",
+  "experience": 2,
+  "cookingtime": 300,
+  "ingredients": [
+    "minecraft:netherite_scrap",
+    "minecraft:netherite_scrap",
+    "minecraft:netherite_scrap",
+    "minecraft:netherite_scrap",
+    "minecraft:gold_ingot",
+    "minecraft:gold_ingot",
+    "minecraft:gold_ingot",
+    "minecraft:gold_ingot"
+  ],
+  "result": {
+    "id": "overgeared:heated_netherite_alloy"
+  }
+}

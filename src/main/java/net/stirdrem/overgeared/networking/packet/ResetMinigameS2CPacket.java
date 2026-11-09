@@ -1,34 +1,33 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.event.ModItemInteractEvents;
 
-public class ResetMinigameS2CPacket {
-    private final BlockPos anvilPos;
+/** S2C: reset the minigame for the anvil at {@code anvilPos} if it is the player's tracked anvil. */
+public record ResetMinigameS2CPacket(BlockPos anvilPos) implements CustomPacketPayload {
+    public static final Type<ResetMinigameS2CPacket> TYPE = new Type<>(Overgeared.id("reset_minigame"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ResetMinigameS2CPacket> STREAM_CODEC =
+            BlockPos.STREAM_CODEC.<ResetMinigameS2CPacket>map(ResetMinigameS2CPacket::new, ResetMinigameS2CPacket::anvilPos).cast();
 
-    public ResetMinigameS2CPacket(BlockPos anvilPos) {
-        this.anvilPos = anvilPos;
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
-    public static void encode(ResetMinigameS2CPacket msg, PacketByteBuf buf) {
-        buf.writeBlockPos(msg.anvilPos);
-    }
-
-    public static ResetMinigameS2CPacket decode(PacketByteBuf buf) {
-        return new ResetMinigameS2CPacket(buf.readBlockPos());
-    }
-
+    /** Client thread only. */
     public static void handle(ResetMinigameS2CPacket msg) {
         try {
-            var player = MinecraftClient.getInstance().player;
+            var player = Minecraft.getInstance().player;
             if (player != null) {
-                BlockEntity be = player.getWorld().getBlockEntity(msg.anvilPos);
+                BlockEntity be = player.level().getBlockEntity(msg.anvilPos);
                 if (be instanceof AbstractSmithingAnvilBlockEntity anvil) {
                     String quality = anvil.minigameQuality();
                     Overgeared.LOGGER.info(
@@ -38,19 +37,16 @@ public class ResetMinigameS2CPacket {
 
                     // Only reset if the player's tracked anvil matches
                     if (ModItemInteractEvents.playerAnvilPositions
-                            .getOrDefault(player.getUuid(), BlockPos.ORIGIN)
+                            .getOrDefault(player.getUUID(), BlockPos.ZERO)
                             .equals(msg.anvilPos)) {
-                        ModItemInteractEvents.playerAnvilPositions.remove(player.getUuid());
-                        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUuid());
+                        ModItemInteractEvents.playerAnvilPositions.remove(player.getUUID());
+                        ModItemInteractEvents.playerMinigameVisibility.remove(player.getUUID());
                         AnvilMinigameEvents.reset(quality);
                     }
                 }
             }
         } catch (Exception e) {
-            Overgeared.LOGGER.error(
-                    "Failed to process ResetMinigameS2CPacket for anvil at {}",
-                    msg.anvilPos, e
-            );
+            Overgeared.LOGGER.error("Failed to process ResetMinigameS2CPacket for anvil at {}", msg.anvilPos, e);
         }
     }
 

@@ -1,38 +1,34 @@
 package net.stirdrem.overgeared.networking.packet;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.custom.AbstractSmithingAnvil;
 
-public class PacketSendCounterC2SPacket {
-    private final String quality;
-    private final BlockPos pos;
+/** C2S: the quality the player hit in the anvil minigame at {@code pos}. */
+public record PacketSendCounterC2SPacket(BlockPos pos, String quality) implements CustomPacketPayload {
+    public static final Type<PacketSendCounterC2SPacket> TYPE = new Type<>(Overgeared.id("send_counter"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, PacketSendCounterC2SPacket> STREAM_CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, PacketSendCounterC2SPacket::pos,
+            ByteBufCodecs.STRING_UTF8, PacketSendCounterC2SPacket::quality,
+            PacketSendCounterC2SPacket::new);
 
-    public PacketSendCounterC2SPacket(BlockPos pos, String quality) {
-        this.quality = quality;
-        this.pos = pos;
-    }
-
-    public static void encode(PacketSendCounterC2SPacket pkt, PacketByteBuf buf) {
-        buf.writeBlockPos(pkt.pos);
-        buf.writeString(pkt.quality);
-    }
-
-    public static PacketSendCounterC2SPacket decode(PacketByteBuf buf) {
-        return new PacketSendCounterC2SPacket(buf.readBlockPos(), buf.readString());
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     public String getCounter() {
         return quality;
     }
 
-    public static void handle(PacketSendCounterC2SPacket msg, MinecraftServer server, ServerPlayerEntity sender) {
-        server.execute(() -> {
-            if (sender.getWorld().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
-                AbstractSmithingAnvil.setQuality(msg.getCounter());
-            }
-        });
+    public static void handle(PacketSendCounterC2SPacket msg, ServerPlayer sender) {
+        if (sender.level().getBlockState(msg.pos).getBlock() instanceof AbstractSmithingAnvil) {
+            AbstractSmithingAnvil.setQuality(msg.getCounter());
+        }
     }
 }

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "xxx",
+    "x#x",
+    "xxx"
+  ],
+  "key": {
+    "x": "minecraft:nether_bricks",
+    "#": "minecraft:blast_furnace"
+  },
+  "result": {
+    "id": "overgeared:nether_alloy_furnace"
+  }
+}

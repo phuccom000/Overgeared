@@ -1,107 +1,81 @@
 package net.stirdrem.overgeared.item.custom;
 
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.stirdrem.overgeared.BlueprintQuality;
+import net.stirdrem.overgeared.components.BlueprintData;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ToolType;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BlueprintItem extends Item {
 
-    public BlueprintItem(Settings settings) {
+    public BlueprintItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ItemStack getDefaultStack() {
-        ItemStack stack = super.getDefaultStack();
-        NbtCompound tag = stack.getOrCreateNbt();
-
-        // Set default quality to POOR
-        tag.putString("Quality", BlueprintQuality.POOR.name());
-        tag.putInt("Uses", 0);
-
-        // Set default tool type to first available or SWORD
+    public ItemStack getDefaultInstance() {
+        ItemStack stack = super.getDefaultInstance();
+        // Default quality POOR, 0 uses, first registered tool type (or sword)
         List<ToolType> types = ToolTypeRegistry.getRegisteredTypesAll();
-        tag.putString("ToolType", !types.isEmpty() ? types.get(0).getId() : "SWORD");
-
+        stack.set(ModComponents.BLUEPRINT_DATA, new BlueprintData(
+                BlueprintQuality.POOR.name(), !types.isEmpty() ? types.get(0).getId() : "SWORD", 0));
         return stack;
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world,
-                               List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, tooltip, flag);
 
-        NbtCompound tag = stack.getNbt();
-        if (tag == null) return;
-
-        // Only show quality/progress if both tags are present
-        if (tag.contains("Quality")) {
-            BlueprintQuality quality = getQuality(stack);
-
-            tooltip.add(Text.translatable("tooltip.overgeared.blueprint.quality")
-                    .formatted(Formatting.GRAY)
-                    .append(Text.translatable(quality.getTranslationKey()).formatted(quality.getColor())));
+        BlueprintData data = stack.get(ModComponents.BLUEPRINT_DATA);
+        if (data != null) {
+            BlueprintQuality quality = data.getQualityEnum();
+            tooltip.accept(Component.translatable("tooltip.overgeared.blueprint.quality")
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.translatable(quality.getTranslationKey()).withStyle(quality.getColor())));
 
             if (quality == BlueprintQuality.PERFECT || quality == BlueprintQuality.MASTER) {
-                tooltip.add(Text.translatable("tooltip.overgeared.blueprint.maxlevel")
-                        .formatted(Formatting.LIGHT_PURPLE));
+                tooltip.accept(Component.translatable("tooltip.overgeared.blueprint.maxlevel")
+                        .withStyle(ChatFormatting.LIGHT_PURPLE));
+            } else {
+                tooltip.accept(Component.translatable("tooltip.overgeared.blueprint.progress", data.uses(), getUsesToNextLevel(quality))
+                        .withStyle(ChatFormatting.GRAY));
             }
+
+            tooltip.accept(Component.translatable("tooltip.overgeared.blueprint.tool_type").withStyle(ChatFormatting.GRAY)
+                    .append(Component.translatable("tooltype.overgeared." + data.toolType()).withStyle(ChatFormatting.BLUE)));
         }
 
-        if (tag.contains("Uses")) {
-            int uses = getUses(stack);
-            int usesToLevel = getUsesToNextLevel(stack);
-
-            if (!tag.contains("Quality") || (getQuality(stack) != BlueprintQuality.PERFECT && getQuality(stack) != BlueprintQuality.MASTER)) {
-                tooltip.add(Text.translatable("tooltip.overgeared.blueprint.progress", uses, usesToLevel)
-                        .formatted(Formatting.GRAY));
-            }
-        }
-
-        // ToolType line only if present
-        if (tag.contains("ToolType")) {
-            String toolType = tag.getString("ToolType");
-            tooltip.add(Text.translatable("tooltip.overgeared.blueprint.tool_type").formatted(Formatting.GRAY)
-                    .append(Text.translatable("tooltype.overgeared." + toolType).formatted(Formatting.BLUE)));
-        }
-
-        if (tag.contains("Required")) {
-            boolean required = tag.getBoolean("Required");
-
-            tooltip.add(Text.translatable(
+        Boolean required = stack.get(ModComponents.BLUEPRINT_REQUIRED);
+        if (required != null) {
+            tooltip.accept(Component.translatable(
                     required
                             ? "tooltip.overgeared.blueprint.required"
                             : "tooltip.overgeared.blueprint.optional"
-            ).formatted(required ? Formatting.RED : Formatting.GRAY));
+            ).withStyle(required ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
     }
 
+    public static BlueprintData getData(ItemStack stack) {
+        return stack.getOrDefault(ModComponents.BLUEPRINT_DATA, BlueprintData.createDefault());
+    }
 
     public static BlueprintQuality getQuality(ItemStack stack) {
-        NbtCompound tag = stack.getNbt();
-        if (tag == null || !tag.contains("Quality")) {
-            return BlueprintQuality.POOR; // Default to POOR if not set
-        }
-        try {
-            return BlueprintQuality.fromString(tag.getString("Quality"));
-        } catch (IllegalArgumentException e) {
-            return BlueprintQuality.POOR; // Default to POOR if invalid
-        }
+        BlueprintData data = stack.get(ModComponents.BLUEPRINT_DATA);
+        return data != null ? data.getQualityEnum() : BlueprintQuality.POOR; // Default to POOR if not set
     }
 
     public static int getUses(ItemStack stack) {
-        NbtCompound tag = stack.getNbt();
-        return tag != null ? tag.getInt("Uses") : 0; // Default to 0 uses
+        BlueprintData data = stack.get(ModComponents.BLUEPRINT_DATA);
+        return data != null ? data.uses() : 0; // Default to 0 uses
     }
 
     public static int getUsesToNextLevel(ItemStack stack) {
@@ -109,20 +83,11 @@ public class BlueprintItem extends Item {
     }
 
     public static ToolType getToolType(ItemStack stack) {
-        NbtCompound tag = stack.getNbt();
-        String id = tag.getString("ToolType");
-
         // Create-or-fetch instead of defaulting
-        return ToolType.of(id);
+        return ToolType.of(getData(stack).toolType());
     }
 
     private static int getUsesToNextLevel(BlueprintQuality quality) {
-        return switch (quality) {
-            case POOR -> BlueprintQuality.POOR.getUse();
-            case WELL -> BlueprintQuality.WELL.getUse();
-            case EXPERT -> BlueprintQuality.EXPERT.getUse();
-            case PERFECT -> BlueprintQuality.PERFECT.getUse();
-            case MASTER -> BlueprintQuality.MASTER.getUse();
-        };
+        return quality.getUse();
     }
 }

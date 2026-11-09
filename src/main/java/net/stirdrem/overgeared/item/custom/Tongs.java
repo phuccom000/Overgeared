@@ -1,37 +1,36 @@
 package net.stirdrem.overgeared.item.custom;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.MiningToolItem;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.stirdrem.overgeared.util.ModTags;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-public class Tongs extends MiningToolItem {
+/** Tool stats come from {@code Item.Properties#tool} (mines the overgeared:smithing block tag). */
+public class Tongs extends Item {
 
-    public Tongs(ToolMaterial material, int attackDamageModifier, float attackSpeedModifier, Settings settings) {
-        super(attackDamageModifier, attackSpeedModifier, material, ModTags.Blocks.SMITHING, settings);
+    public Tongs(Properties settings) {
+        super(settings);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(Text.translatable("tooltip.overgeared.tongs.tooltip").formatted(Formatting.GRAY));
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip.overgeared.tongs.tooltip").withStyle(ChatFormatting.GRAY));
+        super.appendHoverText(stack, context, display, tooltip, flag);
     }
 
     @Override
-    public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity entity) {
-        if (state.getHardness(world, pos) != 0.0F) {
-            stack.damage(2, entity, e -> e.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND));
+    public boolean mineBlock(ItemStack stack, Level world, BlockState state, BlockPos pos, LivingEntity entity) {
+        if (!world.isClientSide() && state.getDestroySpeed(world, pos) != 0.0F) {
+            stack.hurtAndBreak(2, entity, EquipmentSlot.MAINHAND);
         }
         return true;
     }

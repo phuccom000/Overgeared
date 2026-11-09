@@ -1,0 +1,10 @@
+{
+  "type": "overgeared:nbt_smelting",
+  "category": "misc",
+  "ingredient": "overgeared:unfired_tool_cast",
+  "result": {
+    "id": "overgeared:clay_tool_cast"
+  },
+  "experience": 0.5,
+  "cookingtime": 200
+}

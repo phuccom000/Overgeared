@@ -1,0 +1,12 @@
+{
+  "type": "overgeared:casting",
+  "cookingtime": 100,
+  "experience": 0.3,
+  "input": {
+    "gold": 27.0
+  },
+  "result": {
+    "id": "overgeared:golden_axe_head"
+  },
+  "tool_type": "axe"
+}

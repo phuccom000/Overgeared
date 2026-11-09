@@ -1,0 +1,14 @@
+{
+  "type": "overgeared:cast_blasting",
+  "cookingtime": 75,
+  "experience": 1.0,
+  "group": "misc",
+  "input": {
+    "gold": 10.0
+  },
+  "need_polishing": true,
+  "result": {
+    "id": "overgeared:golden_spear_head"
+  },
+  "tool_type": "spear"
+}

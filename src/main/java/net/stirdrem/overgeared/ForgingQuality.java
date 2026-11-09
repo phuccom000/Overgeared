@@ -1,16 +1,26 @@
 package net.stirdrem.overgeared;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import org.jetbrains.annotations.Nullable;
 
-public enum ForgingQuality {
+public enum ForgingQuality implements StringRepresentable {
     POOR("poor"),
     WELL("well"),
     EXPERT("expert"),
     PERFECT("perfect"),
     MASTER("master"),
     NONE("none");
+
+    public static final Codec<ForgingQuality> CODEC = StringRepresentable.fromEnum(ForgingQuality::values);
+    public static final StreamCodec<ByteBuf, ForgingQuality> STREAM_CODEC =
+            ByteBufCodecs.idMapper(i -> values()[i], ForgingQuality::ordinal);
 
     private final String displayName;
 
@@ -25,7 +35,18 @@ public enum ForgingQuality {
         return POOR; // fallback
     }
 
+    /** The quality stored on the stack, or null if it has none. */
+    @Nullable
+    public static ForgingQuality get(ItemStack stack) {
+        return stack.get(ModComponents.FORGING_QUALITY);
+    }
+
     public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String getSerializedName() {
         return displayName;
     }
 
@@ -42,13 +63,10 @@ public enum ForgingQuality {
 
     public static void downgradeDamageableItems(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return;
-        if (!stack.isDamageable()) return;
-        NbtCompound tag = stack.getNbt();
+        if (!stack.isDamageableItem()) return;
 
-        String current = tag != null ? tag.getString("ForgingQuality") : "";
-        ForgingQuality quality;
-
-        if (current.isEmpty()) {
+        ForgingQuality quality = get(stack);
+        if (quality == null) {
             // Check if item is affected by datapack
             boolean affected = QualityAttributeReloadListener.INSTANCE
                     .getAllItems()
@@ -58,17 +76,8 @@ public enum ForgingQuality {
 
             // Default to WELL
             quality = ForgingQuality.WELL;
-        } else {
-            quality = fromString(current);
         }
 
-        ForgingQuality lower = quality.getLowerQuality();
-
-        if (tag == null) {
-            tag = new NbtCompound();
-            stack.setNbt(tag);
-        }
-
-        tag.putString("ForgingQuality", lower.getDisplayName());
+        stack.set(ModComponents.FORGING_QUALITY, quality.getLowerQuality());
     }
 }

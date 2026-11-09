@@ -1,29 +1,41 @@
 package net.stirdrem.overgeared.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
+import net.minecraft.data.tags.TagAppender;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
-public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
+public class ModItemTagProvider extends FabricTagsProvider.ItemTagsProvider {
 
     public ModItemTagProvider(
-            FabricDataOutput output,
-            CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture
+            FabricPackOutput output,
+            CompletableFuture<HolderLookup.Provider> registriesFuture
     ) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+    protected void addTags(HolderLookup.Provider wrapperLookup) {
+
+        // ---------------------------------------------------------------------
+        // Repair materials for ModToolTiers.STEEL / ModArmorMaterials.STEEL
+        // ---------------------------------------------------------------------
+
+        getOrCreateTagBuilder(ModTags.Items.STEEL_TOOL_MATERIALS)
+                .add(ModItems.STEEL_INGOT);
+        getOrCreateTagBuilder(ModTags.Items.REPAIRS_STEEL_ARMOR)
+                .add(ModItems.STEEL_INGOT);
 
         // ---------------------------------------------------------------------
         // Tongs
@@ -43,8 +55,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         getOrCreateTagBuilder(commonTag("ingots"))
                 .add(ModItems.STEEL_INGOT);
         getOrCreateTagBuilder(commonTag("nuggets"))
-                .add(ModItems.STEEL_NUGGET)
-                .add(ModItems.COPPER_NUGGET);
+                .add(ModItems.STEEL_NUGGET);
 
         // ---------------------------------------------------------------------
         // Tool parts
@@ -58,6 +69,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         ModItems.STONE_PICKAXE_HEAD,
                         ModItems.STONE_AXE_HEAD,
                         ModItems.STONE_SHOVEL_HEAD,
+                        ModItems.STONE_SPEAR_HEAD,
                         ModItems.STONE_HOE_HEAD,
 
                         // Copper
@@ -67,12 +79,14 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         ModItems.COPPER_AXE_HEAD,
                         ModItems.COPPER_HOE_HEAD,
                         ModItems.COPPER_SHOVEL_HEAD,
+                        ModItems.COPPER_SPEAR_HEAD,
 
                         // Iron
                         ModItems.IRON_SWORD_BLADE,
                         ModItems.IRON_PICKAXE_HEAD,
                         ModItems.IRON_AXE_HEAD,
                         ModItems.IRON_SHOVEL_HEAD,
+                        ModItems.IRON_SPEAR_HEAD,
                         ModItems.IRON_HOE_HEAD,
 
                         // Golden
@@ -80,6 +94,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         ModItems.GOLDEN_PICKAXE_HEAD,
                         ModItems.GOLDEN_AXE_HEAD,
                         ModItems.GOLDEN_SHOVEL_HEAD,
+                        ModItems.GOLDEN_SPEAR_HEAD,
                         ModItems.GOLDEN_HOE_HEAD,
 
                         // Steel
@@ -88,6 +103,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         ModItems.STEEL_PICKAXE_HEAD,
                         ModItems.STEEL_AXE_HEAD,
                         ModItems.STEEL_SHOVEL_HEAD,
+                        ModItems.STEEL_SPEAR_HEAD,
                         ModItems.STEEL_HOE_HEAD,
 
                         // Arrow heads
@@ -100,7 +116,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         // Tools
         // ---------------------------------------------------------------------
 
-        getOrCreateTagBuilder(ItemTags.TOOLS)
+        getOrCreateTagBuilder(commonTag("tools")) // 26.3: vanilla minecraft:tools is gone; c:tools is the convention tag
                 .add(
                         ModItems.WOODEN_TONGS,
                         ModItems.IRON_TONGS,
@@ -166,10 +182,6 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         ).add(ModItems.STEEL_NUGGET);
 
         getOrCreateTagBuilder(
-                commonTag("nuggets/copper")
-        ).add(ModItems.COPPER_NUGGET);
-
-        getOrCreateTagBuilder(
                 commonTag("plates/copper")
         ).add(ModItems.COPPER_PLATE);
 
@@ -188,78 +200,96 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         getOrCreateTagBuilder(
                 commonTag("armors/helmets")
         ).add(
-                ModItems.STEEL_HELMET,
-                ModItems.COPPER_HELMET
+                ModItems.STEEL_HELMET
+                
         );
 
         getOrCreateTagBuilder(
                 commonTag("armors/chestplates")
         ).add(
-                ModItems.STEEL_CHESTPLATE,
-                ModItems.COPPER_CHESTPLATE
+                ModItems.STEEL_CHESTPLATE
+                
         );
 
         getOrCreateTagBuilder(
                 commonTag("armors/leggings")
         ).add(
-                ModItems.STEEL_LEGGINGS,
-                ModItems.COPPER_LEGGINGS
+                ModItems.STEEL_LEGGINGS
+                
         );
 
         getOrCreateTagBuilder(
                 commonTag("armors/boots")
         ).add(
-                ModItems.STEEL_BOOTS,
-                ModItems.COPPER_BOOTS
+                ModItems.STEEL_BOOTS
+                
         );
 
         // ---------------------------------------------------------------------
         // Tools
         // ---------------------------------------------------------------------
 
-        getOrCreateTagBuilder(ItemTags.TOOLS)
+        getOrCreateTagBuilder(commonTag("tools")) // 26.3: vanilla minecraft:tools is gone; c:tools is the convention tag
                 .add(
                         ModItems.STEEL_AXE,
                         ModItems.STEEL_PICKAXE,
                         ModItems.STEEL_HOE,
                         ModItems.STEEL_SHOVEL,
                         ModItems.STEEL_SWORD,
-                        ModItems.COPPER_AXE,
-                        ModItems.COPPER_PICKAXE,
-                        ModItems.COPPER_HOE,
-                        ModItems.COPPER_SHOVEL,
-                        ModItems.COPPER_SWORD
+                        ModItems.STEEL_SPEAR
+                        
                 );
 
         getOrCreateTagBuilder(ItemTags.HOES)
                 .add(
-                        ModItems.COPPER_HOE,
                         ModItems.STEEL_HOE
                 );
 
         getOrCreateTagBuilder(ItemTags.AXES)
                 .add(
-                        ModItems.COPPER_AXE,
                         ModItems.STEEL_AXE
                 );
 
         getOrCreateTagBuilder(ItemTags.PICKAXES)
                 .add(
-                        ModItems.COPPER_PICKAXE,
                         ModItems.STEEL_PICKAXE
                 );
 
         getOrCreateTagBuilder(ItemTags.SHOVELS)
                 .add(
-                        ModItems.COPPER_SHOVEL,
                         ModItems.STEEL_SHOVEL
                 );
 
         getOrCreateTagBuilder(ItemTags.SWORDS)
                 .add(
-                        ModItems.COPPER_SWORD,
                         ModItems.STEEL_SWORD
                 );
+
+        // 26.x spears; vanilla's spear enchantment tags (lunge, melee, durability) include #minecraft:spears
+        getOrCreateTagBuilder(ItemTags.SPEARS)
+                .add(
+                        ModItems.STEEL_SPEAR
+                );
+
+        // ---------------------------------------------------------------------
+        // Enchantability: 26.x decides which enchantments an item accepts by tag.
+        // Steel armor joins the vanilla armor-slot tags (Protection, Unbreaking, Mending, ...);
+        // hammers and tongs were DiggerItems in 1.20.1 and keep the same enchantments.
+        // ---------------------------------------------------------------------
+        getOrCreateTagBuilder(ItemTags.HEAD_ARMOR).add(ModItems.STEEL_HELMET);
+        getOrCreateTagBuilder(ItemTags.CHEST_ARMOR).add(ModItems.STEEL_CHESTPLATE);
+        getOrCreateTagBuilder(ItemTags.LEG_ARMOR).add(ModItems.STEEL_LEGGINGS);
+        getOrCreateTagBuilder(ItemTags.FOOT_ARMOR).add(ModItems.STEEL_BOOTS);
+
+        getOrCreateTagBuilder(ItemTags.DURABILITY_ENCHANTABLE)
+                .addTag(ModTags.Items.SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TONGS);
+        getOrCreateTagBuilder(ItemTags.MINING_ENCHANTABLE)
+                .addTag(ModTags.Items.SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TONGS);
+        getOrCreateTagBuilder(ItemTags.MINING_LOOT_ENCHANTABLE)
+                .addTag(ModTags.Items.SMITHING_HAMMERS)
+                .addTag(ModTags.Items.TONGS);
 
         // ---------------------------------------------------------------------
         // Common tool tags
@@ -268,36 +298,34 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         getOrCreateTagBuilder(
                 commonTag("tools/hoes")
         ).add(
-                ModItems.STEEL_HOE,
-                ModItems.COPPER_HOE
+                ModItems.STEEL_HOE
+                
         );
 
         getOrCreateTagBuilder(
                 commonTag("tools/axes")
         ).add(
-                ModItems.COPPER_AXE,
                 ModItems.STEEL_AXE
         );
 
         getOrCreateTagBuilder(
                 commonTag("tools/pickaxes")
         ).add(
-                ModItems.COPPER_PICKAXE,
                 ModItems.STEEL_PICKAXE
         );
 
         getOrCreateTagBuilder(
                 commonTag("tools/shovels")
         ).add(
-                ModItems.STEEL_SHOVEL,
-                ModItems.COPPER_SHOVEL
+                ModItems.STEEL_SHOVEL
+                
         );
 
         getOrCreateTagBuilder(
                 commonTag("tools/swords")
         ).add(
-                ModItems.STEEL_SWORD,
-                ModItems.COPPER_SWORD
+                ModItems.STEEL_SWORD
+                
         );
 
         // ---------------------------------------------------------------------
@@ -309,12 +337,8 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         ModItems.STEEL_HELMET,
                         ModItems.STEEL_CHESTPLATE,
                         ModItems.STEEL_LEGGINGS,
-                        ModItems.STEEL_BOOTS,
-
-                        ModItems.COPPER_HELMET,
-                        ModItems.COPPER_CHESTPLATE,
-                        ModItems.COPPER_LEGGINGS,
-                        ModItems.COPPER_BOOTS
+                        ModItems.STEEL_BOOTS
+                        
                 );
 
         // ---------------------------------------------------------------------
@@ -352,6 +376,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                         Items.WOODEN_AXE,
                         Items.WOODEN_SHOVEL,
                         Items.WOODEN_HOE,
+                        Items.WOODEN_SPEAR,
 
                         Items.LEATHER_HELMET,
                         Items.LEATHER_CHESTPLATE,
@@ -371,9 +396,46 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
      * -> c:ingots/steel
      */
     private TagKey<Item> commonTag(String path) {
-        return TagKey.of(
-                net.minecraft.registry.RegistryKeys.ITEM,
-                Identifier.of("c", path)
+        return TagKey.create(
+                net.minecraft.core.registries.Registries.ITEM,
+                Identifier.tryBuild("c", path)
         );
+    }
+
+    /** 26.3 port: Fabric's tag builders are ResourceKey based now; this keeps the old value-based call sites. */
+    private ValueTagAppender<Item> getOrCreateTagBuilder(TagKey<Item> tag) {
+        return new ValueTagAppender<>(builder(tag), item -> item.builtInRegistryHolder().key());
+    }
+
+    /** Value-based wrapper around a key-based {@link TagAppender} (shared with ModBlockTagProvider). */
+    public static final class ValueTagAppender<T> {
+        private final TagAppender<T> delegate;
+        private final Function<T, ResourceKey<T>> keyGetter;
+
+        public ValueTagAppender(TagAppender<T> delegate, Function<T, ResourceKey<T>> keyGetter) {
+            this.delegate = delegate;
+            this.keyGetter = keyGetter;
+        }
+
+        @SafeVarargs
+        public final ValueTagAppender<T> add(T... values) {
+            for (T value : values) delegate.add(keyGetter.apply(value));
+            return this;
+        }
+
+        public ValueTagAppender<T> addTag(TagKey<T> tag) {
+            delegate.addTag(tag);
+            return this;
+        }
+
+        public ValueTagAppender<T> addOptionalTag(TagKey<T> tag) {
+            delegate.addOptionalTag(tag);
+            return this;
+        }
+
+        public ValueTagAppender<T> addOptional(ResourceKey<T> key) {
+            delegate.addOptional(key);
+            return this;
+        }
     }
 }
