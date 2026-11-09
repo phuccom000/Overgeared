@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.item.custom;
+import net.minecraft.util.Prediction;
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.InteractionResult;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -7,7 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
@@ -39,7 +42,7 @@ public class ToolCastItem extends Item {
     public Component getName(ItemStack stack) {
         CastData castData = stack.getOrDefault(ModComponents.CAST_DATA.get(), CastData.EMPTY);
         if (!castData.toolType().isEmpty()) {
-            String name = super.getDescriptionId(stack).replace("item", "cast");
+            String name = getDescriptionId().replace("item", "cast");
             Component toolType = Component
                     .translatable("tooltype.overgeared." + castData.toolType().toLowerCase(java.util.Locale.ROOT));
             return Component.translatable(name, toolType);
@@ -48,17 +51,17 @@ public class ToolCastItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             return calculateAndReturnMaterials(stack, player, hand);
         }
 
         return super.use(level, player, hand);
     }
 
-    private InteractionResultHolder<ItemStack> calculateAndReturnMaterials(ItemStack castStack, Player player,
+    private InteractionResult calculateAndReturnMaterials(ItemStack castStack, Player player,
             InteractionHand hand) {
         CastData data = castStack.getOrDefault(ModComponents.CAST_DATA.get(), CastData.EMPTY);
         boolean heated = castStack.getOrDefault(ModComponents.HEATED_COMPONENT.get(), false);
@@ -72,7 +75,7 @@ public class ToolCastItem extends Item {
             }
 
             if (!player.getInventory().add(output.copy())) {
-                player.drop(output.copy(), false);
+                player.drop(output.copy(), false, Prediction.SERVER_ONLY);
             }
 
             castStack.set(ModComponents.CAST_DATA.get(), data.cleared());
@@ -82,27 +85,26 @@ public class ToolCastItem extends Item {
                     SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS,
                     0.8F, 1.2F);
 
-            return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
         // Return input materials
         List<ItemStack> inputItems = data.input();
         if (inputItems.isEmpty()) {
-            player.displayClientMessage(
-                    Component.translatable("message.overgeared.cast_empty"),
-                    true);
-            return InteractionResultHolder.fail(castStack);
+            player.sendOverlayMessage(
+                    Component.translatable("message.overgeared.cast_empty"));
+            return InteractionResult.FAIL;
         }
 
         for (ItemStack inputItem : inputItems) {
             if (!player.getInventory().add(inputItem.copy())) {
-                player.drop(inputItem.copy(), false);
+                player.drop(inputItem.copy(), false, Prediction.SERVER_ONLY);
             }
         }
 
         castStack.set(ModComponents.CAST_DATA.get(), data.withoutInputs());
 
-        return InteractionResultHolder.sidedSuccess(castStack, player.level().isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -147,7 +149,7 @@ public class ToolCastItem extends Item {
             return false;
 
         if (!ConfigHelper.isValidMaterial(material)) {
-            player.displayClientMessage(Component.translatable("message.overgeared.invalid_material"), true);
+            player.sendOverlayMessage(Component.translatable("message.overgeared.invalid_material"));
             return false;
         }
 
@@ -200,9 +202,8 @@ public class ToolCastItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip,
-            TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltipDisplay, tooltip, flag);
 
         CastData data = stack.getOrDefault(ModComponents.CAST_DATA.get(), CastData.EMPTY);
 
@@ -210,7 +211,7 @@ public class ToolCastItem extends Item {
             String quality = data.quality();
             ChatFormatting color = ForgingQuality.getColor(quality);
             if (!quality.equals("NONE"))
-                tooltip.add(
+                tooltip.accept(
                         Component.translatable("tooltip.overgeared.tool_cast.quality")
                                 .append(" ")
                                 .append(
@@ -223,7 +224,7 @@ public class ToolCastItem extends Item {
 
         if (!data.toolType().isEmpty()) {
             String toolType = data.toolType();
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.type")
                             .append(" ")
                             .append(Component
@@ -235,14 +236,14 @@ public class ToolCastItem extends Item {
         // If the cast has an output, only show output
         if (data.hasOutput()) {
             ItemStack output = data.output();
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.contains")
                             .withStyle(ChatFormatting.GRAY));
-            tooltip.add(
+            tooltip.accept(
                     Component.literal("  • ")
                             .append(output.getHoverName())
                             .withStyle(ChatFormatting.GOLD));
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.cast_right_click")
                             .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
             return;
@@ -250,7 +251,7 @@ public class ToolCastItem extends Item {
 
         if (!data.materials().isEmpty()) {
             Map<String, Integer> materials = data.materials();
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.materials")
                             .withStyle(ChatFormatting.GRAY));
 
@@ -264,7 +265,7 @@ public class ToolCastItem extends Item {
                     display = Component.literal(key);
                 }
 
-                tooltip.add(
+                tooltip.accept(
                         Component.literal("  • ").append(display)
                                 .append(Component.literal(": " + amount))
                                 .withStyle(ChatFormatting.WHITE));
@@ -278,7 +279,7 @@ public class ToolCastItem extends Item {
             int maxRaw = data.maxAmount() > 0 ? data.maxAmount() : raw;
             double maxAmt = maxRaw / 9.0;
 
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.amount")
                             .append(" ")
                             .append(Component.literal(String.format("%.2f", amt))
@@ -288,13 +289,13 @@ public class ToolCastItem extends Item {
                                     .withStyle(ChatFormatting.WHITE))
                             .withStyle(ChatFormatting.GRAY));
             if (amt / maxAmt != 1)
-                tooltip.add(
+                tooltip.accept(
                         Component.translatable("tooltip.overgeared.add_materials")
                                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }
 
         if (!data.materials().isEmpty() || !data.input().isEmpty() || data.hasOutput()) {
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.cast_right_click")
                             .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }
@@ -305,7 +306,6 @@ public class ToolCastItem extends Item {
         return false;
     }
 
-    @Override
     public boolean isEnchantable(ItemStack stack) {
         return false;
     }

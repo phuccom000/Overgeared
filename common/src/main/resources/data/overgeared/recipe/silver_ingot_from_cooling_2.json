@@ -14,9 +14,7 @@
     }
   ],
   "type": "overgeared:cooling",
-  "input": {
-    "item": "overgeared:heated_silver_ingot"
-  },
+  "input": "overgeared:heated_silver_ingot",
   "output": {
     "id": "galosphere:silver_ingot"
   }

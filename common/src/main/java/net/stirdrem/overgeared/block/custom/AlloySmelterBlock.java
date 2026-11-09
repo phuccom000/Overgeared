@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -31,9 +31,8 @@ import net.stirdrem.overgeared.block.entity.ModBlockEntities;
 import org.jetbrains.annotations.Nullable;
 
 public class AlloySmelterBlock extends BaseEntityBlock {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
-    public static final MapCodec<AlloySmelterBlock> CODEC = simpleCodec(AlloySmelterBlock::new);
 
     public static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
@@ -44,10 +43,6 @@ public class AlloySmelterBlock extends BaseEntityBlock {
                 .setValue(LIT, false));
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
 
     // ----- State and placement -----
     @Override
@@ -84,16 +79,7 @@ public class AlloySmelterBlock extends BaseEntityBlock {
     }
 
     // ----- Block Entity -----
-    @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.getBlock() != newState.getBlock()) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof AlloySmelterBlockEntity be) {
-                be.drops();
-            }
-        }
-        super.onRemove(state, level, pos, newState, isMoving);
-    }
+    // Dropping the contents on removal moved to the block entity (preRemoveSideEffects).
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
@@ -106,7 +92,7 @@ public class AlloySmelterBlock extends BaseEntityBlock {
                 throw new IllegalStateException("Container provider is missing!");
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Nullable

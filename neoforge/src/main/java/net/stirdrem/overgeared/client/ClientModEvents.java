@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.client;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -13,9 +17,6 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.entity.ModBlockEntities;
@@ -25,35 +26,20 @@ import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
 import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 import net.stirdrem.overgeared.item.ModItems;
-import net.stirdrem.overgeared.item.armor.model.CopperHelmet;
-import net.stirdrem.overgeared.item.armor.model.CopperLeggings;
 import net.stirdrem.overgeared.item.custom.LingeringArrowItem;
 import net.stirdrem.overgeared.item.custom.UpgradeArrowItem;
 import net.stirdrem.overgeared.screen.*;
 import org.jetbrains.annotations.NotNull;
 
-@EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = OvergearedMod.MOD_ID, value = Dist.CLIENT)
 public class ClientModEvents {
 
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event) {
         OvergearedClient.init();
-        event.enqueueWork(OvergearedClient::registerItemProperties);
     }
 
-    @SubscribeEvent
-    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        event.register(LingeringArrowItem::getColor, ModItems.LINGERING_ARROW.get());
-        event.register(UpgradeArrowItem::getColor,
-                ModItems.IRON_UPGRADE_ARROW.get(),
-                ModItems.STEEL_UPGRADE_ARROW.get(),
-                ModItems.DIAMOND_UPGRADE_ARROW.get());
-    }
 
-    @SubscribeEvent
-    public static void registerRecipeBookCategories(RegisterRecipeBookCategoriesEvent event) {
-        RecipeCategories.init(event);
-    }
 
     @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
@@ -67,44 +53,25 @@ public class ClientModEvents {
         event.register(ModMenuTypes.CASTING_SMELTER_MENU.get(), CastingSmelterScreen::new);
     }
 
-    @SubscribeEvent
-    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(CopperHelmet.LAYER_LOCATION, CopperHelmet::createBodyLayer);
-        event.registerLayerDefinition(CopperLeggings.LAYER_LOCATION, CopperLeggings::createBodyLayer);
-    }
 
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.LINGERING_ARROW.get(), LingeringArrowEntityRenderer::new);
         event.registerEntityRenderer(ModEntities.UPGRADE_ARROW.get(), UpgradeArrowEntityRenderer::new);
 
-        event.registerBlockEntityRenderer(ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), SmithingAnvilBlockEntityRenderer::new);
+        BlockEntityRendererProvider<AbstractSmithingAnvilBlockEntity, SmithingAnvilBlockEntityRenderer.State> anvilRenderer = SmithingAnvilBlockEntityRenderer::new;
+        event.registerBlockEntityRenderer(ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(), anvilRenderer);
+        event.registerBlockEntityRenderer(ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(), anvilRenderer);
     }
 
-    @SubscribeEvent
-    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
-        event.registerItem(new IClientItemExtensions() {
-            @Override
-            public @NotNull HumanoidModel<?> getHumanoidArmorModel(LivingEntity livingEntity, ItemStack itemStack, EquipmentSlot equipmentSlot, HumanoidModel<?> original) {
-                return OvergearedClient.copperHelmetModel();
-            }
-        }, ModItems.COPPER_HELMET.get());
-
-        event.registerItem(new IClientItemExtensions() {
-            @Override
-            public @NotNull HumanoidModel<?> getHumanoidArmorModel(LivingEntity livingEntity, ItemStack itemStack, EquipmentSlot equipmentSlot, HumanoidModel<?> original) {
-                return OvergearedClient.copperLeggingsModel();
-            }
-        }, ModItems.COPPER_LEGGINGS.get());
-    }
+    // Arrow tints and model variants: assets/overgeared/items/*.json.
 
     @SubscribeEvent
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
         // Register anvil minigame overlay below the hotbar
-        event.registerBelow(VanillaGuiLayers.HOTBAR, AnvilMinigameOverlay.ID, AnvilMinigameOverlay.INSTANCE);
+        event.registerBelow(VanillaGuiLayers.HOTBAR, AnvilMinigameOverlay.ID, AnvilMinigameOverlay.INSTANCE::render);
         // Register popup overlay above the minigame overlay
-        event.registerAbove(AnvilMinigameOverlay.ID, PopupOverlay.ID, PopupOverlay.INSTANCE);
+        event.registerAbove(AnvilMinigameOverlay.ID, PopupOverlay.ID, PopupOverlay.INSTANCE::render);
     }
 
     /**
@@ -115,6 +82,12 @@ public class ClientModEvents {
         @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Post event) {
             AnvilMinigameEvents.onClientTick();
+        }
+
+        /** The mod's recipes are synced by the server per connection (see RecipeLookup). */
+        @SubscribeEvent
+        public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+            RecipeLookup.clearClientRecipes();
         }
     }
 }

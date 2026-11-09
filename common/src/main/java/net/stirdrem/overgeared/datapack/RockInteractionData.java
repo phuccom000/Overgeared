@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.datapack;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public class RockInteractionData {
 
-    public record ToolEntry(Ingredient ingredient, ItemStack dropItem, float dropChance, float breakChance) {
+    public record ToolEntry(Ingredient ingredient, ItemStackTemplate dropItem, float dropChance, float breakChance) {
     }
 
     private final Block inputBlock;

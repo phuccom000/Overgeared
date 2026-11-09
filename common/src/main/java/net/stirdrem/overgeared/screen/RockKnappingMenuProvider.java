@@ -15,6 +15,6 @@ public class RockKnappingMenuProvider implements MenuProvider {
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
         // The menu constructor will handle checking if player has knappable rocks
-        return new RockKnappingMenu(id, inv, player.level().getRecipeManager());
+        return new RockKnappingMenu(id, inv);
     }
 }

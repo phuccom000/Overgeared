@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.recipe;
 
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.Registries;
 import net.stirdrem.overgeared.registry.DeferredRegister;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -40,7 +40,7 @@ public class ModRecipeTypes {
         RECIPE_TYPES.register();
     }
 
-    private static <T extends Recipe<?>> RecipeType<T> simple(ResourceLocation id) {
+    private static <T extends Recipe<?>> RecipeType<T> simple(Identifier id) {
         return new RecipeType<>() {
             @Override
             public String toString() {

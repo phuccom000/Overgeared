@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.RecipeType;
@@ -20,6 +21,6 @@ public class SteelAnvilCategory extends ExplanationCategory {
 
     @Override
     protected Ingredient getInput() {
-        return Ingredient.of(ModTags.Items.SMITHING_HAMMERS);
+        return Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(ModTags.Items.SMITHING_HAMMERS));
     }
 }

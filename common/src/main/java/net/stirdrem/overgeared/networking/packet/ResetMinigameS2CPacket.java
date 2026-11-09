@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.networking.PacketContext;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
@@ -17,7 +17,7 @@ import java.util.UUID;
  * The quality is computed on the server, since the anvil's recipe/inventory may not be in sync on the client.
  */
 public record ResetMinigameS2CPacket(BlockPos anvilPos, String quality) implements CustomPacketPayload {
-    public static final ResourceLocation ID = OvergearedMod.loc("reset_minigame");
+    public static final Identifier ID = OvergearedMod.loc("reset_minigame");
     public static final CustomPacketPayload.Type<ResetMinigameS2CPacket> TYPE = new CustomPacketPayload.Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, ResetMinigameS2CPacket> STREAM_CODEC = StreamCodec.of(

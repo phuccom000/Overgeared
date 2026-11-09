@@ -1,4 +1,6 @@
 package net.stirdrem.overgeared.event;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -14,8 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.npc.VillagerTrades;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.item.trading.VillagerTrades;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -71,7 +73,7 @@ public class ModEvents {
                 double distSq;
 
                 if (SableCompat.LOADED) {
-                    distSq = SableCompat.distanceSquaredWithSubLevels(level, player.position(), anvilPos.getCenter());
+                    distSq = SableCompat.distanceSquaredWithSubLevels(level, player.position(), Vec3.atCenterOf(anvilPos));
                 } else {
                     distSq = player.blockPosition().distSqr(anvilPos);
                 }
@@ -87,6 +89,7 @@ public class ModEvents {
         if (entity instanceof ServerPlayer player) {
             // Reset minigame state when joining any world
             resetMinigameForPlayer(player);
+            net.stirdrem.overgeared.guide.GuideBook.onPlayerJoin(player);
 
             // Start timeout counter if needed
             // startTimeoutCounter(player);
@@ -236,7 +239,7 @@ public class ModEvents {
 
         // Smithing Hammer special tooltip
         if (stack.is(ModTags.Items.SMITHING_HAMMERS)) {
-            if (!Screen.hasShiftDown()) {
+            if (!Minecraft.getInstance().hasShiftDown()) {
                 tooltip.add(insertOffset, Component.translatable("tooltip.overgeared.smithing_hammer.hold_shift")
                         .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             } else {
@@ -301,179 +304,5 @@ public class ModEvents {
         }
     }
 
-    public static void onVillagerTrades(VillagerProfession type, Int2ObjectMap<List<VillagerTrades.ItemListing>> tradesByLevel) {
-
-        // Wrap vanilla trades with quality
-        if (type == VillagerProfession.WEAPONSMITH
-                || type == VillagerProfession.TOOLSMITH
-                || type == VillagerProfession.ARMORER) {
-
-            for (int level = 1; level <= 5; level++) {
-                List<VillagerTrades.ItemListing> trades = tradesByLevel.get(level);
-                for (int i = 0; i < trades.size(); i++) {
-                    VillagerTrades.ItemListing original = trades.get(i);
-
-                    int finalLevel = level;
-                    trades.set(i, (entity, random) -> {
-                        MerchantOffer offer = original.getOffer(entity, random);
-                        if (offer == null)
-                            return null;
-
-                        ItemStack result = offer.getResult();
-
-                        if (isStoneTool(result)) {
-                            return offer;
-                        }
-
-                        return new QualityWrappedTrade(original, finalLevel)
-                                .getOffer(entity, random);
-                    });
-                }
-            }
-            tradesByLevel.get(1).add(new SteelEmeraldTrade(true)); // 1 steel → 2 emerald
-            tradesByLevel.get(1).add(new SteelEmeraldTrade(false)); // 2 steel → 1 emerald
-        }
-
-        // Add profession-specific forged trades
-        if (type == VillagerProfession.WEAPONSMITH) {
-            addForgedTrades(tradesByLevel, WEAPONSMITH_ITEMS());
-        }
-
-        if (type == VillagerProfession.TOOLSMITH) {
-            addForgedTrades(tradesByLevel, TOOLSMITH_ITEMS());
-        }
-
-        if (type == VillagerProfession.ARMORER) {
-            addForgedTrades(tradesByLevel, ARMORER_ITEMS());
-        }
-    }
-
-    public static void onWanderingTraderTrades(List<VillagerTrades.ItemListing> genericTrades, List<VillagerTrades.ItemListing> rareTrades) {
-
-        // Regular wandering trader trades
-        genericTrades.add(
-                new BlueprintWanderingTrade(
-                        new ItemStack(ModItems.BLUEPRINT.get()),
-                        1, // max uses
-                        5 // trader XP
-                ));
-
-        // Optional: Rare trade pool (appears less often)
-        rareTrades.add(
-                new BlueprintWanderingTrade(
-                        new ItemStack(ModItems.BLUEPRINT.get()),
-                        1,
-                        10));
-    }
-
-    private static boolean isStoneTool(ItemStack stack) {
-        if (stack.isEmpty())
-            return false;
-
-        Item item = stack.getItem();
-
-        return item == Items.STONE_SWORD
-                || item == Items.STONE_PICKAXE
-                || item == Items.STONE_AXE
-                || item == Items.STONE_SHOVEL
-                || item == Items.STONE_HOE;
-    }
-
-    private static List<Item> WEAPONSMITH_ITEMS() {
-        return List.of(
-                // ---- Sword Blades ----
-                ModItems.IRON_SWORD_BLADE.get(),
-                ModItems.GOLDEN_SWORD_BLADE.get(),
-                ModItems.STEEL_SWORD_BLADE.get(),
-                ModItems.COPPER_SWORD_BLADE.get(),
-
-                // ---- Finished Weapons ----
-                ModItems.COPPER_SWORD.get(),
-                ModItems.STEEL_SWORD.get());
-    }
-
-    private static List<Item> TOOLSMITH_ITEMS() {
-        return List.of(
-                // ---- Pickaxe Heads ----
-                ModItems.IRON_PICKAXE_HEAD.get(),
-                ModItems.GOLDEN_PICKAXE_HEAD.get(),
-                ModItems.STEEL_PICKAXE_HEAD.get(),
-                ModItems.COPPER_PICKAXE_HEAD.get(),
-
-                // ---- Axe Heads ----
-                ModItems.IRON_AXE_HEAD.get(),
-                ModItems.GOLDEN_AXE_HEAD.get(),
-                ModItems.STEEL_AXE_HEAD.get(),
-                ModItems.COPPER_AXE_HEAD.get(),
-
-                // ---- Shovel Heads ----
-                ModItems.IRON_SHOVEL_HEAD.get(),
-                ModItems.GOLDEN_SHOVEL_HEAD.get(),
-                ModItems.STEEL_SHOVEL_HEAD.get(),
-                ModItems.COPPER_SHOVEL_HEAD.get(),
-
-                // ---- Hoe Heads ----
-                ModItems.IRON_HOE_HEAD.get(),
-                ModItems.GOLDEN_HOE_HEAD.get(),
-                ModItems.STEEL_HOE_HEAD.get(),
-                ModItems.COPPER_HOE_HEAD.get(),
-
-                // ---- Finished Tools ----
-                ModItems.COPPER_PICKAXE.get(),
-                ModItems.COPPER_AXE.get(),
-                ModItems.COPPER_SHOVEL.get(),
-                ModItems.COPPER_HOE.get(),
-
-                ModItems.STEEL_PICKAXE.get(),
-                ModItems.STEEL_AXE.get(),
-                ModItems.STEEL_SHOVEL.get(),
-                ModItems.STEEL_HOE.get());
-    }
-
-    private static List<Item> ARMORER_ITEMS() {
-        return List.of(
-                ModItems.COPPER_HELMET.get(),
-                ModItems.COPPER_CHESTPLATE.get(),
-                ModItems.COPPER_LEGGINGS.get(),
-                ModItems.COPPER_BOOTS.get(),
-
-                ModItems.STEEL_HELMET.get(),
-                ModItems.STEEL_CHESTPLATE.get(),
-                ModItems.STEEL_LEGGINGS.get(),
-                ModItems.STEEL_BOOTS.get());
-    }
-
-    private static void addForgedTrades(
-            Int2ObjectMap<List<VillagerTrades.ItemListing>> tradesByLevel,
-            List<Item> items) {
-        for (Item item : items) {
-            String id = BuiltInRegistries.ITEM.getKey(item).getPath();
-
-            int level;
-            int maxUses;
-            int xp;
-
-            if (id.startsWith("copper_")) {
-                level = 1;
-                maxUses = 12;
-                xp = 2;
-            } else if (id.startsWith("iron_") || id.startsWith("golden_")) {
-                level = 2;
-                maxUses = 10;
-                xp = 5;
-            } else { // steel
-                level = 3;
-                maxUses = 6;
-                xp = 10;
-            }
-
-            // Base forged trade
-            VillagerTrades.ItemListing baseTrade = new ForgedItemTrade(item, level, maxUses, xp);
-
-            // Wrap it with quality logic
-            VillagerTrades.ItemListing wrappedTrade = new QualityWrappedTrade(baseTrade, level);
-
-            tradesByLevel.get(level).add(wrappedTrade);
-        }
-    }
+    // Villager and wandering trader trades are JSON (data/overgeared/villager_trade); quality: VillagerTradeMixin.
 }

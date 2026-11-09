@@ -1,4 +1,6 @@
 package net.stirdrem.overgeared.loot;
+import net.minecraft.core.Holder;
+import java.util.Optional;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -20,14 +22,14 @@ public class AddItemModifier extends LootModifier {
     private final Item item;
     private final int count;
 
-    public AddItemModifier(LootItemCondition[] conditions, Item item, int count) {
-        super(conditions);
+    public AddItemModifier(Optional<Holder<LootItemCondition>> condition, int priority, Item item, int count) {
+        super(condition, priority);
         this.item = item;
         this.count = count;
     }
 
-    public AddItemModifier(LootItemCondition[] conditions, Item item) {
-        super(conditions);
+    public AddItemModifier(Optional<Holder<LootItemCondition>> condition, int priority, Item item) {
+        super(condition, priority);
         this.item = item;
         this.count = 1;
     }
@@ -52,7 +54,7 @@ public class AddItemModifier extends LootModifier {
         return count;
     }
 
-    public LootItemCondition[] getConditions() {
-        return conditions;
+    public Optional<Holder<LootItemCondition>> getCondition() {
+        return condition;
     }
 }

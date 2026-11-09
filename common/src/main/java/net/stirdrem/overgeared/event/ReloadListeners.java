@@ -15,7 +15,7 @@ public final class ReloadListeners {
     }
 
     public record Entry(String name, Supplier<PreparableReloadListener> factory) {
-        public net.minecraft.resources.ResourceLocation id() {
+        public net.minecraft.resources.Identifier id() {
             return OvergearedMod.loc(name);
         }
     }

@@ -7,12 +7,8 @@
     "i  "
   ],
   "key": {
-    "x": {
-      "item": "minecraft:copper_ingot"
-    },
-    "i": {
-      "item": "minecraft:stick"
-    }
+    "x": "minecraft:copper_ingot",
+    "i": "minecraft:stick"
   },
   "result": {
     "id": "overgeared:copper_smithing_hammer"

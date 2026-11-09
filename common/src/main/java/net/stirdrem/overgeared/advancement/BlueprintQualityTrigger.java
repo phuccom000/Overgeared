@@ -2,8 +2,9 @@ package net.stirdrem.overgeared.advancement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
@@ -22,10 +23,10 @@ public class BlueprintQualityTrigger extends SimpleCriterionTrigger<BlueprintQua
         this.trigger(player, inst -> inst.matches(blueprintQuality));
     }
 
-    public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<String> requiredQuality)
+    public record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<String> requiredQuality)
             implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ContextAwarePredicate.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
+                LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
                 Codec.STRING.optionalFieldOf("quality").forGetter(TriggerInstance::requiredQuality))
                 .apply(instance, TriggerInstance::new));
 

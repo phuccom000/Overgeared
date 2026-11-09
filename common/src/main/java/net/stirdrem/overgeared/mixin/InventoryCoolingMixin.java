@@ -20,7 +20,7 @@ public abstract class InventoryCoolingMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onInventoryTick(CallbackInfo ci) {
         Level level = player.level();
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
 
         Inventory inv = (Inventory) (Object) this;
         boolean damaged = false;

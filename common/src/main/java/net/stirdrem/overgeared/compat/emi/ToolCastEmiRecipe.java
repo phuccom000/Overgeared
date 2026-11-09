@@ -7,7 +7,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class ToolCastEmiRecipe implements EmiRecipe {
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final String toolType;
     private final EmiIngredient centerInput;
     private final EmiIngredient surroundItem;
@@ -48,7 +48,7 @@ public class ToolCastEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.networking.PacketContext;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
@@ -17,7 +17,7 @@ public record ToggleMinigameS2CPacket(BlockPos pos, boolean visible)
         implements CustomPacketPayload {
 
     public static final Type<ToggleMinigameS2CPacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "toggle_minigame"));
+            new Type<>(Identifier.fromNamespaceAndPath(OvergearedMod.MOD_ID, "toggle_minigame"));
 
     public static final StreamCodec<FriendlyByteBuf, ToggleMinigameS2CPacket> STREAM_CODEC =
             StreamCodec.of(

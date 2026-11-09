@@ -39,3 +39,10 @@ tasks.named('sourcesJar', Jar) {
     from(configurations.commonResources)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// Compat packages excluded in common/build.gradle (mods without a build for this version).
+def commonProject = project(':common')
+afterEvaluate {
+    tasks.named('compileJava', JavaCompile) { exclude(commonProject.ext.disabledCompat) }
+    tasks.named('javadoc', Javadoc) { exclude(commonProject.ext.disabledCompat) }
+}

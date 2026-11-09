@@ -47,10 +47,6 @@ public class TieredSmithingAnvil extends AbstractSmithingAnvil {
         super(tier, properties);
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return null;
-    }
 
     @Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
@@ -88,7 +84,7 @@ public class TieredSmithingAnvil extends AbstractSmithingAnvil {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        if (!pLevel.isClientSide && pBlockEntityType == ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get()) {
+        if (!pLevel.isClientSide() && pBlockEntityType == ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get()) {
             return createTickerHelper(pBlockEntityType, ModBlockEntities.TIERED_SMITHING_ANVIL_BE.get(),
                     (level, pos, state, blockEntity) -> blockEntity.tick(level, pos, state));
         }

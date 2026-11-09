@@ -7,7 +7,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.ForgingQuality;
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class BlueprintCloningEmiRecipe implements EmiRecipe {
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
 
@@ -57,7 +57,7 @@ public class BlueprintCloningEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

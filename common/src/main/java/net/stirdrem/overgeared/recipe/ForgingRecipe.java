@@ -1,5 +1,12 @@
 package net.stirdrem.overgeared.recipe;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.stirdrem.overgeared.util.ItemKinds;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -12,7 +19,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
@@ -26,7 +32,7 @@ import net.stirdrem.overgeared.util.ModTags;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ForgingRecipe implements Recipe<RecipeInput> {
+public class ForgingRecipe implements OvergearedRecipe<RecipeInput> {
     private static final int BLUEPRINT_SLOT = 11;
     public final int width;
     public final int height;
@@ -36,8 +42,8 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     private final List<String> pattern;
     private final Map<String, ForgingIngredient> key;
     private final NonNullList<ForgingIngredient> ingredients;
-    private final ItemStack result;
-    private final ItemStack failedResult;
+    private final ItemStackTemplate result;
+    private final @Nullable ItemStackTemplate failedResult;
     private final int hammering;
     private final boolean hasQuality;
     private final boolean needsMinigame;
@@ -51,7 +57,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
     public ForgingRecipe(String group, boolean requireBlueprint, Set<String> blueprintTypes, String tier,
                          List<String> pattern, Map<String, ForgingIngredient> key, NonNullList<ForgingIngredient> ingredients,
-                         ItemStack result, ItemStack failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookCategory tab) {
+                         ItemStackTemplate result, @Nullable ItemStackTemplate failedResult, int hammering, boolean hasQuality, boolean needsMinigame, boolean hasPolishing, boolean needQuenching, boolean showNotification, ForgingQuality minimumQuality, ForgingQuality qualityDifficulty, int width, int height, ForgingBookCategory tab) {
         this.group = group;
         this.blueprintTypes = blueprintTypes;
         this.tier = tier;
@@ -79,7 +85,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     public static Optional<RecipeHolder<ForgingRecipe>> findBestMatchHolder(Level world, RecipeInput RecipeInput) {
-        return world.getRecipeManager().getAllRecipesFor(ModRecipeTypes.FORGING.get())
+        return RecipeLookup.getAllRecipesFor(world, ModRecipeTypes.FORGING.get())
                 .stream()
                 .filter(holder -> holder.value().matches(RecipeInput, world))
                 .max(Comparator.comparingInt(holder -> holder.value().getRecipeSize()));
@@ -161,8 +167,8 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput RecipeInput, HolderLookup.Provider registries) {
-        ItemStack output = result.copy();
+    public ItemStack assemble(RecipeInput RecipeInput) {
+        ItemStack output = result.create();
 
         for (int i = 0; i < ingredients.size(); i++) {
             ForgingIngredient ingredient = ingredients.get(i);
@@ -181,34 +187,26 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width >= this.width && height >= this.height;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider registries) {
-        return result.copy();
+        return result.create();
     }
 
     public boolean hasFailedResult() {
-        return failedResult != null
-                && !failedResult.isEmpty();
+        return failedResult != null;
     }
 
     public ItemStack getFailedResultItem(HolderLookup.Provider registries) {
-        return hasFailedResult() ? failedResult.copy() : ItemStack.EMPTY;
+        return hasFailedResult() ? failedResult.create() : ItemStack.EMPTY;
     }
 
-    @Override
     public boolean isIncomplete() {
         return false;
     }
 
-    @Override
     public NonNullList<Ingredient> getIngredients() {
         NonNullList<Ingredient> list =
-                NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
+                NonNullList.withSize(ingredients.size(), Ingredients.EMPTY);
 
         for (int i = 0; i < ingredients.size(); i++) {
             list.set(i, ingredients.get(i).ingredient);
@@ -218,12 +216,12 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ForgingRecipe> getSerializer() {
         return ModRecipeSerializers.FORGING_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<ForgingRecipe> getType() {
         return ModRecipeTypes.FORGING.get();
     }
 
@@ -232,13 +230,13 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         ForgingRecipe that = (ForgingRecipe) obj;
-        return Objects.equals(this.result.getItem(), that.result.getItem()) &&
+        return Objects.equals(this.result.item(), that.result.item()) &&
                 Objects.equals(this.ingredients, that.ingredients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(result.getItem(), ingredients);
+        return Objects.hash(result.item(), ingredients);
     }
 
     public int getHammeringRequired() {
@@ -257,7 +255,6 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return needsMinigame;
     }
 
-    @Override
     public String getGroup() {
         return group;
     }
@@ -294,7 +291,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
     }
 
     public boolean needQuenching() {
-        return needQuenching;
+        return needQuenching && !ItemKinds.isArmor(result.item().value());
     }
 
     public List<String> getPattern() {
@@ -325,7 +322,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         return tab != null ? tab : ForgingBookCategory.MISC;
     }
 
-    public static class Serializer implements RecipeSerializer<ForgingRecipe> {
+    public static class Serializer {
         public static final Serializer INSTANCE = new Serializer();
 
         // Codec for ForgingQuality enum
@@ -336,7 +333,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
         // Reads "minimum_quality" (matching the other snake_case keys), falling back to the
         // older "minimumQuality" key so existing datapacks keep working. Always writes "minimum_quality".
-        private static final MapCodec<ForgingQuality> MINIMUM_QUALITY_FIELD = Codec.mapPair(
+        public static final MapCodec<ForgingQuality> MINIMUM_QUALITY_FIELD = Codec.mapPair(
                 FORGING_QUALITY_CODEC.optionalFieldOf("minimum_quality"),
                 FORGING_QUALITY_CODEC.optionalFieldOf("minimumQuality")
         ).xmap(
@@ -399,7 +396,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 );
 
         // StreamCodec for Set<String>
-        private static final StreamCodec<RegistryFriendlyByteBuf, Set<String>> BLUEPRINT_TYPES_STREAM_CODEC =
+        public static final StreamCodec<RegistryFriendlyByteBuf, Set<String>> BLUEPRINT_TYPES_STREAM_CODEC =
                 new StreamCodec<>() {
                     @Override
                     public Set<String> decode(RegistryFriendlyByteBuf buffer) {
@@ -421,7 +418,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 };
 
         // StreamCodec for ForgingQuality
-        private static final StreamCodec<RegistryFriendlyByteBuf, ForgingQuality> FORGING_QUALITY_STREAM_CODEC = new StreamCodec<>() {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ForgingQuality> FORGING_QUALITY_STREAM_CODEC = new StreamCodec<>() {
             @Override
             public ForgingQuality decode(RegistryFriendlyByteBuf buffer) {
                 return ForgingQuality.fromString(buffer.readUtf());
@@ -434,7 +431,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
         };
 
         // StreamCodec for NonNullList<Ingredient>
-        private static final StreamCodec<RegistryFriendlyByteBuf, NonNullList<ForgingIngredient>> INGREDIENTS_STREAM_CODEC =
+        public static final StreamCodec<RegistryFriendlyByteBuf, NonNullList<ForgingIngredient>> INGREDIENTS_STREAM_CODEC =
                 new StreamCodec<>() {
                     @Override
                     public NonNullList<ForgingIngredient> decode(RegistryFriendlyByteBuf buffer) {
@@ -457,13 +454,12 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     }
                 };
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, ForgingBookCategory> TAB_STREAM_CODEC =
+        public static final StreamCodec<RegistryFriendlyByteBuf, ForgingBookCategory> TAB_STREAM_CODEC =
                 StreamCodec.of(
                         (buf, value) -> buf.writeUtf(value.name()),
                         buf -> ForgingBookCategory.findByName(buf.readUtf())
                 );
 
-        @Override
         public MapCodec<ForgingRecipe> codec() {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Codec.BOOL.optionalFieldOf("requires_blueprint", false).forGetter(ForgingRecipe::requiresBlueprint),
@@ -471,13 +467,13 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     Codec.STRING.optionalFieldOf("tier", AnvilTier.IRON_ID).forGetter(ForgingRecipe::getAnvilTier),
                     Codec.list(Codec.STRING).fieldOf("pattern").forGetter(ForgingRecipe::getPattern),
                     Codec.unboundedMap(Codec.STRING, ForgingIngredient.CODEC).fieldOf("key").forGetter(ForgingRecipe::getKey),
-                    ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                    ItemStack.CODEC.optionalFieldOf("result_failed", ItemStack.EMPTY).forGetter(r -> r.failedResult),
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
+                    ItemStackTemplate.CODEC.optionalFieldOf("result_failed").forGetter(r -> Optional.ofNullable(r.failedResult)),
                     Codec.INT.optionalFieldOf("hammering", 1).forGetter(ForgingRecipe::getHammeringRequired),
                     Codec.BOOL.optionalFieldOf("has_quality", true).forGetter(ForgingRecipe::hasQuality),
                     Codec.BOOL.optionalFieldOf("needs_minigame", false).forGetter(ForgingRecipe::needsMinigame),
                     Codec.BOOL.optionalFieldOf("has_polishing", true).forGetter(ForgingRecipe::hasPolishing),
-                    Codec.BOOL.optionalFieldOf("need_quenching", true).forGetter(ForgingRecipe::needQuenching),
+                    Codec.BOOL.optionalFieldOf("need_quenching", true).forGetter(r -> r.needQuenching),
                     Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(ForgingRecipe::showNotification),
                     MINIMUM_QUALITY_FIELD.forGetter(ForgingRecipe::getMinimumQuality),
                     FORGING_QUALITY_CODEC.optionalFieldOf("quality_difficulty", ForgingQuality.NONE).forGetter(ForgingRecipe::getQualityDifficulty),
@@ -493,7 +489,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                 int height = pattern.size();
 
                 NonNullList<ForgingIngredient> ingredients =
-                        NonNullList.withSize(width * height, new ForgingIngredient(Ingredient.EMPTY, false, false));
+                        NonNullList.withSize(width * height, new ForgingIngredient(Ingredients.EMPTY, false, false));
 
                 for (int y = 0; y < height; y++) {
                     String row = pattern.get(y);
@@ -506,27 +502,24 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                         String keyStr = String.valueOf(c);
 
                         ForgingIngredient ingredient =
-                                c == ' ' ? new ForgingIngredient(Ingredient.EMPTY, false, false)
-                                        : key.getOrDefault(keyStr, new ForgingIngredient(Ingredient.EMPTY, false, false));
+                                c == ' ' ? new ForgingIngredient(Ingredients.EMPTY, false, false)
+                                        : key.getOrDefault(keyStr, new ForgingIngredient(Ingredients.EMPTY, false, false));
 
                         ingredients.set(y * width + x, ingredient);
                     }
                 }
 
-                // Default quenching based on whether result is armor
+                // Armor never needs quenching; checked in needQuenching(), since item components are
+                // not bound yet while recipes load
                 boolean actualNeedQuenching = needQuenching;
-                if (result.getItem() instanceof ArmorItem) {
-                    actualNeedQuenching = false;
-                }
 
                 return new ForgingRecipe("", requiresBlueprint, new LinkedHashSet<>(blueprintTypes), tier,
                         new ArrayList<>(pattern), new LinkedHashMap<>(key), ingredients,
-                        result, failedResult, hammering, hasQuality, needsMinigame, hasPolishing, actualNeedQuenching,
+                        result, failedResult.orElse(null), hammering, hasQuality, needsMinigame, hasPolishing, actualNeedQuenching,
                         showNotification, minimumQuality, qualityDifficulty, width, height, tab);
             }));
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, ForgingRecipe> streamCodec() {
             return new StreamCodec<>() {
                 @Override
@@ -546,8 +539,8 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     ForgingQuality minimumQuality = FORGING_QUALITY_STREAM_CODEC.decode(buffer);
                     ForgingQuality qualityDifficulty = FORGING_QUALITY_STREAM_CODEC.decode(buffer);
                     NonNullList<ForgingIngredient> ingredients = INGREDIENTS_STREAM_CODEC.decode(buffer);
-                    ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
-                    ItemStack failedResult = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
+                    ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
+                    ItemStackTemplate failedResult = ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).decode(buffer).orElse(null);
                     ForgingBookCategory tab = TAB_STREAM_CODEC.decode(buffer);
                     // Pattern and key are not synced over network - only ingredients are needed at runtime
                     return new ForgingRecipe(group, requiresBlueprint, blueprintTypes, tier,
@@ -573,8 +566,8 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
                     FORGING_QUALITY_STREAM_CODEC.encode(buffer, recipe.minimumQuality);
                     FORGING_QUALITY_STREAM_CODEC.encode(buffer, recipe.qualityDifficulty);
                     INGREDIENTS_STREAM_CODEC.encode(buffer, recipe.ingredients);
-                    ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                    ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.failedResult);
+                    ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
+                    ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).encode(buffer, Optional.ofNullable(recipe.failedResult));
                     TAB_STREAM_CODEC.encode(buffer, recipe.tab);
                 }
             };
@@ -598,7 +591,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
             boolean transferNBT
     ) {
         public static final ForgingIngredient EMPTY =
-                new ForgingIngredient(Ingredient.EMPTY, false, false);
+                new ForgingIngredient(Ingredients.EMPTY, false, false);
 
         public boolean test(ItemStack stack) {
             if (!ingredient.test(stack)) return false;
@@ -612,7 +605,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
             @Override
             public <T> DataResult<Pair<ForgingIngredient, T>> decode(DynamicOps<T> ops, T input) {
-                return Ingredient.CODEC.parse(ops, input).map(ing -> Pair.of(
+                return IngredientCodecs.LENIENT.parse(ops, input).map(ing -> Pair.of(
                         new ForgingIngredient(ing, getBool(ops, input, "requires_heated"), getBool(ops, input, "transfer_nbt")),
                         input
                 ));
@@ -620,7 +613,7 @@ public class ForgingRecipe implements Recipe<RecipeInput> {
 
             @Override
             public <T> DataResult<T> encode(ForgingIngredient input, DynamicOps<T> ops, T prefix) {
-                return Ingredient.CODEC.encode(input.ingredient, ops, prefix).flatMap(encoded -> {
+                return IngredientCodecs.LENIENT.encode(input.ingredient, ops, prefix).flatMap(encoded -> {
                     if (!input.requiresHeated && !input.transferNBT) return DataResult.success(encoded);
 
                     DataResult<T> result = DataResult.success(encoded);

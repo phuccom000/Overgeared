@@ -5,7 +5,7 @@
     },
     "title": "Overgeared",
     "description": "The beginning of a master blacksmith's journey",
-    "background": "minecraft:block/stone",
+    "background": "minecraft:textures/block/stone.png",
     "frame": "task",
     "show_toast": false,
     "announce_to_chat": false,

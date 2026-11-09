@@ -9,7 +9,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -23,7 +23,7 @@ public class DragonBreathEmiRecipe implements EmiRecipe {
     private final EmiIngredient input;
     private final EmiIngredient ingredient;
     private final EmiStack output, input3, output3;
-    private static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/container/brewing_stand.png");
+    private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/container/brewing_stand.png");
     private static final EmiStack BLAZE_POWDER = EmiStack.of(Items.BLAZE_POWDER);
 
     public DragonBreathEmiRecipe() {
@@ -50,7 +50,7 @@ public class DragonBreathEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return OvergearedMod.loc("brewing/dragon_breath");
     }
 

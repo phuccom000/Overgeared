@@ -1,5 +1,12 @@
 package net.stirdrem.overgeared.recipe;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStackTemplate;
+import java.util.List;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,21 +17,21 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
-public class FletchingRecipe implements Recipe<RecipeInput> {
+public class FletchingRecipe implements OvergearedRecipe<RecipeInput> {
     private final Ingredient tip, shaft, feather, potion;
-    private final ItemStack result;
-    private final ItemStack resultTipped;
-    private final ItemStack resultLingering;
+    private final ItemStackTemplate result;
+    private final @Nullable ItemStackTemplate resultTipped;
+    private final @Nullable ItemStackTemplate resultLingering;
     private final String tippedTag;
     private final String lingeringTag;
 
     public FletchingRecipe(Ingredient tip, Ingredient shaft, Ingredient feather, Ingredient potion,
-                           ItemStack result, ItemStack resultTipped, ItemStack resultLingering,
+                           ItemStackTemplate result, @Nullable ItemStackTemplate resultTipped, @Nullable ItemStackTemplate resultLingering,
                            String tippedTag, String lingeringTag) {
         this.tip = tip;
         this.shaft = shaft;
         this.feather = feather;
-        this.potion = potion != null ? potion : Ingredient.EMPTY;
+        this.potion = potion != null ? potion : Ingredients.EMPTY;
         this.result = result;
         this.resultTipped = resultTipped;
         this.resultLingering = resultLingering;
@@ -47,7 +54,7 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput container, HolderLookup.Provider provider) {
+    public ItemStack assemble(RecipeInput container) {
         return getDefaultResult();
     }
 
@@ -67,48 +74,58 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
         return potion;
     } // <-- getter for potion
 
+    /**
+     * Specific potion stacks for recipe viewers. Ingredients can no longer hold item components, so
+     * the viewer-only "tip an arrow with this potion" entries carry the exact potion here.
+     */
+    private List<ItemStack> potionDisplay = List.of();
+
+    public FletchingRecipe withPotionDisplay(ItemStack... stacks) {
+        this.potionDisplay = List.of(stacks);
+        return this;
+    }
+
+    public List<ItemStack> getPotionDisplay() {
+        return potionDisplay;
+    }
+
     public boolean hasPotion() {
         return potion != null && !potion.isEmpty();
     }
 
     public ItemStack getDefaultResult() {
-        return result.copy();
+        return result.create();
     }
 
     public ItemStack getTippedResult() {
-        return resultTipped.copy();
+        return resultTipped == null ? ItemStack.EMPTY : resultTipped.create();
     }
 
     public ItemStack getLingeringResult() {
-        return resultLingering.copy();
+        return resultLingering == null ? ItemStack.EMPTY : resultLingering.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return true;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
         return getDefaultResult();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<FletchingRecipe> getSerializer() {
         return ModRecipeSerializers.FLETCHING_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<FletchingRecipe> getType() {
         return ModRecipeTypes.FLETCHING.get();
     }
 
     public boolean hasTippedResult() {
-        return !resultTipped.isEmpty();
+        return resultTipped != null;
     }
 
     public boolean hasLingeringResult() {
-        return !resultLingering.isEmpty();
+        return resultLingering != null;
     }
 
     public String getTippedTag() {
@@ -119,18 +136,19 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
         return lingeringTag;
     }
 
-    public static class Serializer implements RecipeSerializer<FletchingRecipe> {
+    public static class Serializer {
         public static final MapCodec<FletchingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Ingredient.CODEC.optionalFieldOf("tip", Ingredient.EMPTY).forGetter(r -> r.tip),
-                Ingredient.CODEC.optionalFieldOf("shaft", Ingredient.EMPTY).forGetter(r -> r.shaft),
-                Ingredient.CODEC.optionalFieldOf("feather", Ingredient.EMPTY).forGetter(r -> r.feather),
-                Ingredient.CODEC.optionalFieldOf("potion", Ingredient.EMPTY).forGetter(r -> r.potion),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                ItemStack.CODEC.optionalFieldOf("result_tipped", ItemStack.EMPTY).forGetter(r -> r.resultTipped),
-                ItemStack.CODEC.optionalFieldOf("result_lingering", ItemStack.EMPTY).forGetter(r -> r.resultLingering),
+                IngredientCodecs.LENIENT.optionalFieldOf("tip", Ingredients.EMPTY).forGetter(r -> r.tip),
+                IngredientCodecs.LENIENT.optionalFieldOf("shaft", Ingredients.EMPTY).forGetter(r -> r.shaft),
+                IngredientCodecs.LENIENT.optionalFieldOf("feather", Ingredients.EMPTY).forGetter(r -> r.feather),
+                IngredientCodecs.LENIENT.optionalFieldOf("potion", Ingredients.EMPTY).forGetter(r -> r.potion),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
+                ItemStackTemplate.CODEC.optionalFieldOf("result_tipped").forGetter(r -> Optional.ofNullable(r.resultTipped)),
+                ItemStackTemplate.CODEC.optionalFieldOf("result_lingering").forGetter(r -> Optional.ofNullable(r.resultLingering)),
                 Codec.STRING.optionalFieldOf("tipped_tag", "Potion").forGetter(r -> r.tippedTag),
                 Codec.STRING.optionalFieldOf("lingering_tag", "LingeringPotion").forGetter(r -> r.lingeringTag)
-        ).apply(instance, FletchingRecipe::new));
+        ).apply(instance, (tip, shaft, feather, potion, result, tipped, lingering, tippedTag, lingeringTag) ->
+                new FletchingRecipe(tip, shaft, feather, potion, result, tipped.orElse(null), lingering.orElse(null), tippedTag, lingeringTag)));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, FletchingRecipe> STREAM_CODEC = StreamCodec.of(
             Serializer::toNetwork, Serializer::fromNetwork
@@ -141,9 +159,9 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
             Ingredient shaft = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
             Ingredient feather = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
             Ingredient potion = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
-            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
-            ItemStack resultTipped = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
-            ItemStack resultLingering = ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
+            ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
+            ItemStackTemplate resultTipped = ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).decode(buffer).orElse(null);
+            ItemStackTemplate resultLingering = ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).decode(buffer).orElse(null);
             String tippedTag = buffer.readUtf();
             String lingeringTag = buffer.readUtf();
 
@@ -155,19 +173,17 @@ public class FletchingRecipe implements Recipe<RecipeInput> {
             Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.shaft);
             Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.feather);
             Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.potion);
-            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultTipped);
-            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.resultLingering);
+            ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
+            ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).encode(buffer, Optional.ofNullable(recipe.resultTipped));
+            ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC).encode(buffer, Optional.ofNullable(recipe.resultLingering));
             buffer.writeUtf(recipe.tippedTag);
             buffer.writeUtf(recipe.lingeringTag);
         }
 
-        @Override
         public MapCodec<FletchingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, FletchingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

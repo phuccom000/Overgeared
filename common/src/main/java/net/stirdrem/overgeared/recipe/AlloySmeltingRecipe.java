@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -14,15 +16,15 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
+public class AlloySmeltingRecipe implements OvergearedRecipe<RecipeInput>, IAlloyRecipe {
     private final String group;
     private final CookingBookCategory category;
     private final List<Ingredient> inputs;
-    private final ItemStack output;
+    private final ItemStackTemplate output;
     private final float experience;
     private final int cookingTime;
 
-    public AlloySmeltingRecipe(String group, CookingBookCategory category, List<Ingredient> inputs, ItemStack output, float experience, int cookingTime) {
+    public AlloySmeltingRecipe(String group, CookingBookCategory category, List<Ingredient> inputs, ItemStackTemplate output, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.inputs = inputs;
@@ -34,7 +36,7 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     @Override
     public boolean matches(RecipeInput input, Level level) {
         // Don't bother checking on client side for performance reasons
-        if (level.isClientSide) return false;
+        if (level.isClientSide()) return false;
 
         // Create a list of non-empty ingredient-item pairs to match
         List<Ingredient> remainingIngredients = new ArrayList<>();
@@ -82,18 +84,13 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
-        return output.copy();
+    public ItemStack assemble(RecipeInput input) {
+        return output.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int w, int h) {
-        return true;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return output;
+        return output.create();
     }
 
     public String getGroup() {
@@ -122,25 +119,25 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
     }
 
     public ItemStack getResultItem() {
-        return output;
+        return output.create();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<AlloySmeltingRecipe> getSerializer() {
         return ModRecipeSerializers.ALLOY_SMELTING.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<AlloySmeltingRecipe> getType() {
         return ModRecipeTypes.ALLOY_SMELTING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<AlloySmeltingRecipe> {
+    public static class Serializer {
         public static final MapCodec<AlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.fieldOf("group").forGetter(r -> r.group),
                 CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC).forGetter(r -> r.category),
-                Ingredient.CODEC.listOf(0, 4).fieldOf("ingredients").forGetter(r -> r.inputs),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.output),
+                IngredientCodecs.LENIENT.listOf(0, 4).fieldOf("ingredients").forGetter(r -> r.inputs),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.output),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
                 Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, AlloySmeltingRecipe::new));
@@ -149,18 +146,16 @@ public class AlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
                 ByteBufCodecs.STRING_UTF8, r -> r.group,
                 ByteBufCodecs.fromCodec(CookingBookCategory.CODEC), r -> r.category,
                 Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list(4)), r -> r.inputs,
-                ItemStack.STREAM_CODEC, r -> r.output,
+                ItemStackTemplate.STREAM_CODEC, r -> r.output,
                 ByteBufCodecs.FLOAT, r -> r.experience,
                 ByteBufCodecs.INT, r -> r.cookingTime,
                 AlloySmeltingRecipe::new
         );
 
-        @Override
         public MapCodec<AlloySmeltingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, AlloySmeltingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

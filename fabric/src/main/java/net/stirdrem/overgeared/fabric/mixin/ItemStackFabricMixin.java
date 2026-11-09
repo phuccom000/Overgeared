@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.BiConsumer;
+import org.apache.commons.lang3.function.TriConsumer;
 
 /**
  * Item stack hooks NeoForge provides through events and item extensions.
@@ -31,13 +32,14 @@ public abstract class ItemStackFabricMixin {
      * NeoForge: {@code ItemAttributeModifierEvent} (forging quality) and the broken-tool
      * {@code IItemStackExtension#getAttributeModifiers} override.
      */
-    @Inject(method = "forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Ljava/util/function/BiConsumer;)V",
+    @Inject(method = "forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Lorg/apache/commons/lang3/function/TriConsumer;)V",
             at = @At("HEAD"), cancellable = true)
-    private void overgeared$modifiersForGroup(EquipmentSlotGroup group, BiConsumer<Holder<Attribute>, AttributeModifier> action, CallbackInfo ci) {
+    private void overgeared$modifiersForGroup(EquipmentSlotGroup group, TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> action, CallbackInfo ci) {
         ItemAttributeModifiers modified = overgeared$modifiedAttributes();
         if (modified != null) {
             modified.forEach(group, action);
-            EnchantmentHelper.forEachModifier((ItemStack) (Object) this, group, action);
+            EnchantmentHelper.forEachModifier((ItemStack) (Object) this, group,
+                    (attribute, modifier) -> action.accept(attribute, modifier, ItemAttributeModifiers.Display.attributeModifiers()));
             ci.cancel();
         }
     }
@@ -60,10 +62,8 @@ public abstract class ItemStackFabricMixin {
     @SuppressWarnings("deprecation")
     private ItemAttributeModifiers overgeared$modifiedAttributes() {
         ItemStack stack = (ItemStack) (Object) this;
+        // Includes the item's default modifiers, which are a prototype component since 1.21.2
         ItemAttributeModifiers base = stack.getOrDefault(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-        if (base.modifiers().isEmpty()) {
-            base = stack.getItem().getDefaultAttributeModifiers();
-        }
 
         if (BrokenHelper.isBroken(stack)) {
             // Broken tools keep only their attack speed

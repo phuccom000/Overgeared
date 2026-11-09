@@ -1,4 +1,9 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
@@ -42,14 +47,16 @@ public final class BlueprintCloningRecipeMaker {
             ItemStack output = new ItemStack(ModItems.BLUEPRINT.get(), 2);
             output.set(ModComponents.BLUEPRINT_DATA.get(), BlueprintData.createDefault().withQuality(outputQuality.getDisplayName()));
 
-            NonNullList<Ingredient> inputs = NonNullList.of(Ingredient.EMPTY,
-                    Ingredient.of(input),
+            // Ingredients can't carry the input's quality any more; the output still shows the result.
+            List<Ingredient> inputs = List.of(
+                    Ingredient.of(input.getItem()),
                     Ingredient.of(ModItems.EMPTY_BLUEPRINT.get())
             );
 
             recipes.add(new RecipeHolder<>(
-                    OvergearedMod.loc("jei/blueprint_cloning/" + quality.getDisplayName()),
-                    new ShapelessRecipe("jei.blueprint.clone", CraftingBookCategory.MISC, output, inputs)
+                    ResourceKey.create(Registries.RECIPE, OvergearedMod.loc("jei/blueprint_cloning/" + quality.getDisplayName())),
+                    new ShapelessRecipe(new Recipe.CommonInfo(false), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, "jei.blueprint.clone"),
+                            ItemStackTemplate.fromNonEmptyStack(output), inputs)
             ));
         }
         return recipes;

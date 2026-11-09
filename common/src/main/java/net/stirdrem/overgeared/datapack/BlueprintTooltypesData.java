@@ -1,20 +1,20 @@
 package net.stirdrem.overgeared.datapack;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 
 public class BlueprintTooltypesData {
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final List<String> toolTypes;
 
-    public BlueprintTooltypesData(ResourceLocation id, List<String> toolTypes) {
+    public BlueprintTooltypesData(Identifier id, List<String> toolTypes) {
         this.id = id;
         this.toolTypes = toolTypes;
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

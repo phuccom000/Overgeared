@@ -1,8 +1,9 @@
 package net.stirdrem.overgeared.util;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -51,8 +52,7 @@ public final class ItemUtils {
         SingleRecipeInput input = new SingleRecipeInput(stack.copy());
 
         // Find the first matching CoolingRecipe (1.21 returns RecipeHolder<T>)
-        Optional<RecipeHolder<CoolingRecipe>> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())
+        Optional<RecipeHolder<CoolingRecipe>> recipeOpt = RecipeLookup.getAllRecipesFor(level, ModRecipeTypes.COOLING_RECIPE.get())
                 .stream()
                 .filter(holder -> holder.value().matches(input, level))
                 .findFirst();
@@ -83,18 +83,18 @@ public final class ItemUtils {
     }
 
     public static boolean isDurabilityBlacklisted(ItemStack stack) {
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         List<? extends String> blacklist = ServerConfig.BASE_DURABILITY_BLACKLIST.get();
 
         for (String entry : blacklist) {
             if (entry.startsWith("#")) {
                 // Handle tag entries like "#forge:tools/hammers"
-                ResourceLocation tagId = ResourceLocation.tryParse(entry.substring(1));
+                Identifier tagId = Identifier.tryParse(entry.substring(1));
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
                 if (stack.is(tag)) return true;
             } else {
                 // Handle direct item IDs
-                if (itemId != null && itemId.equals(ResourceLocation.tryParse(entry))) return true;
+                if (itemId != null && itemId.equals(Identifier.tryParse(entry))) return true;
             }
         }
         return DurabilityBlacklistReloadListener.isBlacklisted(stack);

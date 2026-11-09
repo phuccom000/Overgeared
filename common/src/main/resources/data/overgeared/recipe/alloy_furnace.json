@@ -6,12 +6,8 @@
     "xxx"
   ],
   "key": {
-    "x": {
-      "item": "minecraft:bricks"
-    },
-    "#": {
-      "item": "minecraft:blast_furnace"
-    }
+    "x": "minecraft:bricks",
+    "#": "minecraft:blast_furnace"
   },
   "result": {
     "id": "overgeared:alloy_furnace"

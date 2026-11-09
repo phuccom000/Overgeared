@@ -62,10 +62,6 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
         super(AnvilTier.stone(), properties);
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return null;
-    }
 
 
     @Override
@@ -105,7 +101,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-        if (!pLevel.isClientSide && pBlockEntityType == ModBlockEntities.STONE_SMITHING_ANVIL_BE.get()) {
+        if (!pLevel.isClientSide() && pBlockEntityType == ModBlockEntities.STONE_SMITHING_ANVIL_BE.get()) {
             return createTickerHelper(pBlockEntityType, ModBlockEntities.STONE_SMITHING_ANVIL_BE.get(),
                     (pLevel1, pPos, pState1, pBlockEntity) ->
                             pBlockEntity.tick(pLevel, pPos, pState1));
@@ -115,7 +111,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public void onLand(Level level, BlockPos pos, BlockState fallingState, BlockState hitState, FallingBlockEntity fallingBlock) {
-        if (!level.isClientSide && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
+        if (!level.isClientSide() && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
             // Show break particles of the anvil
             level.levelEvent(2001, pos, Block.getId(fallingState)); // 2001 = block break effect
             // Replace with cobblestone block instead of dropping item
@@ -131,7 +127,7 @@ public class StoneSmithingAnvil extends AbstractSmithingAnvil {
 
     @Override
     public void onBrokenAfterFall(Level level, BlockPos pos, FallingBlockEntity fallingBlock) {
-        if (!level.isClientSide && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
+        if (!level.isClientSide() && ServerConfig.ENABLE_STONE_ANVIL_BREAKING.get()) {
             BlockState state = fallingBlock.getBlockState();
             level.levelEvent(2001, pos, Block.getId(state)); // Show break particles
             Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.COBBLESTONE));

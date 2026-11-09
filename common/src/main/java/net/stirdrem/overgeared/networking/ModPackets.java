@@ -28,7 +28,8 @@ public final class ModPackets {
             new Packet<>(OnlyResetMinigameS2CPacket.TYPE, OnlyResetMinigameS2CPacket.STREAM_CODEC, OnlyResetMinigameS2CPacket::handle),
             new Packet<>(ResetMinigameS2CPacket.TYPE, ResetMinigameS2CPacket.STREAM_CODEC, ResetMinigameS2CPacket::handle),
             new Packet<>(StartMinigameS2CPacket.TYPE, StartMinigameS2CPacket.STREAM_CODEC, StartMinigameS2CPacket::handle),
-            new Packet<>(ToggleMinigameS2CPacket.TYPE, ToggleMinigameS2CPacket.STREAM_CODEC, ToggleMinigameS2CPacket::handle)
+            new Packet<>(ToggleMinigameS2CPacket.TYPE, ToggleMinigameS2CPacket.STREAM_CODEC, ToggleMinigameS2CPacket::handle),
+            new Packet<>(SyncRecipesS2CPacket.TYPE, SyncRecipesS2CPacket.STREAM_CODEC, SyncRecipesS2CPacket::handle)
     );
 
     public static final List<Packet<?>> SERVERBOUND = List.of(

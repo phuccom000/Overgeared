@@ -1,0 +1,13 @@
+{
+  "type": "overgeared:dragon_breath_brewing",
+  "input": {
+    "item": "minecraft:potion",
+    "potion_contents": {
+      "potions": "minecraft:thick"
+    }
+  },
+  "reagent": {
+    "item": "minecraft:chorus_fruit"
+  },
+  "output": "minecraft:dragon_breath"
+}

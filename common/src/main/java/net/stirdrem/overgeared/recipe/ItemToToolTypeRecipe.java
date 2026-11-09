@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -13,7 +15,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public record ItemToToolTypeRecipe(Ingredient input, String toolType) implements Recipe<SingleRecipeInput> {
+public record ItemToToolTypeRecipe(Ingredient input, String toolType) implements OvergearedRecipe<SingleRecipeInput> {
 
     @Override
     public boolean matches(SingleRecipeInput recipeInput, Level level) {
@@ -21,40 +23,35 @@ public record ItemToToolTypeRecipe(Ingredient input, String toolType) implements
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput recipeInput, HolderLookup.Provider provider) {
+    public ItemStack assemble(SingleRecipeInput recipeInput) {
         return ItemStack.EMPTY; // purely data-driven recipe
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return true;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ItemToToolTypeRecipe> getSerializer() {
         return ModRecipeSerializers.ITEM_TO_TOOLTYPE.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<ItemToToolTypeRecipe> getType() {
         return ModRecipeTypes.ITEM_TO_TOOLTYPE.get();
     }
 
     public List<ItemStack> getItems() {
-        return List.of(input.getItems());
+        return Ingredients.stacks(input);
     }
 
     // ----------------------------------------------------
     // Serializer
     // ----------------------------------------------------
-    public static class Serializer implements RecipeSerializer<ItemToToolTypeRecipe> {
+    public static class Serializer {
         public static final MapCodec<ItemToToolTypeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Ingredient.CODEC.fieldOf("item").forGetter(r -> r.input),
+                IngredientCodecs.LENIENT.fieldOf("item").forGetter(r -> r.input),
                 Codec.STRING.fieldOf("tooltype").forGetter(r -> r.toolType)
         ).apply(instance, ItemToToolTypeRecipe::new));
 
@@ -64,12 +61,10 @@ public record ItemToToolTypeRecipe(Ingredient input, String toolType) implements
                 ItemToToolTypeRecipe::new
         );
 
-        @Override
         public MapCodec<ItemToToolTypeRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, ItemToToolTypeRecipe> streamCodec() {
             return STREAM_CODEC;
         }

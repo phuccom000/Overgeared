@@ -1,62 +1,38 @@
 package net.stirdrem.overgeared.item;
 
-import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.stirdrem.overgeared.OvergearedMod;
+import net.stirdrem.overgeared.util.ModTags;
 
-import java.util.List;
+import java.util.EnumMap;
 import java.util.Map;
 
-import static net.minecraft.world.item.Items.COPPER_INGOT;
-
 public final class ModArmorMaterials {
+    /** Equipment assets, see assets/overgeared/equipment/. */
+    public static final ResourceKey<EquipmentAsset> STEEL_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, OvergearedMod.loc("steel"));
 
-  public static final Holder<ArmorMaterial> STEEL = Holder.direct(new ArmorMaterial(
-          Map.of(
-                  ArmorItem.Type.HELMET, 3,
-                  ArmorItem.Type.CHESTPLATE, 7,
-                  ArmorItem.Type.LEGGINGS, 5,
-                  ArmorItem.Type.BOOTS, 2
-          ),
-          12,
-          SoundEvents.ARMOR_EQUIP_IRON,
-          () -> Ingredient.of(ModItems.STEEL_INGOT.get()),
-          List.of(
-                  new ArmorMaterial.Layer(OvergearedMod.loc("steel"))
-          ),
-          1f,
-          0f
-  ));
+    // Copper armor is vanilla's since 26.x.
+    // Durability is the per-piece multiplier (vanilla's base durabilities 13/15/16/11 times this).
+    public static final ArmorMaterial STEEL = new ArmorMaterial(
+            26, defense(2, 5, 7, 3), 12, SoundEvents.ARMOR_EQUIP_IRON, 1f, 0f,
+            ModTags.Items.REPAIRS_STEEL_ARMOR, STEEL_ASSET);
 
-  public static final Holder<ArmorMaterial> COPPER = Holder.direct(new ArmorMaterial(
-          Map.of(
-                  ArmorItem.Type.HELMET, 1,
-                  ArmorItem.Type.CHESTPLATE, 4,
-                  ArmorItem.Type.LEGGINGS, 3,
-                  ArmorItem.Type.BOOTS, 1
-          ),
-          15,
-          SoundEvents.ARMOR_EQUIP_IRON,
-          () -> Ingredient.of(COPPER_INGOT),
-          List.of(
-                  new ArmorMaterial.Layer(OvergearedMod.loc("copper"))
-          ),
-          0f,
-          0f
-  ));
 
-  private static final int[] BASE_DURABILITY = {11, 16, 15, 13};
-
-  public static int getDurabilityForType(Holder<ArmorMaterial> material, ArmorItem.Type pType) {
-    int durabilityMultiplier = 0;
-    if (material.equals(STEEL)) {
-        durabilityMultiplier = 26;
-    } else if (material.equals(COPPER)) {
-        durabilityMultiplier = 10;
+    private static Map<ArmorType, Integer> defense(int boots, int legs, int chest, int helm) {
+        Map<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
+        map.put(ArmorType.BOOTS, boots);
+        map.put(ArmorType.LEGGINGS, legs);
+        map.put(ArmorType.CHESTPLATE, chest);
+        map.put(ArmorType.HELMET, helm);
+        map.put(ArmorType.BODY, chest);
+        return map;
     }
-    return BASE_DURABILITY[pType.ordinal()] * durabilityMultiplier;
-  }
+
+    private ModArmorMaterials() {
+    }
 }

@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -14,15 +16,15 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAlloyRecipe {
+public class NetherAlloySmeltingRecipe implements OvergearedRecipe<RecipeInput>, INetherAlloyRecipe {
     private final String group;
     private final CraftingBookCategory category;
     private final List<Ingredient> ingredients;
-    private final ItemStack result;
+    private final ItemStackTemplate result;
     private final float experience;
     private final int cookingTime;
 
-    public NetherAlloySmeltingRecipe(String group, CraftingBookCategory category, List<Ingredient> ingredients, ItemStack result, float experience, int cookingTime) {
+    public NetherAlloySmeltingRecipe(String group, CraftingBookCategory category, List<Ingredient> ingredients, ItemStackTemplate result, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.ingredients = ingredients;
@@ -33,7 +35,7 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
 
     @Override
     public boolean matches(RecipeInput input, Level level) {
-        if (level.isClientSide) return false;
+        if (level.isClientSide()) return false;
 
         List<Ingredient> remainingIngredients = new ArrayList<>();
         List<ItemStack> remainingItems = new ArrayList<>();
@@ -80,23 +82,18 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
     }
 
     @Override
-    public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
-        return result.copy();
+    public ItemStack assemble(RecipeInput input) {
+        return result.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return true;
-    }
 
     @Override
     public List<Ingredient> getIngredientsList() {
         return ingredients;
     }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return result;
+        return result.create();
     }
 
     @Override
@@ -109,7 +106,6 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
         return false;
     }
 
-    @Override
     public String getGroup() {
         return group;
     }
@@ -123,21 +119,21 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<NetherAlloySmeltingRecipe> getSerializer() {
         return ModRecipeSerializers.NETHER_ALLOY_SMELTING.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<NetherAlloySmeltingRecipe> getType() {
         return ModRecipeTypes.NETHER_ALLOY_SMELTING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<NetherAlloySmeltingRecipe> {
+    public static class Serializer {
         public static final MapCodec<NetherAlloySmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                 CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(r -> r.category),
-                Ingredient.CODEC.listOf(0, 9).fieldOf("ingredients").forGetter(r -> r.ingredients),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                IngredientCodecs.LENIENT.listOf(0, 9).fieldOf("ingredients").forGetter(r -> r.ingredients),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
                 Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(r -> r.experience),
                 Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime)
         ).apply(instance, NetherAlloySmeltingRecipe::new));
@@ -146,18 +142,16 @@ public class NetherAlloySmeltingRecipe implements Recipe<RecipeInput>, INetherAl
                 ByteBufCodecs.STRING_UTF8, r -> r.group,
                 CraftingBookCategory.STREAM_CODEC, r -> r.category,
                 Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list(9)), r -> r.ingredients,
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStackTemplate.STREAM_CODEC, r -> r.result,
                 ByteBufCodecs.FLOAT, r -> r.experience,
                 ByteBufCodecs.INT, r -> r.cookingTime,
                 NetherAlloySmeltingRecipe::new
         );
 
-        @Override
         public MapCodec<NetherAlloySmeltingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, NetherAlloySmeltingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

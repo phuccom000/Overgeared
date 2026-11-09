@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.block.custom;
+import net.minecraft.core.Direction;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.stirdrem.overgeared.ForgingQuality;
@@ -22,7 +23,7 @@ import org.joml.Vector3f;
 
 public abstract class BaseSmithingAnvilBlock extends BaseEntityBlock {
 
-    public static final DirectionProperty FACING =
+    public static final EnumProperty<Direction> FACING =
             BlockStateProperties.HORIZONTAL_FACING;
 
     protected BaseSmithingAnvilBlock(Properties properties) {
@@ -52,24 +53,7 @@ public abstract class BaseSmithingAnvilBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
-    @Override
-    public void onRemove(
-            BlockState oldState,
-            Level level,
-            BlockPos pos,
-            BlockState newState,
-            boolean moving
-    ) {
-        if (oldState.getBlock() != newState.getBlock()) {
-            BlockEntity be = level.getBlockEntity(pos);
-
-            if (be instanceof BaseSmithingAnvilBlockEntity anvil) {
-                anvil.drops();
-            }
-        }
-
-        super.onRemove(oldState, level, pos, newState, moving);
-    }
+    // Dropping the contents on removal moved to the block entity (preRemoveSideEffects).
 
     protected void spawnHitParticles(Level level, BlockPos pos) {
         if (level instanceof ServerLevel server) {
@@ -81,10 +65,7 @@ public abstract class BaseSmithingAnvilBlock extends BaseEntityBlock {
                 double z = pos.getZ() + 0.5 + random.nextFloat() - 0.5;
 
                 server.sendParticles(
-                        new DustParticleOptions(
-                                new Vector3f(1, 0.5f, 0),
-                                1
-                        ),
+                        new DustParticleOptions(0xFF8000, 1),
                         x, y, z,
                         1,
                         0, 0.1, 0,

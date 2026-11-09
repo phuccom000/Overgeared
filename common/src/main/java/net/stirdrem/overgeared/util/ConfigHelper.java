@@ -1,8 +1,9 @@
 package net.stirdrem.overgeared.util;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -82,8 +83,7 @@ public class ConfigHelper {
     }
 
     public static String getToolTypeForItem(Level level, ItemStack stack) {
-        String toolType = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE.get())
+        String toolType = RecipeLookup.getAllRecipesFor(level, ModRecipeTypes.ITEM_TO_TOOLTYPE.get())
                 .stream()
                 .filter(r -> r.value().input().test(stack))
                 .map(r -> r.value().toolType())
@@ -223,7 +223,7 @@ public class ConfigHelper {
 
         // Tag match
         if (key.startsWith("#")) {
-            ResourceLocation tagId = ResourceLocation.tryParse(key.substring(1));
+            Identifier tagId = Identifier.tryParse(key.substring(1));
             if (tagId == null)
                 return false;
 

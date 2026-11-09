@@ -1,10 +1,11 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.util.Prediction;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -21,7 +22,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.stirdrem.overgeared.components.ModComponents;
@@ -49,7 +50,6 @@ public class FletchingStationMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final Container input;
     private final ResultContainer result = new ResultContainer();
-    private final RecipeManager recipeManager;
     private final Player player;
 
     public FletchingStationMenu(int id, Inventory playerInv) {
@@ -59,8 +59,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
     public FletchingStationMenu(int id, Inventory playerInv, ContainerLevelAccess access) {
         super(ModMenuTypes.FLETCHING_STATION_MENU.get(), id);
         this.access = access;
-        this.recipeManager = playerInv.player.level().getRecipeManager();
-        this.player = playerInv.player;
+                this.player = playerInv.player;
         this.level = playerInv.player.level();
         this.input = new SimpleContainer(4) {
             @Override
@@ -226,7 +225,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
             return;
         }
         RecipeInput recipeInput = createRecipeInput();
-        Optional<RecipeHolder<FletchingRecipe>> optHolder = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING.get(), recipeInput, level);
+        Optional<RecipeHolder<FletchingRecipe>> optHolder = RecipeLookup.getRecipeFor(level, ModRecipeTypes.FLETCHING.get(), recipeInput);
         ItemStack resultStack = ItemStack.EMPTY;
         ItemStack potion = input.getItem(INPUT_SLOT_POTION);
         // Check for arrow stack + potion conversion case
@@ -295,7 +294,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
             int featherCount = input.getItem(INPUT_SLOT_FEATHER).getCount();
 
             int craftCount = Math.max(Math.min(Math.min(tipCount, shaftCount), featherCount), 1);
-            ItemStack baseResult = recipe.assemble(recipeInput, level.registryAccess());
+            ItemStack baseResult = recipe.assemble(recipeInput);
 
             if (!potion.isEmpty()) {
                 boolean isUpgradeable = isUpgradeableArrow(baseResult);
@@ -349,10 +348,10 @@ public class FletchingStationMenu extends AbstractContainerMenu {
         if (result.isEmpty()) return;
 
         RecipeInput recipeInput = createRecipeInput();
-        Optional<RecipeHolder<FletchingRecipe>> optHolder = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING.get(), recipeInput, level);
+        Optional<RecipeHolder<FletchingRecipe>> optHolder = RecipeLookup.getRecipeFor(level, ModRecipeTypes.FLETCHING.get(), recipeInput);
         if (optHolder.isPresent()) {
             FletchingRecipe recipe = optHolder.get().value();
-            ItemStack baseResult = recipe.assemble(recipeInput, level.registryAccess());
+            ItemStack baseResult = recipe.assemble(recipeInput);
             int baseCount = baseResult.getCount();
             int tookCount = result.getCount();
             int batchesTaken = Math.max(1, tookCount / baseCount);
@@ -475,7 +474,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
 
     private boolean canStillCraft() {
         RecipeInput recipeInput = createRecipeInput();
-        Optional<RecipeHolder<FletchingRecipe>> optHolder = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING.get(), recipeInput, level);
+        Optional<RecipeHolder<FletchingRecipe>> optHolder = RecipeLookup.getRecipeFor(level, ModRecipeTypes.FLETCHING.get(), recipeInput);
         return optHolder.isPresent();
     }
 
@@ -503,7 +502,7 @@ public class FletchingStationMenu extends AbstractContainerMenu {
                 ItemStack stack = input.removeItemNoUpdate(i);
                 if (!stack.isEmpty()) {
                     if (!player.getInventory().add(stack)) {
-                        player.drop(stack, false);
+                        player.drop(stack, false, Prediction.SERVER_ONLY);
                     }
                 }
             }
@@ -521,8 +520,8 @@ public class FletchingStationMenu extends AbstractContainerMenu {
         if (name == null || name.isEmpty()) {
             return Potions.WATER;
         }
-        ResourceLocation location = ResourceLocation.parse(name);
-        Potion potion = BuiltInRegistries.POTION.get(location);
+        Identifier location = Identifier.parse(name);
+        Potion potion = BuiltInRegistries.POTION.getValue(location);
         if (potion == null) {
             return Potions.WATER;
         }

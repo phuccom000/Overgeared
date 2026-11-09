@@ -27,8 +27,15 @@ public class ClayToolCastRecipe extends CustomRecipe {
     // Weak so a recipe instance never keeps an unloaded world alive.
     private WeakReference<Level> lastLevel = new WeakReference<>(null);
 
+    private final CraftingBookCategory category;
+
     public ClayToolCastRecipe(CraftingBookCategory category) {
-        super(category);
+        this.category = category;
+    }
+
+    @Override
+    public CraftingBookCategory category() {
+        return category;
     }
 
     @Override
@@ -66,7 +73,7 @@ public class ClayToolCastRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(CraftingInput input) {
         if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
 
         ItemStack center = input.getItem(4);
@@ -139,34 +146,28 @@ public class ClayToolCastRecipe extends CustomRecipe {
         return remaining;
     }
 
-    @Override
-    public boolean canCraftInDimensions(int w, int h) {
-        return w * h >= 9;
-    }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ClayToolCastRecipe> getSerializer() {
         return ModRecipeSerializers.CLAY_TOOL_CAST.get();
     }
 
-    public static class Serializer implements RecipeSerializer<ClayToolCastRecipe> {
-        private static final MapCodec<ClayToolCastRecipe> CODEC = 
+    public static class Serializer {
+        public static final MapCodec<ClayToolCastRecipe> CODEC = 
             CraftingBookCategory.CODEC.fieldOf("category")
-                .xmap(ClayToolCastRecipe::new, CustomRecipe::category);
+                .xmap(ClayToolCastRecipe::new, ClayToolCastRecipe::category);
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, ClayToolCastRecipe> STREAM_CODEC = 
+        public static final StreamCodec<RegistryFriendlyByteBuf, ClayToolCastRecipe> STREAM_CODEC = 
             StreamCodec.composite(
                 net.minecraft.network.codec.ByteBufCodecs.fromCodec(CraftingBookCategory.CODEC),
-                CustomRecipe::category,
+                ClayToolCastRecipe::category,
                 ClayToolCastRecipe::new
             );
 
-        @Override
         public MapCodec<ClayToolCastRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, ClayToolCastRecipe> streamCodec() {
             return STREAM_CODEC;
         }

@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.recipe;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -24,19 +28,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class CastingRecipe implements Recipe<RecipeInput> {
+public class CastingRecipe implements OvergearedRecipe<RecipeInput> {
     private final String group;
     private final CookingBookCategory category;
     private final Map<String, Integer> requiredMaterials;
     private final String toolType;
-    private final ItemStack result;
+    private final ItemStackTemplate result;
     private final boolean needPolishing;
     private final float experience;
     private final int cookingTime;
 
     public CastingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
                          String toolType,
-                         ItemStack result, boolean needPolishing, float experience, int cookingTime) {
+                         ItemStackTemplate result, boolean needPolishing, float experience, int cookingTime) {
         this.group = group;
         this.category = category;
         this.requiredMaterials = requiredMaterials;
@@ -49,7 +53,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
 
     @Override
     public boolean matches(RecipeInput input, Level level) {
-        if (level.isClientSide)
+        if (level.isClientSide())
             return false;
 
         // Tool cast (slot 1)
@@ -103,7 +107,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
+    public ItemStack assemble(RecipeInput input) {
         ItemStack cast = input.getItem(1);
         if (cast.isEmpty())
             return ItemStack.EMPTY;
@@ -113,7 +117,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
             return ItemStack.EMPTY;
 
         // Build result item
-        ItemStack out = result.copy();
+        ItemStack out = result.create();
 
         // Transfer forging quality from cast
         if (!castData.quality().isEmpty() && !castData.quality().equals("none")) {
@@ -140,7 +144,6 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return out;
     }
 
-    @Override
     public NonNullList<ItemStack> getRemainingItems(RecipeInput input) {
         NonNullList<ItemStack> remaining = NonNullList.withSize(input.size(), ItemStack.EMPTY);
 
@@ -164,9 +167,9 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return remaining;
     }
 
-    @Override
-    public @NotNull NonNullList<Ingredient> getIngredients() {
-        NonNullList<Ingredient> list = NonNullList.create();
+    /** The cast as shown in recipe viewers: a clay cast holding exactly the required materials. */
+    public @NotNull List<ItemStack> getDisplayInputs() {
+        List<ItemStack> list = new java.util.ArrayList<>();
 
         // Calculate total material amount
         int total = requiredMaterials.values().stream().mapToInt(Integer::intValue).sum();
@@ -185,32 +188,26 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         ItemStack dummyCast = new ItemStack(net.stirdrem.overgeared.item.ModItems.CLAY_TOOL_CAST.get());
         dummyCast.set(ModComponents.CAST_DATA.get(), castData);
 
-        list.add(Ingredient.of(dummyCast));
+        list.add(dummyCast);
         return list;
     }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return result.copy();
+        return result.create();
     }
 
-    @Override
     public String getGroup() {
         return group;
     }
 
-    @Override
-    public boolean canCraftInDimensions(int w, int h) {
-        return true;
-    }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<CastingRecipe> getSerializer() {
         return ModRecipeSerializers.CASTING.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<CastingRecipe> getType() {
         return ModRecipeTypes.CASTING.get();
     }
 
@@ -243,21 +240,21 @@ public class CastingRecipe implements Recipe<RecipeInput> {
         return category;
     }
 
-    public static class Serializer implements RecipeSerializer<CastingRecipe> {
+    public static class Serializer {
 
-        private static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        public static final MapCodec<CastingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                         Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                         CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
                                 .forGetter(r -> r.category),
                         CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
                         Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
-                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                        ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
                         Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                         Codec.FLOAT.optionalFieldOf("experience", 0.0f).forGetter(r -> r.experience),
                         Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(r -> r.cookingTime))
                 .apply(instance, CastingRecipe::new));
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
+        public static final StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> STREAM_CODEC = StreamCodec.of(
                 Serializer::toNetwork, Serializer::fromNetwork);
 
         private static CastingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
@@ -265,7 +262,7 @@ public class CastingRecipe implements Recipe<RecipeInput> {
             CookingBookCategory category = buffer.readEnum(CookingBookCategory.class);
             Map<String, Integer> reqMaterials = CodecUtils.decodeMaterialIntMap(buffer);
             String toolType = buffer.readUtf();
-            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
             boolean need_polishing = buffer.readBoolean();
             float experience = buffer.readFloat();
             int cookingTime = buffer.readVarInt();
@@ -279,18 +276,16 @@ public class CastingRecipe implements Recipe<RecipeInput> {
             buffer.writeEnum(recipe.category);
             CodecUtils.encodeMaterialIntMap(buffer, recipe.requiredMaterials);
             buffer.writeUtf(recipe.toolType);
-            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
             buffer.writeBoolean(recipe.needPolishing);
             buffer.writeFloat(recipe.experience);
             buffer.writeVarInt(recipe.cookingTime);
         }
 
-        @Override
         public MapCodec<CastingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, CastingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

@@ -13,8 +13,15 @@ import net.stirdrem.overgeared.components.ModComponents;
 import net.stirdrem.overgeared.item.ModItems;
 
 public class BlueprintCloningRecipe extends CustomRecipe {
+    private final CraftingBookCategory category;
+
     public BlueprintCloningRecipe(CraftingBookCategory category) {
-        super(category);
+        this.category = category;
+    }
+
+    @Override
+    public CraftingBookCategory category() {
+        return category;
     }
 
     @Override
@@ -45,7 +52,7 @@ public class BlueprintCloningRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(CraftingInput input) {
         ItemStack source = ItemStack.EMPTY;
 
         for (int j = 0; j < input.size(); ++j) {
@@ -76,32 +83,26 @@ public class BlueprintCloningRecipe extends CustomRecipe {
         return result;
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width >= 3 && height >= 3;
-    }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<BlueprintCloningRecipe> getSerializer() {
         return ModRecipeSerializers.CRAFTING_BLUEPRINTCLONING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<BlueprintCloningRecipe> {
-        private static final MapCodec<BlueprintCloningRecipe> CODEC = 
+    public static class Serializer {
+        public static final MapCodec<BlueprintCloningRecipe> CODEC = 
             CraftingBookCategory.CODEC.fieldOf("category")
                 .xmap(BlueprintCloningRecipe::new, BlueprintCloningRecipe::category);
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> STREAM_CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> STREAM_CODEC = StreamCodec.composite(
                 CraftingBookCategory.STREAM_CODEC, BlueprintCloningRecipe::category,
                 BlueprintCloningRecipe::new
             );
 
-        @Override
         public MapCodec<BlueprintCloningRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, BlueprintCloningRecipe> streamCodec() {
             return STREAM_CODEC;
         }

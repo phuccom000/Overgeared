@@ -6,7 +6,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -18,8 +18,8 @@ import net.stirdrem.overgeared.recipe.RockKnappingRecipe;
 import java.util.List;
 
 public class KnappingEmiRecipe implements EmiRecipe {
-    private static final ResourceLocation STONE_TEXTURE = ResourceLocation.withDefaultNamespace("textures/block/stone.png");
-    private final ResourceLocation id;
+    private static final Identifier STONE_TEXTURE = Identifier.withDefaultNamespace("textures/block/stone.png");
+    private final Identifier id;
     private final RockKnappingRecipe recipe;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -37,7 +37,7 @@ public class KnappingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
@@ -99,11 +99,11 @@ public class KnappingEmiRecipe implements EmiRecipe {
         widgets.addSlot(outputs.getFirst(), gridStartX + gridSize + 32, startY + EmiLayoutConstants.SLOT_SIZE - 4).large(true).recipeContext(this);
     }
 
-    private ResourceLocation resolveUnchippedTexture(RockKnappingRecipe recipe) {
+    private Identifier resolveUnchippedTexture(RockKnappingRecipe recipe) {
         ItemStack[] stacks = recipe.getIngredient().getItems();
 
         for (ItemStack stack : stacks) {
-            ResourceLocation tex = KnappingResourceReloadListener.getTexture(stack);
+            Identifier tex = KnappingResourceReloadListener.getTexture(stack);
             if (tex != null) {
                 return tex;
             }

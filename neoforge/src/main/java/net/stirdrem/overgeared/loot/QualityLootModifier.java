@@ -1,4 +1,6 @@
 package net.stirdrem.overgeared.loot;
+import net.minecraft.core.Holder;
+import java.util.Optional;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,8 +21,8 @@ public class QualityLootModifier extends LootModifier {
             codecStart(inst).apply(inst, QualityLootModifier::new)
     );
 
-    public QualityLootModifier(LootItemCondition[] conditionsIn) {
-        super(conditionsIn);
+    public QualityLootModifier(Optional<Holder<LootItemCondition>> condition, int priority) {
+        super(condition, priority);
     }
 
     @Override

@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.networking.PacketDistributor;
 import net.stirdrem.overgeared.networking.PacketContext;
@@ -16,7 +16,7 @@ import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerAnvilPos
 import static net.stirdrem.overgeared.event.ModItemInteractEvents.playerMinigameVisibility;
 
 public record MinigameSetStartedC2SPacket(BlockPos pos) implements CustomPacketPayload {
-    public static final ResourceLocation ID = OvergearedMod.loc("minigame_set_started_c2s");
+    public static final Identifier ID = OvergearedMod.loc("minigame_set_started_c2s");
     public static final CustomPacketPayload.Type<MinigameSetStartedC2SPacket> TYPE = new CustomPacketPayload.Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, MinigameSetStartedC2SPacket> STREAM_CODEC = StreamCodec.of(

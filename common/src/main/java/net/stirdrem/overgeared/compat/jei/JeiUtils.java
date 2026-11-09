@@ -2,7 +2,7 @@ package net.stirdrem.overgeared.compat.jei;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.HolderLookup;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,9 +17,9 @@ final class JeiUtils {
     }
 
     /** Draws "N XP" right-aligned to {@code rightEdge}, without a trailing ".0" for whole numbers. */
-    static void drawExperience(GuiGraphics guiGraphics, float exp, int rightEdge, int y) {
+    static void drawExperience(GuiGraphicsExtractor guiGraphics, float exp, int rightEdge, int y) {
         String text = exp == (int) exp ? (int) exp + " XP" : String.format("%.1f XP", exp);
         Font font = Minecraft.getInstance().font;
-        guiGraphics.drawString(font, text, rightEdge - font.width(text), y, 0xFFFFFFFF, true);
+        guiGraphics.text(font, text, rightEdge - font.width(text), y, 0xFFFFFFFF, true);
     }
 }

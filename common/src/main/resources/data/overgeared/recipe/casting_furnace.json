@@ -6,15 +6,9 @@
     "xax"
   ],
   "key": {
-    "x": {
-      "item": "minecraft:red_nether_bricks"
-    },
-    "#": {
-      "item": "minecraft:blast_furnace"
-    },
-    "a": {
-      "item": "minecraft:diamond"
-    }
+    "x": "minecraft:red_nether_bricks",
+    "#": "minecraft:blast_furnace",
+    "a": "minecraft:diamond"
   },
   "result": {
     "id": "overgeared:casting_furnace"

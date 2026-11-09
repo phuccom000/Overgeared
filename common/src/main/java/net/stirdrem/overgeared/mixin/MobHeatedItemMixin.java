@@ -17,7 +17,7 @@ public class MobHeatedItemMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
-        if (entity.level().isClientSide || !(entity instanceof Mob)) return;
+        if (entity.level().isClientSide() || !(entity instanceof Mob)) return;
 
         Level level = entity.level();
 

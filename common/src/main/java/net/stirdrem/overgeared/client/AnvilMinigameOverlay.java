@@ -1,20 +1,21 @@
 package net.stirdrem.overgeared.client;
+import net.minecraft.client.renderer.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.config.ClientConfig;
 import net.stirdrem.overgeared.event.AnvilMinigameEvents;
 
-public class AnvilMinigameOverlay implements LayeredDraw.Layer {
+/** The minigame HUD; each loader registers {@link #render} as a HUD layer. */
+public class AnvilMinigameOverlay {
 
     public static final AnvilMinigameOverlay INSTANCE = new AnvilMinigameOverlay();
-    public static final ResourceLocation ID = OvergearedMod.loc("anvil_minigame");
+    public static final Identifier ID = OvergearedMod.loc("anvil_minigame");
 
-    private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil_minigame.png");
+    private static final Identifier TEXTURE = OvergearedMod.loc("textures/gui/smithing_anvil_minigame.png");
     private static final int TEXTURE_WIDTH = 256;
     private static final int TEXTURE_HEIGHT = 128;
 
@@ -29,18 +30,13 @@ public class AnvilMinigameOverlay implements LayeredDraw.Layer {
     private static final int PROGRESS_WIDTH = 222;
     private static final int ARROW_WIDTH = 8;
     private static final int ARROW_HEIGHT = 16;
-
-    @Override
-    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public void render(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         if (!AnvilMinigameEvents.isVisible()) return;
 
         int x = (guiGraphics.guiWidth() - IMAGE_WIDTH) / 2;
         int y = guiGraphics.guiHeight() - IMAGE_HEIGHT - ClientConfig.MINIGAME_OVERLAY_HEIGHT.get();
         int barX = x + BAR_OFFSET_X;
         int barY = y + BAR_OFFSET_Y;
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
 
         // Background
         blit(guiGraphics, x, y, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -65,7 +61,7 @@ public class AnvilMinigameOverlay implements LayeredDraw.Layer {
         blit(guiGraphics, arrowX, barY - 3, 9, 41, ARROW_WIDTH, ARROW_HEIGHT);
     }
 
-    private static void drawZone(GuiGraphics guiGraphics, int barX, int barY, int start, int end, int textureV) {
+    private static void drawZone(GuiGraphicsExtractor guiGraphics, int barX, int barY, int start, int end, int textureV) {
         int startPx = (int) (BAR_WIDTH * start / 100f);
         int endPx = (int) (BAR_WIDTH * end / 100f);
         if (endPx > startPx) {
@@ -73,7 +69,7 @@ public class AnvilMinigameOverlay implements LayeredDraw.Layer {
         }
     }
 
-    private static void blit(GuiGraphics guiGraphics, int x, int y, int u, int v, int width, int height) {
-        guiGraphics.blit(TEXTURE, x, y, u, v, width, height, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    private static void blit(GuiGraphicsExtractor guiGraphics, int x, int y, int u, int v, int width, int height) {
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, u, v, width, height, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 }

@@ -21,7 +21,7 @@ public interface IItemStackExtensionMixin {
         }
 
         // Get the original attribute modifiers
-        ItemAttributeModifiers originalModifiers = stack.getItem().getDefaultAttributeModifiers();
+        ItemAttributeModifiers originalModifiers = stack.getItem().getDefaultAttributeModifiers(stack);
 
         // Create new builder with only attack speed kept
         var builder = ItemAttributeModifiers.builder();

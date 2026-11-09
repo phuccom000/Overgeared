@@ -1,4 +1,12 @@
 package net.stirdrem.overgeared.block.entity;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 
 import net.stirdrem.overgeared.platform.Services;
 import net.minecraft.core.BlockPos;
@@ -106,7 +114,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
         ItemStack fuel = be.itemHandler.getStackInSlot(4);
 
         if (be.burnTime == 0 && be.canSmelt()) {
-            be.maxBurnTime = be.burnTime = Services.PLATFORM.getBurnTime(fuel);
+            be.maxBurnTime = be.burnTime = be.fuelBurnTime(fuel);
             if (be.burnTime > 0 && !fuel.isEmpty()) {
                 ItemStack fuelContainer = Services.PLATFORM.getCraftingRemainder(fuel);
                 fuel.shrink(1);
@@ -148,11 +156,10 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
         }
 
         RecipeInput recipeInput = new RecipeWrapper(input);
-        RecipeManager rm = level.getRecipeManager();
 
-        Optional<RecipeHolder<?>> result = rm.getRecipeFor(ModRecipeTypes.ALLOY_SMELTING.get(), recipeInput, level).map(r -> r);
+        Optional<RecipeHolder<?>> result = RecipeLookup.getRecipeFor(level, ModRecipeTypes.ALLOY_SMELTING.get(), recipeInput).map(r -> r);
         if (result.isEmpty()) {
-            result = rm.getRecipeFor(ModRecipeTypes.SHAPED_ALLOY_SMELTING.get(), recipeInput, level).map(r -> r);
+            result = RecipeLookup.getRecipeFor(level, ModRecipeTypes.SHAPED_ALLOY_SMELTING.get(), recipeInput).map(r -> r);
         }
         return result;
     }
@@ -257,7 +264,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
                 }
 
                 // No room inside the machine -> drop the remainder.
-                if (!remainder.isEmpty() && level != null && !level.isClientSide) {
+                if (!remainder.isEmpty() && level != null && !level.isClientSide()) {
                     Containers.dropItemStack(
                             level,
                             worldPosition.getX() + 0.5,
@@ -269,7 +276,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
             }
         }
 
-        if (level != null && !level.isClientSide && xp > 0.0F) {
+        if (level != null && !level.isClientSide() && xp > 0.0F) {
             storedExperience += xp;
         }
     }
@@ -279,7 +286,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
     // Experience logic (vanilla accurate)
     // --------------------------------------------------
     private void spawnExperience(float xp) {
-        if (this.level == null || this.level.isClientSide) return;
+        if (this.level == null || this.level.isClientSide()) return;
 
         int i = Mth.floor(xp);
         float f = xp - i;
@@ -339,7 +346,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
     }
 
     public void awardStoredExperience(Player player) {
-        if (this.level == null || this.level.isClientSide) return;
+        if (this.level == null || this.level.isClientSide()) return;
         if (storedExperience > 0 && player != null) {
             int total = (int) storedExperience;
             float fractional = storedExperience - total;
@@ -355,7 +362,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
                     SoundEvents.EXPERIENCE_ORB_PICKUP,
                     SoundSource.PLAYERS,
                     0.5F,
-                    this.level.random.nextFloat() * 0.1F + 0.9F
+                    this.level.getRandom().nextFloat() * 0.1F + 0.9F
             );
 
             storedExperience = 0;
@@ -367,9 +374,9 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
     // NBT
     // --------------------------------------------------
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, this.inventory, registries);
+    protected void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, this.inventory);
         tag.putInt("burnTime", burnTime);
         tag.putInt("maxBurnTime", maxBurnTime);
         tag.putInt("cookTime", cookTime);
@@ -378,14 +385,28 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ContainerHelper.loadAllItems(tag, this.inventory, registries);
-        burnTime = tag.getInt("burnTime");
-        maxBurnTime = tag.getInt("maxBurnTime");
-        cookTime = tag.getInt("cookTime");
-        cookTimeTotal = tag.getInt("cookTimeTotal");
-        storedExperience = tag.getFloat("storedXp");
+    protected void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        ContainerHelper.loadAllItems(tag, this.inventory);
+        burnTime = tag.getIntOr("burnTime", 0);
+        maxBurnTime = tag.getIntOr("maxBurnTime", 0);
+        cookTime = tag.getIntOr("cookTime", 0);
+        cookTimeTotal = tag.getIntOr("cookTimeTotal", 0);
+        storedExperience = tag.getFloatOr("storedXp", 0f);
+    }
+
+    /** Burn time of a fuel stack, read like the vanilla furnace does (the COOKING_FUEL component). */
+    private int fuelBurnTime(ItemStack stack) {
+        if (this.level instanceof ServerLevel serverLevel) {
+            return ResolvableInt.getFromItem(stack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, this.getLootContext(serverLevel), 0);
+        }
+        return stack.has(DataComponents.COOKING_FUEL) ? 1 : 0;
+    }
+
+    /** Called when the block is removed (replaces Block#onRemove). Drops our own way, instead of vanilla's container drop. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        drops();
     }
 
     public void drops() {
@@ -411,7 +432,7 @@ public class AlloySmelterBlockEntity extends BaseContainerBlockEntity implements
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
         if (index == 5) return false;
-        if (index == 4) return Services.PLATFORM.getBurnTime(stack) > 0;
+        if (index == 4) return stack.has(DataComponents.COOKING_FUEL);
         return true;
     }
 

@@ -1,40 +1,42 @@
 package net.stirdrem.overgeared.datagen;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
+import net.minecraft.core.RegistrySetBuilder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.stirdrem.overgeared.OvergearedMod;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
 
 @EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public class DataGenerators {
+    /** The "data" run (clientData) generates everything: client assets and server data. */
     @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+    public static void gatherClientData(GatherDataEvent.Client event) {
+        event.createProvider(ModModelProvider::new);
+        gatherServer(event);
+    }
 
-        generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput, lookupProvider));
-        generator.addProvider(true , new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(ModBlockLootTables::new, LootContextParamSets.BLOCK)), lookupProvider));
+    @SubscribeEvent
+    public static void gatherServerData(GatherDataEvent.Server event) {
+        gatherServer(event);
+    }
 
-        generator.addProvider(event.includeClient(), new ModBlockStateProvider(packOutput, existingFileHelper));
-        generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));
+    private static void gatherServer(GatherDataEvent event) {
+        // Recipes (with their advancements) and loot tables are datapack registry entries since 1.21.2
+        event.getDefaultPackGenerator().createReloadableRegistryObjects(new RegistrySetBuilder()
+                .add(RecipeProvider.asBootstrap(ModRecipeProvider::new))
+                .add(Registries.LOOT_TABLE, new LootTableProvider(Set.of(),
+                        List.of(new LootTableProvider.SubProviderEntry(ModBlockLootTables::new, LootContextParamSets.BLOCK)))),
+                // minecraft too: some recipes deliberately replace vanilla ones (e.g. minecraft:iron_pickaxe)
+                Set.of(OvergearedMod.MOD_ID, "minecraft"));
 
-        ModBlockTagGenerator blockTagGenerator = generator.addProvider(event.includeServer(),
-                new ModBlockTagGenerator(packOutput, lookupProvider, existingFileHelper));
-        generator.addProvider(event.includeServer(), new ModItemTagGenerator(packOutput, lookupProvider, blockTagGenerator.contentsGetter(), existingFileHelper));
-        generator.addProvider(event.includeServer(), new ModGlobalLootModifiersProvider(packOutput, lookupProvider));
-
+        event.createBlockAndItemTags(ModBlockTagGenerator::new, (output, lookup, blockTags) -> new ModItemTagGenerator(output, lookup));
+        event.createProvider(ModGlobalLootModifiersProvider::new);
     }
 }

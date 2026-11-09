@@ -121,7 +121,7 @@ public class KnappingRecipePattern {
             Codec.BOOL.optionalFieldOf("mirrored", false).forGetter(p -> p.mirrored)
     ).apply(instance, KnappingRecipePattern::new));
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, boolean[][]> PATTERN_ARRAY_STREAM_CODEC = StreamCodec.of(
+    public static final StreamCodec<RegistryFriendlyByteBuf, boolean[][]> PATTERN_ARRAY_STREAM_CODEC = StreamCodec.of(
             KnappingRecipePattern::toNetwork, KnappingRecipePattern::fromNetwork
     );
 

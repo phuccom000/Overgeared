@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    {
-      "item": "overgeared:stone_hoe_head"
-    },
-    {
-      "item": "minecraft:stick"
-    }
+    "overgeared:stone_hoe_head",
+    "minecraft:stick"
   ],
   "result": {
     "id": "minecraft:stone_hoe"

@@ -6,9 +6,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -21,33 +20,33 @@ import net.stirdrem.overgeared.OvergearedMod;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KnappingResourceReloadListener extends SimpleJsonResourceReloadListener {
+public class KnappingResourceReloadListener extends JsonDataReloadListener {
 
     private static final Gson GSON = new Gson();
 
     /* ---------- TEXTURES ---------- */
-    private static final Map<Item, ResourceLocation> ITEM_TEXTURES = new HashMap<>();
-    private static final Map<TagKey<Item>, ResourceLocation> TAG_TEXTURES = new HashMap<>();
+    private static final Map<Item, Identifier> ITEM_TEXTURES = new HashMap<>();
+    private static final Map<TagKey<Item>, Identifier> TAG_TEXTURES = new HashMap<>();
 
     /* ---------- SOUNDS ---------- */
     private static final Map<Item, SoundEvent> ITEM_SOUNDS = new HashMap<>();
     private static final Map<TagKey<Item>, SoundEvent> TAG_SOUNDS = new HashMap<>();
 
     /* ---------- FALLBACKS ---------- */
-    public static final ResourceLocation FALLBACK_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/stone.png");
+    public static final Identifier FALLBACK_TEXTURE =
+            Identifier.withDefaultNamespace("textures/block/stone.png");
 
     public static final SoundEvent FALLBACK_SOUND =
             SoundEvent.createVariableRangeEvent(
-                    ResourceLocation.withDefaultNamespace("block.stone.break")
+                    Identifier.withDefaultNamespace("block.stone.break")
             );
 
     public KnappingResourceReloadListener() {
-        super(GSON, "knapping_resources");
+        super("knapping_resources");
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> jsons,
+    protected void apply(Map<Identifier, JsonElement> jsons,
                          ResourceManager resourceManager,
                          ProfilerFiller profiler) {
 
@@ -56,7 +55,7 @@ public class KnappingResourceReloadListener extends SimpleJsonResourceReloadList
         ITEM_SOUNDS.clear();
         TAG_SOUNDS.clear();
 
-        for (Map.Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
+        for (Map.Entry<Identifier, JsonElement> entry : jsons.entrySet()) {
             JsonObject root = GsonHelper.convertToJsonObject(entry.getValue(), "root");
 
             if (!root.has("knapping")) continue;
@@ -67,17 +66,17 @@ public class KnappingResourceReloadListener extends SimpleJsonResourceReloadList
                 JsonObject obj = element.getAsJsonObject();
 
                 /* ---------- TEXTURE ---------- */
-                ResourceLocation texture = obj.has("texture")
-                        ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "texture"))
+                Identifier texture = obj.has("texture")
+                        ? Identifier.tryParse(GsonHelper.getAsString(obj, "texture"))
                         : null;
 
                 /* ---------- SOUND ---------- */
                 SoundEvent sound = null;
                 if (obj.has("sound")) {
-                    ResourceLocation soundId =
-                            ResourceLocation.tryParse(GsonHelper.getAsString(obj, "sound"));
+                    Identifier soundId =
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "sound"));
 
-                    sound = BuiltInRegistries.SOUND_EVENT.get(soundId);
+                    sound = BuiltInRegistries.SOUND_EVENT.getValue(soundId);
 
                     if (sound == null) {
                         OvergearedMod.LOGGER.warn(
@@ -90,10 +89,10 @@ public class KnappingResourceReloadListener extends SimpleJsonResourceReloadList
 
                 /* ---------- ITEM ---------- */
                 if (obj.has("item")) {
-                    ResourceLocation itemId =
-                            ResourceLocation.tryParse(GsonHelper.getAsString(obj, "item"));
+                    Identifier itemId =
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "item"));
 
-                    Item item = BuiltInRegistries.ITEM.get(itemId);
+                    Item item = BuiltInRegistries.ITEM.getValue(itemId);
 
                     if (item == null) {
                         OvergearedMod.LOGGER.warn(
@@ -109,8 +108,8 @@ public class KnappingResourceReloadListener extends SimpleJsonResourceReloadList
 
                 /* ---------- TAG ---------- */
                 if (obj.has("tag")) {
-                    ResourceLocation tagId =
-                            ResourceLocation.tryParse(GsonHelper.getAsString(obj, "tag"));
+                    Identifier tagId =
+                            Identifier.tryParse(GsonHelper.getAsString(obj, "tag"));
 
                     TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
 
@@ -133,10 +132,10 @@ public class KnappingResourceReloadListener extends SimpleJsonResourceReloadList
     /* ====================== RESOLUTION API ====================== */
     /* ============================================================ */
 
-    public static ResourceLocation getTexture(ItemStack stack) {
+    public static Identifier getTexture(ItemStack stack) {
         Item item = stack.getItem();
 
-        ResourceLocation tex = ITEM_TEXTURES.get(item);
+        Identifier tex = ITEM_TEXTURES.get(item);
         if (tex != null) return tex;
 
         for (var entry : TAG_TEXTURES.entrySet()) {

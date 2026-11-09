@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.mixin;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -25,7 +25,7 @@ public class ContainerCoolingMixin {
     private void onInitMenu(AbstractContainerMenu menu, CallbackInfo ci) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         Level level = player.level();
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
         if (overgeared$isBlacklisted(menu)) return;
 
         for (Slot slot : menu.slots) {
@@ -44,7 +44,7 @@ public class ContainerCoolingMixin {
         if (menu == player.inventoryMenu) return;
 
         Level level = player.level();
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
         if (overgeared$isBlacklisted(menu)) return;
 
         for (Slot slot : menu.slots) {
@@ -60,7 +60,7 @@ public class ContainerCoolingMixin {
         if (blacklist.isEmpty()) return false;
         for (Slot slot : menu.slots) {
             if (slot.container instanceof BlockEntity be) {
-                ResourceLocation beType = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
+                Identifier beType = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
                 if (beType != null && blacklist.contains(beType.toString())) {
                     return true;
                 }

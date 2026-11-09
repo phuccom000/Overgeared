@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.entity.custom;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 
 import com.google.common.collect.Sets;
 import net.minecraft.core.component.DataComponents;
@@ -14,7 +18,7 @@ import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -40,6 +44,8 @@ public class UpgradeArrowEntity extends AbstractArrow {
     private boolean cloudSpawned = false;
     private final Set<MobEffectInstance> effects = Sets.newHashSet();
     private final PotionContents potionContents;
+    // AbstractArrow no longer exposes its base damage, so keep track of it here.
+    private double trackedBaseDamage = 2.0;
 
     public UpgradeArrowEntity(EntityType<? extends UpgradeArrowEntity> type, ArrowTier tier, Level level, LivingEntity shooter, ItemStack stack, @Nullable ItemStack firedFromWeapon) {
         super(type, shooter, level, stack, firedFromWeapon);
@@ -90,14 +96,17 @@ public class UpgradeArrowEntity extends AbstractArrow {
 
         // Apply potion effects from potionContents
         for (MobEffectInstance effect : this.potionContents.getAllEffects()) {
-            if (effect.getEffect().value().isInstantenous()) {
-                effect.getEffect().value().applyInstantenousEffect(
-                        owner,
-                        owner instanceof LivingEntity livingOwner ? livingOwner : null,
-                        target,
-                        effect.getAmplifier(),
-                        1.0D
-                );
+            if (effect.getEffect().value().isInstantaneous()) {
+                if (this.level() instanceof ServerLevel serverLevel) {
+                    effect.getEffect().value().applyInstantaneousEffect(
+                            serverLevel,
+                            this,
+                            owner,
+                            target,
+                            effect.getAmplifier(),
+                            1.0D
+                    );
+                }
             } else {
                 MobEffectInstance reduced = new MobEffectInstance(
                         effect.getEffect(),
@@ -113,14 +122,17 @@ public class UpgradeArrowEntity extends AbstractArrow {
 
         // Apply custom effects
         for (MobEffectInstance effect : this.effects) {
-            if (effect.getEffect().value().isInstantenous()) {
-                effect.getEffect().value().applyInstantenousEffect(
-                        owner,
-                        owner instanceof LivingEntity livingOwner ? livingOwner : null,
-                        target,
-                        effect.getAmplifier(),
-                        1.0D
-                );
+            if (effect.getEffect().value().isInstantaneous()) {
+                if (this.level() instanceof ServerLevel serverLevel) {
+                    effect.getEffect().value().applyInstantaneousEffect(
+                            serverLevel,
+                            this,
+                            owner,
+                            target,
+                            effect.getAmplifier(),
+                            1.0D
+                    );
+                }
             } else {
                 target.addEffect(effect, owner);
             }
@@ -130,7 +142,7 @@ public class UpgradeArrowEntity extends AbstractArrow {
     @Override
     protected void onHit(HitResult result) {
         super.onHit(result);
-        if (!level().isClientSide && !this.cloudSpawned && result.getType() != HitResult.Type.MISS) {
+        if (!level().isClientSide() && !this.cloudSpawned && result.getType() != HitResult.Type.MISS) {
             PotionContents potionContents = this.referenceStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 
             if (!potionContents.getAllEffects().iterator().hasNext()) {
@@ -162,6 +174,16 @@ public class UpgradeArrowEntity extends AbstractArrow {
         return referenceStack;
     }
 
+    @Override
+    public void setBaseDamage(double baseDamage) {
+        this.trackedBaseDamage = baseDamage;
+        super.setBaseDamage(baseDamage);
+    }
+
+    public double getBaseDamage() {
+        return trackedBaseDamage;
+    }
+
     private void multiplyDamage(double factor) {
         setBaseDamage(getBaseDamage() * factor);
     }
@@ -172,42 +194,26 @@ public class UpgradeArrowEntity extends AbstractArrow {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putByte("Tier", this.entityData.get(DATA_TIER));
         tag.putInt("PotionColor", this.entityData.get(DATA_POTION_COLOR));
 
         if (!this.effects.isEmpty()) {
-            ListTag listtag = new ListTag();
-            for (MobEffectInstance mobeffectinstance : this.effects) {
-                listtag.add(mobeffectinstance.save());
-            }
-            tag.put("CustomPotionEffects", listtag);
+            tag.store("CustomPotionEffects", MobEffectInstance.CODEC.listOf(), List.copyOf(this.effects));
         }
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
 
-        if (tag.contains("Tier", 99)) {
-            this.entityData.set(DATA_TIER, tag.getByte("Tier"));
-        }
-        if (tag.contains("PotionColor", 99)) {
-            this.entityData.set(DATA_POTION_COLOR, tag.getInt("PotionColor"));
-        }
+        this.entityData.set(DATA_TIER, tag.getByteOr("Tier", this.entityData.get(DATA_TIER)));
+        tag.getInt("PotionColor").ifPresent(color -> this.entityData.set(DATA_POTION_COLOR, color));
+        this.trackedBaseDamage = tag.getDoubleOr("damage", 2.0);
 
         this.effects.clear();
-        if (tag.contains("CustomPotionEffects", 9)) {
-            ListTag listtag = tag.getList("CustomPotionEffects", 10);
-            for (int i = 0; i < listtag.size(); ++i) {
-                CompoundTag compoundtag = listtag.getCompound(i);
-                MobEffectInstance mobeffectinstance = MobEffectInstance.load(compoundtag);
-                if (mobeffectinstance != null) {
-                    this.addEffect(mobeffectinstance);
-                }
-            }
-        }
+        tag.read("CustomPotionEffects", MobEffectInstance.CODEC.listOf()).ifPresent(list -> list.forEach(this::addEffect));
     }
 
     public void addEffect(MobEffectInstance pEffectInstance) {
@@ -224,7 +230,8 @@ public class UpgradeArrowEntity extends AbstractArrow {
         PotionContents combined = new PotionContents(
                 this.potionContents.potion(),
                 this.potionContents.customColor(),
-                allEffects
+                allEffects,
+                this.potionContents.customName()
         );
 
         this.getEntityData().set(DATA_POTION_COLOR, combined.getColor());
@@ -273,7 +280,8 @@ public class UpgradeArrowEntity extends AbstractArrow {
         PotionContents cloudContents = new PotionContents(
                 potionContents.potion(),
                 potionContents.customColor(),
-                reducedEffects
+                reducedEffects,
+                potionContents.customName()
         );
 
         cloud.setPotionContents(cloudContents);
@@ -299,8 +307,8 @@ public class UpgradeArrowEntity extends AbstractArrow {
     @Override
     public void tick() {
         super.tick();
-        if (this.level().isClientSide) {
-            if (this.inGround) {
+        if (this.level().isClientSide()) {
+            if (this.isInGround()) {
                 if (this.inGroundTime % 5 == 0) {
                     this.makeParticle(1);
                 }

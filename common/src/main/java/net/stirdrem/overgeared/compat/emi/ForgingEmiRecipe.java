@@ -8,7 +8,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -29,7 +29,7 @@ public class ForgingEmiRecipe implements EmiRecipe {
     private static final int DISPLAY_HEIGHT = 66;
     private static final int X_OFFSET = 8; // Offset to center the recipe
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final ForgingRecipe recipe;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -88,7 +88,7 @@ public class ForgingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

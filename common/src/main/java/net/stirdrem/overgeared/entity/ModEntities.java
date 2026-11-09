@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.entity;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -14,21 +15,21 @@ public class ModEntities {
             DeferredRegister.create(Registries.ENTITY_TYPE, OvergearedMod.MOD_ID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<LingeringArrowEntity>> LINGERING_ARROW =
-            ENTITY_TYPES.register("lingering_arrow", () ->
+            ENTITY_TYPES.register("lingering_arrow", id ->
                     EntityType.Builder.<LingeringArrowEntity>of(LingeringArrowEntity::new, MobCategory.MISC)
                             .sized(0.5f, 0.5f)
                             .clientTrackingRange(4)
                             .updateInterval(20)
-                            .build("lingering_arrow")
+                            .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
             );
 
     public static final DeferredHolder<EntityType<?>, EntityType<UpgradeArrowEntity>> UPGRADE_ARROW =
-            ENTITY_TYPES.register("upgrade_arrow", () ->
+            ENTITY_TYPES.register("upgrade_arrow", id ->
                     EntityType.Builder.<UpgradeArrowEntity>of(UpgradeArrowEntity::new, MobCategory.MISC)
                             .sized(0.5f, 0.5f)
                             .clientTrackingRange(4)
                             .updateInterval(20)
-                            .build("upgrade_arrow")
+                            .build(ResourceKey.create(Registries.ENTITY_TYPE, id))
             );
 
     public static void register() {

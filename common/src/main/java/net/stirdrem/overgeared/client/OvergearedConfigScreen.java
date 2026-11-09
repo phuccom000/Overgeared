@@ -1,7 +1,10 @@
 package net.stirdrem.overgeared.client;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -48,7 +51,7 @@ public class OvergearedConfigScreen extends Screen {
                 listWidth, listHeight,
                 listTop, 24
         );
-        this.addWidget(configList);
+        this.addRenderableWidget(configList);
 
         buildEntries();
 
@@ -57,8 +60,8 @@ public class OvergearedConfigScreen extends Screen {
         this.addRenderableWidget(
                 Button.builder(Component.literal("Done"), b -> {
                             save();
-                            this.scrollPosition = configList.getScrollAmount();
-                            this.minecraft.setScreen(parent);
+                            this.scrollPosition = configList.scrollAmount();
+                            this.minecraft.gui.setScreen(parent);
                         }).bounds(this.width / 2 - btnW / 2, this.height - 30, btnW, btnH)
                         .build()
         );
@@ -73,7 +76,7 @@ public class OvergearedConfigScreen extends Screen {
     public void restoreScrollPosition() {
         if (this.configList != null && this.scrollPosition > 0) {
             this.configList.setScrollAmount(this.scrollPosition);
-            this.scrollPosition = configList.getScrollAmount();
+            this.scrollPosition = configList.scrollAmount();
         }
     }
 
@@ -104,6 +107,11 @@ public class OvergearedConfigScreen extends Screen {
                 "Enable crouch required for forging/grinding",
                 () -> getBoolean("General Configs.requireCrouchForForgingGrinding"),
                 v -> setBoolean("General Configs.requireCrouchForForgingGrinding", v)
+        ));
+        configList.addConfigEntry(new BooleanEntry(
+                "Give the guide book on first join",
+                () -> getBoolean("General Configs.giveGuideBookOnFirstJoin"),
+                v -> setBoolean("General Configs.giveGuideBookOnFirstJoin", v)
         ));
     }
 
@@ -523,16 +531,15 @@ public class OvergearedConfigScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(gui, mouseX, mouseY, partialTicks);
-        super.render(gui, mouseX, mouseY, partialTicks);
+    public void extractRenderState(GuiGraphicsExtractor gui, int mouseX, int mouseY, float partialTicks) {
+        super.extractRenderState(gui, mouseX, mouseY, partialTicks);
         if (scrollPosition > 0) {
             configList.setScrollAmount(scrollPosition);
             scrollPosition = 0; // Reset immediately after applying
         }
 
-        this.configList.render(gui, mouseX, mouseY, partialTicks);
-        gui.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+        this.configList.extractRenderState(gui, mouseX, mouseY, partialTicks);
+        gui.centeredText(this.font, this.title, this.width / 2, 15, 0xFFFFFFFF);
     }
 
 // --- Config Get/Set Helpers ---
@@ -602,7 +609,7 @@ public class OvergearedConfigScreen extends Screen {
 
         // Add this method to disable the selection background
         @Override
-        protected void renderSelection(GuiGraphics gui, int top, int width, int height, int outlineColor, int fillColor) {
+        protected void extractSelection(GuiGraphicsExtractor gui, ConfigEntry entry, int outlineColor) {
             // Empty implementation to remove the selection background
         }
 
@@ -618,15 +625,21 @@ public class OvergearedConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float partialTicks) {
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float partialTicks) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
             int textWidth = font.width(label);
             int centeredX = x + (listWidth - textWidth) / 2;
-            gui.drawString(font, label, centeredX, y + (entryHeight / 2) - 4, 0xFFFFFF);
+            gui.text(font, label, centeredX, y + (entryHeight / 2) - 4, 0xFFFFFFFF);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
             return false;
         }
 
@@ -652,19 +665,25 @@ public class OvergearedConfigScreen extends Screen {
 
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float pt) {
-            gui.drawString(font, label, x + 2, y + 5, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float pt) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
+            gui.text(font, label, x + 2, y + 5, 0xFFFFFFFF);
 
             int controlWidth = 80; // toggle width + reset button width + spacing
             toggle.setX(x + listWidth - controlWidth);
             toggle.setY(y);
-            toggle.render(gui, mouseX, mouseY, pt);
+            toggle.extractRenderState(gui, mouseX, mouseY, pt);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return toggle.mouseClicked(mouseX, mouseY, button);
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return toggle.mouseClicked(event, doubleClick);
         }
 
         @Override
@@ -698,24 +717,33 @@ public class OvergearedConfigScreen extends Screen {
 
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float pt) {
-            gui.drawString(font, label, x + 2, y + 5, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float pt) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
+            gui.text(font, label, x + 2, y + 5, 0xFFFFFFFF);
 
             int controlWidth = 80; // slider width + reset button width + spacing
             slider.setX(x + listWidth - controlWidth);
             slider.setY(y);
-            slider.render(gui, mouseX, mouseY, pt);
+            slider.extractRenderState(gui, mouseX, mouseY, pt);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return slider.mouseClicked(mouseX, mouseY, button);
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return slider.mouseClicked(event, doubleClick);
         }
 
         @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
-            return slider.mouseDragged(mouseX, mouseY, button, dx, dy);
+        public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return slider.mouseDragged(event, dx, dy);
         }
 
         @Override
@@ -752,25 +780,34 @@ public class OvergearedConfigScreen extends Screen {
 
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float pt) {
-            gui.drawString(font, label, x + 2, y + 5, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float pt) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
+            gui.text(font, label, x + 2, y + 5, 0xFFFFFFFF);
 
             int controlWidth = 80; // slider width + reset button width + spacing
             slider.setX(x + listWidth - controlWidth);
             slider.setY(y);
-            slider.render(gui, mouseX, mouseY, pt);
+            slider.extractRenderState(gui, mouseX, mouseY, pt);
 
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return slider.mouseClicked(mouseX, mouseY, button);
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return slider.mouseClicked(event, doubleClick);
         }
 
         @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
-            return slider.mouseDragged(mouseX, mouseY, button, dx, dy);
+        public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return slider.mouseDragged(event, dx, dy);
         }
 
         @Override
@@ -822,18 +859,24 @@ public class OvergearedConfigScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float pt) {
-            gui.drawString(font, label, x + 2, y + 5, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float pt) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
+            gui.text(font, label, x + 2, y + 5, 0xFFFFFFFF);
             editBox.setX(x + listWidth - 80);
             editBox.setY(y);
-            editBox.render(gui, mouseX, mouseY, pt);
+            editBox.extractRenderState(gui, mouseX, mouseY, pt);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
             // Let the edit box handle the click first
-            if (editBox.mouseClicked(mouseX, mouseY, button) && !editBox.isFocused()) {
+            if (editBox.mouseClicked(event, doubleClick) && !editBox.isFocused()) {
                 editBox.setFocused(true);
                 return true;
             }
@@ -841,12 +884,18 @@ public class OvergearedConfigScreen extends Screen {
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            return editBox.mouseReleased(mouseX, mouseY, button);
+        public boolean mouseReleased(MouseButtonEvent event) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return editBox.mouseReleased(event);
         }
 
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
+        int scanCode = event.keycode();
+        int modifiers = event.modifiers();
             if (editBox.isFocused()) {
                 if (keyCode == 256) { // ESC key
                     // Cancel and revert to original value
@@ -858,14 +907,15 @@ public class OvergearedConfigScreen extends Screen {
                     editBox.setFocused(false);
                     return true;
                 }
-                return editBox.keyPressed(keyCode, scanCode, modifiers);
+                return editBox.keyPressed(event);
             }
             return false;
         }
 
         @Override
-        public boolean charTyped(char codePoint, int modifiers) {
-            return editBox.charTyped(codePoint, modifiers);
+        public boolean charTyped(CharacterEvent event) {
+        char codePoint = (char) event.codepoint();
+            return editBox.charTyped(event);
         }
 
         @Override
@@ -904,7 +954,7 @@ public class OvergearedConfigScreen extends Screen {
         }
 
         private void openBlacklistEditor(String blacklistName, List<? extends String> currentItems) {
-            final double savedScrollPosition = configList.getScrollAmount();
+            final double savedScrollPosition = configList.scrollAmount();
             Minecraft mc = OvergearedConfigScreen.this.minecraft;
 
             Screen editorScreen = new BlacklistEditorScreen(
@@ -915,26 +965,32 @@ public class OvergearedConfigScreen extends Screen {
                     OvergearedConfigScreen.this
             );
 
-            mc.setScreen(editorScreen);
+            mc.gui.setScreen(editorScreen);
         }
 
         @Override
-        public void render(GuiGraphics gui, int idx, int y, int x, int listWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovered, float pt) {
-            gui.drawString(font, label, x + 2, y + 5, 0xFFFFFF);
+        public void extractContent(GuiGraphicsExtractor gui, int mouseX, int mouseY, boolean hovered, float pt) {
+            int y = this.getContentY();
+            int x = this.getContentX();
+            int listWidth = this.getContentWidth();
+            int entryHeight = this.getContentHeight();
+            gui.text(font, label, x + 2, y + 5, 0xFFFFFFFF);
 
             List<? extends String> items = getter.get();
             String itemCountText = " (" + items.size() + " items)";
-            gui.drawString(font, itemCountText, x + font.width(label) + 5, y + 5, 0xAAAAAA);
+            gui.text(font, itemCountText, x + font.width(label) + 5, y + 5, 0xFFAAAAAA);
 
             editButton.setX(x + listWidth - 80);
             editButton.setY(y);
-            editButton.render(gui, mouseX, mouseY, pt);
+            editButton.extractRenderState(gui, mouseX, mouseY, pt);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            return editButton.mouseClicked(mouseX, mouseY, button);
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
+            return editButton.mouseClicked(event, doubleClick);
         }
 
         @Override
@@ -947,6 +1003,7 @@ public class OvergearedConfigScreen extends Screen {
         // Reset all boolean values
         setBoolean("General Configs.enableModTooltips", true);
         setBoolean("General Configs.requireCrouchForForgingGrinding", true);
+        setBoolean("General Configs.giveGuideBookOnFirstJoin", true);
         setBoolean("Loot Quality.enableLootQuality", true);
         setBoolean("Loot Quality.enableMobDropQuality", true);
         setBoolean("Minigame Common Settings.enableMinigame", true);

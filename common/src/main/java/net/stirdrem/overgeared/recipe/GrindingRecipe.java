@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -9,11 +11,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
-public class GrindingRecipe implements Recipe<SingleRecipeInput> {
+public class GrindingRecipe implements OvergearedRecipe<SingleRecipeInput> {
     private final Ingredient ingredient;
-    private final ItemStack result;
+    private final ItemStackTemplate result;
 
-    public GrindingRecipe(Ingredient ingredient, ItemStack result) {
+    public GrindingRecipe(Ingredient ingredient, ItemStackTemplate result) {
         this.ingredient = ingredient;
         this.result = result;
     }
@@ -24,27 +26,22 @@ public class GrindingRecipe implements Recipe<SingleRecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider provider) {
-        return result.copy();
+    public ItemStack assemble(SingleRecipeInput input) {
+        return result.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return true;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return result;
+        return result.create();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<GrindingRecipe> getSerializer() {
         return ModRecipeSerializers.GRINDING_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<GrindingRecipe> getType() {
         return ModRecipeTypes.GRINDING_RECIPE.get();
     }
 
@@ -53,27 +50,25 @@ public class GrindingRecipe implements Recipe<SingleRecipeInput> {
     }
 
     public ItemStack getResult() {
-        return result;
+        return result.create();
     }
 
-    public static class Serializer implements RecipeSerializer<GrindingRecipe> {
+    public static class Serializer {
         public static final MapCodec<GrindingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Ingredient.CODEC_NONEMPTY.fieldOf("input").forGetter(r -> r.ingredient),
-                ItemStack.CODEC.fieldOf("output").forGetter(r -> r.result)
+                IngredientCodecs.LENIENT.fieldOf("input").forGetter(r -> r.ingredient),
+                ItemStackTemplate.CODEC.fieldOf("output").forGetter(r -> r.result)
         ).apply(instance, GrindingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, GrindingRecipe> STREAM_CODEC = StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, r -> r.ingredient,
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStackTemplate.STREAM_CODEC, r -> r.result,
                 GrindingRecipe::new
         );
 
-        @Override
         public MapCodec<GrindingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, GrindingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

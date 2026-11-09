@@ -6,7 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -24,11 +24,11 @@ import net.stirdrem.overgeared.util.ParticleUtils;
 public record PacketSendCounterC2SPacket(
         String quality,
         BlockPos pos,
-        ResourceLocation hitSound,
-        ResourceLocation completeSound,
-        ResourceLocation failedSound
+        Identifier hitSound,
+        Identifier completeSound,
+        Identifier failedSound
 ) implements CustomPacketPayload {
-    public static final ResourceLocation ID = OvergearedMod.loc("packet_send_counter");
+    public static final Identifier ID = OvergearedMod.loc("packet_send_counter");
     public static final CustomPacketPayload.Type<PacketSendCounterC2SPacket> TYPE = new CustomPacketPayload.Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, PacketSendCounterC2SPacket> STREAM_CODEC = StreamCodec.of(
@@ -36,17 +36,17 @@ public record PacketSendCounterC2SPacket(
                 ByteBufCodecs.STRING_UTF8.encode(buffer, packet.quality);
                 BlockPos.STREAM_CODEC.encode(buffer, packet.pos);
 
-                buffer.writeResourceLocation(packet.hitSound);
-                buffer.writeResourceLocation(packet.completeSound);
-                buffer.writeResourceLocation(packet.failedSound);
+                buffer.writeIdentifier(packet.hitSound);
+                buffer.writeIdentifier(packet.completeSound);
+                buffer.writeIdentifier(packet.failedSound);
             },
             buffer -> new PacketSendCounterC2SPacket(
                     ByteBufCodecs.STRING_UTF8.decode(buffer),
                     BlockPos.STREAM_CODEC.decode(buffer),
 
-                    buffer.readResourceLocation(),
-                    buffer.readResourceLocation(),
-                    buffer.readResourceLocation()
+                    buffer.readIdentifier(),
+                    buffer.readIdentifier(),
+                    buffer.readIdentifier()
             )
     );
 
@@ -83,7 +83,7 @@ public record PacketSendCounterC2SPacket(
                     level.playSound(
                             null,
                             pos,
-                            BuiltInRegistries.SOUND_EVENT.get(payload.failedSound),
+                            BuiltInRegistries.SOUND_EVENT.getValue(payload.failedSound),
                             SoundSource.BLOCKS,
                             1f,
                             1f
@@ -92,7 +92,7 @@ public record PacketSendCounterC2SPacket(
                     level.playSound(
                             null,
                             pos,
-                            BuiltInRegistries.SOUND_EVENT.get(payload.completeSound),
+                            BuiltInRegistries.SOUND_EVENT.getValue(payload.completeSound),
                             SoundSource.BLOCKS,
                             1f,
                             1f
@@ -102,7 +102,7 @@ public record PacketSendCounterC2SPacket(
                 level.playSound(
                         null,
                         pos,
-                        BuiltInRegistries.SOUND_EVENT.get(payload.hitSound),
+                        BuiltInRegistries.SOUND_EVENT.getValue(payload.hitSound),
                         SoundSource.BLOCKS,
                         1f,
                         1f

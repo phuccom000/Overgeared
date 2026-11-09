@@ -1,12 +1,13 @@
 package net.stirdrem.overgeared.datagen;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.resources.ResourceKey;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.util.ModTags;
@@ -15,28 +16,30 @@ import org.jetbrains.annotations.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public class ModBlockTagGenerator extends BlockTagsProvider {
-    public ModBlockTagGenerator(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, OvergearedMod.MOD_ID, existingFileHelper);
+    public ModBlockTagGenerator(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+        super(output, lookupProvider, OvergearedMod.MOD_ID);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(
-                        ModBlocks.STEEL_BLOCK.get(),
-                        ModBlocks.STONE_SMITHING_ANVIL.get(),
-                        ModBlocks.ALLOY_FURNACE.get(),
-                        ModBlocks.NETHER_ALLOY_FURNACE.get(),
-                        ModBlocks.CAST_FURNACE.get()
-                );
+                        key(ModBlocks.STEEL_BLOCK.get()),
+                        key(ModBlocks.STONE_SMITHING_ANVIL.get()),
+                        key(ModBlocks.ALLOY_FURNACE.get()),
+                        key(ModBlocks.NETHER_ALLOY_FURNACE.get()),
+                        key(ModBlocks.CAST_FURNACE.get()));
+
+        // Wooden, like the crafting table it is made from
+        this.tag(BlockTags.MINEABLE_WITH_AXE)
+                .add(key(ModBlocks.DRAFTING_TABLE.get()));
 
         this.tag(ModTags.Blocks.SMITHING_ANVIL)
                 .add(
-                        ModBlocks.STONE_SMITHING_ANVIL.get()
-                );
+                        key(ModBlocks.STONE_SMITHING_ANVIL.get()));
         ModBlocks.TIERED_ANVILS.values().forEach(block -> {
-            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.get());
-            this.tag(ModTags.Blocks.SMITHING_ANVIL).add(block.get());
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(key(block.get()));
+            this.tag(ModTags.Blocks.SMITHING_ANVIL).add(key(block.get()));
         });
 
         /*
@@ -45,11 +48,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
          */
         this.tag(ModTags.Blocks.NEEDS_COPPER_TOOL)
                 .add(
-                        Blocks.RAW_IRON_BLOCK,
-                        Blocks.IRON_ORE,
-                        Blocks.DEEPSLATE_IRON_ORE,
-                        Blocks.IRON_BLOCK
-                );
+                        key(Blocks.RAW_IRON_BLOCK),
+                        key(Blocks.IRON_ORE),
+                        key(Blocks.DEEPSLATE_IRON_ORE),
+                        key(Blocks.IRON_BLOCK));
 
         /*
          * Steel tier:
@@ -57,18 +59,17 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
          */
         this.tag(ModTags.Blocks.NEEDS_STEEL_TOOL)
                 .add(
-                        Blocks.OBSIDIAN,
-                        Blocks.CRYING_OBSIDIAN
-                );
+                        key(Blocks.OBSIDIAN),
+                        key(Blocks.CRYING_OBSIDIAN));
 
-        this.tag(BlockTags.create(ResourceLocation.parse("c:storage_blocks/steel")))
-                .add(ModBlocks.STEEL_BLOCK.get());
+        this.tag(BlockTags.create(Identifier.parse("c:storage_blocks/steel")))
+                .add(key(ModBlocks.STEEL_BLOCK.get()));
 
         this.tag(ModTags.Blocks.ANVIL_BASES)
-                .add(Blocks.STONE);
+                .add(key(Blocks.STONE));
 
         this.tag(ModTags.Blocks.IRON_ANVIL_BASES)
-                .add(Blocks.ANVIL);
+                .add(key(Blocks.ANVIL));
 
         /*
          * COPPER
@@ -79,11 +80,10 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
                 .addTag(BlockTags.INCORRECT_FOR_STONE_TOOL)
                 .remove(
-                        Blocks.RAW_IRON_BLOCK,
-                        Blocks.IRON_ORE,
-                        Blocks.DEEPSLATE_IRON_ORE,
-                        Blocks.IRON_BLOCK
-                );
+                        key(Blocks.RAW_IRON_BLOCK),
+                        key(Blocks.IRON_ORE),
+                        key(Blocks.DEEPSLATE_IRON_ORE),
+                        key(Blocks.IRON_BLOCK));
 
         /*
          * STEEL
@@ -94,9 +94,8 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
                 .addTag(BlockTags.INCORRECT_FOR_IRON_TOOL)
                 .remove(
-                        Blocks.OBSIDIAN,
-                        Blocks.CRYING_OBSIDIAN
-                );
+                        key(Blocks.OBSIDIAN),
+                        key(Blocks.CRYING_OBSIDIAN));
 
         /*
          * WOOD
@@ -133,5 +132,9 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         this.tag(BlockTags.INCORRECT_FOR_IRON_TOOL)
                 .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
                 .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+    }
+
+    private static ResourceKey<Block> key(Block value) {
+        return value.builtInRegistryHolder().key();
     }
 }

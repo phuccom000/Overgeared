@@ -3,7 +3,7 @@ package net.stirdrem.overgeared.util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class TooltipButton extends Button {
     private final Component tooltip;
@@ -18,7 +18,7 @@ public class TooltipButton extends Button {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
         // Do not render any background or text to make the button invisible
         // Optionally, you can add hover effects here
     }

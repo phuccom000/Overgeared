@@ -1,15 +1,22 @@
 package net.stirdrem.overgeared.datagen;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.stirdrem.overgeared.util.ItemKinds;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import com.google.common.collect.Lists;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -69,10 +76,14 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         this.hammering = hammering;
     }
 
+    /** Item components are not bound during data generation, so armor is recognised by its id. */
+    private static boolean isArmorForDatagen(Item item) {
+        String path = BuiltInRegistries.ITEM.getKey(item).getPath();
+        return path.endsWith("_helmet") || path.endsWith("_chestplate") || path.endsWith("_leggings") || path.endsWith("_boots");
+    }
+
     private static boolean isTools(Item item) {
-        return item instanceof SwordItem ||
-                item instanceof DiggerItem ||
-                item instanceof ProjectileWeaponItem;
+        return ItemKinds.isTiered(item) || item instanceof ProjectileWeaponItem;
     }
 
     public static boolean isToolPart(ItemStack stack) {
@@ -93,7 +104,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
     public ShapedForgingRecipeBuilder define(Character pSymbol, TagKey<Item> pTag) {
-        return this.define(pSymbol, Ingredient.of(pTag));
+        return this.define(pSymbol, DatagenIngredients.tag(pTag));
     }
 
     public ShapedForgingRecipeBuilder define(Character symbol, ItemLike item) {
@@ -203,8 +214,8 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public Item getResult() {
-        return this.result;
+    public ResourceKey<Recipe<?>> defaultId() {
+        return ResourceKey.create(Registries.RECIPE, BuiltInRegistries.ITEM.getKey(this.result));
     }
 
     public Item getFailedResult() {
@@ -212,12 +223,13 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public void save(RecipeOutput output, ResourceLocation id) {
+    public void save(RecipeOutput output, ResourceKey<Recipe<?>> idKey) {
+        Identifier id = idKey.identifier();
         this.ensureValid(id);
 
-        Advancement.Builder advBuilder = Advancement.Builder.recipeAdvancement()
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id))
+        Advancement.Builder advBuilder = output.advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(output.lookup(Registries.RECIPE).getOrThrow(idKey)))
+                .rewards(AdvancementRewards.Builder.recipe(idKey))
                 .requirements(AdvancementRequirements.Strategy.OR);
         this.criteria.forEach(advBuilder::addCriterion);
 
@@ -245,7 +257,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
         boolean actualHasPolishing = this.hasPolishing == null || this.hasPolishing;
         boolean actualNeedQuenching = this.needQuenching != null
                 ? this.needQuenching
-                : !(this.result instanceof ArmorItem);
+                : !isArmorForDatagen(this.result);
 
         Set<String> actualBlueprintTypes = new LinkedHashSet<>(this.blueprintTypes);
 
@@ -254,9 +266,9 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 : ForgingQuality.NONE;
         String actualTier = this.tier == null ? AnvilTier.IRON_ID : this.tier;
 
-        ItemStack actualFailedResult = this.failedResult != null
-                ? new ItemStack(this.failedResult, this.failedResultCount)
-                : ItemStack.EMPTY;
+        ItemStackTemplate actualFailedResult = this.failedResult != null
+                ? new ItemStackTemplate(this.failedResult, this.failedResultCount)
+                : null;
 
         // Convert char key → string key for JSON
         Map<String, ForgingRecipe.ForgingIngredient> stringKeyMap = new LinkedHashMap<>();
@@ -273,7 +285,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 new ArrayList<>(this.rows),
                 stringKeyMap,
                 ingredients,
-                new ItemStack(this.result, this.count),
+                new ItemStackTemplate(this.result, this.count),
                 actualFailedResult,
                 this.hammering,
                 actualHasQuality,
@@ -287,11 +299,11 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
                 height,
                 category);
 
-        output.accept(id, recipe,
+        output.accept(idKey, recipe,
                 advBuilder.build(id.withPrefix("recipes/" + this.category.getFolderName() + "/")));
     }
 
-    private void ensureValid(ResourceLocation pRecipeId) {
+    private void ensureValid(Identifier pRecipeId) {
         if (this.rows.isEmpty()) {
             throw new IllegalStateException("No pattern is defined for shaped forging recipe " + pRecipeId + "!");
         }

@@ -1,4 +1,6 @@
 package net.stirdrem.overgeared.item.custom;
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -20,7 +22,7 @@ public class ClayToolCastItem extends Item {
     public Component getName(ItemStack stack) {
         CastData castData = stack.getOrDefault(ModComponents.CAST_DATA.get(), CastData.EMPTY);
         if (!castData.toolType().isEmpty()) {
-            String name = super.getDescriptionId(stack).replace("item", "cast");
+            String name = getDescriptionId().replace("item", "cast");
             Component toolType = Component
                     .translatable("tooltype.overgeared." + castData.toolType().toLowerCase(java.util.Locale.ROOT));
             return Component.translatable(name, toolType);
@@ -29,11 +31,10 @@ public class ClayToolCastItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip,
-            TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, tooltip, tooltipFlag);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, display, tooltip, tooltipFlag);
 
-        tooltip.add(Component.translatable("tooltip.overgeared.unfired_cast_hint")
+        tooltip.accept(Component.translatable("tooltip.overgeared.unfired_cast_hint")
                 .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
 
         CastData castData = stack.getOrDefault(ModComponents.CAST_DATA.get(), CastData.EMPTY);
@@ -41,7 +42,7 @@ public class ClayToolCastItem extends Item {
         if (!castData.quality().isEmpty() && !castData.quality().equals("NONE")) {
             String quality = castData.quality();
             ChatFormatting color = ForgingQuality.getColor(quality);
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.quality")
                             .append(" ")
                             .append(Component
@@ -52,7 +53,7 @@ public class ClayToolCastItem extends Item {
 
         if (!castData.toolType().isEmpty()) {
             String toolType = castData.toolType();
-            tooltip.add(
+            tooltip.accept(
                     Component.translatable("tooltip.overgeared.tool_cast.type")
                             .append(" ")
                             .append(Component
@@ -62,7 +63,6 @@ public class ClayToolCastItem extends Item {
         }
     }
 
-    @Override
     public boolean isEnchantable(ItemStack stack) {
         return false;
     }

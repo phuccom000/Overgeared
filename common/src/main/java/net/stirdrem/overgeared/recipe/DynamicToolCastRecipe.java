@@ -22,8 +22,15 @@ import java.util.Map;
 
 public class DynamicToolCastRecipe extends CustomRecipe {
 
+    private final CraftingBookCategory category;
+
     public DynamicToolCastRecipe(CraftingBookCategory category) {
-        super(category);
+        this.category = category;
+    }
+
+    @Override
+    public CraftingBookCategory category() {
+        return category;
     }
 
     @Override
@@ -82,7 +89,7 @@ public class DynamicToolCastRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(CraftingInput input) {
         if (!ServerConfig.ENABLE_CASTING.get()) return ItemStack.EMPTY;
 
         ItemStack cast = ItemStack.EMPTY;
@@ -169,14 +176,21 @@ public class DynamicToolCastRecipe extends CustomRecipe {
         return cast;
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= 2;
-    }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<DynamicToolCastRecipe> getSerializer() {
         return ModRecipeSerializers.CRAFTING_DYNAMIC_TOOL_CAST.get();
     }
 
+
+    public static class Serializer {
+        public static final MapCodec<DynamicToolCastRecipe> CODEC =
+                CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC)
+                        .xmap(DynamicToolCastRecipe::new, DynamicToolCastRecipe::category);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, DynamicToolCastRecipe> STREAM_CODEC = StreamCodec.composite(
+                CraftingBookCategory.STREAM_CODEC, DynamicToolCastRecipe::category,
+                DynamicToolCastRecipe::new
+        );
+    }
 }

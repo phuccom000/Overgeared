@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.event;
+import net.minecraft.world.item.component.SwingAnimation;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.util.Prediction;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.platform.Menus;
@@ -11,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,7 +35,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -225,8 +229,8 @@ public class ModItemInteractEvents {
         }
         Optional<RecipeHolder<ForgingRecipe>> recipeOpt = anvilBE.getCurrentRecipeHolder();
 
-        if (level.getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING)) {
-            if (!serverPlayer.getRecipeBook().contains(recipeOpt.get())) {
+        if (serverPlayer.level().getGameRules().get(GameRules.LIMITED_CRAFTING)) {
+            if (!serverPlayer.getRecipeBook().contains(recipeOpt.get().id())) {
                 serverPlayer.sendSystemMessage(
                         Component.translatable("message.overgeared.no_recipe")
                                 .withStyle(ChatFormatting.RED),
@@ -245,7 +249,7 @@ public class ModItemInteractEvents {
 
             // Sync ownership
             CompoundTag sync = new CompoundTag();
-            sync.putUUID("anvilOwner", playerUUID);
+            sync.store("anvilOwner", UUIDUtil.CODEC, playerUUID);
             sync.putLong("anvilPos", pos.asLong());
             PacketDistributor.sendToAllPlayers(new MinigameSyncS2CPacket(sync));
 
@@ -270,7 +274,7 @@ public class ModItemInteractEvents {
         }
 
         event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
+        event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
     private static void onUseFletching(PlayerInteractEvent.RightClickBlock event, Player player, Level level) {
@@ -288,7 +292,7 @@ public class ModItemInteractEvents {
         );
         player.openMenu(provider);
 
-        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
+        event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
 
@@ -301,7 +305,7 @@ public class ModItemInteractEvents {
         if (waterLevel <= 0) return;
         HeatedItem.setCooledSingle(heldItem, player);
 
-        event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
+        event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
 
@@ -338,7 +342,7 @@ public class ModItemInteractEvents {
                 }
                 stack.shrink(1);
                 if (!player.getInventory().add(polishedItem)) {
-                    player.drop(polishedItem, false);
+                    player.drop(polishedItem, false, Prediction.SERVER_ONLY);
                 }
             } else {
                 stack.set(ModComponents.POLISHED.get(), true);
@@ -359,15 +363,15 @@ public class ModItemInteractEvents {
             }
 
             // Check blacklist
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
             List<? extends String> blacklist = ServerConfig.GRINDING_BLACKLIST.get();
             for (String entry : blacklist) {
                 if (entry.startsWith("#")) {
-                    ResourceLocation tagId = ResourceLocation.parse(entry.substring(1));
+                    Identifier tagId = Identifier.parse(entry.substring(1));
                     TagKey<Item> tag = TagKey.create(Registries.ITEM, tagId);
                     if (stack.is(tag)) return; // blacklisted — let vanilla GUI open
                 } else {
-                    if (itemId.equals(ResourceLocation.parse(entry))) return;
+                    if (itemId.equals(Identifier.parse(entry))) return;
                 }
             }
             if (GrindingBlacklistReloadListener.isBlacklisted(stack)) return;
@@ -419,8 +423,8 @@ public class ModItemInteractEvents {
 
         BlockPos pos = event.getPos();
         // Drop roll
-        if (level.random.nextFloat() < tool.dropChance()) {
-            ItemStack dropStack = tool.dropItem().copy();
+        if (level.getRandom().nextFloat() < tool.dropChance()) {
+            ItemStack dropStack = tool.dropItem().create();
 
             double sx = pos.getX() + 0.5;
             double sy = pos.getY() + 0.9;
@@ -446,16 +450,16 @@ public class ModItemInteractEvents {
         }
 
         // Tool damage / break roll
-        if (level.random.nextFloat() < tool.breakChance()) {
+        if (level.getRandom().nextFloat() < tool.breakChance()) {
 
             if (heldItem.isDamageableItem()) {
-                heldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(event.getHand()));
+                heldItem.hurtAndBreak(1, player, event.getHand().asEquipmentSlot());
             } else {
                 heldItem.shrink(1);
             }
 
             level.playSound(null, player.blockPosition(),
-                    SoundEvents.ITEM_BREAK, SoundSource.PLAYERS,
+                    SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS,
                     0.8F, 1.0F);
         } else {
             level.playSound(null, pos,
@@ -463,7 +467,7 @@ public class ModItemInteractEvents {
                     1.0F, 1.0F);
         }
 
-        player.swing(event.getHand(), true);
+        player.swing(event.getHand(), SwingAnimation.DEFAULT, true);
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
     }
@@ -471,12 +475,12 @@ public class ModItemInteractEvents {
     public static void handleAnvilOwnershipSync(CompoundTag syncData) {
         UUID owner = null;
         if (syncData.contains("anvilOwner")) {
-            owner = syncData.getUUID("anvilOwner");
-            if (owner.getMostSignificantBits() == 0 && owner.getLeastSignificantBits() == 0) {
+            owner = syncData.read("anvilOwner", UUIDUtil.CODEC).orElse(null);
+            if (owner != null && owner.getMostSignificantBits() == 0 && owner.getLeastSignificantBits() == 0) {
                 owner = null;
             }
         }
-        BlockPos pos = BlockPos.of(syncData.getLong("anvilPos"));
+        BlockPos pos = BlockPos.of(syncData.getLongOr("anvilPos", 0L));
         ClientAnvilMinigameData.putOccupiedAnvil(pos, owner);
 
         //  Only start minigame if this client is the new owner and it was waiting
@@ -514,7 +518,7 @@ public class ModItemInteractEvents {
             // 3. Sync null ownership to all clients (they clear their occupied-anvil entry on receipt)
             CompoundTag syncData = new CompoundTag();
             syncData.putLong("anvilPos", pos.asLong());
-            syncData.putUUID("anvilOwner", new UUID(0, 0)); // special "no owner" UUID
+            syncData.store("anvilOwner", UUIDUtil.CODEC, new UUID(0, 0)); // special "no owner" UUID
             PacketDistributor.sendToAllPlayers(new MinigameSyncS2CPacket(syncData));
         }
     }
@@ -596,7 +600,7 @@ public class ModItemInteractEvents {
                 player.setItemInHand(player.getUsedItemHand(), cooledIngot);
             } else {
                 if (!player.getInventory().add(cooledIngot)) {
-                    player.drop(cooledIngot, false);
+                    player.drop(cooledIngot, false, Prediction.SERVER_ONLY);
                 }
             }
 
@@ -611,8 +615,7 @@ public class ModItemInteractEvents {
         SingleRecipeInput container = new SingleRecipeInput(new ItemStack(heatedItem));
 
         // Find the first matching GrindingRecipe
-        Optional<RecipeHolder<GrindingRecipe>> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
+        Optional<RecipeHolder<GrindingRecipe>> recipeOpt = RecipeLookup.getAllRecipesFor(level, ModRecipeTypes.GRINDING_RECIPE.get())
                 .stream()
                 .filter(r -> r.value().matches(container, level))
                 .findFirst();
@@ -634,8 +637,7 @@ public class ModItemInteractEvents {
         SingleRecipeInput container = new SingleRecipeInput(new ItemStack(heatedItem));
 
         // Find the first matching CoolingRecipe
-        Optional<RecipeHolder<CoolingRecipe>> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())
+        Optional<RecipeHolder<CoolingRecipe>> recipeOpt = RecipeLookup.getAllRecipesFor(level, ModRecipeTypes.COOLING_RECIPE.get())
                 .stream()
                 .filter(r -> r.value().matches(container, level))
                 .findFirst();
@@ -652,8 +654,7 @@ public class ModItemInteractEvents {
         SingleRecipeInput container = new SingleRecipeInput(new ItemStack(heatedItem));
 
         // Find the first matching GrindingRecipe
-        Optional<RecipeHolder<GrindingRecipe>> recipeOpt = level.getRecipeManager()
-                .getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())
+        Optional<RecipeHolder<GrindingRecipe>> recipeOpt = RecipeLookup.getAllRecipesFor(level, ModRecipeTypes.GRINDING_RECIPE.get())
                 .stream()
                 .filter(r -> r.value().matches(container, level))
                 .findFirst();
@@ -667,7 +668,7 @@ public class ModItemInteractEvents {
 //    @SubscribeEvent
 //    public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
 //        if (event.getObject() instanceof ItemEntity) {
-//            event.addCapability(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "heated_item"),
+//            event.addCapability(Identifier.tryBuild(OvergearedMod.MOD_ID, "heated_item"),
 //                    new HeatedItemProvider());
 //        }
 //    }
@@ -732,7 +733,7 @@ public class ModItemInteractEvents {
             usedHand.shrink(1);
             player.setItemInHand(hand, usedHand);
             if (!player.getInventory().add(resultArrow)) {
-                player.drop(resultArrow, false);
+                player.drop(resultArrow, false, Prediction.SERVER_ONLY);
             }
         }
 
@@ -744,6 +745,8 @@ public class ModItemInteractEvents {
         } else {
             // Update the usage count on the potion using data component
             otherStack.set(ModComponents.TIPPED_USES.get(), used);
+            // Scales the remaining potion's effect durations and tooltip (replaces the 1.21.1 PotionItem mixin)
+            otherStack.set(net.minecraft.core.component.DataComponents.POTION_DURATION_SCALE, Math.max(0.1f, 1.0f - (used / 8.0f)));
         }
 
         level.playSound(null,
@@ -782,7 +785,7 @@ public class ModItemInteractEvents {
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
 
-        if (!player.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+        if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
 
             /*player.level().playSound(
                     null,

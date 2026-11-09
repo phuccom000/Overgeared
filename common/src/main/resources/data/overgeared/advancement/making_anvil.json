@@ -1,11 +1,7 @@
 {
   "display": {
     "icon": {
-<<<<<<<< HEAD:common/src/main/resources/data/overgeared/advancement/making_anvil.json
       "id": "overgeared:stone_smithing_anvil"
-========
-      "id": "overgeared:stone_anvil"
->>>>>>>> 53cded36b04f2bd290f147e012bd66705fbee7c9:src/main/resources/data/overgeared/advancement/making_anvil.json
     },
     "title": "Anvil Acquired",
     "description": "Convert a stone block or a vanilla anvil into your first smithing anvil",

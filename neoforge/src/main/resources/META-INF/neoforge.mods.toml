@@ -1,5 +1,3 @@
-modLoader = "javafml"
-loaderVersion = "[4,)"
 issueTrackerURL = "https://github.com/phuccom000/Overgeared-1.20.1/issues"
 license = "${mod_license}"
 
@@ -9,10 +7,9 @@ credits = "To everyone in waccyy's Fantasia Discord server for helping me with t
 description = "${mod_description}"
 displayName = "${mod_name}"
 displayURL = "https://github.com/phuccom000/Overgeared-1.20.1"
-logoFile = "logo.png"
+iconFile = "logo.png"
 modId = "${mod_id}"
 version = "${mod_version}"
-enumExtensions = "META-INF/enumextensions.json"
 
 [[dependencies.${ mod_id }]]
 modId = "neoforge"
@@ -39,14 +36,6 @@ side = "BOTH"
 modId = "dragonsurvival"
 type = "optional"
 versionRange = "[2.0,)"
-ordering = "AFTER"
-side = "BOTH"
-
-# Optional: KubeJS startup scripts can add anvil tiers. AFTER makes KubeJS (and its scripts) load before our blocks register.
-[[dependencies.${ mod_id }]]
-modId = "kubejs"
-type = "optional"
-versionRange = "[2101.7,)"
 ordering = "AFTER"
 side = "BOTH"
 

@@ -1,7 +1,11 @@
 package net.stirdrem.overgeared.neoforge;
+import net.stirdrem.overgeared.networking.packet.SyncRecipesS2CPacket;
+import net.stirdrem.overgeared.datapack.JsonDataReloadListener;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -12,10 +16,8 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -23,8 +25,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.event.village.VillagerTradesEvent;
-import net.neoforged.neoforge.event.village.WandererTradesEvent;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.components.ModComponents;
@@ -34,7 +34,6 @@ import net.stirdrem.overgeared.event.ModItemInteractEvents;
 import net.stirdrem.overgeared.event.QualityAttributeHandler;
 import net.stirdrem.overgeared.event.ReloadListeners;
 import net.stirdrem.overgeared.event.platform.TriState;
-import net.stirdrem.overgeared.recipe.BetterBrewingRecipe;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -42,7 +41,7 @@ import java.util.function.Consumer;
 /**
  * Forwards NeoForge game events to the loader-independent handlers.
  */
-@EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public final class NeoForgeGameEvents {
     private NeoForgeGameEvents() {
     }
@@ -50,26 +49,23 @@ public final class NeoForgeGameEvents {
     // ---- Registration-style game events ----
 
     @SubscribeEvent
-    public static void registerBrewingRecipes(RegisterBrewingRecipesEvent event) {
-        if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) {
-            event.getBuilder().addRecipe(new BetterBrewingRecipe(
-                    Potions.THICK.value(),
-                    Items.CHORUS_FRUIT,
-                    new ItemStack(Items.DRAGON_BREATH)
-            ));
-        }
-    }
-
-    @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {
         ModCommands.register(event.getDispatcher());
     }
 
     @SubscribeEvent
-    public static void addReloadListeners(AddReloadListenerEvent event) {
+    public static void addReloadListeners(AddServerReloadListenersEvent event) {
+        // The listeners decode tags, which needs the registries of this reload
+        JsonDataReloadListener.setRegistries(event.getServerResources().fullRegistries().lookup());
         for (ReloadListeners.Entry entry : ReloadListeners.SERVER_DATA) {
-            event.addListener(entry.factory().get());
+            event.addListener(entry.id(), entry.factory().get());
         }
+    }
+
+    /** Recipes are not synced to clients any more; send ours on join and on /reload (see RecipeLookup). */
+    @SubscribeEvent
+    public static void onDatapackSync(OnDatapackSyncEvent event) {
+        event.getRelevantPlayers().forEach(SyncRecipesS2CPacket::sendTo);
     }
 
     // ---- Server / player lifecycle ----
@@ -121,7 +117,7 @@ public final class NeoForgeGameEvents {
             }
 
             @Override
-            public void removeModifier(Holder<Attribute> attribute, ResourceLocation id) {
+            public void removeModifier(Holder<Attribute> attribute, Identifier id) {
                 event.removeModifier(attribute, id);
             }
 
@@ -135,17 +131,7 @@ public final class NeoForgeGameEvents {
         }
     }
 
-    // ---- Villagers ----
-
-    @SubscribeEvent
-    public static void onVillagerTrades(VillagerTradesEvent event) {
-        ModEvents.onVillagerTrades(event.getType(), event.getTrades());
-    }
-
-    @SubscribeEvent
-    public static void onWanderingTraderTrades(WandererTradesEvent event) {
-        ModEvents.onWanderingTraderTrades(event.getGenericTrades(), event.getRareTrades());
-    }
+    // Villager and wandering trader trades are JSON (data/overgeared/villager_trade); quality: VillagerTradeMixin.
 
     // ---- Interactions ----
 
@@ -195,11 +181,11 @@ public final class NeoForgeGameEvents {
         }
     }
 
-    private static net.neoforged.neoforge.common.util.TriState toNeo(TriState state) {
+    private static net.minecraft.util.TriState toNeo(TriState state) {
         return switch (state) {
-            case TRUE -> net.neoforged.neoforge.common.util.TriState.TRUE;
-            case FALSE -> net.neoforged.neoforge.common.util.TriState.FALSE;
-            case DEFAULT -> net.neoforged.neoforge.common.util.TriState.DEFAULT;
+            case TRUE -> net.minecraft.util.TriState.TRUE;
+            case FALSE -> net.minecraft.util.TriState.FALSE;
+            case DEFAULT -> net.minecraft.util.TriState.DEFAULT;
         };
     }
 }

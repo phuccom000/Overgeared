@@ -1,16 +1,21 @@
 package net.stirdrem.overgeared.datagen;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 
 import com.google.common.collect.Lists;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.core.NonNullList;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +52,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
     }
 
     public OvergearedShapelessRecipeBuilder requires(TagKey<Item> pTag) {
-        return this.requires(Ingredient.of(pTag));
+        return this.requires(DatagenIngredients.tag(pTag));
     }
 
     public OvergearedShapelessRecipeBuilder requires(ItemLike pItem) {
@@ -85,17 +90,18 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public Item getResult() {
-        return this.result;
+    public ResourceKey<Recipe<?>> defaultId() {
+        return ResourceKey.create(Registries.RECIPE, BuiltInRegistries.ITEM.getKey(this.result));
     }
 
     @Override
-    public void save(RecipeOutput output, ResourceLocation recipeId) {
+    public void save(RecipeOutput output, ResourceKey<Recipe<?>> recipeIdKey) {
+        Identifier recipeId = recipeIdKey.identifier();
         this.ensureValid(recipeId);
 
-        Advancement.Builder advBuilder = Advancement.Builder.recipeAdvancement()
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(recipeId))
-                .rewards(AdvancementRewards.Builder.recipe(recipeId))
+        Advancement.Builder advBuilder = output.advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(output.lookup(Registries.RECIPE).getOrThrow(recipeIdKey)))
+                .rewards(AdvancementRewards.Builder.recipe(recipeIdKey))
                 .requirements(AdvancementRequirements.Strategy.OR);
         this.criteria.forEach(advBuilder::addCriterion);
 
@@ -111,12 +117,12 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
         OvergearedShapelessRecipe recipe = new OvergearedShapelessRecipe(
                 this.group == null ? "" : this.group,
                 determineBookCategory(this.category),
-                new ItemStack(this.result, this.count),
+                new ItemStackTemplate(this.result, this.count),
                 ingredients
         );
 
         output.accept(
-                recipeId,
+                recipeIdKey,
                 recipe,
                 advBuilder.build(
                         recipeId.withPrefix("recipes/" + this.category.getFolderName() + "/")
@@ -124,7 +130,7 @@ public class OvergearedShapelessRecipeBuilder implements RecipeBuilder {
         );
     }
 
-    private void ensureValid(ResourceLocation pId) {
+    private void ensureValid(Identifier pId) {
         if (this.criteria.isEmpty()) {
             throw new IllegalStateException("No way of obtaining recipe " + pId);
         }

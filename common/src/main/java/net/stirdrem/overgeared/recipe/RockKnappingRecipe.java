@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -9,12 +11,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
-public class RockKnappingRecipe implements Recipe<RecipeInput> {
-    protected final ItemStack result;
+public class RockKnappingRecipe implements OvergearedRecipe<RecipeInput> {
+    protected final ItemStackTemplate result;
     protected final Ingredient ingredient;
     protected final KnappingRecipePattern pattern;
 
-    public RockKnappingRecipe(ItemStack result, Ingredient ingredient, KnappingRecipePattern pattern) {
+    public RockKnappingRecipe(ItemStackTemplate result, Ingredient ingredient, KnappingRecipePattern pattern) {
         this.result = result;
         this.ingredient = ingredient;
         this.pattern = pattern;
@@ -43,18 +45,13 @@ public class RockKnappingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public ItemStack assemble(RecipeInput input, HolderLookup.Provider provider) {
-        return result.copy();
+    public ItemStack assemble(RecipeInput input) {
+        return result.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width == 3 && height == 3;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return result;
+        return result.create();
     }
 
     public Ingredient getIngredient() {
@@ -62,7 +59,7 @@ public class RockKnappingRecipe implements Recipe<RecipeInput> {
     }
 
     public ItemStack getResult() {
-        return result;
+        return result.create();
     }
 
     public KnappingRecipePattern getPattern() {
@@ -70,36 +67,34 @@ public class RockKnappingRecipe implements Recipe<RecipeInput> {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<RockKnappingRecipe> getSerializer() {
         return ModRecipeSerializers.ROCK_KNAPPING_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<RockKnappingRecipe> getType() {
         return ModRecipeTypes.KNAPPING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<RockKnappingRecipe> {
+    public static class Serializer {
 
         public static final MapCodec<RockKnappingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
-                Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
+                IngredientCodecs.LENIENT.fieldOf("ingredient").forGetter(r -> r.ingredient),
                 KnappingRecipePattern.CODEC.forGetter(r -> r.pattern)
         ).apply(instance, RockKnappingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, RockKnappingRecipe> STREAM_CODEC = StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStackTemplate.STREAM_CODEC, r -> r.result,
                 Ingredient.CONTENTS_STREAM_CODEC, r -> r.ingredient,
                 KnappingRecipePattern.STREAM_CODEC, r -> r.pattern,
                 RockKnappingRecipe::new
         );
 
-        @Override
         public MapCodec<RockKnappingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, RockKnappingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

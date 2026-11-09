@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.core.component.DataComponents;
 
 import net.stirdrem.overgeared.platform.Services;
 import net.minecraft.network.FriendlyByteBuf;
@@ -129,7 +130,7 @@ public class AlloySmelterMenu extends AbstractContainerMenu {
         // --- CASE 2: From player inventory to TE ---
         else if (index >= startPlayer && index < endPlayer) {
             // Try to move to fuel slot if it's fuel
-            if (Services.PLATFORM.getBurnTime(sourceStack) > 0) {
+            if (sourceStack.has(DataComponents.COOKING_FUEL)) {
                 // First try fuel slot
                 if (!moveItemStackTo(sourceStack, fuelSlot, fuelSlot + 1, false)) {
                     // If fuel slot is occupied, try input slots as fallback

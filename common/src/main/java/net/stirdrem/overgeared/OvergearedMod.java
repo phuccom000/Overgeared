@@ -1,8 +1,7 @@
 package net.stirdrem.overgeared;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.RecipeBookType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.core.registries.Registries;
 import net.stirdrem.overgeared.platform.Services;
@@ -33,7 +32,6 @@ public final class OvergearedMod {
     /**
      * Added to the enum by NeoForge's enum extensions (neoforge) or by a mixin (fabric).
      */
-    public static final RecipeBookType FORGING = RecipeBookType.valueOf("OVERGEARED_FORGING");
 
     private OvergearedMod() {
     }
@@ -69,6 +67,10 @@ public final class OvergearedMod {
         // All tiered anvils now share the iron anvil's block entity type
         Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_a_smithing_table_be"), loc("smithing_table_be"));
         Services.PLATFORM.registerAlias(Registries.BLOCK_ENTITY_TYPE, loc("tier_b_smithing_table_be"), loc("smithing_table_be"));
+        // The mod's own copper tools, armor and nugget were replaced by vanilla's (26.x)
+        for (String piece : new String[]{"sword", "pickaxe", "axe", "hoe", "shovel", "helmet", "chestplate", "leggings", "boots", "nugget"}) {
+            Services.PLATFORM.registerAlias(Registries.ITEM, loc("copper_" + piece), Identifier.withDefaultNamespace("copper_" + piece));
+        }
     }
 
     public static void commonSetup() {
@@ -80,7 +82,7 @@ public final class OvergearedMod {
         DispenserBlock.registerBehavior(ModItems.DIAMOND_UPGRADE_ARROW.get(), new UpgradeArrowDispenseBehavior());
     }
 
-    public static ResourceLocation loc(String name) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+    public static Identifier loc(String name) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, name);
     }
 }

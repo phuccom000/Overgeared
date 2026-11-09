@@ -30,7 +30,7 @@ public final class LootQuality {
      * Entity death loot is the only loot context that carries a damage source.
      */
     private static boolean isMobDrop(LootContext context) {
-        return context.hasParam(LootContextParams.DAMAGE_SOURCE);
+        return context.hasParameter(LootContextParams.DAMAGE_SOURCE);
     }
 
     private static void apply(List<ItemStack> generatedLoot, RandomSource random) {

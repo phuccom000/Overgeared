@@ -1,5 +1,9 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -16,16 +20,21 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
             String group,
             CookingBookCategory category,
             Ingredient ingredient,
-            ItemStack result,
+            ItemStackTemplate result,
             float xp,
             int time
     ) {
-        super(group, category, ingredient, result, xp, time);
+        super(new Recipe.CommonInfo(true), new AbstractCookingRecipe.CookingBookInfo(category, group), ingredient,
+                result, xp, time);
+        this.result = result;
     }
 
+    /** The result as written in the recipe (the parent only keeps an ItemStackTemplate). */
+    private final ItemStackTemplate result;
+
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
-        ItemStack result = super.assemble(input, registries).copy();
+    public ItemStack assemble(SingleRecipeInput input) {
+        ItemStack result = super.assemble(input).copy();
 
         result.set(ModComponents.HEATED_COMPONENT.get(), true);
         result.remove(ModComponents.FORGING_QUALITY.get());
@@ -34,30 +43,32 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipeSerializers.CAMPFIRE_HEATING.get();
+    @SuppressWarnings("unchecked")
+    public RecipeSerializer<CampfireCookingRecipe> getSerializer() {
+        // The parent fixes the type parameter; the serializer is really a RecipeSerializer<NBTCampfireRecipe>.
+        return (RecipeSerializer<CampfireCookingRecipe>) (RecipeSerializer<?>) ModRecipeSerializers.CAMPFIRE_HEATING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<NBTCampfireRecipe> {
+    public static class Serializer {
 
         public static final MapCodec<NBTCampfireRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::getGroup),
+                        Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::group),
 
                         CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
                                 .forGetter(NBTCampfireRecipe::category),
 
-                        Ingredient.CODEC.fieldOf("ingredient")
-                                .forGetter(r -> r.getIngredients().get(0)),
+                        IngredientCodecs.LENIENT.fieldOf("ingredient")
+                                .forGetter(r -> r.input()),
 
-                        ItemStack.CODEC.fieldOf("result")
+                        ItemStackTemplate.CODEC.fieldOf("result")
                                 .forGetter(r -> r.result),
 
                         Codec.FLOAT.optionalFieldOf("experience", 0.0f)
-                                .forGetter(NBTCampfireRecipe::getExperience),
+                                .forGetter(NBTCampfireRecipe::experience),
 
                         Codec.INT.optionalFieldOf("cookingtime", 200)
-                                .forGetter(NBTCampfireRecipe::getCookingTime)
+                                .forGetter(NBTCampfireRecipe::cookingTime)
                 ).apply(instance, NBTCampfireRecipe::new)
         );
 
@@ -67,12 +78,10 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
                         Serializer::fromNetwork
                 );
 
-        @Override
         public MapCodec<NBTCampfireRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, NBTCampfireRecipe> streamCodec() {
             return STREAM_CODEC;
         }
@@ -83,7 +92,7 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
             String group = buf.readUtf();
             CookingBookCategory category = buf.readEnum(CookingBookCategory.class);
             Ingredient ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
-            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
+            ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buf);
             float xp = buf.readFloat();
             int time = buf.readVarInt();
 
@@ -91,12 +100,12 @@ public class NBTCampfireRecipe extends CampfireCookingRecipe {
         }
 
         private static void toNetwork(RegistryFriendlyByteBuf buf, NBTCampfireRecipe recipe) {
-            buf.writeUtf(recipe.getGroup());
+            buf.writeUtf(recipe.group());
             buf.writeEnum(recipe.category());
-            Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.getIngredients().get(0));
-            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
-            buf.writeFloat(recipe.getExperience());
-            buf.writeVarInt(recipe.getCookingTime());
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.input());
+            ItemStackTemplate.STREAM_CODEC.encode(buf, recipe.result);
+            buf.writeFloat(recipe.experience());
+            buf.writeVarInt(recipe.cookingTime());
         }
     }
 }

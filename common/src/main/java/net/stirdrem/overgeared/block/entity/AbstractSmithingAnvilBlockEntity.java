@@ -1,4 +1,8 @@
 package net.stirdrem.overgeared.block.entity;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.stirdrem.overgeared.util.ItemKinds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,9 +19,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -47,6 +49,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvilBlockEntity implements MenuProvider, WorldlyContainer {
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (this.level != null && !this.level.isClientSide()) {
+            ModEvents.resetMinigameForAnvil(this.level, pos);
+        }
+    }
     protected static final int INPUT_SLOT = 0;
     protected static final int OUTPUT_SLOT = 10;
 
@@ -151,67 +161,52 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
         tag.putInt("hitRemains", hitRemains);
         tag.putInt("progress", progress);
         tag.putInt("maxProgress", maxProgress);
-        tag.put("inventory", itemHandler.serializeNBT(registries));
+        itemHandler.serialize(tag.child("inventory"));
 
         if (ownerUUID != null) {
-            tag.putUUID("ownerUUID", ownerUUID);
+            tag.store("ownerUUID", UUIDUtil.CODEC, ownerUUID);
             tag.putLong("sessionStartTime", sessionStartTime);
         }
 
         // Save occupiedAnvils
-        ListTag occupiedList = new ListTag();
+        ValueOutput.ValueOutputList occupiedList = tag.childrenList("occupiedAnvils");
         for (Map.Entry<BlockPos, UUID> entry : occupiedAnvils.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
+            ValueOutput entryTag = occupiedList.addChild();
             BlockPos pos = entry.getKey();
             entryTag.putInt("x", pos.getX());
             entryTag.putInt("y", pos.getY());
             entryTag.putInt("z", pos.getZ());
-            entryTag.putUUID("uuid", entry.getValue());
-            occupiedList.add(entryTag);
+            entryTag.store("uuid", UUIDUtil.CODEC, entry.getValue());
         }
-        tag.put("occupiedAnvils", occupiedList);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("inventory")) {
-            itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
-        }
-        if (tag.contains("hitRemains")) {
-            hitRemains = tag.getInt("hitRemains");
-        }
-        if (tag.contains("progress")) {
-            progress = tag.getInt("progress");
-        }
-        if (tag.contains("maxProgress")) {
-            maxProgress = tag.getInt("maxProgress");
-        }
-        if (tag.hasUUID("ownerUUID")) {
-            ownerUUID = tag.getUUID("ownerUUID");
-            sessionStartTime = tag.getLong("sessionStartTime");
+    protected void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        tag.child("inventory").ifPresent(itemHandler::deserialize);
+        hitRemains = tag.getIntOr("hitRemains", hitRemains);
+        progress = tag.getIntOr("progress", progress);
+        maxProgress = tag.getIntOr("maxProgress", maxProgress);
+        if (tag.read("ownerUUID", UUIDUtil.CODEC).isPresent()) {
+            ownerUUID = tag.read("ownerUUID", UUIDUtil.CODEC).orElse(null);
+            sessionStartTime = tag.getLongOr("sessionStartTime", 0L);
         } else {
             ownerUUID = null;
         }
 
         // Load occupiedAnvils
         occupiedAnvils.clear();
-        if (tag.contains("occupiedAnvils", CompoundTag.TAG_LIST)) {
-            ListTag occupiedList = tag.getList("occupiedAnvils", CompoundTag.TAG_COMPOUND);
-            for (int i = 0; i < occupiedList.size(); i++) {
-                CompoundTag entryTag = occupiedList.getCompound(i);
-                int x = entryTag.getInt("x");
-                int y = entryTag.getInt("y");
-                int z = entryTag.getInt("z");
-                UUID uuid = entryTag.getUUID("uuid");
-                occupiedAnvils.put(new BlockPos(x, y, z), uuid);
-            }
-        }
+        tag.childrenListOrEmpty("occupiedAnvils").stream().forEach(entryTag -> {
+            int x = entryTag.getIntOr("x", 0);
+            int y = entryTag.getIntOr("y", 0);
+            int z = entryTag.getIntOr("z", 0);
+            entryTag.read("uuid", UUIDUtil.CODEC).ifPresent(uuid -> occupiedAnvils.put(new BlockPos(x, y, z), uuid));
+        });
     }
 
     @Override
@@ -298,8 +293,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
                             ModAdvancementTriggers.FORGING_QUALITY.get()
                                     .trigger(serverPlayer, quality.getDisplayName());
                         }
-                        if (!(result.getItem() instanceof ArmorItem) &&
-                                !(result.getItem() instanceof ShieldItem) &&
+                        if (!ItemKinds.isArmor(result) &&
+                                !ItemKinds.isShield(result) &&
                                 recipe.hasPolishing()) {
                             result.set(ModComponents.POLISHED.get(), false);
                         }
@@ -558,7 +553,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
 
         setChanged();
 
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
 
@@ -662,26 +657,8 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
-        tag.put("inventory", itemHandler.serializeNBT(registries));
-        tag.putInt("progress", progress);
-        tag.putInt("maxProgress", maxProgress);
-        tag.putInt("hitRemains", hitRemains);
-        return tag;
-    }
-
-    // Overrides NeoForge's IBlockEntityExtension#handleUpdateTag; vanilla only calls loadWithComponents.
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-        this.loadWithComponents(tag, registries);
-        if (tag.contains("progress")) {
-            this.progress = tag.getInt("progress");
-        }
-        if (tag.contains("maxProgress")) {
-            this.maxProgress = tag.getInt("maxProgress");
-        }
-        if (tag.contains("hitRemains")) {
-            this.hitRemains = tag.getInt("hitRemains");
-        }
+        // Sends everything saveAdditional writes (inventory, progress, hits); the client reads it back through loadAdditional.
+        return this.saveCustomOnly(registries);
     }
 
     protected boolean matchesRecipeExactly(ForgingRecipe recipe) {
@@ -995,7 +972,7 @@ public abstract class AbstractSmithingAnvilBlockEntity extends BaseSmithingAnvil
     // Not the happiest with this due to constantly checking if it's open etc.,
 // maybe figure smth out :)
     public void tickHeatedIngredients(Level level, BlockPos pos, BlockState state) {
-        if (!this.hasHeatedItems || level.isClientSide)
+        if (!this.hasHeatedItems || level.isClientSide())
             return;
         if (level.getGameTime() % 20 != 0)
             return;

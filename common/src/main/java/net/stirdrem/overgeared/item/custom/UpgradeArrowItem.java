@@ -1,10 +1,12 @@
 package net.stirdrem.overgeared.item.custom;
+import java.util.function.Consumer;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -37,10 +39,10 @@ public class UpgradeArrowItem extends ArrowItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
         PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
         if (!potionContents.equals(PotionContents.EMPTY)) {
-            potionContents.addPotionTooltip(tooltip::add, 0.125F, context.tickRate());
+            PotionContents.addPotionTooltip(potionContents.getAllEffects(), tooltip, 0.125F, context.tickRate());
         }
     }
 
@@ -55,8 +57,8 @@ public class UpgradeArrowItem extends ArrowItem {
         return -1;
     }
 
-    @Override
-    public String getDescriptionId(ItemStack stack) {
+    /** Translation key for the stack (Item#getDescriptionId no longer takes a stack). */
+    private String descriptionIdFor(ItemStack stack) {
         PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 
         if (!potionContents.equals(PotionContents.EMPTY)) {
@@ -78,13 +80,13 @@ public class UpgradeArrowItem extends ArrowItem {
 
         }
 
-        return super.getDescriptionId(stack);
+        return getDescriptionId();
     }
 
     @Override
     public Component getName(ItemStack stack) {
         PotionContents potionContents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-        String baseDescId = getDescriptionId(stack);
+        String baseDescId = descriptionIdFor(stack);
         if (!potionContents.equals(PotionContents.EMPTY) || potionContents.is(Potions.WATER)) {
             if (potionContents.potion().isPresent()) {
                 // Get the potion registry key

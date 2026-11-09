@@ -8,7 +8,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 
 import java.util.List;
 
-public interface INetherAlloyRecipe extends Recipe<RecipeInput> {
+public interface INetherAlloyRecipe extends OvergearedRecipe<RecipeInput> {
     List<Ingredient> getIngredientsList();
 
     ItemStack getResultItem(HolderLookup.Provider provider);

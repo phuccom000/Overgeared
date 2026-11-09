@@ -7,15 +7,9 @@
     "aaa"
   ],
   "key": {
-    "a": {
-      "item": "minecraft:diamond"
-    },
-    "b": {
-      "tag": "c:ingots/steel"
-    },
-    "x": {
-      "item": "overgeared:diamond_upgrade_smithing_template"
-    }
+    "a": "minecraft:diamond",
+    "b": "#c:ingots/steel",
+    "x": "overgeared:diamond_upgrade_smithing_template"
   },
   "result": {
     "id": "overgeared:diamond_upgrade_smithing_template",

@@ -1,14 +1,14 @@
 package net.stirdrem.overgeared.fabric;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.registry.FuelRegistry;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -66,9 +66,9 @@ public class FabricPlatformHelper implements IPlatformHelper {
     @Override
     @SuppressWarnings("unchecked")
     public <R> void register(DeferredRegister<R> register) {
-        Registry<R> registry = (Registry<R>) BuiltInRegistries.REGISTRY.get(register.getRegistryKey().location());
+        Registry<R> registry = (Registry<R>) BuiltInRegistries.REGISTRY.getValue(register.getRegistryKey().identifier());
         if (registry == null) {
-            throw new IllegalStateException("Unknown registry " + register.getRegistryKey().location());
+            throw new IllegalStateException("Unknown registry " + register.getRegistryKey().identifier());
         }
         register.getEntriesWithFactories().forEach((holder, factory) -> Registry.register(registry, holder.getId(), factory.get()));
     }
@@ -76,7 +76,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenuType(MenuFactory<T> factory) {
         // The extra data is carried as raw bytes, so the menus can read it like on NeoForge.
-        return new ExtendedScreenHandlerType<>(
+        return new ExtendedMenuType<>(
                 (int containerId, Inventory inventory, byte[] data) -> factory.create(containerId, inventory,
                         new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(data), inventory.player.registryAccess())),
                 ByteBufCodecs.BYTE_ARRAY);
@@ -84,7 +84,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public void openMenu(ServerPlayer player, MenuProvider provider, Consumer<RegistryFriendlyByteBuf> extraData) {
-        player.openMenu(new ExtendedScreenHandlerFactory<byte[]>() {
+        player.openMenu(new ExtendedMenuProvider<byte[]>() {
             @Override
             public byte[] getScreenOpeningData(ServerPlayer serverPlayer) {
                 RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), serverPlayer.registryAccess());
@@ -138,28 +138,16 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public CreativeModeTab.Builder creativeModeTabBuilder() {
-        return FabricItemGroup.builder();
+        return FabricCreativeModeTab.builder();
     }
 
-    @Override
-    public int getBurnTime(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return 0;
-        }
-        Integer burnTime = FuelRegistry.INSTANCE.get(stack.getItem());
-        return burnTime == null ? 0 : burnTime;
-    }
 
     @Override
     public ItemStack getCraftingRemainder(ItemStack stack) {
-        return stack.getRecipeRemainder();
+        ItemStackTemplate remainder = stack.getCraftingRemainder();
+        return remainder == null ? ItemStack.EMPTY : remainder.create();
     }
 
-    @Override
-    public MapCodec<Ingredient> ingredientMapCodec() {
-        // Vanilla only has a list-or-object codec; the object form can be read as a map.
-        return MapCodec.assumeMapUnsafe(Ingredient.CODEC_NONEMPTY);
-    }
 
     @Override
     public void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix) {
@@ -168,7 +156,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public void registerAlias(net.minecraft.resources.ResourceKey<? extends Registry<?>> registry,
-                              net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId) {
+                              net.minecraft.resources.Identifier oldId, net.minecraft.resources.Identifier newId) {
         RegistryAliases.add(registry, oldId, newId);
     }
 }

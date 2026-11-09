@@ -12,6 +12,7 @@ public class ToolType {
   public static final ToolType PICKAXE = new ToolType("PICKAXE");
   public static final ToolType SHOVEL = new ToolType("SHOVEL");
   public static final ToolType HOE = new ToolType("HOE");
+  public static final ToolType SPEAR = new ToolType("SPEAR");
 
   public static final ToolType MULTITOOL = new ToolType("MULTITOOL");
 

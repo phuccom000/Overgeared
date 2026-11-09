@@ -2,85 +2,108 @@ package net.stirdrem.overgeared.block.entity.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<AbstractSmithingAnvilBlockEntity> {
-    public SmithingAnvilBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
-    }
-
+/** Draws the anvil's ingredients, output and hammer on top of the block. */
+public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<AbstractSmithingAnvilBlockEntity, SmithingAnvilBlockEntityRenderer.State> {
     private static final float BASE_Y = 1.01f;
     private static final float ITEM_HEIGHT = 0.02f;
     private static final float BLOCK_HEIGHT = 0.2f;
     private static final float BLOCK_BASE_Y_OFFSET = 0.09f;
 
-    @Override
-    public void render(AbstractSmithingAnvilBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack,
-                       MultiBufferSource pBuffer, int pPackedLight, int pPackedOverlay) {
-        ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
+    private final ItemModelResolver itemModelResolver;
 
-        // Render the output item from slot 10
-        ItemStack output = pBlockEntity.getRenderStack(10);
-        boolean inputsEmpty = areInputSlotsEmpty(pBlockEntity);
+    public SmithingAnvilBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        this.itemModelResolver = context.itemModelResolver();
+    }
+
+    /** One item drawn on the anvil, with the transform the old immediate-mode renderer applied. */
+    private record Placement(ItemStackRenderState item, float x, float y, float z, float facingDegrees,
+                             float rotationDegrees, boolean upright, float scale, float heightScale) {
+    }
+
+    public static class State extends BlockEntityRenderState {
+        final List<Placement> placements = new ArrayList<>();
+    }
+
+    @Override
+    public State createRenderState() {
+        return new State();
+    }
+
+    @Override
+    public void extractRenderState(AbstractSmithingAnvilBlockEntity blockEntity, State state, float partialTicks,
+                                   Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+        BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+        state.placements.clear();
+
+        // Output item from slot 10
+        ItemStack output = blockEntity.getRenderStack(10);
+        boolean inputsEmpty = areInputSlotsEmpty(blockEntity);
         float zOffset = inputsEmpty ? 0f : -0.43f;
 
-        float heightScale;
-        int progress = pBlockEntity.getContainerData().get(0);
-        int max = pBlockEntity.getContainerData().get(1);
+        int progress = blockEntity.getContainerData().get(0);
+        int max = blockEntity.getContainerData().get(1);
+        float heightScale = max <= 0 ? 1.0f : 1.0f - ((float) progress / max);
 
-        if (max <= 0) {
-            heightScale = 1.0f; // default when no recipe / not started
-        } else {
-            heightScale = 1.0f - ((float) progress / max);
-        }
         if (!output.isEmpty()) {
             float yOffset = isBlockItem(output) ? 1.05f : 1.02f;
-            renderStack(pPoseStack, pBuffer, itemRenderer, output, pBlockEntity, 0.0f, yOffset, zOffset, 110f, 0.4f, 1.0f);
+            addStack(state, blockEntity, output, 0.0f, yOffset, zOffset, 110f, 0.4f, 1.0f, 10);
         }
 
-        // 1️⃣ First pass: render up to three unique input items
+        // Up to three input items: unique items first, then fill with any items
         Set<Item> renderedItems = new HashSet<>();
-        Set<Integer> renderedSlots = new HashSet<>(); // Track which slots we've rendered from
-        int rendered = 0;
-
-        // First pass: render unique items
-        rendered = renderPass(pPoseStack, pBuffer, itemRenderer, pBlockEntity,
-                renderedItems, renderedSlots, 0f, rendered, true, heightScale);
-
-        // Second pass: fill remaining slots with any items
+        Set<Integer> renderedSlots = new HashSet<>();
+        int rendered = renderPass(state, blockEntity, renderedItems, renderedSlots, 0, true, heightScale);
         if (rendered < 3) {
-            renderPass(pPoseStack, pBuffer, itemRenderer, pBlockEntity,
-                    renderedItems, renderedSlots, 0f, rendered, false, heightScale);
+            renderPass(state, blockEntity, renderedItems, renderedSlots, rendered, false, heightScale);
         }
 
-        // Render the hammer from slot 9
-        ItemStack hammer = pBlockEntity.getRenderStack(9);
-        renderStack(pPoseStack, pBuffer, itemRenderer, hammer, pBlockEntity, 0f, 1.025f, 0.43f, 135f, 0.5f, 1.0f);
+        // Hammer from slot 9
+        addStack(state, blockEntity, blockEntity.getRenderStack(9), 0f, 1.025f, 0.43f, 135f, 0.5f, 1.0f, 9);
+    }
+
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        for (Placement p : state.placements) {
+            poseStack.pushPose();
+            poseStack.translate(p.x(), p.y(), p.z());
+            poseStack.rotateDegrees(Axis.YP, p.facingDegrees());
+            poseStack.rotateDegrees(Axis.YP, p.rotationDegrees());
+            poseStack.rotateDegrees(Axis.XP, p.upright() ? 0 : 90);
+            poseStack.scale(p.scale(), p.scale(), p.scale() * p.heightScale());
+            p.item().submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+            poseStack.popPose();
+        }
     }
 
     private boolean areInputSlotsEmpty(AbstractSmithingAnvilBlockEntity be) {
-        for (int i = 0; i < 9; i++) {  // assuming slots 0–8 are inputs
+        for (int i = 0; i < 9; i++) {
             if (!be.getRenderStack(i).isEmpty()) {
                 return false;
             }
@@ -88,133 +111,75 @@ public class SmithingAnvilBlockEntityRenderer implements BlockEntityRenderer<Abs
         return true;
     }
 
-    private int renderPass(PoseStack pPoseStack, MultiBufferSource pBuffer,
-                           ItemRenderer itemRenderer, AbstractSmithingAnvilBlockEntity pBlockEntity,
+    private int renderPass(State state, AbstractSmithingAnvilBlockEntity blockEntity,
                            Set<Item> renderedItems, Set<Integer> renderedSlots,
-                           float zOffset, int renderedCount, boolean checkUniqueness, float heightScale) {
-
-        // Use an accumulated Y offset instead of rendered index
+                           int renderedCount, boolean checkUniqueness, float heightScale) {
+        // Stack height accumulated over the slots already drawn
         float currentHeight = BASE_Y;
-
-        // Rebuild currentHeight based on previously rendered slots
         for (int i : renderedSlots) {
-            ItemStack prev = pBlockEntity.getRenderStack(i);
-            currentHeight += isBlockItem(prev) ? BLOCK_HEIGHT : ITEM_HEIGHT;
+            currentHeight += isBlockItem(blockEntity.getRenderStack(i)) ? BLOCK_HEIGHT : ITEM_HEIGHT;
         }
 
         int rendered = renderedCount;
-
         for (int i = 0; i < 9 && rendered < 3; i++) {
+            if (renderedSlots.contains(i)) continue;
 
-            if (renderedSlots.contains(i)) {
-                continue;
-            }
-
-            ItemStack stack = pBlockEntity.getRenderStack(i);
+            ItemStack stack = blockEntity.getRenderStack(i);
             if (stack.isEmpty()) continue;
 
             Item item = stack.getItem();
-
-            if (checkUniqueness && renderedItems.contains(item)) {
-                continue;
-            }
+            if (checkUniqueness && renderedItems.contains(item)) continue;
 
             float scale = isBlockItem(stack) ? 0.4f : 0.35f;
             float rotation = 96f + (rendered * 14f);
-
-            // Use accumulated height
             float yOffset = currentHeight;
-
-            // If this is the first rendered item AND it's a block → raise it
             if (isBlockItem(stack)) {
                 yOffset += BLOCK_BASE_Y_OFFSET;
             }
-            renderStack(
-                    pPoseStack, pBuffer, itemRenderer, stack, pBlockEntity,
-                    0.0f, yOffset, zOffset, rotation, scale, heightScale
-            );
+            addStack(state, blockEntity, stack, 0.0f, yOffset, 0f, rotation, scale, heightScale, i);
 
-            // Add height for next item
             currentHeight += isBlockItem(stack) ? BLOCK_HEIGHT : ITEM_HEIGHT;
-
             renderedItems.add(item);
             renderedSlots.add(i);
             rendered++;
         }
-
         return rendered;
     }
 
-
-    // Helper method to determine if an ItemStack is a block item
     private boolean isBlockItem(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        Item item = stack.getItem();
-        Block block = Block.byItem(item);
-        return block != Blocks.AIR;
+        return Block.byItem(stack.getItem()) != Blocks.AIR;
     }
 
-    private void renderStack(PoseStack poseStack, MultiBufferSource buffer, ItemRenderer itemRenderer,
-                             ItemStack itemStack, AbstractSmithingAnvilBlockEntity blockEntity,
-                             float xOffset, float yOffset, float zOffset,
-                             float rotationDegrees, float scale, float heightScale) {
-
+    private void addStack(State state, AbstractSmithingAnvilBlockEntity blockEntity, ItemStack itemStack,
+                          float xOffset, float yOffset, float zOffset,
+                          float rotationDegrees, float scale, float heightScale, int seed) {
         if (itemStack == null || itemStack.isEmpty()) return;
 
-        poseStack.pushPose();
-
-        // Get block facing direction
-        BlockState state = blockEntity.getBlockState();
-        Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
-                ? state.getValue(BlockStateProperties.HORIZONTAL_FACING)
-                : Direction.NORTH; // default fallback
-
-        // Determine rotation based on facing
+        BlockState blockState = blockEntity.getBlockState();
+        Direction facing = blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                ? blockState.getValue(BlockStateProperties.HORIZONTAL_FACING)
+                : Direction.NORTH;
         float facingRotationDegrees = switch (facing) {
             case NORTH -> 180f;
-            case SOUTH -> 0f;
             case WEST -> 270f;
             case EAST -> 90f;
             default -> 0f;
         };
 
-        // Calculate rotation matrix components
+        // Rotate the offset by the facing
         double radians = Math.toRadians(facingRotationDegrees);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);
-
-        // Apply rotation to xOffset and zOffset
         float rotatedX = (float) (xOffset * cos - zOffset * sin);
         float rotatedZ = (float) (xOffset * sin + zOffset * cos);
 
-        // Translate to center plus rotated offset, apply height scale to yOffset
-        poseStack.translate(0.5f - rotatedX, yOffset - (0.01 * (1 - heightScale)), 0.5f + rotatedZ);
+        ItemStackRenderState itemState = new ItemStackRenderState();
+        this.itemModelResolver.updateForTopItem(itemState, itemStack, ItemDisplayContext.FIXED, blockEntity.getLevel(), null,
+                (int) blockEntity.getBlockPos().asLong() + seed);
 
-        // Apply facing rotation
-        poseStack.mulPose(Axis.YP.rotationDegrees(facingRotationDegrees));
-
-        // Check if item is a block
-        boolean isBlock = itemStack.getItem() instanceof BlockItem;
-
-        // Additional rotation (e.g., 45°) if needed
-        poseStack.mulPose(Axis.YP.rotationDegrees(rotationDegrees));
-
-        // Flip non-block items upright
-        poseStack.mulPose(Axis.XP.rotationDegrees(isBlock ? 0 : 90));
-
-        poseStack.scale(scale, scale, scale * heightScale);
-
-        // Render the item
-        itemRenderer.renderStatic(itemStack, ItemDisplayContext.FIXED,
-                getLightLevel(blockEntity.getLevel(), blockEntity.getBlockPos()),
-                OverlayTexture.NO_OVERLAY, poseStack, buffer, blockEntity.getLevel(), 1);
-
-        poseStack.popPose();
-    }
-
-    private int getLightLevel(Level level, BlockPos pos) {
-        int bLight = level.getBrightness(LightLayer.BLOCK, pos);
-        int sLight = level.getBrightness(LightLayer.SKY, pos);
-        return LightTexture.pack(bLight, sLight);
+        state.placements.add(new Placement(itemState,
+                0.5f - rotatedX, (float) (yOffset - (0.01 * (1 - heightScale))), 0.5f + rotatedZ,
+                facingRotationDegrees, rotationDegrees, itemStack.getItem() instanceof BlockItem, scale, heightScale));
     }
 }

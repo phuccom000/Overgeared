@@ -1,8 +1,6 @@
 {
   "type": "overgeared:cooling",
-  "input": {
-    "item": "overgeared:heated_netherite_alloy"
-  },
+  "input": "overgeared:heated_netherite_alloy",
   "output": {
     "id": "overgeared:netherite_alloy"
   }

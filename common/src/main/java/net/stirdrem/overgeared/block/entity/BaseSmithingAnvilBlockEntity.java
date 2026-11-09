@@ -1,4 +1,7 @@
 package net.stirdrem.overgeared.block.entity;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -134,6 +137,12 @@ public abstract class BaseSmithingAnvilBlockEntity
     }
 
 
+    /** Called when the block is removed (replaces Block#onRemove). Drops our own way, instead of vanilla's container drop. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        drops();
+    }
+
     public void drops() {
 
         SimpleContainer container =
@@ -165,25 +174,16 @@ public abstract class BaseSmithingAnvilBlockEntity
 
 
     @Override
-    protected void saveAdditional(
-            CompoundTag tag,
-            HolderLookup.Provider provider
-    ) {
+    protected void saveAdditional(ValueOutput tag) {
 
-        super.saveAdditional(tag, provider);
+        super.saveAdditional(tag);
 
 
-        tag.put(
-                "inventory",
-                itemHandler.serializeNBT(provider)
-        );
+        itemHandler.serialize(tag.child("inventory"));
 
 
         if (ownerUUID != null) {
-            tag.putUUID(
-                    "ownerUUID",
-                    ownerUUID
-            );
+            tag.store("ownerUUID", UUIDUtil.CODEC, ownerUUID);
 
             tag.putLong(
                     "sessionStartTime",
@@ -194,29 +194,21 @@ public abstract class BaseSmithingAnvilBlockEntity
 
 
     @Override
-    protected void loadAdditional(
-            CompoundTag tag,
-            HolderLookup.Provider provider
-    ) {
+    protected void loadAdditional(ValueInput tag) {
 
-        super.loadAdditional(tag, provider);
+        super.loadAdditional(tag);
 
 
-        if (tag.contains("inventory")) {
-            itemHandler.deserializeNBT(
-                    provider,
-                    tag.getCompound("inventory")
-            );
-        }
+        tag.child("inventory").ifPresent(itemHandler::deserialize);
 
 
-        if (tag.hasUUID("ownerUUID")) {
+        if (tag.read("ownerUUID", UUIDUtil.CODEC).isPresent()) {
 
             ownerUUID =
-                    tag.getUUID("ownerUUID");
+                    tag.read("ownerUUID", UUIDUtil.CODEC).orElse(null);
 
             sessionStartTime =
-                    tag.getLong("sessionStartTime");
+                    tag.getLongOr("sessionStartTime", 0L);
         }
     }
 
@@ -240,19 +232,8 @@ public abstract class BaseSmithingAnvilBlockEntity
 
 
     @Override
-    public CompoundTag getUpdateTag(
-            HolderLookup.Provider provider
-    ) {
-
-        CompoundTag tag =
-                super.getUpdateTag(provider);
-
-        tag.put(
-                "inventory",
-                itemHandler.serializeNBT(provider)
-        );
-
-        return tag;
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        return this.saveCustomOnly(provider);
     }
 
 

@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.command;
+import net.minecraft.server.permissions.Permissions;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.stirdrem.overgeared.ForgingQuality;
 import net.stirdrem.overgeared.components.CastData;
 import net.stirdrem.overgeared.components.ModComponents;
+import net.stirdrem.overgeared.guide.GuideBook;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ConfigHelper;
 
@@ -19,10 +21,19 @@ public class ModCommands {
 
         public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
+                // /overgeared guide - anyone can get a fresh copy of the guide book
+                dispatcher.register(
+                                Commands.literal("overgeared")
+                                                .then(Commands.literal("guide")
+                                                                .executes(ctx -> {
+                                                                        GuideBook.give(ctx.getSource().getPlayerOrException());
+                                                                        return 1;
+                                                                })));
+
                 // /setforgingquality <quality>
                 dispatcher.register(
                                 Commands.literal("setforgingquality")
-                                                .requires(source -> source.hasPermission(2)) // Requires operator level
+                                                .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) // Requires operator level
                                                                                              // 2 or higher
                                                 .then(Commands.argument("quality", StringArgumentType.string())
                                                                 .suggests((c, b) -> {
@@ -64,7 +75,7 @@ public class ModCommands {
                 // /givecast <toolType> [quality] [material]
                 dispatcher.register(
                                 Commands.literal("givecast")
-                                                .requires(source -> source.hasPermission(2)) // Requires operator level
+                                                .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) // Requires operator level
                                                                                              // 2 or higher
                                                 .then(Commands.argument("toolType", StringArgumentType.string())
                                                                 .then(Commands.argument("quality",

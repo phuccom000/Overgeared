@@ -1,11 +1,12 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.client.renderer.RenderPipelines;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.networking.PacketDistributor;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -17,8 +18,8 @@ import java.util.List;
 
 
 public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintWorkbenchMenu> {
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "textures/gui/blueprint_workbench.png");
+    private static final Identifier TEXTURE =
+            Identifier.fromNamespaceAndPath(OvergearedMod.MOD_ID, "textures/gui/blueprint_workbench.png");
 
     private final List<ToolType> toolTypes;
     private int selectedIndex = 0;
@@ -28,9 +29,7 @@ public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintW
     private Component currentToolName;
 
     public BlueprintWorkbenchScreen(BlueprintWorkbenchMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 166;
+        super(menu, inventory, title, 176, 166);
         this.toolTypes = ToolTypeRegistry.getRegisteredTypes();
     }
 
@@ -134,23 +133,22 @@ public class BlueprintWorkbenchScreen extends AbstractContainerScreen<BlueprintW
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTicks);
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 
         // Render current tool name or error message
         if (currentToolName != null) {
             int textWidth = this.font.width(currentToolName);
             int textColor = toolTypes.isEmpty() ? 0xFF0000 : 0x404040; // Red for error, dark gray for normal
-            guiGraphics.drawString(this.font, currentToolName,
-                    x + imageWidth / 2 - textWidth / 2, y + 18, textColor, false);
+            guiGraphics.text(this.font, currentToolName, x + imageWidth / 2 - textWidth / 2, y + 18, textColor, false);
         }
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
     }
 }

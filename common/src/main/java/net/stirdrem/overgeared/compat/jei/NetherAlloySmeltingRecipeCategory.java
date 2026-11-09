@@ -10,9 +10,9 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -22,8 +22,8 @@ import net.stirdrem.overgeared.recipe.INetherAlloyRecipe;
 import java.util.List;
 
 public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INetherAlloyRecipe> {
-    public static final ResourceLocation UID = OvergearedMod.loc("nether_alloy_smelting");
-    public static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/nether_furnace_jei.png");
+    public static final Identifier UID = OvergearedMod.loc("nether_alloy_smelting");
+    public static final Identifier TEXTURE = OvergearedMod.loc("textures/gui/nether_furnace_jei.png");
 
     public static final RecipeType<INetherAlloyRecipe> ALLOY_SMELTING_TYPE =
             new RecipeType<>(UID, INetherAlloyRecipe.class);
@@ -58,9 +58,13 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    @SuppressWarnings("removal")
-    public IDrawable getBackground() {
-        return background;
+    public int getWidth() {
+        return background.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return background.getHeight();
     }
 
     @Override
@@ -69,8 +73,9 @@ public class NetherAlloySmeltingRecipeCategory implements IRecipeCategory<INethe
     }
 
     @Override
-    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics,
+    public void draw(INetherAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics,
                      double mouseX, double mouseY) {
+        background.draw(guiGraphics);
         arrowAnimated.draw(guiGraphics, 60, 19);
         flameAnimated.draw(guiGraphics, 64, 39);
         JeiUtils.drawExperience(guiGraphics, recipe.getExperience(), background.getWidth(), TEX_H - 9);

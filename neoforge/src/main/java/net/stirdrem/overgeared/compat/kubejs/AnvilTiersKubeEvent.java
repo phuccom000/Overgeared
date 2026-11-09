@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.compat.kubejs;
 
 import dev.latvian.mods.kubejs.event.KubeEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.AnvilTier;
 
 import java.util.List;
@@ -71,12 +71,12 @@ public class AnvilTiersKubeEvent implements KubeEvent {
         }
 
         public TierBuilder hammerTag(String tag) {
-            def.hammerTag = ResourceLocation.parse(tag);
+            def.hammerTag = Identifier.parse(tag);
             return this;
         }
 
         public TierBuilder baseTag(String tag) {
-            def.baseTag = ResourceLocation.parse(tag);
+            def.baseTag = Identifier.parse(tag);
             return this;
         }
     }

@@ -59,17 +59,10 @@ public interface IPlatformHelper {
     /** A creative tab builder; vanilla's needs a row and column which both loaders fill in themselves. */
     CreativeModeTab.Builder creativeModeTabBuilder();
 
-    /** Furnace burn time of the stack in ticks, 0 if it is not a fuel. */
-    int getBurnTime(ItemStack stack);
 
     /** What is left in the crafting grid after the stack is used, honouring stack-sensitive remainders. */
     ItemStack getCraftingRemainder(ItemStack stack);
 
-    /**
-     * A non-empty ingredient encoded inline in a JSON object (e.g. {@code {"item": ..., "remainder": true}}),
-     * supporting the loader's custom ingredient types.
-     */
-    MapCodec<Ingredient> ingredientMapCodec();
 
     /** Fires the loader's "item crafted" hook, if it has one. */
     void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix);
@@ -83,7 +76,7 @@ public interface IPlatformHelper {
 
     /** Makes {@code oldId} resolve to {@code newId} in the registry, so saved worlds keep renamed entries. */
     void registerAlias(net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<?>> registry,
-                       net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId);
+                       net.minecraft.resources.Identifier oldId, net.minecraft.resources.Identifier newId);
 
     @FunctionalInterface
     interface MenuFactory<T extends AbstractContainerMenu> {

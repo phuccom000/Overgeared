@@ -9,7 +9,7 @@ import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class CastingEmiRecipe implements EmiRecipe {
 
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final CastingRecipe recipe;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -141,7 +141,7 @@ public class CastingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

@@ -6,7 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.platform.Services;
@@ -69,8 +69,8 @@ public final class AnvilTierConfig {
                     obj.getAsJsonArray("aliases").forEach(a -> def.aliases.add(a.getAsString()));
                 }
                 if (obj.has("enabled")) def.enabled = obj.get("enabled").getAsBoolean();
-                if (obj.has("hammer_tag")) def.hammerTag = ResourceLocation.parse(obj.get("hammer_tag").getAsString());
-                if (obj.has("base_tag")) def.baseTag = ResourceLocation.parse(obj.get("base_tag").getAsString());
+                if (obj.has("hammer_tag")) def.hammerTag = Identifier.parse(obj.get("hammer_tag").getAsString());
+                if (obj.has("base_tag")) def.baseTag = Identifier.parse(obj.get("base_tag").getAsString());
                 if (obj.has("blueprint")) def.blueprint = obj.get("blueprint").getAsBoolean();
                 tiers.add(def);
             }

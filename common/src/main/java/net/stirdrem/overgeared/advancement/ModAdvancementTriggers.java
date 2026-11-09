@@ -1,6 +1,6 @@
 package net.stirdrem.overgeared.advancement;
 
-import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.triggers.CriterionTrigger;
 import net.minecraft.core.registries.Registries;
 import net.stirdrem.overgeared.registry.DeferredHolder;
 import net.stirdrem.overgeared.registry.DeferredRegister;

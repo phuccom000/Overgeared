@@ -1,7 +1,8 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -32,10 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, ForgingRecipe> {
+/**
+ * The smithing anvil menu. It no longer extends RecipeBookMenu: the forging recipe book needs a
+ * dedicated port to 26.x's recipe book (see AbstractSmithingAnvilScreen).
+ */
+public class AbstractSmithingAnvilMenu extends AbstractContainerMenu {
     private final CraftingContainer craftingContainer = new CraftingContainer() {
         @Override
-        public void fillStackedContents(StackedContents contents) {
+        public void fillStackedContents(StackedItemContents contents) {
             for (int i = 0; i < getContainerSize(); i++) {
                 ItemStack stack = getItem(i);
                 if (!stack.isEmpty()) {
@@ -243,7 +248,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
             @Override
             protected void checkTakeAchievements(ItemStack stack) {
                 if (this.removeCount > 0) {
-                    stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player.level(), AbstractSmithingAnvilMenu.this.player, this.removeCount);
+                    stack.onCraftedBy(AbstractSmithingAnvilMenu.this.player, this.removeCount);
                     Services.PLATFORM.firePlayerCraftingEvent(AbstractSmithingAnvilMenu.this.player, stack, AbstractSmithingAnvilMenu.this.craftingContainer);
                 }
                 // Award recipe to player for recipe book integration
@@ -506,159 +511,7 @@ public class AbstractSmithingAnvilMenu extends RecipeBookMenu<RecipeInput, Forgi
         return ItemStack.EMPTY;
     }
 
-    @Override
-    public void fillCraftSlotsStackedContents(StackedContents contents) {
-        for (int i = 0; i < this.craftingContainer.getContainerSize(); ++i) {
-            contents.accountSimpleStack(this.craftingContainer.getItem(i));
-        }
-    }
-
-    @Override
-    public void clearCraftingContent() {
-        if (this.player.level().isClientSide) return;
-        this.craftingContainer.clearContent();
-    }
-
-    @Override
-    public boolean recipeMatches(RecipeHolder<ForgingRecipe> recipe) {
-        return recipe.value().matches(new RecipeWrapper(blockEntity.getItemHandler()), level);
-    }
-
-    @Override
-    public int getResultSlotIndex() {
-        return this.resultSlot.index;
-    }
-
-    @Override
-    public int getGridWidth() {
-        return 3;
-    }
-
-    @Override
-    public int getGridHeight() {
-        return 3;
-    }
-
-    @Override
-    public int getSize() {
-        return 9;
-    }
-
-    @Override
-    public @NotNull RecipeBookType getRecipeBookType() {
-        return OvergearedMod.FORGING;
-    }
-
-    @Override
-    public boolean shouldMoveToInventory(int slot) {
-        return slot < (getGridWidth() * getGridHeight());
-    }
-
     public AbstractSmithingAnvilBlockEntity getBlockEntity() {
         return blockEntity;
     }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void handlePlacement(boolean placeAll, RecipeHolder<?> recipeHolder, ServerPlayer player) {
-
-        if (!(recipeHolder.value() instanceof ForgingRecipe forgingRecipe)) {
-            super.handlePlacement(placeAll, recipeHolder, player);
-            return;
-        }
-
-        if (player.level().isClientSide) return;
-
-        RecipeHolder<ForgingRecipe> recipe =
-                (RecipeHolder<ForgingRecipe>) recipeHolder;
-
-        // If different recipe → clear grid first
-        if (!this.recipeMatches(recipe)) {
-            this.clearContainer(this.player, this.craftingContainer);
-        }
-
-        // Build stacked contents from player inventory
-        StackedContents stacked = new StackedContents();
-        player.getInventory().fillStackedContents(stacked);
-
-        if (!stacked.canCraft(recipe.value(), null)) {
-            new ServerPlaceRecipe<>(this)
-                    .recipeClicked(player, recipe, placeAll);
-            return;
-        }
-
-        NonNullList<Ingredient> ingredients = recipe.value().getIngredients();
-
-        int recipeWidth = forgingRecipe.getWidth();
-        int recipeHeight = forgingRecipe.getHeight();
-
-        // Determine where player inventory starts dynamically
-        int firstPlayerSlot = this.slots.indexOf(this.resultSlot) + 1;
-        int totalSlots = this.slots.size();
-
-        for (int row = 0; row < recipeHeight; row++) {
-            for (int col = 0; col < recipeWidth; col++) {
-
-                int recipeIndex = col + row * recipeWidth;
-                if (recipeIndex >= ingredients.size()) continue;
-
-                Ingredient ingredient = ingredients.get(recipeIndex);
-                if (ingredient.isEmpty()) continue;
-
-                int gridIndex = col + row * 3;
-                if (gridIndex >= craftingSlotIndices.size()) continue;
-
-                int slotIndex = craftingSlotIndices.get(gridIndex);
-                Slot targetSlot = this.slots.get(slotIndex);
-
-                // If matching stack already exists → grow it
-                if (targetSlot.hasItem() && ingredient.test(targetSlot.getItem())) {
-
-                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
-                        Slot invSlot = this.slots.get(invIndex);
-                        ItemStack invStack = invSlot.getItem();
-
-                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
-
-                            invStack.shrink(1);
-                            targetSlot.getItem().grow(1);
-
-                            if (invStack.isEmpty()) {
-                                invSlot.set(ItemStack.EMPTY);
-                            } else {
-                                invSlot.setChanged();
-                            }
-
-                            break;
-                        }
-                    }
-                }
-                // Empty grid slot → place new stack
-                else if (!targetSlot.hasItem()) {
-
-                    for (int invIndex = firstPlayerSlot; invIndex < totalSlots; invIndex++) {
-                        Slot invSlot = this.slots.get(invIndex);
-                        ItemStack invStack = invSlot.getItem();
-
-                        if (!invStack.isEmpty() && ingredient.test(invStack)) {
-
-                            ItemStack moved = invStack.split(1);
-                            targetSlot.set(moved);
-
-                            if (invStack.isEmpty()) {
-                                invSlot.set(ItemStack.EMPTY);
-                            } else {
-                                invSlot.setChanged();
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        this.broadcastChanges();
-    }
-
 }

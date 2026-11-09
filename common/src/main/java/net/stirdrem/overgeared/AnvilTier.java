@@ -2,7 +2,7 @@ package net.stirdrem.overgeared;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
@@ -164,9 +164,9 @@ public final class AnvilTier implements StringRepresentable {
         public final List<String> aliases = new ArrayList<>();
         public boolean enabled = true;
         @Nullable
-        public ResourceLocation hammerTag;
+        public Identifier hammerTag;
         @Nullable
-        public ResourceLocation baseTag;
+        public Identifier baseTag;
         public boolean blueprint;
 
         public Definition(String id) {

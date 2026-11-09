@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import mezz.jei.api.recipe.vanilla.IJeiAnvilRecipe;
 import mezz.jei.api.recipe.vanilla.IVanillaRecipeFactory;
@@ -30,11 +31,11 @@ public final class OvergearedAnvilRecipes {
                         ModItems.IRON_TONGS.get()
                 )),
                 new RepairData(Ingredient.of(Items.COPPER_INGOT), List.of(
-                        ModItems.COPPER_SWORD.get(),
-                        ModItems.COPPER_PICKAXE.get(),
-                        ModItems.COPPER_AXE.get(),
-                        ModItems.COPPER_SHOVEL.get(),
-                        ModItems.COPPER_HOE.get()
+                        Items.COPPER_SWORD,
+                        Items.COPPER_PICKAXE,
+                        Items.COPPER_AXE,
+                        Items.COPPER_SHOVEL,
+                        Items.COPPER_HOE
                 )),
                 new RepairData(Ingredient.of(ModItems.STEEL_INGOT.get()), List.of(
                         ModItems.STEEL_TONGS.get(),
@@ -52,7 +53,7 @@ public final class OvergearedAnvilRecipes {
 
         List<IJeiAnvilRecipe> recipes = new ArrayList<>();
         for (RepairData data : repairData) {
-            List<ItemStack> materials = List.of(data.material().getItems());
+            List<ItemStack> materials = Ingredients.stacks(data.material());
             for (Item item : data.repairables()) {
                 ItemStack stack = new ItemStack(item);
                 if (!stack.isDamageableItem()) continue;

@@ -10,7 +10,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -233,7 +233,7 @@ public class OvergearedEmiPlugin implements EmiPlugin {
         for (Item arrowItem : arrowItems) {
             for (Holder<Potion> potionHolder : BuiltInRegistries.POTION.holders().toList()) {
                 if (potionHolder.value().getEffects().isEmpty()) continue;
-                ResourceLocation potionKey = BuiltInRegistries.POTION.getKey(potionHolder.value());
+                Identifier potionKey = BuiltInRegistries.POTION.getKey(potionHolder.value());
                 if (potionKey == null) continue;
                 registry.addRecipe(new PotionFletchingEmiRecipe(
                         arrowItem, potionHolder, potionKey, PotionFletchingEmiRecipe.Variant.TIPPED));

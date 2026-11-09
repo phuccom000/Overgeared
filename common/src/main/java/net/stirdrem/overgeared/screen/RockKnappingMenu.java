@@ -1,7 +1,8 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.util.Prediction;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Container;
@@ -13,7 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 import net.minecraft.world.level.Level;
 import net.stirdrem.overgeared.util.items.IItemHandler;
 import net.stirdrem.overgeared.util.items.InvWrapper;
@@ -29,7 +30,6 @@ public class RockKnappingMenu extends AbstractContainerMenu {
     private final IItemHandler craftingGridHandler = new InvWrapper(craftingGrid);
     private final Container resultContainer = new SimpleContainer(1); // Output slot
     private final Level level;
-    private final RecipeManager recipeManager;
     private final Player player;
     private ItemStack inputRock; // The rock being knapped
     private boolean knappingFinished = false;
@@ -45,13 +45,12 @@ public class RockKnappingMenu extends AbstractContainerMenu {
     private static final int RESULT_SLOT_INDEX = GRID_LAST_SLOT_INDEX + 1;
 
     public RockKnappingMenu(int id, Inventory playerInv, FriendlyByteBuf extraData) {
-        this(id, playerInv, playerInv.player.level().getRecipeManager());
+        this(id, playerInv);
     }
 
-    public RockKnappingMenu(int id, Inventory playerInv, RecipeManager recipeManager) {
+    public RockKnappingMenu(int id, Inventory playerInv) {
         super(ModMenuTypes.ROCK_KNAPPING_MENU.get(), id);
         this.level = playerInv.player.level();
-        this.recipeManager = recipeManager;
         this.player = playerInv.player;
 
         // Check if player has a knappable rock in either hand
@@ -131,7 +130,7 @@ public class RockKnappingMenu extends AbstractContainerMenu {
         }
     }
 
-    public ResourceLocation getUnchippedTexture() {
+    public Identifier getUnchippedTexture() {
         return KnappingResourceReloadListener.getTexture(inputRock);
     }
 
@@ -263,7 +262,7 @@ public class RockKnappingMenu extends AbstractContainerMenu {
     }
 
     private void consumeInputRock() {
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
 
         // Check both hands and consume from whichever has the rock
         ItemStack mainHand = player.getMainHandItem();
@@ -279,8 +278,7 @@ public class RockKnappingMenu extends AbstractContainerMenu {
 
         RecipeInput recipeInput = new RecipeWrapper(craftingGridHandler);
 
-        RecipeHolder<RockKnappingRecipe> recipeHolder = recipeManager
-                .getRecipeFor(ModRecipeTypes.KNAPPING.get(), recipeInput, level)
+        RecipeHolder<RockKnappingRecipe> recipeHolder = RecipeLookup.getRecipeFor(level, ModRecipeTypes.KNAPPING.get(), recipeInput)
                 .orElse(null);
 
         if (recipeHolder != null) {
@@ -315,7 +313,7 @@ public class RockKnappingMenu extends AbstractContainerMenu {
             }
             if (!player.getInventory().add(result.copy())) {
                 // Drop if inventory is full
-                player.drop(result.copy(), false);
+                player.drop(result.copy(), false, Prediction.SERVER_ONLY);
             }
             resultContainer.setItem(0, ItemStack.EMPTY);
         }

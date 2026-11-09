@@ -1,7 +1,7 @@
 package net.stirdrem.overgeared.util;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -38,6 +38,8 @@ public class ModTags {
         public static final TagKey<Item> TOOL_CAST = tag("tool_casts");
         public static final TagKey<Item> USABLE_TOOL_CAST = tag("usable_tool_casts");
         public static final TagKey<Item> QUALITY_BLACKLIST = tag("quality_blacklist");
+        public static final TagKey<Item> STEEL_TOOL_MATERIALS = tag("steel_tool_materials");
+        public static final TagKey<Item> REPAIRS_STEEL_ARMOR = tag("repairs_steel_armor");
 
         private static TagKey<Item> tag(String name) {
             return TagKey.create(Registries.ITEM, OvergearedMod.loc(name));
@@ -48,7 +50,7 @@ public class ModTags {
      * Convention ({@code c:}) tags shared by NeoForge and Fabric.
      */
     public static class Common {
-        public static final TagKey<Item> ARMORS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "armors"));
-        public static final TagKey<Item> TOOLS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "tools"));
+        public static final TagKey<Item> ARMORS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "armors"));
+        public static final TagKey<Item> TOOLS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "tools"));
     }
 }

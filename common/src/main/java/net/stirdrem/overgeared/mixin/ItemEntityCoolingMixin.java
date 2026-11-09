@@ -16,7 +16,7 @@ public class ItemEntityCoolingMixin {
     private void onTick(CallbackInfo ci) {
         ItemEntity entity = (ItemEntity) (Object) this;
         Level level = entity.level();
-        if (level.isClientSide) return;
+        if (level.isClientSide()) return;
 
         ItemStack stack = entity.getItem();
         if (!HeatedItem.isHeated(stack)) return;

@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.neoforge;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -50,12 +51,12 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public boolean isDevelopmentEnvironment() {
-        return !FMLEnvironment.production;
+        return !FMLEnvironment.isProduction();
     }
 
     @Override
     public boolean isPhysicalClient() {
-        return FMLEnvironment.dist.isClient();
+        return FMLEnvironment.getDist().isClient();
     }
 
     @Override
@@ -77,7 +78,7 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public void sendToServer(CustomPacketPayload payload) {
-        PacketDistributor.sendToServer(payload);
+        net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(payload);
     }
 
     @Override
@@ -100,20 +101,13 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
         return CreativeModeTab.builder();
     }
 
-    @Override
-    public int getBurnTime(ItemStack stack) {
-        return stack.getBurnTime(RecipeType.SMELTING);
-    }
 
     @Override
     public ItemStack getCraftingRemainder(ItemStack stack) {
-        return stack.getCraftingRemainingItem();
+        ItemStackTemplate remainder = stack.getItem().getCraftingRemainder(stack);
+        return remainder == null ? ItemStack.EMPTY : remainder.create();
     }
 
-    @Override
-    public MapCodec<Ingredient> ingredientMapCodec() {
-        return Ingredient.MAP_CODEC_NONEMPTY;
-    }
 
     @Override
     public void firePlayerCraftingEvent(Player player, ItemStack crafted, Container craftMatrix) {
@@ -122,7 +116,7 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public void registerAlias(net.minecraft.resources.ResourceKey<? extends net.minecraft.core.Registry<?>> registry,
-                              net.minecraft.resources.ResourceLocation oldId, net.minecraft.resources.ResourceLocation newId) {
+                              net.minecraft.resources.Identifier oldId, net.minecraft.resources.Identifier newId) {
         Objects.requireNonNull(modBus, "Mod event bus is not set yet");
         modBus.addListener(RegisterEvent.class, event -> {
             if (event.getRegistryKey().equals(registry)) {
@@ -133,9 +127,7 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public void modifyAnvilTiers(java.util.List<net.stirdrem.overgeared.AnvilTier.Definition> tiers) {
-        // KubeJS loads its startup scripts in its constructor, which runs before ours (see neoforge.mods.toml)
-        if (isModLoaded("kubejs")) {
-            net.stirdrem.overgeared.compat.kubejs.OvergearedKubeJSPlugin.modifyAnvilTiers(tiers);
-        }
+        // KubeJS has no 26.3 build yet, so its anvil-tier hook (compat/kubejs) is not compiled.
+        // Restore the call to OvergearedKubeJSPlugin.modifyAnvilTiers(tiers) once it does.
     }
 }

@@ -1,4 +1,10 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import java.util.Collection;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.Item;
@@ -28,9 +34,8 @@ public final class ToolCastRecipeMaker {
     private ToolCastRecipeMaker() {
     }
 
-    public static List<RecipeHolder<CraftingRecipe>> createRecipes(RecipeManager recipeManager, boolean nether) {
-        Map<String, List<ItemToToolTypeRecipe>> byToolType = recipeManager
-                .getAllRecipesFor(ModRecipeTypes.ITEM_TO_TOOLTYPE.get()).stream()
+    public static List<RecipeHolder<CraftingRecipe>> createRecipes(Collection<RecipeHolder<ItemToToolTypeRecipe>> toolTypeRecipes, boolean nether) {
+        Map<String, List<ItemToToolTypeRecipe>> byToolType = toolTypeRecipes.stream()
                 .map(RecipeHolder::value)
                 .collect(Collectors.groupingBy(ItemToToolTypeRecipe::toolType));
 
@@ -50,14 +55,15 @@ public final class ToolCastRecipeMaker {
     }
 
     private static RecipeHolder<CraftingRecipe> createRecipe(List<Item> toolItems, String toolType, boolean nether) {
-        Ingredient center = Ingredient.of(toolItems.stream().map(ItemStack::new));
+        Ingredient center = Ingredient.of(toolItems.stream());
         Ingredient surround = Ingredient.of(nether ? Items.NETHER_BRICK : Items.CLAY_BALL);
-        Ingredient e = Ingredient.EMPTY;
+        Optional<Ingredient> e = Optional.empty();
+        Optional<Ingredient> s = Optional.of(surround);
 
-        NonNullList<Ingredient> grid = NonNullList.of(e,
-                e, surround, e,
-                surround, center, surround,
-                e, surround, e
+        List<Optional<Ingredient>> grid = List.of(
+                e, s, e,
+                s, Optional.of(center), s,
+                e, s, e
         );
 
         ItemStack output = new ItemStack(nether ? ModItems.NETHER_TOOL_CAST.get() : ModItems.UNFIRED_TOOL_CAST.get());
@@ -66,9 +72,9 @@ public final class ToolCastRecipeMaker {
 
         String prefix = nether ? "nether_cast" : "clay_cast";
         return new RecipeHolder<>(
-                OvergearedMod.loc("jei/" + prefix + "/" + toolType),
-                new ShapedRecipe("jei." + prefix, CraftingBookCategory.MISC,
-                        new ShapedRecipePattern(3, 3, grid, Optional.empty()), output)
+                ResourceKey.create(Registries.RECIPE, OvergearedMod.loc("jei/" + prefix + "/" + toolType)),
+                new ShapedRecipe(new Recipe.CommonInfo(false), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, "jei." + prefix),
+                        new ShapedRecipePattern(3, 3, grid, Optional.empty()), ItemStackTemplate.fromNonEmptyStack(output))
         );
     }
 }

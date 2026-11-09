@@ -11,10 +11,7 @@
     "#": "#c:ingots/steel"
   },
   "result": {
-<<<<<<<< HEAD:common/src/main/resources/data/overgeared/recipe/steel_plate.json
     "count": 3,
-========
->>>>>>>> 53cded36b04f2bd290f147e012bd66705fbee7c9:src/main/resources/data/overgeared/recipe/steel_plate.json
     "id": "overgeared:steel_plate"
   },
   "show_notification": true

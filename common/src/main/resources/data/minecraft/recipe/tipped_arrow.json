@@ -1,24 +1,3 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    {
-      "item": "minecraft:barrier"
-    }
-  ],
-  "result": {
-    "item": "minecraft:air"
-  },
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:false"
-    }
-  ],
-  "fabric:load_conditions": [
-    {
-      "condition": "fabric:not",
-      "value": {
-        "condition": "fabric:true"
-      }
-    }
-  ]
+  "type": "overgeared:disabled"
 }

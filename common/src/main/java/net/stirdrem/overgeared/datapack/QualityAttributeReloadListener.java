@@ -1,19 +1,17 @@
 package net.stirdrem.overgeared.datapack;
+import net.stirdrem.overgeared.util.ItemKinds;
 
 import com.google.gson.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.TieredItem;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityAttributeDefinition;
 import net.stirdrem.overgeared.datapack.quality_attribute.QualityTarget;
@@ -23,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class QualityAttributeReloadListener
-        extends SimpleJsonResourceReloadListener {
+        extends JsonDataReloadListener {
 
     public static final QualityAttributeReloadListener INSTANCE =
             new QualityAttributeReloadListener();
@@ -31,26 +29,27 @@ public class QualityAttributeReloadListener
     private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
 
     public QualityAttributeReloadListener() {
-        super(new Gson(), "quality_attributes");
+        super("quality_attributes");
     }
 
-    private static final Set<Item> cachedItems = new HashSet<>();
+    /**
+     * Built on first use: item components and the new tags are only bound after the reload, so the
+     * items cannot be classified (tool / armor / tag) while the listener runs.
+     */
+    private static volatile Set<Item> cachedItems;
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> jsons,
+    protected void apply(Map<Identifier, JsonElement> jsons,
                          ResourceManager manager,
                          ProfilerFiller profiler) {
 
         definitions.clear();
-        cachedItems.clear();
+        cachedItems = null;
 
         for (JsonElement element : jsons.values()) {
             QualityAttributeDefinition def = parse(element.getAsJsonObject());
             definitions.add(def);
         }
-
-        // build cache
-        cachedItems.addAll(resolveItems());
 
         OvergearedMod.LOGGER.info("Loaded {} quality attribute files", jsons.size());
     }
@@ -62,7 +61,7 @@ public class QualityAttributeReloadListener
     private static QualityAttributeDefinition parse(JsonObject json) {
 
         // ---- attribute ----
-        ResourceLocation attributeId = ResourceLocation.tryParse(
+        Identifier attributeId = Identifier.tryParse(
                 GsonHelper.getAsString(json, "attribute")
         );
 
@@ -76,8 +75,8 @@ public class QualityAttributeReloadListener
             QualityTarget.TargetType type = QualityTarget.TargetType
                     .valueOf(GsonHelper.getAsString(obj, "type").toUpperCase(Locale.ROOT));
 
-            ResourceLocation id = obj.has("id")
-                    ? ResourceLocation.tryParse(GsonHelper.getAsString(obj, "id"))
+            Identifier id = obj.has("id")
+                    ? Identifier.tryParse(GsonHelper.getAsString(obj, "id"))
                     : null;
 
             targets.add(new QualityTarget(type, id));
@@ -129,7 +128,7 @@ public class QualityAttributeReloadListener
 
                     case ITEM -> {
                         if (target.id() != null) {
-                            Item item = BuiltInRegistries.ITEM.get(target.id());
+                            Item item = BuiltInRegistries.ITEM.getValue(target.id());
                             items.add(item);
                         }
                     }
@@ -137,7 +136,7 @@ public class QualityAttributeReloadListener
                     case ITEM_TAG -> {
                         if (target.id() != null) {
                             TagKey<Item> tag = TagKey.create(Registries.ITEM, target.id());
-                            BuiltInRegistries.ITEM.holders()
+                            BuiltInRegistries.ITEM.listElements()
                                     .filter(holder -> holder.is(tag))
                                     .forEach(holder -> items.add(holder.value()));
                         }
@@ -145,7 +144,7 @@ public class QualityAttributeReloadListener
 
                     case WEAPON -> {
                         BuiltInRegistries.ITEM.stream().forEach(item -> {
-                            if (item instanceof TieredItem ||
+                            if (ItemKinds.isTiered(item) ||
                                     item instanceof ProjectileWeaponItem) {
                                 items.add(item);
                             }
@@ -154,7 +153,7 @@ public class QualityAttributeReloadListener
 
                     case ARMOR -> {
                         BuiltInRegistries.ITEM.stream().forEach(item -> {
-                            if (item instanceof ArmorItem) {
+                            if (ItemKinds.isArmor(item)) {
                                 items.add(item);
                             }
                         });
@@ -171,6 +170,11 @@ public class QualityAttributeReloadListener
     }
 
     public Set<Item> getAllItems() {
-        return cachedItems;
+        Set<Item> items = cachedItems;
+        if (items == null) {
+            items = resolveItems();
+            cachedItems = items;
+        }
+        return items;
     }
 }

@@ -1,8 +1,9 @@
 package net.stirdrem.overgeared.event;
+import net.stirdrem.overgeared.util.ItemKinds;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -31,7 +32,7 @@ public class QualityAttributeHandler {
     public interface ModifierEditor {
         List<ItemAttributeModifiers.Entry> getModifiers();
 
-        void removeModifier(Holder<Attribute> attribute, ResourceLocation id);
+        void removeModifier(Holder<Attribute> attribute, Identifier id);
 
         void addModifier(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slot);
     }
@@ -52,8 +53,8 @@ public class QualityAttributeHandler {
                 QualityValue value = def.qualities().get(quality.getDisplayName());
                 if (value == null || value.amount() == 0)
                     continue;
-                Attribute attribute = BuiltInRegistries.ATTRIBUTE
-                        .get(def.attribute());
+                Holder<Attribute> attribute = BuiltInRegistries.ATTRIBUTE
+                        .get(def.attribute()).orElse(null);
                 if (attribute == null)
                     continue;
 
@@ -77,7 +78,7 @@ public class QualityAttributeHandler {
             }
 
             @Override
-            public void removeModifier(Holder<Attribute> attribute, ResourceLocation id) {
+            public void removeModifier(Holder<Attribute> attribute, Identifier id) {
                 entries.removeIf(entry -> entry.attribute().equals(attribute) && entry.modifier().id().equals(id));
             }
 
@@ -91,7 +92,7 @@ public class QualityAttributeHandler {
                 }
             }
         });
-        return new ItemAttributeModifiers(entries, modifiers.showInTooltip());
+        return new ItemAttributeModifiers(entries);
     }
 
     public static boolean matches(ItemStack stack, List<QualityTarget> targets) {
@@ -100,20 +101,20 @@ public class QualityAttributeHandler {
         for (QualityTarget target : targets) {
             switch (target.type()) {
                 case WEAPON -> {
-                    if (item instanceof TieredItem ||
+                    if (ItemKinds.isTiered(item) ||
                             item instanceof ProjectileWeaponItem) {
                         return true;
                     }
                 }
 
                 case ARMOR -> {
-                    if (item instanceof ArmorItem) {
+                    if (ItemKinds.isArmor(item)) {
                         return true;
                     }
                 }
 
                 case ITEM -> {
-                    ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+                    Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
                     if (itemId != null && itemId.equals(target.id())) {
                         return true;
                     }
@@ -139,14 +140,14 @@ public class QualityAttributeHandler {
         return false;
     }
 
-    private static void modifyAttribute(ModifierEditor event, Attribute attribute, double bonus,
+    private static void modifyAttribute(ModifierEditor event, Holder<Attribute> attribute, double bonus,
                                         AttributeModifier.Operation operation, ForgingQuality quality) {
         // Get all modifiers currently on the item
         var modifiers = event.getModifiers();
 
         // Filter for the target attribute
         var targetModifiers = new ArrayList<>(modifiers.stream()
-                .filter(entry -> entry.attribute().is(BuiltInRegistries.ATTRIBUTE.wrapAsHolder(attribute)))
+                .filter(entry -> entry.attribute().equals(attribute))
                 .toList());
 
         // Modify each one
@@ -167,13 +168,13 @@ public class QualityAttributeHandler {
 
     private static AttributeModifier createModifiedAttribute(AttributeModifier original, double bonus,
                                                              AttributeModifier.Operation operation, ForgingQuality quality) {
-        ResourceLocation id;
+        Identifier id;
         double amount;
         if (operation == AttributeModifier.Operation.ADD_VALUE) {
             id = original.id();
             amount = original.amount() + bonus;
         } else {
-            id = ResourceLocation.parse(original.id() + "_overgeared_" + quality.getDisplayName() + "_"
+            id = Identifier.parse(original.id() + "_overgeared_" + quality.getDisplayName() + "_"
                     + operation.name().toLowerCase(java.util.Locale.ROOT) + (int) bonus * 10);
             amount = bonus;
         }

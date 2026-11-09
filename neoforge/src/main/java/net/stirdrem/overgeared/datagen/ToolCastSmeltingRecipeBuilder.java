@@ -1,13 +1,18 @@
 package net.stirdrem.overgeared.datagen;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CookingBookCategory;
@@ -78,17 +83,21 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public Item getResult() {
-        return result.asItem();
+    public ResourceKey<Recipe<?>> defaultId() {
+        return ResourceKey.create(Registries.RECIPE, BuiltInRegistries.ITEM.getKey(result.asItem()));
     }
 
     @Override
-    public void save(RecipeOutput output, ResourceLocation id) {
+    public void save(RecipeOutput output, ResourceKey<Recipe<?>> idKey) {
+        Identifier id = idKey.identifier();
         ensureValid(id);
+        // The recipe is saved with a suffix; the advancement unlocks (and is named after) that recipe
+        Identifier recipeId = Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_cast_smelting");
+        ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
 
-        Advancement.Builder advBuilder = Advancement.Builder.recipeAdvancement()
-                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id))
+        Advancement.Builder advBuilder = output.advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(output.lookup(Registries.RECIPE).getOrThrow(recipeKey)))
+                .rewards(AdvancementRewards.Builder.recipe(recipeKey))
                 .requirements(AdvancementRequirements.Strategy.OR);
         this.criteria.forEach(advBuilder::addCriterion);
 
@@ -105,18 +114,15 @@ public class ToolCastSmeltingRecipeBuilder implements RecipeBuilder {
                 bookCategory,
                 materialInput,
                 toolType,
-                new ItemStack(result),
+                new ItemStackTemplate(result.asItem()),
                 needPolishing != null ? needPolishing : true,
                 experience,
                 cookTime
         );
-
-        // Use the suffix convention from the old Result.getId()
-        ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_from_cast_smelting");
-        output.accept(recipeId, recipe, advBuilder.build(id.withPrefix("recipes/misc/")));
+        output.accept(recipeKey, recipe, advBuilder.build(recipeId.withPrefix("recipes/misc/")));
     }
 
-    private void ensureValid(ResourceLocation id) {
+    private void ensureValid(Identifier id) {
         if (toolType == null)
             throw new IllegalStateException("Tool type missing for " + id);
 

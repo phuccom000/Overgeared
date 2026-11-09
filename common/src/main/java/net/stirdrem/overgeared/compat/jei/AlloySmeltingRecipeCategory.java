@@ -11,9 +11,9 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -23,8 +23,8 @@ import net.stirdrem.overgeared.recipe.IAlloyRecipe;
 import java.util.List;
 
 public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe> {
-    public static final ResourceLocation UID = OvergearedMod.loc("alloy_smelting");
-    public static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/furnace_jei.png");
+    public static final Identifier UID = OvergearedMod.loc("alloy_smelting");
+    public static final Identifier TEXTURE = OvergearedMod.loc("textures/gui/furnace_jei.png");
 
     public static final RecipeType<IAlloyRecipe> ALLOY_SMELTING_TYPE =
             new RecipeType<>(UID, IAlloyRecipe.class);
@@ -59,9 +59,13 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
     }
 
     @Override
-    @SuppressWarnings("removal")
-    public IDrawable getBackground() {
-        return background;
+    public int getWidth() {
+        return background.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return background.getHeight();
     }
 
     @Override
@@ -70,8 +74,9 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<IAlloyRecipe
     }
 
     @Override
-    public void draw(IAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics,
+    public void draw(IAlloyRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics,
                      double mouseX, double mouseY) {
+        background.draw(guiGraphics);
         arrowAnimated.draw(guiGraphics, 47, 9);
         flameAnimated.draw(guiGraphics, 51, 29);
         JeiUtils.drawExperience(guiGraphics, recipe.getExperience(), background.getWidth(), 35);

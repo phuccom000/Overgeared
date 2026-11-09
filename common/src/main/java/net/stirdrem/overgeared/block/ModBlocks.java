@@ -17,6 +17,7 @@ import net.stirdrem.overgeared.item.ModItems;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
@@ -31,44 +32,44 @@ public class ModBlocks {
     public static final DeferredBlock<TieredSmithingAnvil> IRON_SMITHING_ANVIL = TIERED_ANVILS.get(AnvilTier.iron());
 
     public static final DeferredBlock<StoneSmithingAnvil> STONE_SMITHING_ANVIL = registerBlock(AnvilTier.stone().blockName(),
-            () -> new StoneSmithingAnvil(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+            StoneSmithingAnvil::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion());
 
     public static final DeferredBlock<Block> STEEL_BLOCK = registerBlock("steel_block",
-            () -> new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)));
+            Block::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
 
     public static final DeferredBlock<BlueprintWorkbenchBlock> DRAFTING_TABLE = registerBlock("drafting_table",
-            () -> new BlueprintWorkbenchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE)));
+            BlueprintWorkbenchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE));
 
     public static final DeferredBlock<AlloySmelterBlock> ALLOY_FURNACE = registerBlock("alloy_furnace",
-            () -> new AlloySmelterBlock(BlockBehaviour.Properties
+            AlloySmelterBlock::new, () -> BlockBehaviour.Properties
                     .ofFullCopy(Blocks.BRICKS)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()
                     .strength(3.5F, 6.0F)
-                    .lightLevel(litBlockEmission())));
+                    .lightLevel(litBlockEmission()));
 
     public static final DeferredBlock<NetherAlloySmelterBlock> NETHER_ALLOY_FURNACE = registerBlock("nether_alloy_furnace",
-            () -> new NetherAlloySmelterBlock(BlockBehaviour.Properties
+            NetherAlloySmelterBlock::new, () -> BlockBehaviour.Properties
                     .ofFullCopy(Blocks.NETHER_BRICKS)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()
                     .strength(3.5F, 6.0F)
-                    .lightLevel(litBlockEmission())));
+                    .lightLevel(litBlockEmission()));
 
     public static final DeferredBlock<CastingSmelterBlock> CAST_FURNACE = registerBlock("casting_furnace",
-            () -> new CastingSmelterBlock(BlockBehaviour.Properties
+            CastingSmelterBlock::new, () -> BlockBehaviour.Properties
                     .ofFullCopy(Blocks.RED_NETHER_BRICKS)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()
                     .strength(3.5F, 6.0F)
-                    .lightLevel(litBlockEmission())));
+                    .lightLevel(litBlockEmission()));
 
     private static Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> registerTieredAnvils() {
         Map<AnvilTier, DeferredBlock<TieredSmithingAnvil>> anvils = new LinkedHashMap<>();
         for (AnvilTier tier : AnvilTier.all()) {
             if (tier.isStone()) continue; // has its own block, STONE_SMITHING_ANVIL
             anvils.put(tier, registerBlock(tier.blockName(),
-                    () -> new TieredSmithingAnvil(tier, BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion())));
+                    p -> new TieredSmithingAnvil(tier, p), () -> BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).noOcclusion()));
         }
         return Collections.unmodifiableMap(anvils);
     }
@@ -82,14 +83,14 @@ public class ModBlocks {
         return (p_50763_) -> p_50763_.getValue(BlockStateProperties.LIT) ? 13 : 0;
     }
 
-    private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
-        DeferredBlock<T> toReturn = BLOCKS.register(name, block);
+    private static <T extends Block> DeferredBlock<T> registerBlock(String name, Function<BlockBehaviour.Properties, T> factory, Supplier<BlockBehaviour.Properties> properties) {
+        DeferredBlock<T> toReturn = BLOCKS.registerBlock(name, factory, properties);
         registerBlockItem(name, toReturn);
         return toReturn;
     }
 
     private static <T extends Block> void registerBlockItem(String name, DeferredBlock<T> block) {
-        ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        ModItems.ITEMS.registerSimpleBlockItem(name, block, Item.Properties::new);
     }
 
     public static void register() {

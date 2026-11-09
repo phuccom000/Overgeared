@@ -4,9 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "mixins": [
-    "IItemStackExtensionMixin",
-    "ItemStackBreakMixin",
-    "PlayerMixin"
+    "IItemStackExtensionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

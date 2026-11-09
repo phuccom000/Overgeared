@@ -1,4 +1,10 @@
 package net.stirdrem.overgeared.recipe;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -17,10 +23,11 @@ import net.stirdrem.overgeared.recipe.ingredients.IngredientWithRemainder;
 
 public class OvergearedShapelessRecipe extends ShapelessRecipe {
     private final NonNullList<IngredientWithRemainder> ingredientsWithRemainder;
-    private final ItemStack result;
+    private final ItemStackTemplate result;
 
-    public OvergearedShapelessRecipe(String group, CraftingBookCategory category, ItemStack result, NonNullList<IngredientWithRemainder> ingredients) {
-        super(group, category, result, convertToBaseIngredients(ingredients));
+    public OvergearedShapelessRecipe(String group, CraftingBookCategory category, ItemStackTemplate result, NonNullList<IngredientWithRemainder> ingredients) {
+        super(new Recipe.CommonInfo(true), new CraftingRecipe.CraftingBookInfo(category, group),
+                result, convertToBaseIngredients(ingredients));
 
         this.ingredientsWithRemainder = ingredients;
         this.result = result;
@@ -68,8 +75,8 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider provider) {
-        ItemStack result = super.assemble(input, provider);
+    public ItemStack assemble(CraftingInput input) {
+        ItemStack result = super.assemble(input);
 
         if (!ServerConfig.ENABLE_MINIGAME.get()) {
             // When minigame is disabled
@@ -184,23 +191,31 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipeSerializers.CRAFTING_SHAPELESS.get();
+    @SuppressWarnings("unchecked")
+    public RecipeSerializer<ShapelessRecipe> getSerializer() {
+        // The parent fixes the type parameter; the serializer is really a RecipeSerializer<OvergearedShapelessRecipe>.
+        return (RecipeSerializer<ShapelessRecipe>) (RecipeSerializer<?>) ModRecipeSerializers.CRAFTING_SHAPELESS.get();
     }
 
-    public static class Serializer implements RecipeSerializer<OvergearedShapelessRecipe> {
+    private static NonNullList<IngredientWithRemainder> toNonNullList(IngredientWithRemainder[] ingredients) {
+        NonNullList<IngredientWithRemainder> list = NonNullList.create();
+        java.util.Collections.addAll(list, ingredients);
+        return list;
+    }
+
+    public static class Serializer {
 
         public static final MapCodec<OvergearedShapelessRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.STRING.optionalFieldOf("group", "").forGetter(ShapelessRecipe::getGroup),
+                Codec.STRING.optionalFieldOf("group", "").forGetter(ShapelessRecipe::group),
                 CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(ShapelessRecipe::category),
-                ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
                 IngredientWithRemainder.CODEC.listOf(0, 9).fieldOf("ingredients").flatXmap(list -> {
                         IngredientWithRemainder[] ingredients = list.toArray(IngredientWithRemainder[]::new);
                         int size = 3 * 3;
                         if (ingredients.length == 0) {
                             return DataResult.error(() -> "No ingredients for shapeless recipe");
                         } else {
-                            return ingredients.length > size ? DataResult.error(() -> "Too many ingredients for shapeless recipe. The maximum is: The maximum is: %s".formatted(size)) : DataResult.success(NonNullList.of(IngredientWithRemainder.EMPTY, ingredients));
+                            return ingredients.length > size ? DataResult.error(() -> "Too many ingredients for shapeless recipe. The maximum is: The maximum is: %s".formatted(size)) : DataResult.success(toNonNullList(ingredients));
                         }
                 }, DataResult::success).forGetter(r -> r.ingredientsWithRemainder)
         ).apply(instance, OvergearedShapelessRecipe::new));
@@ -212,7 +227,7 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
         public static OvergearedShapelessRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
             String group = buffer.readUtf();
             CraftingBookCategory category = buffer.readEnum(CraftingBookCategory.class);
-            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
 
             int ingredientCount = buffer.readVarInt();
             NonNullList<IngredientWithRemainder> ingredients = NonNullList.create();
@@ -224,9 +239,9 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
         }
 
         public static void toNetwork(RegistryFriendlyByteBuf buffer, OvergearedShapelessRecipe recipe) {
-            buffer.writeUtf(recipe.getGroup());
+            buffer.writeUtf(recipe.group());
             buffer.writeEnum(recipe.category());
-            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
 
             buffer.writeVarInt(recipe.ingredientsWithRemainder.size());
             for (IngredientWithRemainder ingredient : recipe.ingredientsWithRemainder) {
@@ -234,12 +249,10 @@ public class OvergearedShapelessRecipe extends ShapelessRecipe {
             }
         }
 
-        @Override
         public MapCodec<OvergearedShapelessRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, OvergearedShapelessRecipe> streamCodec() {
             return STREAM_CODEC;
         }

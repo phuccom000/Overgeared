@@ -1,5 +1,8 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -14,16 +17,16 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRecipe {
+public class ShapedAlloySmeltingRecipe implements OvergearedRecipe<RecipeInput>, IAlloyRecipe {
     private final String group;
     private final CraftingBookCategory category;
     private final NonNullList<Ingredient> pattern; // size 4
-    private final ItemStack output;
+    private final ItemStackTemplate output;
     private final float experience;
     private final int cookingTime;
 
     public ShapedAlloySmeltingRecipe(String group, CraftingBookCategory category,
-                                     NonNullList<Ingredient> pattern, ItemStack output,
+                                     NonNullList<Ingredient> pattern, ItemStackTemplate output,
                                      float experience, int cookingTime) {
         if (pattern.size() != 4)
             throw new IllegalArgumentException("Pattern for 2x2 alloy smelting must have exactly 4 ingredients");
@@ -37,7 +40,7 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
 
     @Override
     public boolean matches(RecipeInput inv, Level level) {
-        if (level.isClientSide) return false;
+        if (level.isClientSide()) return false;
 
         for (int i = 0; i < 4; i++) {
             Ingredient ingredient = pattern.get(i);
@@ -48,14 +51,10 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
     }
 
     @Override
-    public ItemStack assemble(RecipeInput inv, HolderLookup.Provider registries) {
-        return output.copy();
+    public ItemStack assemble(RecipeInput inv) {
+        return output.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int w, int h) {
-        return w >= 2 && h >= 2;
-    }
 
 
     @Override
@@ -63,22 +62,21 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
         return pattern;
     }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider registries) {
-        return output.copy();
+        return output.create();
     }
 
     public ItemStack getResultItem() {
-        return output.copy();
+        return output.create();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ShapedAlloySmeltingRecipe> getSerializer() {
         return ModRecipeSerializers.SHAPED_ALLOY_SMELTING.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<ShapedAlloySmeltingRecipe> getType() {
         return ModRecipeTypes.SHAPED_ALLOY_SMELTING.get();
     }
 
@@ -111,15 +109,14 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
         return category;
     }
 
-    public static class Serializer implements RecipeSerializer<ShapedAlloySmeltingRecipe> {
-        @Override
+    public static class Serializer {
         public MapCodec<ShapedAlloySmeltingRecipe> codec() {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Codec.STRING.optionalFieldOf("group", "").forGetter(ShapedAlloySmeltingRecipe::getGroup),
                     CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(ShapedAlloySmeltingRecipe::getCraftingBookCategory),
                     Codec.list(Codec.STRING).fieldOf("pattern").forGetter(r -> List.of("AA", "AA")),
-                    Codec.unboundedMap(Codec.STRING, Ingredient.CODEC).fieldOf("key").forGetter(r -> java.util.Map.of()),
-                    ItemStack.CODEC.fieldOf("result").forGetter(ShapedAlloySmeltingRecipe::getResultItem),
+                    Codec.unboundedMap(Codec.STRING, IngredientCodecs.LENIENT).fieldOf("key").forGetter(r -> java.util.Map.of()),
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.output),
                     Codec.FLOAT.optionalFieldOf("experience", 0.0F).forGetter(ShapedAlloySmeltingRecipe::getExperience),
                     Codec.INT.optionalFieldOf("cookingtime", 200).forGetter(ShapedAlloySmeltingRecipe::getCookingTime)
             ).apply(instance, (group, category, pattern, key, result, exp, time) -> {
@@ -128,7 +125,7 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
                     throw new IllegalArgumentException("2x2 pattern must have exactly 2 rows");
                 }
 
-                NonNullList<Ingredient> ingredients = NonNullList.withSize(4, Ingredient.EMPTY);
+                NonNullList<Ingredient> ingredients = NonNullList.withSize(4, Ingredients.EMPTY);
                 for (int y = 0; y < 2; y++) {
                     String row = pattern.get(y);
                     if (row.length() != 2) {
@@ -137,14 +134,13 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
                     for (int x = 0; x < 2; x++) {
                         char c = row.charAt(x);
                         String keyStr = String.valueOf(c);
-                        ingredients.set(y * 2 + x, key.getOrDefault(keyStr, Ingredient.EMPTY));
+                        ingredients.set(y * 2 + x, key.getOrDefault(keyStr, Ingredients.EMPTY));
                     }
                 }
                 return new ShapedAlloySmeltingRecipe(group, category, ingredients, result, exp, time);
             }));
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, ShapedAlloySmeltingRecipe> streamCodec() {
             return StreamCodec.composite(
                     ByteBufCodecs.STRING_UTF8,
@@ -154,12 +150,12 @@ public class ShapedAlloySmeltingRecipe implements Recipe<RecipeInput>, IAlloyRec
                     Ingredient.CONTENTS_STREAM_CODEC
                             .apply(ByteBufCodecs.list())
                             .map(
-                                    list -> NonNullList.of(Ingredient.EMPTY, list.toArray(Ingredient[]::new)),
+                                    list -> NonNullList.of(Ingredients.EMPTY, list.toArray(Ingredient[]::new)),
                                     List::copyOf
                             ),
                     ShapedAlloySmeltingRecipe::getPattern,
-                    ItemStack.STREAM_CODEC,
-                    ShapedAlloySmeltingRecipe::getResultItem,
+                    ItemStackTemplate.STREAM_CODEC,
+                    r -> r.output,
                     ByteBufCodecs.FLOAT,
                     ShapedAlloySmeltingRecipe::getExperience,
                     ByteBufCodecs.INT,

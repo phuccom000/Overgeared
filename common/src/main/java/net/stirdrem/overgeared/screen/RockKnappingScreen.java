@@ -1,14 +1,15 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.client.renderer.RenderPipelines;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.stirdrem.overgeared.networking.PacketDistributor;
 import net.stirdrem.overgeared.OvergearedMod;
@@ -16,18 +17,16 @@ import net.stirdrem.overgeared.networking.packet.KnappingChipC2SPacket;
 import org.jetbrains.annotations.NotNull;
 
 public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu> {
-    private static final ResourceLocation TEXTURE = OvergearedMod.loc("textures/gui/rock_knapping_gui.png");
-    private static final ResourceLocation CHIPPED_TEXTURE = OvergearedMod.loc("textures/gui/blank.png");
-    private static final ResourceLocation DEFAULT_UNCHIPPED = ResourceLocation.withDefaultNamespace("textures/block/stone.png");
+    private static final Identifier TEXTURE = OvergearedMod.loc("textures/gui/rock_knapping_gui.png");
+    private static final Identifier CHIPPED_TEXTURE = OvergearedMod.loc("textures/gui/blank.png");
+    private static final Identifier DEFAULT_UNCHIPPED = Identifier.withDefaultNamespace("textures/block/stone.png");
 
     private static final int GRID_ORIGIN_X = 32;
     private static final int GRID_ORIGIN_Y = 19;
     private static final int SLOT_SIZE = 16;
 
     public RockKnappingScreen(RockKnappingMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 166;
+        super(menu, playerInventory, title, 176, 166);
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
@@ -86,7 +85,7 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
     }
 
     private @NotNull WidgetSprites getWidgetSprites(boolean isChipped, boolean resultCollected) {
-        ResourceLocation currentTexture;
+        Identifier currentTexture;
         if (isChipped || resultCollected) {
             currentTexture = CHIPPED_TEXTURE;
         } else {
@@ -103,28 +102,21 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
         );
     }
 
-    @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
-    }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, TEXTURE);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
 
         int x = this.leftPos;
         int y = this.topPos;
 
-        graphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x404040, false);
-        graphics.drawString(this.font, this.playerInventoryTitle, 8, this.inventoryLabelY, 0x404040, false);
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+        graphics.text(this.font, this.playerInventoryTitle, 8, this.inventoryLabelY, 0xFF404040, false);
     }
 
     private class KnappingImageButton extends ImageButton {
@@ -140,9 +132,9 @@ public class RockKnappingScreen extends AbstractContainerScreen<RockKnappingMenu
         }
 
         @Override
-        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            ResourceLocation resourceLocation = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-            guiGraphics.blit(resourceLocation, this.getX(), this.getY(), 0, 0, width, height, width, height);
+        public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+            Identifier resourceLocation = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceLocation, this.getX(), this.getY(), 0, 0, width, height, width, height);
         }
     }
 }

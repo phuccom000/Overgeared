@@ -2,8 +2,9 @@ package net.stirdrem.overgeared.item.custom;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.Item.Properties;
 
 import java.util.List;
 
@@ -13,35 +14,36 @@ public class DiamondUpgradeTemplateItem extends SmithingTemplateItem {
   private static final Component DIAMOND_UPGRADE_INGREDIENTS = Component.translatable("item.overgeared.smithing_template.diamond_upgrade.ingredients").withStyle(ChatFormatting.BLUE);
   private static final Component DIAMOND_UPGRADE_BASE_SLOT_DESCRIPTION = Component.translatable("item.overgeared.smithing_template.diamond_upgrade.base_slot_description");
   private static final Component DIAMOND_UPGRADE_ADDITIONS_SLOT_DESCRIPTION = Component.translatable("item.overgeared.smithing_template.diamond_upgrade.additions_slot_description");
-  private static final ResourceLocation EMPTY_SLOT_HELMET = ResourceLocation.parse("item/empty_armor_slot_helmet");
-  private static final ResourceLocation EMPTY_SLOT_CHESTPLATE = ResourceLocation.parse("item/empty_armor_slot_chestplate");
-  private static final ResourceLocation EMPTY_SLOT_LEGGINGS = ResourceLocation.parse("item/empty_armor_slot_leggings");
-  private static final ResourceLocation EMPTY_SLOT_BOOTS = ResourceLocation.parse("item/empty_armor_slot_boots");
-  private static final ResourceLocation EMPTY_SLOT_HOE = ResourceLocation.parse("item/empty_slot_hoe");
-  private static final ResourceLocation EMPTY_SLOT_AXE = ResourceLocation.parse("item/empty_slot_axe");
-  private static final ResourceLocation EMPTY_SLOT_SWORD = ResourceLocation.parse("item/empty_slot_sword");
-  private static final ResourceLocation EMPTY_SLOT_SHOVEL = ResourceLocation.parse("item/empty_slot_shovel");
-  private static final ResourceLocation EMPTY_SLOT_PICKAXE = ResourceLocation.parse("item/empty_slot_pickaxe");
-  private static final ResourceLocation EMPTY_SLOT_DIAMOND = ResourceLocation.parse("item/empty_slot_diamond");
+  private static final Identifier EMPTY_SLOT_HELMET = Identifier.withDefaultNamespace("container/slot/helmet");
+  private static final Identifier EMPTY_SLOT_CHESTPLATE = Identifier.withDefaultNamespace("container/slot/chestplate");
+  private static final Identifier EMPTY_SLOT_LEGGINGS = Identifier.withDefaultNamespace("container/slot/leggings");
+  private static final Identifier EMPTY_SLOT_BOOTS = Identifier.withDefaultNamespace("container/slot/boots");
+  private static final Identifier EMPTY_SLOT_HOE = Identifier.withDefaultNamespace("container/slot/hoe");
+  private static final Identifier EMPTY_SLOT_AXE = Identifier.withDefaultNamespace("container/slot/axe");
+  private static final Identifier EMPTY_SLOT_SWORD = Identifier.withDefaultNamespace("container/slot/sword");
+  private static final Identifier EMPTY_SLOT_SHOVEL = Identifier.withDefaultNamespace("container/slot/shovel");
+  private static final Identifier EMPTY_SLOT_SPEAR = Identifier.withDefaultNamespace("container/slot/spear");
+  private static final Identifier EMPTY_SLOT_PICKAXE = Identifier.withDefaultNamespace("container/slot/pickaxe");
+  private static final Identifier EMPTY_SLOT_DIAMOND = Identifier.withDefaultNamespace("container/slot/diamond");
 
 
-  public DiamondUpgradeTemplateItem(Component pAppliesTo, Component pIngredients, Component pUpdradeDescription, Component pBaseSlotDescription, Component pAdditionsSlotDescription, List<ResourceLocation> pBaseSlotEmptyIcons, List<ResourceLocation> pAdditonalSlotEmptyIcons) {
-    super(pAppliesTo, pIngredients, pUpdradeDescription, pBaseSlotDescription, pAdditionsSlotDescription, pBaseSlotEmptyIcons, pAdditonalSlotEmptyIcons);
+  public DiamondUpgradeTemplateItem(Component pAppliesTo, Component pIngredients, Component pBaseSlotDescription, Component pAdditionsSlotDescription, List<Identifier> pBaseSlotEmptyIcons, List<Identifier> pAdditonalSlotEmptyIcons, Properties properties) {
+    super(pAppliesTo, pIngredients, pBaseSlotDescription, pAdditionsSlotDescription, pBaseSlotEmptyIcons, pAdditonalSlotEmptyIcons, properties);
   }
 
-  public static SmithingTemplateItem createDiamondUpgradeTemplate() {
+  public static SmithingTemplateItem createDiamondUpgradeTemplate(Properties properties) {
     return new SmithingTemplateItem(
             DIAMOND_UPGRADE_APPLIES_TO,
             DIAMOND_UPGRADE_INGREDIENTS,
-            DIAMOND_UPGRADE,
             DIAMOND_UPGRADE_BASE_SLOT_DESCRIPTION,
             DIAMOND_UPGRADE_ADDITIONS_SLOT_DESCRIPTION,
             createDiamondUpgradeIconList(),
-            createDiamondUpgradeMaterialList()
+            createDiamondUpgradeMaterialList(),
+            properties
     );
   }
 
-  private static List<ResourceLocation> createDiamondUpgradeIconList() {
+  private static List<Identifier> createDiamondUpgradeIconList() {
     return List.of(
             EMPTY_SLOT_HELMET,
             EMPTY_SLOT_SWORD,
@@ -51,11 +53,12 @@ public class DiamondUpgradeTemplateItem extends SmithingTemplateItem {
             EMPTY_SLOT_AXE,
             EMPTY_SLOT_BOOTS,
             EMPTY_SLOT_HOE,
-            EMPTY_SLOT_SHOVEL
+            EMPTY_SLOT_SHOVEL,
+            EMPTY_SLOT_SPEAR
     );
   }
 
-  private static List<ResourceLocation> createDiamondUpgradeMaterialList() {
+  private static List<Identifier> createDiamondUpgradeMaterialList() {
     return List.of(EMPTY_SLOT_DIAMOND);
   }
 }

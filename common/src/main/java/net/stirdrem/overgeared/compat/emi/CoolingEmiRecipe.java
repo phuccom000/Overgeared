@@ -6,7 +6,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Blocks;
@@ -23,7 +23,7 @@ public class CoolingEmiRecipe implements EmiRecipe {
 
     private static final int SLOT_SIZE = 18;
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final CoolingRecipe recipe;
     private final EmiIngredient inputs;
     private final EmiStack outputs;
@@ -43,7 +43,7 @@ public class CoolingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

@@ -11,7 +11,7 @@ import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.networking.ModPackets;
 import net.stirdrem.overgeared.networking.PacketContext;
 
-@EventBusSubscriber(modid = OvergearedMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = OvergearedMod.MOD_ID)
 public final class NeoForgeNetworking {
     private NeoForgeNetworking() {
     }

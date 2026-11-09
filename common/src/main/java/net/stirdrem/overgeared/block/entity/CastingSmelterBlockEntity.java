@@ -1,4 +1,12 @@
 package net.stirdrem.overgeared.block.entity;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
 
 import net.stirdrem.overgeared.platform.Services;
 import net.minecraft.core.BlockPos;
@@ -112,12 +120,12 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         ItemStack fuel = be.itemHandler.getStackInSlot(SLOT_FUEL);
 
         if (be.burnTime == 0 && be.canSmelt()) {
-            be.maxBurnTime = be.burnTime = Services.PLATFORM.getBurnTime(fuel);
+            be.maxBurnTime = be.burnTime = be.fuelBurnTime(fuel);
             if (be.burnTime > 0 && !fuel.isEmpty()) {
-                Item remainder = fuel.getItem().getCraftingRemainingItem();
+                ItemStackTemplate remainder = fuel.getItem().getCraftingRemainder();
                 fuel.shrink(1);
                 if (fuel.isEmpty() && remainder != null)
-                    be.itemHandler.setStackInSlot(SLOT_FUEL, new ItemStack(remainder));
+                    be.itemHandler.setStackInSlot(SLOT_FUEL, remainder.create());
                 dirty = true;
             }
         }
@@ -159,10 +167,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
         RecipeInput wrapper = new RecipeWrapper(recipeInput);
 
-        return level.getRecipeManager().getRecipeFor(
-                ModRecipeTypes.CASTING.get(),
-                wrapper,
-                level);
+        return RecipeLookup.getRecipeFor(level, ModRecipeTypes.CASTING.get(), wrapper);
     }
 
     private boolean canSmelt() {
@@ -251,7 +256,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         }
 
         // XP
-        if (!level.isClientSide && recipe.getExperience() > 0) {
+        if (!level.isClientSide() && recipe.getExperience() > 0) {
             storedExperience += recipe.getExperience();
         }
     }
@@ -259,7 +264,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     // ================= XP =================
 
     private void spawnExperience(float xp) {
-        if (level == null || level.isClientSide)
+        if (level == null || level.isClientSide())
             return;
 
         int i = Mth.floor(xp);
@@ -279,7 +284,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     public void awardStoredExperience(Player player) {
-        if (this.level == null || this.level.isClientSide)
+        if (this.level == null || this.level.isClientSide())
             return;
         if (storedExperience > 0 && player != null) {
             int total = (int) storedExperience;
@@ -295,7 +300,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
                     SoundEvents.EXPERIENCE_ORB_PICKUP,
                     SoundSource.PLAYERS,
                     0.5F,
-                    this.level.random.nextFloat() * 0.1F + 0.9F);
+                    this.level.getRandom().nextFloat() * 0.1F + 0.9F);
 
             storedExperience = 0;
             setChanged();
@@ -431,7 +436,7 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
 
         // Fuel slot
         if (slot == SLOT_FUEL) {
-            return Services.PLATFORM.getBurnTime(stack) > 0;
+            return stack.has(DataComponents.COOKING_FUEL);
         }
 
         // Input slot
@@ -448,6 +453,20 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
         return direction == Direction.DOWN && slot == SLOT_OUTPUT;
     }
 
+    /** Burn time of a fuel stack, read like the vanilla furnace does (the COOKING_FUEL component). */
+    private int fuelBurnTime(ItemStack stack) {
+        if (this.level instanceof ServerLevel serverLevel) {
+            return ResolvableInt.getFromItem(stack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, this.getLootContext(serverLevel), 0);
+        }
+        return stack.has(DataComponents.COOKING_FUEL) ? 1 : 0;
+    }
+
+    /** Called when the block is removed (replaces Block#onRemove). Drops our own way, instead of vanilla's container drop. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        drops();
+    }
+
     public void drops() {
         SimpleContainer simpleContainer = new SimpleContainer(itemHandler.getSlots());
         for (int i = 0; i < itemHandler.getSlots(); i++) {
@@ -458,9 +477,9 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, this.items, registries);
+    protected void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, this.items);
         tag.putInt("burnTime", burnTime);
         tag.putInt("maxBurnTime", maxBurnTime);
         tag.putInt("cookTime", cookTime);
@@ -469,13 +488,13 @@ public class CastingSmelterBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ContainerHelper.loadAllItems(tag, this.items, registries);
-        burnTime = tag.getInt("burnTime");
-        maxBurnTime = tag.getInt("maxBurnTime");
-        cookTime = tag.getInt("cookTime");
-        cookTimeTotal = tag.getInt("cookTimeTotal");
-        storedExperience = tag.getFloat("storedXp");
+    protected void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        ContainerHelper.loadAllItems(tag, this.items);
+        burnTime = tag.getIntOr("burnTime", 0);
+        maxBurnTime = tag.getIntOr("maxBurnTime", 0);
+        cookTime = tag.getIntOr("cookTime", 0);
+        cookTimeTotal = tag.getIntOr("cookTimeTotal", 0);
+        storedExperience = tag.getFloatOr("storedXp", 0f);
     }
 }

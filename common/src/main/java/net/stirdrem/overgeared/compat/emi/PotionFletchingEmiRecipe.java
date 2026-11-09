@@ -9,7 +9,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,12 +34,12 @@ public class PotionFletchingEmiRecipe implements EmiRecipe {
 
     private static final int SLOT_SIZE = 18;
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
 
     public PotionFletchingEmiRecipe(Item arrowItem, Holder<Potion> potion,
-                                    ResourceLocation potionKey, Variant variant) {
+                                    Identifier potionKey, Variant variant) {
         String arrowPath = arrowItem.builtInRegistryHolder().key().location().getPath();
         this.id = OvergearedMod.loc("fletching/" + variant.name().toLowerCase()
                 + "_conv/" + arrowPath + "/" + potionKey.getPath());
@@ -84,7 +84,7 @@ public class PotionFletchingEmiRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

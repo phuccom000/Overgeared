@@ -7,15 +7,9 @@
     "a"
   ],
   "key": {
-    "x": {
-      "item": "overgeared:diamond_shard"
-    },
-    "#": {
-      "item": "minecraft:stick"
-    },
-    "a": {
-      "item": "minecraft:feather"
-    }
+    "x": "overgeared:diamond_shard",
+    "#": "minecraft:stick",
+    "a": "minecraft:feather"
   },
   "result": {
     "id": "overgeared:diamond_arrow",

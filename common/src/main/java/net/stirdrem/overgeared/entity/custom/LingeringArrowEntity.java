@@ -1,4 +1,7 @@
 package net.stirdrem.overgeared.entity.custom;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -12,7 +15,7 @@ import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
@@ -49,17 +52,15 @@ public class LingeringArrowEntity extends AbstractArrow {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("PotionColor", this.entityData.get(DATA_POTION_COLOR));
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("PotionColor", 99)) {
-            this.entityData.set(DATA_POTION_COLOR, tag.getInt("PotionColor"));
-        }
+        tag.getInt("PotionColor").ifPresent(color -> this.entityData.set(DATA_POTION_COLOR, color));
     }
 
     @Override
@@ -70,7 +71,7 @@ public class LingeringArrowEntity extends AbstractArrow {
     @Override
     protected void onHit(HitResult result) {
         super.onHit(result);
-        if (!level().isClientSide && !this.cloudSpawned && result.getType() != HitResult.Type.MISS) {
+        if (!level().isClientSide() && !this.cloudSpawned && result.getType() != HitResult.Type.MISS) {
             PotionContents potionContents = this.referenceStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
 
             if (!potionContents.getAllEffects().iterator().hasNext()) {
@@ -127,7 +128,8 @@ public class LingeringArrowEntity extends AbstractArrow {
         PotionContents cloudContents = new PotionContents(
                 potionContents.potion(),
                 potionContents.customColor(),
-                reducedEffects
+                reducedEffects,
+                potionContents.customName()
         );
 
         cloud.setPotionContents(cloudContents);
@@ -153,8 +155,8 @@ public class LingeringArrowEntity extends AbstractArrow {
     @Override
     public void tick() {
         super.tick();
-        if (this.level().isClientSide) {
-            if (this.inGround) {
+        if (this.level().isClientSide()) {
+            if (this.isInGround()) {
                 if (this.inGroundTime % 5 == 0) {
                     this.makeParticle(1);
                 }

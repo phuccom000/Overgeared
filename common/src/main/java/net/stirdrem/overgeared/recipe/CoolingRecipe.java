@@ -1,5 +1,7 @@
 package net.stirdrem.overgeared.recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -12,11 +14,11 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class CoolingRecipe implements Recipe<SingleRecipeInput> {
+public class CoolingRecipe implements OvergearedRecipe<SingleRecipeInput> {
     private final Ingredient ingredient;
-    private final ItemStack result;
+    private final ItemStackTemplate result;
 
-    public CoolingRecipe(Ingredient ingredient, ItemStack result) {
+    public CoolingRecipe(Ingredient ingredient, ItemStackTemplate result) {
         this.ingredient = ingredient;
         this.result = result;
     }
@@ -30,54 +32,46 @@ public class CoolingRecipe implements Recipe<SingleRecipeInput> {
         return ingredient;
     }
 
-    @Override
     public NonNullList<Ingredient> getIngredients() {
         return NonNullList.of(ingredient);
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider provider) {
-        return result.copy();
+    public ItemStack assemble(SingleRecipeInput input) {
+        return result.create();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return true;
-    }
 
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return result;
+        return result.create();
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<CoolingRecipe> getSerializer() {
         return ModRecipeSerializers.COOLING_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<CoolingRecipe> getType() {
         return ModRecipeTypes.COOLING_RECIPE.get();
     }
 
-    public static class Serializer implements RecipeSerializer<CoolingRecipe> {
+    public static class Serializer {
         public static final MapCodec<CoolingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Ingredient.CODEC_NONEMPTY.fieldOf("input").forGetter(r -> r.ingredient),
-                ItemStack.CODEC.fieldOf("output").forGetter(r -> r.result)
+                IngredientCodecs.LENIENT.fieldOf("input").forGetter(r -> r.ingredient),
+                ItemStackTemplate.CODEC.fieldOf("output").forGetter(r -> r.result)
         ).apply(instance, CoolingRecipe::new));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, CoolingRecipe> STREAM_CODEC = StreamCodec.composite(
                 Ingredient.CONTENTS_STREAM_CODEC, r -> r.ingredient,
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStackTemplate.STREAM_CODEC, r -> r.result,
                 CoolingRecipe::new
         );
 
-        @Override
         public MapCodec<CoolingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, CoolingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

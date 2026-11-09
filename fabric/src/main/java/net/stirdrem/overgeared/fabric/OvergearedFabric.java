@@ -1,8 +1,11 @@
 package net.stirdrem.overgeared.fabric;
+import net.stirdrem.overgeared.networking.packet.SyncRecipesS2CPacket;
+import net.stirdrem.overgeared.datapack.JsonDataReloadListener;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -13,24 +16,21 @@ import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.command.ModCommands;
 import net.stirdrem.overgeared.event.ModEvents;
@@ -58,7 +58,6 @@ public final class OvergearedFabric implements ModInitializer {
         registerLifecycleEvents();
         registerInteractionEvents();
         registerLoot();
-        FabricTrades.register();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> ModCommands.register(dispatcher));
     }
@@ -67,10 +66,10 @@ public final class OvergearedFabric implements ModInitializer {
 
     private static void registerPackets() {
         for (ModPackets.Packet<?> packet : ModPackets.CLIENTBOUND) {
-            registerType(PayloadTypeRegistry.playS2C(), packet);
+            registerType(PayloadTypeRegistry.clientboundPlay(), packet);
         }
         for (ModPackets.Packet<?> packet : ModPackets.SERVERBOUND) {
-            registerType(PayloadTypeRegistry.playC2S(), packet);
+            registerType(PayloadTypeRegistry.serverboundPlay(), packet);
             registerServerReceiver(packet);
         }
     }
@@ -98,21 +97,16 @@ public final class OvergearedFabric implements ModInitializer {
     // ---- Data ----
 
     private static void registerReloadListeners() {
-        ResourceManagerHelper helper = ResourceManagerHelper.get(PackType.SERVER_DATA);
+        ResourceLoader loader = ResourceLoader.get(PackType.SERVER_DATA);
         for (ReloadListeners.Entry entry : ReloadListeners.SERVER_DATA) {
             PreparableReloadListener listener = entry.factory().get();
-            ResourceLocation id = entry.id();
-            helper.registerReloadListener(new IdentifiableResourceReloadListener() {
+            loader.registerReloadListener(entry.id(), new PreparableReloadListener() {
                 @Override
-                public ResourceLocation getFabricId() {
-                    return id;
-                }
-
-                @Override
-                public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager,
-                                                      ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler,
-                                                      Executor backgroundExecutor, Executor gameExecutor) {
-                    return listener.reload(barrier, manager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
+                public CompletableFuture<Void> reload(SharedState state, Executor taskExecutor,
+                                                      PreparationBarrier barrier, Executor reloadExecutor) {
+                    // The listeners decode tags, which needs the registries of this reload
+                    JsonDataReloadListener.setRegistries(state.get(ResourceLoader.REGISTRY_LOOKUP_KEY));
+                    return listener.reload(state, taskExecutor, barrier, reloadExecutor);
                 }
 
                 @Override
@@ -128,9 +122,9 @@ public final class OvergearedFabric implements ModInitializer {
         List<LootInjections.Injection> injections = LootInjections.all();
         LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
             for (LootInjections.Injection injection : injections) {
-                if (injection.table().equals(key.location())) {
+                if (injection.table().equals(key.identifier())) {
                     tableBuilder.withPool(LootPool.lootPool()
-                            .setRolls(ConstantValue.exactly(1))
+                            .setRolls(ContextIntProviders.exactly(1))
                             .when(LootItemRandomChanceCondition.randomChance(injection.chance()))
                             .add(LootItem.lootTableItem(injection.item().get())));
                 }
@@ -156,8 +150,11 @@ public final class OvergearedFabric implements ModInitializer {
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> ModEvents.onPlayerJoinWorld(entity));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> ModEvents.onPlayerJoinWorld(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> ModEvents.onPlayerDisconnect(handler.getPlayer()));
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) ->
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) ->
                 ModEvents.onPlayerChangedDimension(player));
+
+        // Recipes are not synced to clients any more; send ours on join and on /reload (see RecipeLookup)
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> SyncRecipesS2CPacket.sendTo(player));
     }
 
     // ---- Interactions ----
@@ -179,7 +176,7 @@ public final class OvergearedFabric implements ModInitializer {
                     return InteractionResult.FAIL;
                 }
                 ItemStack stack = player.getItemInHand(hand);
-                if (stack.isEmpty() || player.getCooldowns().isOnCooldown(stack.getItem())) {
+                if (stack.isEmpty() || player.getCooldowns().isOnCooldown(stack)) {
                     return InteractionResult.FAIL;
                 }
                 return stack.useOn(new UseOnContext(player, hand, hitResult));
@@ -194,16 +191,16 @@ public final class OvergearedFabric implements ModInitializer {
         UseItemCallback.EVENT.register((player, level, hand) -> {
             ItemStack stack = player.getItemInHand(hand);
             if (player.isSpectator()) {
-                return InteractionResultHolder.pass(stack);
+                return InteractionResult.PASS;
             }
             PlayerInteractEvent.RightClickItem event = new PlayerInteractEvent.RightClickItem(player, hand);
             for (Consumer<PlayerInteractEvent.RightClickItem> handler : itemHandlers) {
                 handler.accept(event);
                 if (event.isCanceled()) {
-                    return new InteractionResultHolder<>(event.getCancellationResult(), player.getItemInHand(hand));
+                    return event.getCancellationResult();
                 }
             }
-            return InteractionResultHolder.pass(stack);
+            return InteractionResult.PASS;
         });
 
         AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {

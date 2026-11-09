@@ -1,11 +1,12 @@
 package net.stirdrem.overgeared.datapack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.stirdrem.overgeared.recipe.ingredients.IngredientCodecs;
 
 import com.google.gson.*;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
@@ -23,23 +24,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RockInteractionReloadListener extends SimpleJsonResourceReloadListener {
+public class RockInteractionReloadListener extends JsonDataReloadListener {
 
     public static final RockInteractionReloadListener INSTANCE = new RockInteractionReloadListener();
     private static final Gson GSON = new Gson();
 
-    private static final Map<ResourceLocation, RockInteractionData> DATA = new ConcurrentHashMap<>();
+    private static final Map<Identifier, RockInteractionData> DATA = new ConcurrentHashMap<>();
 
     public RockInteractionReloadListener() {
-        super(GSON, "rock_interactions");
+        super("rock_interactions");
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> jsons, ResourceManager manager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, JsonElement> jsons, ResourceManager manager, ProfilerFiller profiler) {
         DATA.clear();
 
-        for (Map.Entry<ResourceLocation, JsonElement> entry : jsons.entrySet()) {
-            ResourceLocation id = entry.getKey();
+        for (Map.Entry<Identifier, JsonElement> entry : jsons.entrySet()) {
+            Identifier id = entry.getKey();
             JsonElement value = entry.getValue();
 
             try {
@@ -55,7 +56,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
                         }
 
                         // Create a synthetic ID for each array entry
-                        ResourceLocation entryId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(),
+                        Identifier entryId = Identifier.fromNamespaceAndPath(id.getNamespace(),
                                 id.getPath() + "_" + i);
 
                         parseAndAddRockInteraction(entryId, element.getAsJsonObject());
@@ -77,15 +78,15 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
         }
     }
 
-    private void parseAndAddRockInteraction(ResourceLocation id, JsonObject obj) {
+    private void parseAndAddRockInteraction(Identifier id, JsonObject obj) {
         // ---------- BLOCKS ----------
-        ResourceLocation inputId = ResourceLocation.parse(GsonHelper.getAsString(obj, "input_block"));
-        Block inputBlock = BuiltInRegistries.BLOCK.get(inputId);
+        Identifier inputId = Identifier.parse(GsonHelper.getAsString(obj, "input_block"));
+        Block inputBlock = BuiltInRegistries.BLOCK.getValue(inputId);
         if (inputBlock == Blocks.AIR)
             throw new JsonParseException("Unknown input_block '" + inputId + "'");
 
-        ResourceLocation resultId = ResourceLocation.parse(GsonHelper.getAsString(obj, "result_block"));
-        Block resultBlock = BuiltInRegistries.BLOCK.get(resultId);
+        Identifier resultId = Identifier.parse(GsonHelper.getAsString(obj, "result_block"));
+        Block resultBlock = BuiltInRegistries.BLOCK.getValue(resultId);
         if (resultBlock == Blocks.AIR)
             throw new JsonParseException("Unknown result_block '" + resultId + "'");
 
@@ -113,15 +114,15 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
                 return;
             }
 
-            ResourceLocation dropId = ResourceLocation.parse(GsonHelper.getAsString(toolObj, "drop_item"));
-            Item dropItem = BuiltInRegistries.ITEM.get(dropId);
+            Identifier dropId = Identifier.parse(GsonHelper.getAsString(toolObj, "drop_item"));
+            Item dropItem = BuiltInRegistries.ITEM.getValue(dropId);
             if (dropItem == Items.AIR)
                 throw new JsonParseException("Unknown drop_item '" + dropId + "'");
 
             float dropChance = GsonHelper.getAsFloat(toolObj, "drop_chance");
             float breakChance = GsonHelper.getAsFloat(toolObj, "break_chance");
 
-            tools.add(new RockInteractionData.ToolEntry(ingredient, new ItemStack(dropItem), dropChance, breakChance));
+            tools.add(new RockInteractionData.ToolEntry(ingredient, new ItemStackTemplate(dropItem), dropChance, breakChance));
         }
 
         RockInteractionData data = new RockInteractionData(inputBlock, tools, resultBlock);
@@ -132,13 +133,13 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
         return DATA.values();
     }
 
-    private static <T> T throwMissing(ResourceLocation id, String msg) {
+    private static <T> T throwMissing(Identifier id, String msg) {
         throw new JsonParseException("Error in " + id + ": " + msg);
     }
 
     private Ingredient parseIngredient(JsonObject json) {
-        return Ingredient.CODEC
-                .parse(JsonOps.INSTANCE, json) // pass full object
+        return IngredientCodecs.LENIENT
+                .parse(jsonOps(), json) // pass full object
                 .getOrThrow(JsonSyntaxException::new);
     }
 
@@ -148,7 +149,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
 
         Ingredient flint = Ingredient.of(Items.FLINT);
 
-        ItemStack drop = new ItemStack(ModItems.ROCK.get());
+        ItemStackTemplate drop = new ItemStackTemplate(ModItems.ROCK.get());
 
         float dropChance = net.stirdrem.overgeared.config.ServerConfig.ROCK_DROPPING_CHANCE.get().floatValue();
         float breakChance = net.stirdrem.overgeared.config.ServerConfig.FLINT_BREAKING_CHANCE.get().floatValue();
@@ -159,7 +160,7 @@ public class RockInteractionReloadListener extends SimpleJsonResourceReloadListe
 
         RockInteractionData data = new RockInteractionData(inputBlock, tools, resultBlock);
 
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(OvergearedMod.MOD_ID, "default_flint_on_stone");
+        Identifier id = Identifier.fromNamespaceAndPath(OvergearedMod.MOD_ID, "default_flint_on_stone");
         DATA.put(id, data);
 
         OvergearedMod.LOGGER.info("Loaded default rock interaction (flint → stone)");

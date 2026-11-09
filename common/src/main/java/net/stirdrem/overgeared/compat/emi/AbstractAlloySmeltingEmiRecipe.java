@@ -7,7 +7,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -25,7 +25,7 @@ public abstract class AbstractAlloySmeltingEmiRecipe<T extends Recipe<?>> implem
     protected static final int OFFSET_X = 12;
     protected static final int OFFSET_Y = 6;
     
-    protected final ResourceLocation id;
+    protected final Identifier id;
     protected final T recipe;
     protected final List<EmiIngredient> inputs;
     protected final List<EmiStack> outputs;
@@ -42,7 +42,7 @@ public abstract class AbstractAlloySmeltingEmiRecipe<T extends Recipe<?>> implem
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 

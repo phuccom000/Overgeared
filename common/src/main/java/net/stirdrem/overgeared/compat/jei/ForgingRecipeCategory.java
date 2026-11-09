@@ -1,4 +1,6 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
+import net.minecraft.client.renderer.RenderPipelines;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -12,10 +14,10 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.stirdrem.overgeared.AnvilTier;
@@ -31,10 +33,10 @@ import java.util.List;
 import java.util.Set;
 
 public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
-    public static final ResourceLocation UID = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "forging");
-    public static final ResourceLocation TEXTURE = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil_jei.png");
-    public static final ResourceLocation RESULT_BIG = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/result_big.png");
-    public static final ResourceLocation RESULT_TWOSLOT = ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "textures/gui/twoslot.png");
+    public static final Identifier UID = Identifier.tryBuild(OvergearedMod.MOD_ID, "forging");
+    public static final Identifier TEXTURE = Identifier.tryBuild(OvergearedMod.MOD_ID, "textures/gui/smithing_anvil_jei.png");
+    public static final Identifier RESULT_BIG = Identifier.tryBuild(OvergearedMod.MOD_ID, "textures/gui/result_big.png");
+    public static final Identifier RESULT_TWOSLOT = Identifier.tryBuild(OvergearedMod.MOD_ID, "textures/gui/twoslot.png");
 
     public static final RecipeType<ForgingRecipe> FORGING_RECIPE_TYPE = new RecipeType<>(UID, ForgingRecipe.class);
 
@@ -64,12 +66,18 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
     }
 
     @Override
-    public IDrawable getBackground() {
-        return this.background;
+    public int getWidth() {
+        return background.getWidth();
     }
 
     @Override
-    public void draw(ForgingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public int getHeight() {
+        return background.getHeight();
+    }
+
+    @Override
+    public void draw(ForgingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
+        background.draw(guiGraphics);
         String hitsText = Component.translatable("tooltip.overgeared.recipe.hits", recipe.getRemainingHits()).getString();
         String tierRaw = recipe.getAnvilTier();
         AnvilTier tierName = AnvilTier.fromDisplayName(tierRaw);
@@ -79,13 +87,13 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                 .append(tierName != null ? tierName.displayName() : Component.literal(tierRaw));
 
         if (recipe.hasQuality() || !recipe.needsMinigame()) {
-            guiGraphics.blit(RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, RESULT_BIG, 112, 14, 0, 0, 26, 26, 26, 26);
         } else {
-            guiGraphics.blit(RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, RESULT_TWOSLOT, 116, 9, 0, 0, 18, 36, 18, 36);
         }
 
-        guiGraphics.drawString(Minecraft.getInstance().font, hitsText, 79, 1, 0xFF808080, false);
-        guiGraphics.drawString(Minecraft.getInstance().font, tierText.getString(), 79, 47, 0xFF808080, false);
+        guiGraphics.text(Minecraft.getInstance().font, hitsText, 79, 1, 0xFF808080, false);
+        guiGraphics.text(Minecraft.getInstance().font, tierText.getString(), 79, 47, 0xFF808080, false);
         arrowAnimated.draw(guiGraphics, 82, 19);
     }
 
@@ -121,7 +129,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
                 if (ingredient.isEmpty()) continue;
 
                 List<ItemStack> stacks = new ArrayList<>();
-                for (ItemStack stack : ingredient.getItems()) {
+                for (ItemStack stack : Ingredients.stackArray(ingredient)) {
                     if (stack.isEmpty()) continue;
                     ItemStack copy = stack.copy();
                     if (forgingIngredient.requiresHeated()) {
@@ -137,7 +145,7 @@ public class ForgingRecipeCategory implements IRecipeCategory<ForgingRecipe> {
 
         List<ItemStack> blueprints = createBlueprintStacksForRecipe(recipe);
         if (!blueprints.isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.CATALYST, 1, 19).addItemStacks(blueprints);
+            builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 1, 19).addItemStacks(blueprints);
         }
 
         Minecraft mc = Minecraft.getInstance();

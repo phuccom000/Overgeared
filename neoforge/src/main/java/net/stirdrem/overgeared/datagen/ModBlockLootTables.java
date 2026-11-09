@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.datagen;
+import net.minecraft.data.loot.LootTableSubProvider;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -10,8 +11,8 @@ import net.stirdrem.overgeared.block.ModBlocks;
 import java.util.Set;
 
 public class ModBlockLootTables extends BlockLootSubProvider {
-    protected ModBlockLootTables(HolderLookup.Provider registries) {
-        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
+    protected ModBlockLootTables(LootTableSubProvider.Context context) {
+        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);
     }
 
     @Override

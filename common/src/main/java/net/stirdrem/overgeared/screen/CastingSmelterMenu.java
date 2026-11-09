@@ -1,4 +1,5 @@
 package net.stirdrem.overgeared.screen;
+import net.minecraft.core.component.DataComponents;
 
 import net.stirdrem.overgeared.platform.Services;
 import net.minecraft.network.FriendlyByteBuf;
@@ -145,7 +146,7 @@ public class CastingSmelterMenu extends AbstractContainerMenu {
                 }
             }
             // FUEL → FUEL SLOT
-            else if (Services.PLATFORM.getBurnTime(stack) > 0) {
+            else if (stack.has(DataComponents.COOKING_FUEL)) {
                 if (!this.moveItemStackTo(
                         stack,
                         CastingSmelterBlockEntity.SLOT_FUEL,

@@ -2,20 +2,20 @@
   "required": true,
   "package": "net.stirdrem.overgeared.mixin",
   "compatibilityLevel": "JAVA_21",
-  "refmap": "overgeared.refmap.json",
   "minVersion": "0.8",
-  "client": [
-  ],
+  "client": [],
   "mixins": [
     "BrewingStandBlockEntityMixin",
     "ContainerCoolingMixin",
     "InventoryCoolingMixin",
     "ItemEntityCoolingMixin",
+    "ItemStackBreakMixin",
     "ItemStackMixin",
     "ItemStackStackingMixin",
     "MobHeatedItemMixin",
-    "PotionItemMixin",
-    "SlotMixin"
+    "PlayerSweepMixin",
+    "SlotMixin",
+    "VillagerTradeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

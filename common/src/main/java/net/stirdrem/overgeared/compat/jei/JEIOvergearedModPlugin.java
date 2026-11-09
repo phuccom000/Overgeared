@@ -1,4 +1,10 @@
 package net.stirdrem.overgeared.compat.jei;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.RecipeType;
+import java.util.Collection;
+import net.minecraft.server.MinecraftServer;
+import net.stirdrem.overgeared.recipe.RecipeLookup;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -11,7 +17,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -76,7 +82,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
     }
 
     @Override
-    public ResourceLocation getPluginUid() {
+    public Identifier getPluginUid() {
         return OvergearedMod.loc("jei_plugin");
     }
 
@@ -105,11 +111,10 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         Level level = Minecraft.getInstance().level;
         if (level == null) return;
 
-        RecipeManager manager = level.getRecipeManager();
         HolderLookup.Provider registries = level.registryAccess();
 
         // Forging
-        List<ForgingRecipe> all = unwrap(manager.getAllRecipesFor(ModRecipeTypes.FORGING.get()));
+        List<ForgingRecipe> all = unwrap(allRecipes(ModRecipeTypes.FORGING.get()));
 
         List<ForgingRecipe> combined = new ArrayList<>();
         for (AnvilTier tier : AnvilTier.all()) {
@@ -125,32 +130,32 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
         // Casting
         registration.addRecipes(CastingRecipeCategory.CASTING_TYPE,
-                unwrap(manager.getAllRecipesFor(ModRecipeTypes.CASTING.get())).stream()
+                unwrap(allRecipes(ModRecipeTypes.CASTING.get())).stream()
                         .sorted(Comparator.comparing(r ->
                                 BuiltInRegistries.ITEM.getKey(r.getResultItem(registries).getItem()).toString()))
                         .toList());
 
         // Knapping
         registration.addRecipes(KnappingRecipeCategory.KNAPPING_RECIPE_TYPE,
-                unwrap(manager.getAllRecipesFor(ModRecipeTypes.KNAPPING.get())));
+                unwrap(allRecipes(ModRecipeTypes.KNAPPING.get())));
 
         // Alloy smelting
         List<IAlloyRecipe> alloy = new ArrayList<>();
-        alloy.addAll(unwrap(manager.getAllRecipesFor(ModRecipeTypes.ALLOY_SMELTING.get())));
-        alloy.addAll(unwrap(manager.getAllRecipesFor(ModRecipeTypes.SHAPED_ALLOY_SMELTING.get())));
+        alloy.addAll(unwrap(allRecipes(ModRecipeTypes.ALLOY_SMELTING.get())));
+        alloy.addAll(unwrap(allRecipes(ModRecipeTypes.SHAPED_ALLOY_SMELTING.get())));
         registration.addRecipes(AlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE, alloy);
 
         // Nether alloy smelting
         List<INetherAlloyRecipe> nether = new ArrayList<>();
-        nether.addAll(unwrap(manager.getAllRecipesFor(ModRecipeTypes.NETHER_ALLOY_SMELTING.get())));
-        nether.addAll(unwrap(manager.getAllRecipesFor(ModRecipeTypes.SHAPED_NETHER_ALLOY_SMELTING.get())));
+        nether.addAll(unwrap(allRecipes(ModRecipeTypes.NETHER_ALLOY_SMELTING.get())));
+        nether.addAll(unwrap(allRecipes(ModRecipeTypes.SHAPED_NETHER_ALLOY_SMELTING.get())));
         registration.addRecipes(NetherAlloySmeltingRecipeCategory.ALLOY_SMELTING_TYPE, nether);
 
         // Cooling / Grinding
         registration.addRecipes(CoolingRecipeCategory.TYPE,
-                unwrap(manager.getAllRecipesFor(ModRecipeTypes.COOLING_RECIPE.get())));
+                unwrap(allRecipes(ModRecipeTypes.COOLING_RECIPE.get())));
         registration.addRecipes(GrindingRecipeCategory.TYPE,
-                unwrap(manager.getAllRecipesFor(ModRecipeTypes.GRINDING_RECIPE.get())));
+                unwrap(allRecipes(ModRecipeTypes.GRINDING_RECIPE.get())));
 
         // Explanation pages
         if (ServerConfig.GET_ROCK_USING_FLINT.get()) {
@@ -171,8 +176,8 @@ public class JEIOvergearedModPlugin implements IModPlugin {
 
         // Extra vanilla crafting / anvil entries
         if (ServerConfig.ENABLE_CASTING.get()) {
-            registration.addRecipes(RecipeTypes.CRAFTING, ToolCastRecipeMaker.createRecipes(manager, false));
-            registration.addRecipes(RecipeTypes.CRAFTING, ToolCastRecipeMaker.createRecipes(manager, true));
+            registration.addRecipes(RecipeTypes.CRAFTING, ToolCastRecipeMaker.createRecipes(allRecipes(ModRecipeTypes.ITEM_TO_TOOLTYPE.get()), false));
+            registration.addRecipes(RecipeTypes.CRAFTING, ToolCastRecipeMaker.createRecipes(allRecipes(ModRecipeTypes.ITEM_TO_TOOLTYPE.get()), true));
         }
         registration.addRecipes(RecipeTypes.CRAFTING, BlueprintCloningRecipeMaker.createRecipes());
         registration.addRecipes(RecipeTypes.ANVIL,
@@ -193,12 +198,24 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         // Fletching
         if (ServerConfig.ENABLE_FLETCHING_RECIPES.get()) {
             registration.addRecipes(FletchingCategory.FLETCHING_RECIPE_TYPE,
-                    unwrap(manager.getAllRecipesFor(ModRecipeTypes.FLETCHING.get())));
+                    unwrap(allRecipes(ModRecipeTypes.FLETCHING.get())));
             registration.addRecipes(FletchingCategory.FLETCHING_RECIPE_TYPE, generatePotionConversions());
         }
     }
 
-    private static <T extends Recipe<?>> List<T> unwrap(List<RecipeHolder<T>> holders) {
+    /**
+     * Recipes are no longer synced to clients by vanilla. In singleplayer read them from the integrated
+     * server (JEI may start before the mod's own recipe sync arrives); otherwise use that synced copy.
+     */
+    private static <T extends Recipe<?>> Collection<RecipeHolder<T>> allRecipes(RecipeType<T> type) {
+        MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+        if (server != null) {
+            return RecipeLookup.getAllRecipesFor(server, type);
+        }
+        return RecipeLookup.getAllRecipesFor(Minecraft.getInstance().level, type);
+    }
+
+    private static <T extends Recipe<?>> List<T> unwrap(Collection<RecipeHolder<T>> holders) {
         return holders.stream().map(RecipeHolder::value).toList();
     }
 
@@ -221,7 +238,7 @@ public class JEIOvergearedModPlugin implements IModPlugin {
             arrows.add(ModItems.DIAMOND_UPGRADE_ARROW.get());
         }
 
-        List<Holder.Reference<Potion>> potions = BuiltInRegistries.POTION.holders()
+        List<Holder.Reference<Potion>> potions = BuiltInRegistries.POTION.listElements()
                 .filter(p -> !p.value().getEffects().isEmpty())
                 .toList();
 
@@ -248,16 +265,16 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         output.set(DataComponents.POTION_CONTENTS, new PotionContents(potion));
 
         return new FletchingRecipe(
-                Ingredient.EMPTY,
+                Ingredients.EMPTY,
                 Ingredient.of(arrow),
-                Ingredient.EMPTY,
-                Ingredient.of(potionStack),
-                output,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
+                Ingredients.EMPTY,
+                Ingredient.of(potionStack.getItem()),
+                ItemStackTemplate.fromNonEmptyStack(output),
+                null,
+                null,
                 "Potion",
                 "LingeringPotion"
-        );
+        ).withPotionDisplay(potionStack);
     }
 
     @Override
@@ -291,16 +308,6 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                         contents == null ? PotionContents.EMPTY : contents,
                         lingering != null && lingering
                 );
-            }
-
-            @Override
-            public String getLegacyStringSubtypeInfo(ItemStack stack, UidContext context) {
-                PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
-                String potion = contents == null ? "" : contents.potion()
-                        .flatMap(Holder::unwrapKey)
-                        .map(k -> k.location().toString())
-                        .orElse("");
-                return potion + (Boolean.TRUE.equals(stack.get(ModComponents.LINGERING_STATUS.get())) ? ";lingering" : "");
             }
         };
 

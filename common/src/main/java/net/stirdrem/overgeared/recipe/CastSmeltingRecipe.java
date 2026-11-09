@@ -1,4 +1,16 @@
 package net.stirdrem.overgeared.recipe;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import java.util.Optional;
+import net.stirdrem.overgeared.item.ModItems;
+import java.util.ArrayList;
+import java.util.List;
+import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
+import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.ItemStackTemplate;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -24,22 +36,37 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CastSmeltingRecipe extends SmeltingRecipe {
+
+    // AbstractCookingRecipe keeps these private (and the result as an ItemStackTemplate) since 1.21.2
+    protected final String group;
+    protected final CookingBookCategory category;
+    protected final Ingredient ingredient;
+    protected final ItemStackTemplate result;
+    protected final float experience;
+    protected final int cookingTime;
     private final Map<String, Integer> requiredMaterials;
     private final String toolType;
     private final boolean needPolishing;
 
     public CastSmeltingRecipe(String group, CookingBookCategory category, Map<String, Integer> requiredMaterials,
-                              String toolType, ItemStack result, boolean needPolishing, float experience, int cookingTime) {
-        super(group, category, Ingredient.of(ModTags.Items.USABLE_TOOL_CAST), result, experience, cookingTime);
+                              String toolType, ItemStackTemplate result, boolean needPolishing, float experience, int cookingTime) {
+        super(new Recipe.CommonInfo(true), new AbstractCookingRecipe.CookingBookInfo(category, group), Ingredient.of(ModItems.CLAY_TOOL_CAST.get(), ModItems.NETHER_TOOL_CAST.get()),
+                result, experience, cookingTime);
+        this.group = group;
+        this.category = category;
+        this.ingredient = input();
+        this.result = result;
+        this.experience = experience;
+        this.cookingTime = cookingTime;
 
         this.requiredMaterials = requiredMaterials;
         this.toolType = toolType;
         this.needPolishing = needPolishing;
     }
 
-    @Override
-    public NonNullList<Ingredient> getIngredients() {
-        NonNullList<Ingredient> list = NonNullList.create();
+    /** The cast as shown in recipe viewers: a usable cast holding exactly the required materials. */
+    public List<ItemStack> getDisplayInputs() {
+        List<ItemStack> list = new ArrayList<>();
 
         Map<String, Integer> materials = new HashMap<>(requiredMaterials);
         int total = requiredMaterials.values().stream()
@@ -57,10 +84,10 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
                 false
         );
 
-        ItemStack cast = this.ingredient.getItems()[0].copy();
+        ItemStack cast = Ingredients.stacks(this.ingredient).get(0).copy();
         cast.set(ModComponents.CAST_DATA.get(), displayData);
 
-        list.add(Ingredient.of(cast));
+        list.add(cast);
         return list;
     }
 
@@ -99,7 +126,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(SingleRecipeInput input) {
         ItemStack inputStack = input.getItem(0);
 
         // Copy the cast itself
@@ -109,7 +136,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
             return ItemStack.EMPTY;
 
         // Build the real result item
-        ItemStack result = this.result.copy();
+        ItemStack result = this.result.create();
 
         // Transfer quality from cast to result
         if (!castData.quality().isEmpty() && !castData.quality().equals("none")) {
@@ -171,25 +198,27 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipeSerializers.CAST_SMELTING.get();
+    @SuppressWarnings("unchecked")
+    public RecipeSerializer<SmeltingRecipe> getSerializer() {
+        // The parent fixes the type parameter; the serializer is really a RecipeSerializer<CastSmeltingRecipe>.
+        return (RecipeSerializer<SmeltingRecipe>) (RecipeSerializer<?>) ModRecipeSerializers.CAST_SMELTING.get();
     }
 
-    public static class Serializer implements RecipeSerializer<CastSmeltingRecipe> {
-        private static final MapCodec<CastSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
+    public static class Serializer {
+        public static final MapCodec<CastSmeltingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
                 .group(
                         Codec.STRING.optionalFieldOf("group", "").forGetter(r -> r.group),
                         CookingBookCategory.CODEC.optionalFieldOf("category", CookingBookCategory.MISC)
                                 .forGetter(r -> r.category),
                         CodecUtils.MATERIAL_INT_MAP_CODEC.fieldOf("input").forGetter(r -> r.requiredMaterials),
                         Codec.STRING.fieldOf("tool_type").forGetter(r -> r.toolType),
-                        ItemStack.CODEC.fieldOf("result").forGetter(r -> r.result),
+                        ItemStackTemplate.CODEC.fieldOf("result").forGetter(r -> r.result),
                         Codec.BOOL.optionalFieldOf("need_polishing", false).forGetter(r -> r.needPolishing),
                         Codec.FLOAT.optionalFieldOf("experience", 0f).forGetter(r -> r.experience),
                         Codec.INT.optionalFieldOf("cookingtime", 100).forGetter(r -> r.cookingTime))
                 .apply(instance, CastSmeltingRecipe::new));
 
-        private static final StreamCodec<RegistryFriendlyByteBuf, CastSmeltingRecipe> STREAM_CODEC = StreamCodec.of(
+        public static final StreamCodec<RegistryFriendlyByteBuf, CastSmeltingRecipe> STREAM_CODEC = StreamCodec.of(
                 Serializer::toNetwork, Serializer::fromNetwork);
 
         private static CastSmeltingRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
@@ -197,7 +226,7 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
             CookingBookCategory category = buffer.readEnum(CookingBookCategory.class);
             Map<String, Integer> reqMaterials = CodecUtils.MATERIAL_INT_MAP_STREAM.decode(buffer);
             String toolType = buffer.readUtf();
-            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            ItemStackTemplate result = ItemStackTemplate.STREAM_CODEC.decode(buffer);
             boolean needPolishing = buffer.readBoolean();
             float experience = buffer.readFloat();
             int cookingTime = buffer.readVarInt();
@@ -211,18 +240,16 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
             buffer.writeEnum(recipe.category);
             CodecUtils.MATERIAL_INT_MAP_STREAM.encode(buffer, recipe.requiredMaterials);
             buffer.writeUtf(recipe.toolType);
-            ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+            ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result);
             buffer.writeBoolean(recipe.needPolishing);
             buffer.writeFloat(recipe.experience);
             buffer.writeVarInt(recipe.cookingTime);
         }
 
-        @Override
         public MapCodec<CastSmeltingRecipe> codec() {
             return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, CastSmeltingRecipe> streamCodec() {
             return STREAM_CODEC;
         }

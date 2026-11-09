@@ -23,7 +23,7 @@ public abstract class ItemStackStackingMixin {
      * Intercept stacking comparison to ignore HEATED_TIME for heated items.
      * This allows heated items with different cooling timestamps to stack together.
      */
-    @Inject(method = "isSameItemSameComponents", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "isSameItemSameComponents(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
     private static void overgeared$ignoreHeatedTimeForStacking(ItemStack stack, ItemStack other, CallbackInfoReturnable<Boolean> cir) {
         // Check if heated by tag OR by component
         boolean stackHeated = stack.is(ModTags.Items.HEATED_METALS) 

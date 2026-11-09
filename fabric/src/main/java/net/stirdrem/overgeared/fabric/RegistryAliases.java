@@ -2,7 +2,7 @@ package net.stirdrem.overgeared.fabric;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -13,19 +13,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Looked up by {@code MappedRegistryAliasMixin} only when a registry lookup misses.
  */
 public final class RegistryAliases {
-    private static final Map<ResourceKey<? extends Registry<?>>, Map<ResourceLocation, ResourceLocation>> ALIASES =
+    private static final Map<ResourceKey<? extends Registry<?>>, Map<Identifier, Identifier>> ALIASES =
             new ConcurrentHashMap<>();
 
     private RegistryAliases() {
     }
 
-    public static void add(ResourceKey<? extends Registry<?>> registry, ResourceLocation oldId, ResourceLocation newId) {
+    public static void add(ResourceKey<? extends Registry<?>> registry, Identifier oldId, Identifier newId) {
         ALIASES.computeIfAbsent(registry, k -> new ConcurrentHashMap<>()).put(oldId, newId);
     }
 
     @Nullable
-    public static ResourceLocation get(ResourceKey<? extends Registry<?>> registry, ResourceLocation id) {
-        Map<ResourceLocation, ResourceLocation> map = ALIASES.get(registry);
+    public static Identifier get(ResourceKey<? extends Registry<?>> registry, Identifier id) {
+        Map<Identifier, Identifier> map = ALIASES.get(registry);
         return map == null ? null : map.get(id);
     }
 }

@@ -1,10 +1,11 @@
 package net.stirdrem.overgeared.fabric.mixin;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.stirdrem.overgeared.fabric.RegistryAliases;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,45 +25,45 @@ public abstract class MappedRegistryAliasMixin<T> {
     public abstract ResourceKey<? extends Registry<T>> key();
 
     @Shadow
-    public abstract T get(ResourceLocation id);
+    public abstract @Nullable T getValue(@Nullable Identifier id);
 
     @Shadow
-    public abstract Optional<Holder.Reference<T>> getHolder(ResourceKey<T> key);
+    public abstract Optional<Holder.Reference<T>> get(ResourceKey<T> key);
 
-    @Inject(method = "get(Lnet/minecraft/resources/ResourceLocation;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
-    private void overgeared$aliasGet(ResourceLocation id, CallbackInfoReturnable<T> cir) {
-        if (cir.getReturnValue() == null) {
-            ResourceLocation alias = RegistryAliases.get(key(), id);
-            if (alias != null) cir.setReturnValue(get(alias));
+    @Inject(method = "getValue(Lnet/minecraft/resources/Identifier;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
+    private void overgeared$aliasGetValue(@Nullable Identifier id, CallbackInfoReturnable<T> cir) {
+        if (id != null && cir.getReturnValue() == null) {
+            Identifier alias = RegistryAliases.get(key(), id);
+            if (alias != null) cir.setReturnValue(getValue(alias));
         }
     }
 
-    @Inject(method = "get(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
-    private void overgeared$aliasGetByKey(ResourceKey<T> key, CallbackInfoReturnable<T> cir) {
-        if (cir.getReturnValue() == null) {
-            ResourceLocation alias = RegistryAliases.get(key(), key.location());
-            if (alias != null) cir.setReturnValue(get(alias));
+    @Inject(method = "getValue(Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object;", at = @At("RETURN"), cancellable = true)
+    private void overgeared$aliasGetValueByKey(@Nullable ResourceKey<T> key, CallbackInfoReturnable<T> cir) {
+        if (key != null && cir.getReturnValue() == null) {
+            Identifier alias = RegistryAliases.get(key(), key.identifier());
+            if (alias != null) cir.setReturnValue(getValue(alias));
         }
     }
 
-    @Inject(method = "getHolder(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "get(Lnet/minecraft/resources/ResourceKey;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
     private void overgeared$aliasHolder(ResourceKey<T> key, CallbackInfoReturnable<Optional<Holder.Reference<T>>> cir) {
         if (cir.getReturnValue().isEmpty()) {
-            ResourceLocation alias = RegistryAliases.get(key(), key.location());
-            if (alias != null) cir.setReturnValue(getHolder(ResourceKey.create(key(), alias)));
+            Identifier alias = RegistryAliases.get(key(), key.identifier());
+            if (alias != null) cir.setReturnValue(get(ResourceKey.create(key(), alias)));
         }
     }
 
-    @Inject(method = "getHolder(Lnet/minecraft/resources/ResourceLocation;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
-    private void overgeared$aliasHolderById(ResourceLocation id, CallbackInfoReturnable<Optional<Holder.Reference<T>>> cir) {
+    @Inject(method = "get(Lnet/minecraft/resources/Identifier;)Ljava/util/Optional;", at = @At("RETURN"), cancellable = true)
+    private void overgeared$aliasHolderById(Identifier id, CallbackInfoReturnable<Optional<Holder.Reference<T>>> cir) {
         if (cir.getReturnValue().isEmpty()) {
-            ResourceLocation alias = RegistryAliases.get(key(), id);
-            if (alias != null) cir.setReturnValue(getHolder(ResourceKey.create(key(), alias)));
+            Identifier alias = RegistryAliases.get(key(), id);
+            if (alias != null) cir.setReturnValue(get(ResourceKey.create(key(), alias)));
         }
     }
 
-    @Inject(method = "containsKey(Lnet/minecraft/resources/ResourceLocation;)Z", at = @At("RETURN"), cancellable = true)
-    private void overgeared$aliasContains(ResourceLocation id, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "containsKey(Lnet/minecraft/resources/Identifier;)Z", at = @At("RETURN"), cancellable = true)
+    private void overgeared$aliasContains(Identifier id, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValueZ() && RegistryAliases.get(key(), id) != null) {
             cir.setReturnValue(true);
         }
