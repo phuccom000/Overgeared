@@ -79,14 +79,27 @@ public class FletchingRecipe implements OvergearedRecipe<RecipeInput> {
      * the viewer-only "tip an arrow with this potion" entries carry the exact potion here.
      */
     private List<ItemStack> potionDisplay = List.of();
+    /** Result per {@link #potionDisplay} entry (same order), so viewers can cycle both together. */
+    private List<ItemStack> resultDisplay = List.of();
 
     public FletchingRecipe withPotionDisplay(ItemStack... stacks) {
         this.potionDisplay = List.of(stacks);
         return this;
     }
 
+    /** One viewer entry covering several potions; {@code results.get(i)} is the result for {@code potions.get(i)}. */
+    public FletchingRecipe withPotionDisplay(List<ItemStack> potions, List<ItemStack> results) {
+        this.potionDisplay = List.copyOf(potions);
+        this.resultDisplay = List.copyOf(results);
+        return this;
+    }
+
     public List<ItemStack> getPotionDisplay() {
         return potionDisplay;
+    }
+
+    public List<ItemStack> getResultDisplay() {
+        return resultDisplay;
     }
 
     public boolean hasPotion() {

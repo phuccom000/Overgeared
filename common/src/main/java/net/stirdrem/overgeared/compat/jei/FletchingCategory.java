@@ -68,7 +68,15 @@ public class FletchingCategory implements IRecipeCategory<FletchingRecipe> {
         } else {
             potionSlot.addIngredients(recipe.getPotion());
         }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 97, 19).addItemStack(recipe.getDefaultResult());
+        var outputSlot = builder.addSlot(RecipeIngredientRole.OUTPUT, 97, 19);
+        if (!recipe.getResultDisplay().isEmpty()) {
+            // Potion tipping: one entry cycles every potion, with the matching arrow in the output
+            // (like vanilla's banner-on-shield entry).
+            outputSlot.addItemStacks(recipe.getResultDisplay());
+            builder.createFocusLink(potionSlot, outputSlot);
+        } else {
+            outputSlot.addItemStack(recipe.getDefaultResult());
+        }
     }
 
     @Override

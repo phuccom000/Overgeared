@@ -12,6 +12,7 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.*;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -23,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -183,17 +183,8 @@ public class JEIOvergearedModPlugin implements IModPlugin {
         registration.addRecipes(RecipeTypes.ANVIL,
                 OvergearedAnvilRecipes.getRepairRecipes(registration.getVanillaRecipeFactory()));
 
-        // Dragon's breath brewing (vanilla brewing category)
-        if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) {
-            registration.addRecipes(RecipeTypes.BREWING, List.of(
-                    registration.getVanillaRecipeFactory().createBrewingRecipe(
-                            List.of(new ItemStack(Items.CHORUS_FRUIT)),
-                            PotionContents.createItemStack(Items.POTION, Potions.THICK),
-                            new ItemStack(Items.DRAGON_BREATH),
-                            OvergearedMod.loc("dragon_breath_brewing")
-                    )
-            ));
-        }
+        // Dragon's breath brewing is the data recipe dragon_breath_from_brewing, which JEI already lists
+        // with the other brewing recipes; it's hidden in onRuntimeAvailable when the config turns it off.
 
         // Fletching
         if (ServerConfig.ENABLE_FLETCHING_RECIPES.get()) {
@@ -242,19 +233,39 @@ public class JEIOvergearedModPlugin implements IModPlugin {
                 .filter(p -> !p.value().getEffects().isEmpty())
                 .toList();
 
+        // One entry per arrow and potion kind; it cycles through every potion (focus-linked to the result).
         List<FletchingRecipe> list = new ArrayList<>();
+        if (potions.isEmpty()) return list;
         for (Item arrow : arrows) {
-            for (Holder<Potion> potion : potions) {
-                list.add(potionConversion(arrow, potion, false));
-                list.add(potionConversion(arrow, potion, true));
-            }
+            list.add(potionConversion(arrow, potions, false));
+            list.add(potionConversion(arrow, potions, true));
         }
         return list;
     }
 
-    private static FletchingRecipe potionConversion(Item arrow, Holder<Potion> potion, boolean lingering) {
-        ItemStack potionStack = PotionContents.createItemStack(lingering ? Items.LINGERING_POTION : Items.POTION, potion);
+    private static FletchingRecipe potionConversion(Item arrow, List<? extends Holder<Potion>> potions, boolean lingering) {
+        Item potionItem = lingering ? Items.LINGERING_POTION : Items.POTION;
+        List<ItemStack> potionStacks = new ArrayList<>(potions.size());
+        List<ItemStack> outputs = new ArrayList<>(potions.size());
+        for (Holder<Potion> potion : potions) {
+            potionStacks.add(PotionContents.createItemStack(potionItem, potion));
+            outputs.add(tippedArrow(arrow, potion, lingering));
+        }
 
+        return new FletchingRecipe(
+                Ingredients.EMPTY,
+                Ingredient.of(arrow),
+                Ingredients.EMPTY,
+                Ingredient.of(potionItem),
+                ItemStackTemplate.fromNonEmptyStack(outputs.getFirst()),
+                null,
+                null,
+                "Potion",
+                "LingeringPotion"
+        ).withPotionDisplay(potionStacks, outputs);
+    }
+
+    private static ItemStack tippedArrow(Item arrow, Holder<Potion> potion, boolean lingering) {
         ItemStack output;
         if (arrow == Items.ARROW) {
             output = new ItemStack(lingering ? ModItems.LINGERING_ARROW.get() : Items.TIPPED_ARROW);
@@ -263,18 +274,18 @@ public class JEIOvergearedModPlugin implements IModPlugin {
             if (lingering) output.set(ModComponents.LINGERING_STATUS.get(), true);
         }
         output.set(DataComponents.POTION_CONTENTS, new PotionContents(potion));
+        return output;
+    }
 
-        return new FletchingRecipe(
-                Ingredients.EMPTY,
-                Ingredient.of(arrow),
-                Ingredients.EMPTY,
-                Ingredient.of(potionStack.getItem()),
-                ItemStackTemplate.fromNonEmptyStack(output),
-                null,
-                null,
-                "Potion",
-                "LingeringPotion"
-        ).withPotionDisplay(potionStack);
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+        if (ServerConfig.ENABLE_DRAGON_BREATH_RECIPE.get()) return;
+        var recipeManager = jeiRuntime.getRecipeManager();
+        var dragonBreath = OvergearedMod.loc("dragon_breath_from_brewing");
+        var hidden = recipeManager.createRecipeLookup(RecipeTypes.BREWING).get()
+                .filter(recipe -> dragonBreath.equals(recipe.getUid()))
+                .toList();
+        if (!hidden.isEmpty()) recipeManager.hideRecipes(RecipeTypes.BREWING, hidden);
     }
 
     @Override

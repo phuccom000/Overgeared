@@ -80,6 +80,7 @@ public final class OvergearedFabric implements ModInitializer {
         RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAMPFIRE_HEATING.get());
         RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAST_SMELTING.get());
         RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAST_BLASTING.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.DRAGON_BREATH_BREWING.get());
     }
 
     // ---- Networking ----
