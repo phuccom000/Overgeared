@@ -7,6 +7,10 @@ import net.stirdrem.overgeared.recipe.ingredients.Ingredients;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -47,7 +51,6 @@ public final class BlueprintCloningRecipeMaker {
             ItemStack output = new ItemStack(ModItems.BLUEPRINT.get(), 2);
             output.set(ModComponents.BLUEPRINT_DATA.get(), BlueprintData.createDefault().withQuality(outputQuality.getDisplayName()));
 
-            // Ingredients can't carry the input's quality any more; the output still shows the result.
             List<Ingredient> inputs = List.of(
                     Ingredient.of(input.getItem()),
                     Ingredient.of(ModItems.EMPTY_BLUEPRINT.get())
@@ -55,10 +58,35 @@ public final class BlueprintCloningRecipeMaker {
 
             recipes.add(new RecipeHolder<>(
                     ResourceKey.create(Registries.RECIPE, OvergearedMod.loc("jei/blueprint_cloning/" + quality.getDisplayName())),
-                    new ShapelessRecipe(new Recipe.CommonInfo(false), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, "jei.blueprint.clone"),
-                            ItemStackTemplate.fromNonEmptyStack(output), inputs)
+                    new DisplayRecipe(ItemStackTemplate.fromNonEmptyStack(output), inputs, input)
             ));
         }
         return recipes;
+    }
+
+    /**
+     * Ingredients can't carry components since 1.21.2, so the plain recipe would show a blank blueprint
+     * (no quality or tool type in its tooltip). JEI lays out crafting slots from {@link #display()}, so
+     * show the exact source blueprint stack there instead.
+     */
+    private static final class DisplayRecipe extends ShapelessRecipe {
+        private final ItemStackTemplate blueprint;
+        private final ItemStackTemplate result;
+
+        DisplayRecipe(ItemStackTemplate result, List<Ingredient> inputs, ItemStack blueprint) {
+            super(new Recipe.CommonInfo(false), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, "jei.blueprint.clone"),
+                    result, inputs);
+            this.blueprint = ItemStackTemplate.fromNonEmptyStack(blueprint);
+            this.result = result;
+        }
+
+        @Override
+        public List<RecipeDisplay> display() {
+            return List.of(new ShapelessCraftingRecipeDisplay(
+                    List.of(new SlotDisplay.ItemStackSlotDisplay(blueprint),
+                            new SlotDisplay.ItemSlotDisplay(ModItems.EMPTY_BLUEPRINT.get())),
+                    new SlotDisplay.ItemStackSlotDisplay(result),
+                    new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+        }
     }
 }

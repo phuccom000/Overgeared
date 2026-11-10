@@ -4,6 +4,8 @@ import net.stirdrem.overgeared.datapack.JsonDataReloadListener;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
+import net.stirdrem.overgeared.recipe.ModRecipeSerializers;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -58,8 +60,26 @@ public final class OvergearedFabric implements ModInitializer {
         registerLifecycleEvents();
         registerInteractionEvents();
         registerLoot();
+        syncVanillaTypeRecipes();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> ModCommands.register(dispatcher));
+    }
+
+    // ---- Recipe sync ----
+
+    /**
+     * Since 26.x recipes aren't sent to clients. JEI on Fabric only asks Fabric API to sync the
+     * minecraft: serializers, so our recipes of vanilla types (shapeless crafting, furnace, blast
+     * furnace and campfire variants) would be missing from JEI's vanilla categories. Our own recipe
+     * types reach the client through SyncRecipesS2CPacket instead.
+     */
+    private static void syncVanillaTypeRecipes() {
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CRAFTING_SHAPELESS.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.NBT_SMELTING.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.NBT_BLASTING.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAMPFIRE_HEATING.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAST_SMELTING.get());
+        RecipeSynchronization.synchronizeRecipeSerializer(ModRecipeSerializers.CAST_BLASTING.get());
     }
 
     // ---- Networking ----
