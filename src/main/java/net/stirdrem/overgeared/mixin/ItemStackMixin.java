@@ -200,7 +200,7 @@ public abstract class ItemStackMixin {
                 });
                 lastTongsHit.put(uuid, tick);
             }
-        } else {
+        } else if (!entity.isInWaterOrRain()) {
             entity.setSharedFlagOnFire(true);
             entity.setRemainingFireTicks(20);
         }

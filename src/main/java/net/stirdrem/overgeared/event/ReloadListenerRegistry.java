@@ -11,6 +11,7 @@ public class ReloadListenerRegistry {
     @SubscribeEvent
     public static void onReload(AddReloadListenerEvent event) {
         event.addListener(new BlueprintTooltypesReloadListener());
+        event.addListener(new BreakSystemBlacklistReloadListener());
         event.addListener(new GrindingBlacklistReloadListener());
         event.addListener(new DurabilityBlacklistReloadListener());
         event.addListener(new CastingToolTypesReloadListener());

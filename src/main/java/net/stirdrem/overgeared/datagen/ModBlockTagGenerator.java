@@ -21,9 +21,6 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
-       /* this.tag(ModTags.Blocks.METAL_DETECTOR_VALUABLES)
-                .add(ModBlocks.SAPPHIRE_ORE.get()).addTag(Tags.Blocks.ORES);
-*/
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(ModBlocks.STEEL_BLOCK.get(),
                         ModBlocks.SMITHING_ANVIL.get(),
@@ -39,11 +36,6 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         ModBlocks.TIER_A_SMITHING_ANVIL.get(),
                         ModBlocks.TIER_B_SMITHING_ANVIL.get()
                 );
-       /* this.tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(ModBlocks.WATER_BARREL.get(),
-                        ModBlocks.WATER_BARREL_FULL.get()
-                );
-*/
         this.tag(ModTags.Blocks.NEEDS_STEEL_TOOL)
                 .add(
                         Blocks.OBSIDIAN,
@@ -61,6 +53,12 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         Blocks.RESPAWN_ANCHOR,
                         Blocks.ANCIENT_DEBRIS)
                 .replace(true);
+        this.tag(BlockTags.NEEDS_IRON_TOOL)
+                .remove(Blocks.RAW_IRON_BLOCK,
+                        Blocks.IRON_ORE,
+                        Blocks.DEEPSLATE_IRON_ORE,
+                        Blocks.IRON_BLOCK)
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL);
 
         this.tag(BlockTags.create(ResourceLocation.tryBuild("forge", "storage_blocks/steel")))
                 .add(ModBlocks.STEEL_BLOCK.get());
