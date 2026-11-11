@@ -84,6 +84,10 @@ subprojects {
             name = "RyanHCode Maven"
             url = "https://maven.ryanhcode.dev/releases"
         }
+        maven {
+            name = "Fuzs Mod Resources"
+            url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+        }
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -97,17 +101,17 @@ subprojects {
 
     // Values substituted into fabric.mod.json / neoforge.mods.toml.
     def expandProps = [
-            mod_id                    : mod_id,
-            mod_name                  : mod_name,
-            mod_version               : mod_version,
-            mod_authors               : mod_authors,
-            mod_license               : mod_license,
-            mod_description           : mod_description,
-            minecraft_version         : minecraft_version,
-            minecraft_version_range   : minecraft_version_range,
-            neo_version               : neo_version,
-            fabric_loader_version     : fabric_loader_version,
-            fabric_version            : fabric_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_license            : mod_license,
+            mod_description        : mod_description,
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            fabric_loader_version  : fabric_loader_version,
+            fabric_version         : fabric_version,
     ]
     tasks.withType(ProcessResources).configureEach {
         inputs.properties expandProps
