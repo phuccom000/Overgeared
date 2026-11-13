@@ -100,6 +100,12 @@ public class ModMessages {
                 .encoder(OnlyResetMinigameS2CPacket::toBytes)
                 .consumerMainThread(OnlyResetMinigameS2CPacket::handle)
                 .add();
+
+        net.messageBuilder(SyncQualityAttributesS2CPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(SyncQualityAttributesS2CPacket::new)
+                .encoder(SyncQualityAttributesS2CPacket::toBytes)
+                .consumerMainThread(SyncQualityAttributesS2CPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToServer(MSG message) {
