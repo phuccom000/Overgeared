@@ -28,35 +28,45 @@ public class QualityAttributeReloadListener
     public static final QualityAttributeReloadListener INSTANCE =
             new QualityAttributeReloadListener();
 
-    private static final List<QualityAttributeDefinition> definitions = new ArrayList<>();
+    /**
+     * Replaced as a whole (never mutated) so the integrated server and the client of the host, which
+     * share this field, can both write it without racing each other.
+     */
+    private static volatile List<QualityAttributeDefinition> definitions = List.of();
 
     public QualityAttributeReloadListener() {
         super(new Gson(), "quality_attributes");
     }
 
-    private static final Set<Item> cachedItems = new HashSet<>();
+    /** Built on first use from the current definitions. */
+    private static volatile Set<Item> cachedItems;
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> jsons,
                          ResourceManager manager,
                          ProfilerFiller profiler) {
 
-        definitions.clear();
-        cachedItems.clear();
-
+        List<QualityAttributeDefinition> parsed = new ArrayList<>();
         for (JsonElement element : jsons.values()) {
-            QualityAttributeDefinition def = parse(element.getAsJsonObject());
-            definitions.add(def);
+            parsed.add(parse(element.getAsJsonObject()));
         }
-
-        // build cache
-        cachedItems.addAll(resolveItems());
+        definitions = List.copyOf(parsed);
+        cachedItems = null;
 
         OvergearedMod.LOGGER.info("Loaded {} quality attribute files", jsons.size());
     }
 
     public static List<QualityAttributeDefinition> getAll() {
         return definitions;
+    }
+
+    /**
+     * Client side: the definitions sent by the server. Without them a client that is not the host
+     * would show the base stats in tooltips (SyncQualityAttributesS2CPacket).
+     */
+    public static void acceptSyncedDefinitions(List<QualityAttributeDefinition> synced) {
+        definitions = List.copyOf(synced);
+        cachedItems = null;
     }
 
     private static QualityAttributeDefinition parse(JsonObject json) {
@@ -122,7 +132,7 @@ public class QualityAttributeReloadListener
     public static Set<Item> resolveItems() {
         Set<Item> items = new HashSet<>();
 
-        for (QualityAttributeDefinition def : INSTANCE.getAll()) {
+        for (QualityAttributeDefinition def : getAll()) {
             for (QualityTarget target : def.targets()) {
 
                 switch (target.type()) {
@@ -171,6 +181,11 @@ public class QualityAttributeReloadListener
     }
 
     public Set<Item> getAllItems() {
-        return cachedItems;
+        Set<Item> items = cachedItems;
+        if (items == null) {
+            items = resolveItems();
+            cachedItems = items;
+        }
+        return items;
     }
 }

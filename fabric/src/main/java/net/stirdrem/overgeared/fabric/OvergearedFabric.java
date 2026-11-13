@@ -144,6 +144,9 @@ public final class OvergearedFabric implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> FabricPlatformHelper.currentServer = server);
         ServerLifecycleEvents.SERVER_STOPPING.register(ModEvents::onServerStopping);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> FabricPlatformHelper.currentServer = null);
+        // Quality attribute definitions are server data; clients need them for item tooltips (join and /reload)
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) ->
+                net.stirdrem.overgeared.networking.packet.SyncQualityAttributesS2CPacket.sendTo(player));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             // NeoForge fires the player tick for each player before the end of the server tick

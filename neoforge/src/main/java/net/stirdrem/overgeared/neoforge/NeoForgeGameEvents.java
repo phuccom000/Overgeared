@@ -74,6 +74,12 @@ public final class NeoForgeGameEvents {
 
     // ---- Server / player lifecycle ----
 
+    /** Quality attribute definitions are server data; clients need them for item tooltips (join and /reload). */
+    @SubscribeEvent
+    public static void onDatapackSync(net.neoforged.neoforge.event.OnDatapackSyncEvent event) {
+        event.getRelevantPlayers().forEach(net.stirdrem.overgeared.networking.packet.SyncQualityAttributesS2CPacket::sendTo);
+    }
+
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         ModEvents.onServerTick();
