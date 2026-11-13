@@ -3,6 +3,8 @@ package net.stirdrem.overgeared.client;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.stirdrem.overgeared.datapack.QualityAttributeReloadListener;
+import net.stirdrem.overgeared.datapack.QualityAttributeSync;
 import net.stirdrem.overgeared.networking.ModMessages;
 import net.stirdrem.overgeared.networking.packet.*;
 
@@ -52,6 +54,11 @@ public class ClientModMessages {
         ClientPlayNetworking.registerGlobalReceiver(ModMessages.ONLY_RESET_MINIGAME, (client, handler, buf, responseSender) -> {
             OnlyResetMinigameS2CPacket msg = OnlyResetMinigameS2CPacket.decode(buf);
             client.execute(() -> OnlyResetMinigameS2CPacket.handle(msg));
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(ModMessages.SYNC_QUALITY_ATTRIBUTES, (client, handler, buf, responseSender) -> {
+            var definitions = QualityAttributeSync.read(buf);
+            client.execute(() -> QualityAttributeReloadListener.acceptSyncedDefinitions(definitions));
         });
     }
 }
