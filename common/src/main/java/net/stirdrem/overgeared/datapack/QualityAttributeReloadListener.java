@@ -73,9 +73,11 @@ public class QualityAttributeReloadListener
     private static QualityAttributeDefinition parse(JsonObject json) {
 
         // ---- attribute ----
-        Identifier attributeId = Identifier.tryParse(
-                GsonHelper.getAsString(json, "attribute")
-        );
+        String attributeName = GsonHelper.getAsString(json, "attribute");
+        Identifier attributeId = upgradeAttributeId(Identifier.tryParse(attributeName));
+        if (attributeId == null || BuiltInRegistries.ATTRIBUTE.getValue(attributeId) == null) {
+            OvergearedMod.LOGGER.warn("Unknown attribute '{}' in a quality_attributes file; it will have no effect", attributeName);
+        }
 
         // ---- targets ----
         List<QualityTarget> targets = new ArrayList<>();
@@ -117,6 +119,22 @@ public class QualityAttributeReloadListener
                 targets,
                 qualities
         );
+    }
+
+    /**
+     * Minecraft 1.21.2 dropped the "generic.", "player." and "zombie." prefixes from the vanilla attribute
+     * ids, so "minecraft:generic.attack_damage" is now "minecraft:attack_damage". Old ids are mapped to
+     * the new ones so datapacks written for 1.20.1 / 1.21.1 still work.
+     */
+    private static Identifier upgradeAttributeId(Identifier id) {
+        if (id == null || !id.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)) return id;
+        String path = id.getPath();
+        for (String prefix : new String[]{"generic.", "player.", "zombie."}) {
+            if (path.startsWith(prefix)) {
+                return Identifier.withDefaultNamespace(path.substring(prefix.length()));
+            }
+        }
+        return id;
     }
 
     private static AttributeModifier.@NotNull Operation getOperation(String opString) {
