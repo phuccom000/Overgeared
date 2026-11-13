@@ -1,5 +1,6 @@
 package net.stirdrem.overgeared.networking;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
@@ -7,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.overgeared.Overgeared;
+import net.stirdrem.overgeared.datapack.QualityAttributeSync;
 import net.stirdrem.overgeared.networking.packet.*;
 
 /**
@@ -29,6 +31,7 @@ public class ModMessages {
     public static final ResourceLocation HIDE_MINIGAME = Overgeared.id("hide_minigame");
     public static final ResourceLocation RESET_MINIGAME = Overgeared.id("reset_minigame");
     public static final ResourceLocation ONLY_RESET_MINIGAME = Overgeared.id("only_reset_minigame");
+    public static final ResourceLocation SYNC_QUALITY_ATTRIBUTES = Overgeared.id("sync_quality_attributes");
 
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(KNAPPING_CHIP, (server, player, handler, buf, responseSender) ->
@@ -45,6 +48,13 @@ public class ModMessages {
 
         ServerPlayNetworking.registerGlobalReceiver(MINIGAME_SET_STARTED, (server, player, handler, buf, responseSender) ->
                 MinigameSetStartedC2SPacket.handle(MinigameSetStartedC2SPacket.decode(buf), server, player));
+
+        // Quality attribute definitions are server data; clients need them for item tooltips (join and /reload)
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
+            FriendlyByteBuf buf = buf();
+            QualityAttributeSync.write(buf);
+            sendToPlayer(SYNC_QUALITY_ATTRIBUTES, buf, player);
+        });
     }
 
     // sendToServer intentionally lives in the client package (ClientModMessages), not here -
