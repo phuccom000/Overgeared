@@ -66,6 +66,8 @@ public final class NeoForgeGameEvents {
     @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
         event.getRelevantPlayers().forEach(SyncRecipesS2CPacket::sendTo);
+        // Quality attribute definitions are server data too; clients need them for item tooltips
+        event.getRelevantPlayers().forEach(net.stirdrem.overgeared.networking.packet.SyncQualityAttributesS2CPacket::sendTo);
     }
 
     // ---- Server / player lifecycle ----

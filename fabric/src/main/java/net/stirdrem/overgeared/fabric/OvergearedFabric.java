@@ -175,7 +175,11 @@ public final class OvergearedFabric implements ModInitializer {
                 ModEvents.onPlayerChangedDimension(player));
 
         // Recipes are not synced to clients any more; send ours on join and on /reload (see RecipeLookup)
-        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> SyncRecipesS2CPacket.sendTo(player));
+        // Quality attribute definitions are server data too; clients need them for item tooltips
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
+            SyncRecipesS2CPacket.sendTo(player);
+            net.stirdrem.overgeared.networking.packet.SyncQualityAttributesS2CPacket.sendTo(player);
+        });
     }
 
     // ---- Interactions ----
