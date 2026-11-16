@@ -53,7 +53,7 @@ dependencies {
 
     modImplementation "curse.maven:architectury-api-419699:5137936"
     modImplementation "curse.maven:epic-knights-armor-and-weapons-509041:7756532"
-    // PlayerMixin uses MixinExtras' expression matching. Accessories happens to bundle its own
+    // PlayerMixin uses MixinExtras (@ModifyExpressionValue). Accessories happens to bundle its own
     // copy too, but Accessories is only a soft dependency - jar-in-jar our own copy so this mixin
     // doesn't crash on load when the mod runs without Accessories installed. MixinExtras is
     // designed to support multiple mods each embedding a copy safely.
