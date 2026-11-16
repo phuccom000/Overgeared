@@ -155,41 +155,7 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         getOrCreateTagBuilder(ModTags.Items.TIER_B_SMITHING_HAMMERS);
 
         // ---------------------------------------------------------------------
-        // Common / Forge-compatible material tags
-        // ---------------------------------------------------------------------
-
-        getOrCreateTagBuilder(
-                commonTag("ingots/steel")
-        ).add(ModItems.STEEL_INGOT.get());
-
-        getOrCreateTagBuilder(
-                commonTag("nuggets/steel")
-        ).add(ModItems.STEEL_NUGGET.get());
-
-        getOrCreateTagBuilder(
-                commonTag("nuggets/copper")
-        ).add(ModItems.COPPER_NUGGET.get());
-
-        getOrCreateTagBuilder(
-                commonTag("plates/copper")
-        ).add(ModItems.COPPER_PLATE.get());
-
-        getOrCreateTagBuilder(
-                commonTag("plates/iron")
-        ).add(ModItems.IRON_PLATE.get());
-
-        getOrCreateTagBuilder(
-                commonTag("plates/steel")
-        ).add(ModItems.STEEL_PLATE.get());
-
-        getOrCreateTagBuilder(
-                commonTag("storage_blocks/steel")
-        ).add(ModBlocks.STEEL_BLOCK.get().asItem());
-
-        // ---------------------------------------------------------------------
-        // Fabric 1.20.1 conventional (flat) names, e.g. c:steel_ingots.
-        // Most Fabric mods on 1.20.1 use these instead of the c:ingots/steel
-        // layout above, so populate both for compatibility.
+        // Fabric 1.20.1 conventional (flat) material tags, e.g. c:steel_ingots
         // ---------------------------------------------------------------------
 
         getOrCreateTagBuilder(commonTag("steel_ingots")).add(ModItems.STEEL_INGOT.get());
@@ -205,28 +171,28 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         // ---------------------------------------------------------------------
 
         getOrCreateTagBuilder(
-                commonTag("armors/helmets")
+                commonTag("helmets")
         ).add(
                 ModItems.STEEL_HELMET.get(),
                 ModItems.COPPER_HELMET.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("armors/chestplates")
+                commonTag("chestplates")
         ).add(
                 ModItems.STEEL_CHESTPLATE.get(),
                 ModItems.COPPER_CHESTPLATE.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("armors/leggings")
+                commonTag("leggings")
         ).add(
                 ModItems.STEEL_LEGGINGS.get(),
                 ModItems.COPPER_LEGGINGS.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("armors/boots")
+                commonTag("boots")
         ).add(
                 ModItems.STEEL_BOOTS.get(),
                 ModItems.COPPER_BOOTS.get()
@@ -285,35 +251,35 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         // ---------------------------------------------------------------------
 
         getOrCreateTagBuilder(
-                commonTag("tools/hoes")
+                commonTag("hoes")
         ).add(
                 ModItems.STEEL_HOE.get(),
                 ModItems.COPPER_HOE.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("tools/axes")
+                commonTag("axes")
         ).add(
                 ModItems.COPPER_AXE.get(),
                 ModItems.STEEL_AXE.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("tools/pickaxes")
+                commonTag("pickaxes")
         ).add(
                 ModItems.COPPER_PICKAXE.get(),
                 ModItems.STEEL_PICKAXE.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("tools/shovels")
+                commonTag("shovels")
         ).add(
                 ModItems.STEEL_SHOVEL.get(),
                 ModItems.COPPER_SHOVEL.get()
         );
 
         getOrCreateTagBuilder(
-                commonTag("tools/swords")
+                commonTag("swords")
         ).add(
                 ModItems.STEEL_SWORD.get(),
                 ModItems.COPPER_SWORD.get()
@@ -386,8 +352,8 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
      * Creates a common item tag.
      * <p>
      * Example:
-     * commonTag("ingots/steel")
-     * -> c:ingots/steel
+     * commonTag("steel_ingots")
+     * -> c:steel_ingots
      */
     private TagKey<Item> commonTag(String path) {
         return TagKey.create(

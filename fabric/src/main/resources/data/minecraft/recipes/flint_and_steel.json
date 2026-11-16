@@ -4,7 +4,7 @@
   "ingredients": [
     [
       {
-        "tag": "c:ingots/steel"
+        "tag": "c:steel_ingots"
       },
       {
         "tag": "c:steel_ingots"

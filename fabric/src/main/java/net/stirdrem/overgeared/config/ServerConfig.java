@@ -255,7 +255,7 @@ public class ServerConfig {
         GRINDING_RESTORE_DURABILITY = builder.comment("Can the grindstone be used for restoring durability or not").define("grindingToggle", true);
         GRINDING_BLACKLIST = builder
                 .comment("Items or tags that cannot be repaired or affected by grinding. " +
-                        "Prefix with '#' to use a tag, e.g. '#c:ingots/iron'")
+                        "Prefix with '#' to use a tag, e.g. '#c:iron_ingots'")
                 .defineList("grindingBlacklist", List.of("minecraft:elytra", "overgeared:wooden_tongs", "overgeared:fired_tool_cast"), obj -> obj instanceof String);
         DURABILITY_REDUCE_PER_GRIND = builder.comment("How much the item durability reduce per grindstone use").defineInRange("durabilityReduce", 0.05, 0, 1);
         DAMAGE_RESTORE_PER_GRIND = builder.comment("How much the item's durability restore per grindstone use").defineInRange("damageRestore", 0.1, 0, 1);
