@@ -354,6 +354,14 @@ public class ForgingRecipe implements Recipe<Container> {
                     throw new JsonSyntaxException("Invalid key: " + entry.getKey());
                 }
 
+                // Like vanilla, a key may be an array of alternatives (e.g. two tag
+                // names for the same material); those carry no forging flags.
+                if (entry.getValue().isJsonArray()) {
+                    keyMap.put(entry.getKey().charAt(0),
+                            new ForgingIngredient(Ingredient.fromJson(entry.getValue()), false, false));
+                    continue;
+                }
+
                 JsonObject obj = GsonHelper.convertToJsonObject(entry.getValue(), entry.getKey());
 
                 Ingredient ingredient = Ingredient.fromJson(obj);

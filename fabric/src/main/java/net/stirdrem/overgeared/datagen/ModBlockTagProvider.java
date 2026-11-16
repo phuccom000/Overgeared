@@ -85,6 +85,9 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(                STEEL_STORAGE_BLOCKS        )
                 .add(                ModBlocks.STEEL_BLOCK.get()
                 );
+        // Fabric 1.20.1 conventional (flat) name
+        getOrCreateTagBuilder(TagKey.create(Registries.BLOCK, new ResourceLocation("c", "steel_blocks")))
+                .add(ModBlocks.STEEL_BLOCK.get());
     }
 
 

@@ -8,6 +8,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -180,6 +181,24 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
         getOrCreateTagBuilder(
                 commonTag("plates/steel")
         ).add(ModItems.STEEL_PLATE.get());
+
+        getOrCreateTagBuilder(
+                commonTag("storage_blocks/steel")
+        ).add(ModBlocks.STEEL_BLOCK.get().asItem());
+
+        // ---------------------------------------------------------------------
+        // Fabric 1.20.1 conventional (flat) names, e.g. c:steel_ingots.
+        // Most Fabric mods on 1.20.1 use these instead of the c:ingots/steel
+        // layout above, so populate both for compatibility.
+        // ---------------------------------------------------------------------
+
+        getOrCreateTagBuilder(commonTag("steel_ingots")).add(ModItems.STEEL_INGOT.get());
+        getOrCreateTagBuilder(commonTag("steel_nuggets")).add(ModItems.STEEL_NUGGET.get());
+        getOrCreateTagBuilder(commonTag("copper_nuggets")).add(ModItems.COPPER_NUGGET.get());
+        getOrCreateTagBuilder(commonTag("copper_plates")).add(ModItems.COPPER_PLATE.get());
+        getOrCreateTagBuilder(commonTag("iron_plates")).add(ModItems.IRON_PLATE.get());
+        getOrCreateTagBuilder(commonTag("steel_plates")).add(ModItems.STEEL_PLATE.get());
+        getOrCreateTagBuilder(commonTag("steel_blocks")).add(ModBlocks.STEEL_BLOCK.get().asItem());
 
         // ---------------------------------------------------------------------
         // Armor
