@@ -2,6 +2,7 @@ package net.stirdrem.overgeared.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -95,6 +96,22 @@ public class ModRecipeProvider extends FabricRecipeProvider {
 
     public ModRecipeProvider(FabricDataOutput output) {
         super(output);
+    }
+
+    /**
+     * FabricRecipeProvider forces every recipe into the mod's namespace by default,
+     * which turns vanilla overrides (e.g. minecraft:iron_pickaxe) into separate
+     * overgeared:iron_pickaxe recipes instead of replacing the vanilla ones.
+     * Keep the minecraft namespace for recipes named after a vanilla item so they
+     * override it (matching the Forge output). Everything else, including vanilla
+     * helpers like oreSmelting that save with bare-string ids, goes to our namespace.
+     */
+    @Override
+    protected ResourceLocation getRecipeIdentifier(ResourceLocation identifier) {
+        if (identifier.getNamespace().equals("minecraft") && BuiltInRegistries.ITEM.containsKey(identifier)) {
+            return identifier;
+        }
+        return super.getRecipeIdentifier(identifier);
     }
 
     @Override

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "stone",
+    "enabled": true,
+    "blueprint": false
+  },
+  {
+    "id": "iron",
+    "enabled": true,
+    "blueprint": true
+  },
+  {
+    "id": "tier_a",
+    "aliases": [
+      "above_a"
+    ],
+    "enabled": false,
+    "blueprint": true
+  },
+  {
+    "id": "tier_b",
+    "aliases": [
+      "above_b"
+    ],
+    "enabled": false,
+    "blueprint": true
+  }
+]
