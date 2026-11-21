@@ -413,7 +413,7 @@ public class ShapedForgingRecipeBuilder implements RecipeBuilder {
 
         @Override
         public RecipeSerializer<?> getType() {
-            return ForgingRecipe.Serializer.INSTANCE; // Replace with your actual serializer instance
+            return ForgingRecipe.Serializer.INSTANCE;
         }
 
         @Nullable

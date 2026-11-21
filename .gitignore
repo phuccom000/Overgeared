@@ -23,3 +23,12 @@ eclipse
 run
 /forge/src/generated/resources/.cache
 /fabric/src/generated/resources/.cache
+
+# Linen: personal and machine-specific files
+CLAUDE.local.md
+.claude/settings.local.json
+.linen/cache/
+.linen/state/
+.theia/settings.json
+.linen/claude-rules.md
+.linen/claude-context.md
