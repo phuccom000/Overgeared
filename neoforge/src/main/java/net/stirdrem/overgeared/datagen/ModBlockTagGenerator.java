@@ -7,6 +7,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.stirdrem.overgeared.AnvilTier;
 import net.stirdrem.overgeared.OvergearedMod;
 import net.stirdrem.overgeared.block.ModBlocks;
 import net.stirdrem.overgeared.util.ModTags;
@@ -30,13 +31,24 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
                         ModBlocks.CAST_FURNACE.get()
                 );
 
+        // Mineable tag for the smithing hammer and tongs; intentionally empty so it exists.
+        this.tag(ModTags.Blocks.SMITHING);
+
         this.tag(ModTags.Blocks.SMITHING_ANVIL)
                 .add(
                         ModBlocks.STONE_SMITHING_ANVIL.get()
                 );
-        ModBlocks.TIERED_ANVILS.values().forEach(block -> {
-            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.get());
-            this.tag(ModTags.Blocks.SMITHING_ANVIL).add(block.get());
+        // Anvil tiers come from the config, so only stone and iron are guaranteed to exist. Every other
+        // tier is added as optional: a required entry for a missing block makes the whole tag fail to
+        // load, which takes vanilla's mineable/pickaxe (and every anvil menu) down with it.
+        ModBlocks.TIERED_ANVILS.forEach((tier, block) -> {
+            if (tier.id().equals(AnvilTier.IRON_ID)) {
+                this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.get());
+                this.tag(ModTags.Blocks.SMITHING_ANVIL).add(block.get());
+            } else {
+                this.tag(BlockTags.MINEABLE_WITH_PICKAXE).addOptional(block.getId());
+                this.tag(ModTags.Blocks.SMITHING_ANVIL).addOptional(block.getId());
+            }
         });
 
         /*
@@ -73,29 +85,26 @@ public class ModBlockTagGenerator extends BlockTagsProvider {
         /*
          * COPPER
          *
-         * Start with everything that Stone cannot mine,
-         * then remove the blocks Copper is allowed to mine.
+         * Listed explicitly instead of "incorrect_for_stone_tool minus iron":
+         * tag "remove" entries are a NeoForge extension and are ignored on Fabric,
+         * which left copper unable to mine iron there.
          */
         this.tag(ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL)
-                .addTag(BlockTags.INCORRECT_FOR_STONE_TOOL)
-                .remove(
-                        Blocks.RAW_IRON_BLOCK,
-                        Blocks.IRON_ORE,
-                        Blocks.DEEPSLATE_IRON_ORE,
-                        Blocks.IRON_BLOCK
-                );
+                .addTag(BlockTags.NEEDS_IRON_TOOL)
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .addTag(BlockTags.NEEDS_DIAMOND_TOOL);
 
         /*
          * STEEL
          *
-         * Start with everything Iron cannot mine,
-         * then remove the blocks Steel is allowed to mine.
+         * Vanilla diamond-tier blocks except obsidian, listed explicitly
+         * (no "remove" entries, which Fabric ignores).
          */
         this.tag(ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL)
-                .addTag(BlockTags.INCORRECT_FOR_IRON_TOOL)
-                .remove(
-                        Blocks.OBSIDIAN,
-                        Blocks.CRYING_OBSIDIAN
+                .add(
+                        Blocks.NETHERITE_BLOCK,
+                        Blocks.RESPAWN_ANCHOR,
+                        Blocks.ANCIENT_DEBRIS
                 );
 
         /*

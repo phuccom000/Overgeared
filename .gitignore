@@ -31,3 +31,22 @@ forge*changelog.txt
 
 # multiloader run dirs
 runs
+
+# Claude
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.mcp.json
+
+# Linen
+.linen/
+linen.toml
+.theia/settings.json
+
+# editors
+.vscode
+.eclipse
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log

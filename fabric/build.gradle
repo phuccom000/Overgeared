@@ -26,6 +26,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
+    // Common sources are compiled in via multiloader-loader.gradle; this link only lets the IDE resolve :common.
+    compileOnly project(':common')
+
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     // Only referenced behind a runtime check (Sable is NeoForge-only)
     compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"

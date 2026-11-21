@@ -70,6 +70,10 @@ tasks.named('processResources', ProcessResources) {
 }
 
 dependencies {
+    // Common sources are compiled in via multiloader-loader.gradle; this compileOnly link is what
+    // makes IntelliJ add the module dependency on :common, so it survives Gradle refreshes.
+    compileOnly project(':common')
+
     // JEI
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
