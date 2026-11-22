@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "minecraft:obsidian",
-    "minecraft:crying_obsidian",
+    "#overgeared:needs_steel_tool",
     "minecraft:netherite_block",
     "minecraft:ancient_debris",
     "minecraft:respawn_anchor"

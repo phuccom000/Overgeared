@@ -1,5 +1,5 @@
-[22:19:18] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 1.20.1 with Fabric Loader 0.16.9
-[22:19:22] [main/INFO] (FabricLoader) Loading 52 mods:
+[11:13:32] [main/INFO] (FabricLoader/GameProvider) Loading Minecraft 1.20.1 with Fabric Loader 0.16.9
+[11:13:33] [main/INFO] (FabricLoader) Loading 52 mods:
 	- accessories 1.0.0-beta.47+1.20.1
 	- architectury 9.2.14
 	- cloth-basic-math 0.6.1
@@ -46,81 +46,81 @@
 	- fabric-transfer-api-v1 3.3.5+8dd72ea377
 	- fabric-transitive-access-wideners-v1 4.3.1+1802ada577
 	- fabricloader 0.16.9
-	- java 21
+	- java 17
 	- jei 15.49.0.191
 	- magistuarmory 10.11
 	- minecraft 1.20.1
 	- mixinextras 0.5.5
 	- overgeared 1.7.1
-[22:19:23] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/Administrator/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
-[22:19:23] [main/INFO] (FabricLoader/Mixin) Loaded Fabric development mappings for mixin remapper!
-[22:19:23] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_16
-[22:19:23] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_17
-[22:19:24] [main/WARN] (FabricLoader/Mixin) Error loading class: net/minecraft/client/renderer/LevelRenderer (java.lang.RuntimeException: Cannot load class net.minecraft.client.renderer.LevelRenderer in environment type SERVER)
-[22:19:24] [main/WARN] (FabricLoader/Mixin) @Mixin target net.minecraft.client.renderer.LevelRenderer was not found accessories-common.mixins.json:LevelRendererAccessor from mod accessories
-[22:19:24] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
-[22:19:28] [main/WARN] (FabricLoader/Mixin) @ModifyVariable(@At("INVOKE")) Shift.BY=2 on accessories-fabric.mixins.json:LivingEntityMixin from mod accessories::localvar$zkb000$accessories$adjustLooting exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
-[22:19:31] [main/WARN] (FabricLoader/Mixin) @Inject(@At("INVOKE")) Shift.BY=2 on accessories-common.mixins.json:NbtCompoundMixin from mod accessories::handler$zkm000$accessories$adjustCheckForListVariants exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
-[22:19:37] [main/INFO] (Overgeared) Overgeared: initializing Fabric port
-[22:19:37] [main/INFO] (Overgeared) Anvil tiers: [stone, iron, tier_a, tier_b]
-[22:19:37] [main/INFO] (Overgeared) Registered tool types: sword, pickaxe, shovel, axe, hoe
-[22:19:37] [main/INFO] (Overgeared) Tool types initialized: 5
-[22:19:37] [main/INFO] (Overgeared) Accessories mod detected - AttributeModifierHandler registered
-[22:19:37] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_long_reach_attack
-[22:19:37] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_lance_collision
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:minicrown
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crown
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:flowercrown
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:stechhelm
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:sallet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:maximilian_helmet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:bascinet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:wingedhussarchestplate
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:grand_bascinet
-[22:19:37] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
-[22:19:38] [main/INFO] (DataLoaderBase) Registering Listeners!
-[22:19:38] [main/INFO] (FabricDataGenHelper) Running data generator for overgeared
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Recipes
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Recipes finished after 177 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type finished after 259 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/World Gen
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/World Gen finished after 6 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:block
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:block finished after 5 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:item
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:item finished after 8 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Block Loot Tables
-[22:19:38] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Block Loot Tables finished after 50 ms
-[22:19:38] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Model Definitions
-[22:19:39] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Model Definitions finished after 91 ms
-[22:19:39] [main/INFO] (Minecraft) All providers took: 605 ms
-[22:19:39] [main/INFO] (Minecraft) Caching: total files: 939, old count: 736, new count: 737, removed stale: 203, written: 203
+[11:13:33] [main/INFO] (FabricLoader/Mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/D:/Linen/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[11:13:34] [main/INFO] (FabricLoader/Mixin) Loaded Fabric development mappings for mixin remapper!
+[11:13:34] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_16
+[11:13:34] [main/INFO] (FabricLoader/Mixin) Compatibility level set to JAVA_17
+[11:13:34] [main/WARN] (FabricLoader/Mixin) Error loading class: net/minecraft/client/renderer/LevelRenderer (java.lang.RuntimeException: Cannot load class net.minecraft.client.renderer.LevelRenderer in environment type SERVER)
+[11:13:34] [main/WARN] (FabricLoader/Mixin) @Mixin target net.minecraft.client.renderer.LevelRenderer was not found accessories-common.mixins.json:LevelRendererAccessor from mod accessories
+[11:13:35] [main/INFO] (FabricLoader/MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+[11:13:38] [main/WARN] (FabricLoader/Mixin) @ModifyVariable(@At("INVOKE")) Shift.BY=2 on accessories-fabric.mixins.json:LivingEntityMixin from mod accessories::localvar$zzh000$accessories$adjustLooting exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
+[11:13:41] [main/WARN] (FabricLoader/Mixin) @Inject(@At("INVOKE")) Shift.BY=2 on accessories-common.mixins.json:NbtCompoundMixin from mod accessories::handler$zbc000$accessories$adjustCheckForListVariants exceeds the maximum allowed value: 0. Increase the value of maxShiftBy to suppress this warning.
+[11:13:46] [main/INFO] (DataLoaderBase) Registering Listeners!
+[11:13:47] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_long_reach_attack
+[11:13:47] [main/INFO] (NetworkManagerImpl) Registering C2S receiver with id magistuarmory:packet_lance_collision
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:minicrown
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crown
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:flowercrown
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:stechhelm
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:sallet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:maximilian_helmet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:armet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:barbute
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:kettlehat
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:conic_helmet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:crusader
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:bascinet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:wingedhussarchestplate
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: magistuarmory:grand_bascinet
+[11:13:47] [main/INFO] (Minecraft) [STDOUT]: minecraft:default
+[11:13:47] [main/INFO] (Overgeared) Overgeared: initializing Fabric port
+[11:13:47] [main/INFO] (Overgeared) Anvil tiers: [stone, iron, tier_a, tier_b]
+[11:13:47] [main/INFO] (Overgeared) Registered tool types: sword, pickaxe, shovel, axe, hoe
+[11:13:47] [main/INFO] (Overgeared) Tool types initialized: 5
+[11:13:47] [main/INFO] (Overgeared) Accessories mod detected - AttributeModifierHandler registered
+[11:13:48] [main/INFO] (FabricDataGenHelper) Running data generator for overgeared
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Recipes
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Recipes finished after 143 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:point_of_interest_type finished after 425 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/World Gen
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/World Gen finished after 6 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:block
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:block finished after 5 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Tags for minecraft:item
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Tags for minecraft:item finished after 9 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Block Loot Tables
+[11:13:48] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Block Loot Tables finished after 111 ms
+[11:13:48] [main/INFO] (Minecraft) Starting provider: Overgeared: A Blacksmith Mod/Model Definitions
+[11:13:49] [main/INFO] (Minecraft) Overgeared: A Blacksmith Mod/Model Definitions finished after 91 ms
+[11:13:49] [main/INFO] (Minecraft) All providers took: 799 ms
+[11:13:49] [main/INFO] (Minecraft) Caching: total files: 738, old count: 736, new count: 739, removed stale: 0, written: 4

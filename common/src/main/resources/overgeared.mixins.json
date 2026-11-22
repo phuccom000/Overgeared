@@ -11,6 +11,8 @@
     "PotionItemMixin"
   ],
   "client": [
+    "ItemRendererMixin",
+    "RenderBuffersMixin"
   ],
   "server": [
   ],

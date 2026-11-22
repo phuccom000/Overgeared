@@ -151,8 +151,8 @@ public class FabricPlatformHelper implements IPlatformHelper {
     @Override
     public Tier createToolTier(String name, int level, int uses, float speed, float attackDamageBonus, int enchantability,
                                TagKey<Block> needsTag, Supplier<Ingredient> repairIngredient, List<Tier> after, List<Tier> before) {
-        // No tier sorting on Fabric: ordering against vanilla tiers comes from the needs_*_tool tags
-        return new SimpleTier(level, uses, speed, attackDamageBonus, enchantability, repairIngredient);
+        // No tier sorting on Fabric: DiggerItemMixin lets the tier mine its needsTag blocks above its level
+        return new SimpleTier(level, uses, speed, attackDamageBonus, enchantability, needsTag, repairIngredient);
     }
 
     @Override
@@ -160,8 +160,8 @@ public class FabricPlatformHelper implements IPlatformHelper {
         return new Tongs(tier, attackDamageModifier, attackSpeedModifier, properties);
     }
 
-    private record SimpleTier(int level, int uses, float speed, float attackDamageBonus, int enchantability,
-                              Supplier<Ingredient> repairIngredient) implements Tier {
+    public record SimpleTier(int level, int uses, float speed, float attackDamageBonus, int enchantability,
+                             TagKey<Block> needsTag, Supplier<Ingredient> repairIngredient) implements Tier {
         @Override public int getUses() { return uses; }
         @Override public float getSpeed() { return speed; }
         @Override public float getAttackDamageBonus() { return attackDamageBonus; }

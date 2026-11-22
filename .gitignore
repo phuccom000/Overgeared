@@ -32,3 +32,8 @@ CLAUDE.local.md
 .theia/settings.json
 .linen/claude-rules.md
 .linen/claude-context.md
+
+# Claude Code
+.claude/
+CLAUDE.md
+.mcp.json

@@ -12,15 +12,15 @@
       "projectName": "forge",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\clientRunProgramArgs.txt"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\clientRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\clientRunVmArgs.txt",
-        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\forge\\run",
       "env": {
-        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       },
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -36,15 +36,15 @@
       "projectName": "forge",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\dataRunProgramArgs.txt"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\dataRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\dataRunVmArgs.txt",
-        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\forge\\run",
       "env": {
-        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       },
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -60,15 +60,15 @@
       "projectName": "forge",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\serverRunProgramArgs.txt"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\serverRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\build\\moddev\\serverRunVmArgs.txt",
-        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "@D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dovergeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       ],
       "cwd": "${workspaceFolder}\\forge\\run",
       "env": {
-        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\Overgeared Multiloader\\forge\\bin\\main"
+        "MOD_CLASSES": "overgeared%%D:\\Minecraft Mods\\1.20.1 multiloader\\forge\\bin\\main"
       },
       "console": "internalConsole",
       "shortenCommandLine": "none"

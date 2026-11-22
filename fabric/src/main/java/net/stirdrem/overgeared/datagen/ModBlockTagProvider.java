@@ -54,24 +54,31 @@ public class ModBlockTagProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(ModTags.Blocks.IRON_ANVIL_BASES)
                 .add(Blocks.ANVIL);
 
-        getOrCreateTagBuilder(
-                MiningLevelManager.getBlockTag(2)
-        ).add(
-                Blocks.IRON_ORE,
-                Blocks.DEEPSLATE_IRON_ORE,
-                Blocks.RAW_IRON_BLOCK,
-                Blocks.IRON_BLOCK
-        );
+        // Copper and steel tools mine these despite their level (DiggerItemMixin); the level tags keep weaker tiers out
+        getOrCreateTagBuilder(ModTags.Blocks.NEEDS_COPPER_TOOL)
+                .add(
+                        Blocks.IRON_ORE,
+                        Blocks.DEEPSLATE_IRON_ORE,
+                        Blocks.RAW_IRON_BLOCK,
+                        Blocks.IRON_BLOCK
+                );
 
-        getOrCreateTagBuilder(
-                MiningLevelManager.getBlockTag(3)
-        ).add(
-                Blocks.OBSIDIAN,
-                Blocks.CRYING_OBSIDIAN,
-                Blocks.NETHERITE_BLOCK,
-                Blocks.ANCIENT_DEBRIS,
-                Blocks.RESPAWN_ANCHOR
-        );
+        getOrCreateTagBuilder(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .add(
+                        Blocks.OBSIDIAN,
+                        Blocks.CRYING_OBSIDIAN
+                );
+
+        getOrCreateTagBuilder(MiningLevelManager.getBlockTag(2))
+                .addTag(ModTags.Blocks.NEEDS_COPPER_TOOL);
+
+        getOrCreateTagBuilder(MiningLevelManager.getBlockTag(3))
+                .addTag(ModTags.Blocks.NEEDS_STEEL_TOOL)
+                .add(
+                        Blocks.NETHERITE_BLOCK,
+                        Blocks.ANCIENT_DEBRIS,
+                        Blocks.RESPAWN_ANCHOR
+                );
         // Fabric 1.20.1 conventional (flat) name
         getOrCreateTagBuilder(TagKey.create(Registries.BLOCK, new ResourceLocation("c", "steel_blocks")))
                 .add(ModBlocks.STEEL_BLOCK.get());

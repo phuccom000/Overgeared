@@ -1,0 +1,20 @@
+# Linen project manifest. See Linen's spec: "Project system and folder control".
+# Several targets: each is built by its Gradle subproject (module); shared code lives in common/ or, with
+# Stonecutter, in src/.
+
+[mod]
+id = "overgeared"
+name = "Overgeared: A Blacksmith Mod"
+package = "net.stirdrem.overgeared"
+
+[targets]
+primary = { minecraft = "1.20.1", loader = "fabric", module = "fabric" }
+also = [{ minecraft = "1.20.1", loader = "neoforge", module = "forge" }]
+
+[rules]
+protected = ["linen.toml"]
+max_file_lines = 400
+
+# The same mod for other Minecraft versions (each its own Linen project).
+[family]
+versions = ["../1.21.1 multiloader", "../26.3 multiloader", "../Overgeared fabric remapped 2", "../overgeared-fabric-1.20.1", "../overgeared-fabric-port"]
