@@ -416,22 +416,29 @@ public class FletchingStationMenu extends AbstractContainerMenu {
 
             // Handling output slot
             if (index == OUTPUT_SLOT) {
-                while (canStillCraft()) {
+                while (canStillCraft() && slot.hasItem()) {
                     ItemStack result = slot.getItem().copy();
-                    int maxTransfer = result.getMaxStackSize();
+                    int offered = result.getCount();
+                    int outPer = getOutputPerCraft();
 
-                    // Adjust count if larger than what's actually available
-                    int craftCount = Math.min(result.getCount(), maxTransfer);
-                    result.setCount(craftCount);
-
-                    // Try to move result to player inventory
                     if (!moveItemStackTo(result, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, true)) {
-                        break; // Stop if inventory is full
+                        break;
                     }
-                    slot.onQuickCraft(result, copiedStack);
-                    consumeInputs(copiedStack); // Consume only once per iteration
 
-                    if (slot.getItem().isEmpty()) break; // Stop if no more result
+                    // charge only the batches that reached the inventory; a half-moved batch drops its rest
+                    int moved = offered - result.getCount();
+                    int batches = (moved + outPer - 1) / outPer;
+                    int spare = batches * outPer - moved;
+
+                    ItemStack taken = slot.getItem().copy();
+                    taken.setCount(batches * outPer);
+                    consumeInputs(taken);
+
+                    if (spare > 0) {
+                        result.setCount(spare);
+                        player.drop(result, false);
+                    }
+                    if (moved < offered) break;
                 }
 
                 slot.setChanged();
@@ -471,6 +478,12 @@ public class FletchingStationMenu extends AbstractContainerMenu {
         }
 
         return copiedStack;
+    }
+
+    private int getOutputPerCraft() {
+        RecipeInput recipeInput = createRecipeInput();
+        Optional<RecipeHolder<FletchingRecipe>> optHolder = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING.get(), recipeInput, level);
+        return optHolder.isPresent() ? optHolder.get().value().assemble(recipeInput, level.registryAccess()).getCount() : 1;
     }
 
     private boolean canStillCraft() {

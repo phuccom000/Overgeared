@@ -13,6 +13,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -29,6 +30,7 @@ import net.stirdrem.overgeared.item.armor.model.CopperHelmet;
 import net.stirdrem.overgeared.item.armor.model.CopperLeggings;
 import net.stirdrem.overgeared.item.custom.LingeringArrowItem;
 import net.stirdrem.overgeared.item.custom.UpgradeArrowItem;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.screen.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,6 +73,11 @@ public class ClientModEvents {
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(CopperHelmet.LAYER_LOCATION, CopperHelmet::createBodyLayer);
         event.registerLayerDefinition(CopperLeggings.LAYER_LOCATION, CopperLeggings::createBodyLayer);
+    }
+
+    @SubscribeEvent
+    public static void registerParticles(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.SPARK.get(), SparkParticle.Provider::new);
     }
 
     @SubscribeEvent

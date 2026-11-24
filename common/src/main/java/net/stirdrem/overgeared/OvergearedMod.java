@@ -19,6 +19,7 @@ import net.stirdrem.overgeared.item.ModItems;
 import net.stirdrem.overgeared.item.ToolTypeRegistry;
 import net.stirdrem.overgeared.recipe.ModRecipeSerializers;
 import net.stirdrem.overgeared.recipe.ModRecipeTypes;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.screen.ModMenuTypes;
 import net.stirdrem.overgeared.sound.ModSounds;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ public final class OvergearedMod {
 
         // Order matters on Fabric, where entries are registered immediately.
         ModSounds.register();
+        ModParticles.register();
         ModComponents.register();
         ModBlocks.register();
         ModItems.register();

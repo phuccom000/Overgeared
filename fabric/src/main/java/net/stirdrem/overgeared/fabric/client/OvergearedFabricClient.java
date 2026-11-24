@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -23,6 +24,7 @@ import net.stirdrem.overgeared.block.entity.renderer.SmithingAnvilBlockEntityRen
 import net.stirdrem.overgeared.client.AnvilMinigameOverlay;
 import net.stirdrem.overgeared.client.OvergearedClient;
 import net.stirdrem.overgeared.client.PopupOverlay;
+import net.stirdrem.overgeared.client.SparkParticle;
 import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
 import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
@@ -36,6 +38,7 @@ import net.stirdrem.overgeared.item.custom.LingeringArrowItem;
 import net.stirdrem.overgeared.item.custom.UpgradeArrowItem;
 import net.stirdrem.overgeared.networking.ModPackets;
 import net.stirdrem.overgeared.networking.PacketContext;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.screen.*;
 
 import java.util.function.Supplier;
@@ -53,6 +56,7 @@ public final class OvergearedFabricClient implements ClientModInitializer {
 
         registerScreens();
         registerRenderers();
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SPARK.get(), SparkParticle.Provider::new);
 
         ColorProviderRegistry.ITEM.register(LingeringArrowItem::getColor, ModItems.LINGERING_ARROW.get());
         ColorProviderRegistry.ITEM.register(UpgradeArrowItem::getColor,

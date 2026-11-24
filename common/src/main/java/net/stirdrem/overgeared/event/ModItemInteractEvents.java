@@ -663,15 +663,6 @@ public class ModItemInteractEvents {
                 .orElse(false);
     }
 
-// TODO: this should be replaced with DataAttachments
-//    @SubscribeEvent
-//    public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-//        if (event.getObject() instanceof ItemEntity) {
-//            event.addCapability(ResourceLocation.tryBuild(OvergearedMod.MOD_ID, "heated_item"),
-//                    new HeatedItemProvider());
-//        }
-//    }
-
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
         if (!player.level().isClientSide()) {

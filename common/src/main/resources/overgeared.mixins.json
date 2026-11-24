@@ -5,6 +5,8 @@
   "refmap": "overgeared.refmap.json",
   "minVersion": "0.8",
   "client": [
+    "ItemRendererMixin",
+    "RenderBuffersMixin"
   ],
   "mixins": [
     "BrewingStandBlockEntityMixin",
