@@ -57,7 +57,15 @@ public class CastSmeltingRecipe extends SmeltingRecipe {
                 false
         );
 
-        ItemStack cast = this.ingredient.getItems()[0].copy();
+        // Use a fresh Ingredient: getItems() caches its result, and this can be called during
+        // recipe loading (e.g. by other mods) before tags are bound, when the tag is still empty.
+        ItemStack[] casts = Ingredient.of(ModTags.Items.USABLE_TOOL_CAST).getItems();
+        if (casts.length == 0) {
+            list.add(Ingredient.of(ModTags.Items.USABLE_TOOL_CAST));
+            return list;
+        }
+
+        ItemStack cast = casts[0].copy();
         cast.set(ModComponents.CAST_DATA.get(), displayData);
 
         list.add(Ingredient.of(cast));

@@ -40,6 +40,8 @@ dependencies {
 
     // EMI
     modCompileOnly "dev.emi:emi-fabric:${emi_version}:api"
+
+    modLocalRuntime "curse.maven:kaleidoscope-cookery-1309203:6820299"
 }
 
 loom {

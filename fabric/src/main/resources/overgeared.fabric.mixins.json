@@ -5,6 +5,7 @@
   "refmap": "overgeared.refmap.json",
   "minVersion": "0.8",
   "mixins": [
+    "AbstractFurnaceCastMixin",
     "ItemStackBreakMixin",
     "ItemStackFabricMixin",
     "LootTableMixin",

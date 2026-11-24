@@ -202,7 +202,7 @@ public class ModEvents {
         }
 
         // Cooling countdown for heated items (tag-based or component-based)
-        if (HeatedItem.isHeated(stack)) {
+        if (HeatedItem.isHeated(stack) && !HeatedItem.isEternallyHot(stack)) {
             Long heatedSince = stack.get(ModComponents.HEATED_TIME.get());
             Level clientLevel = net.stirdrem.overgeared.client.ClientLevelAccess.getLevel();
             if (heatedSince != null && clientLevel != null) {

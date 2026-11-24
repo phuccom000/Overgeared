@@ -44,6 +44,11 @@ public final class HeatedItem {
                 || Boolean.TRUE.equals(stack.get(ModComponents.HEATED_COMPONENT.get()));
     }
 
+    /** Items in the hot_items tag stay hot forever and never cool down on a timer. */
+    public static boolean isEternallyHot(ItemStack stack) {
+        return !stack.isEmpty() && stack.is(ModTags.Items.HOT_ITEMS);
+    }
+
     // Called from InventoryCoolingMixin — handles damage to holder + cooling
     public static void tickInventory(ItemStack stack, Level level, LivingEntity entity) {
         long tick = level.getGameTime();
@@ -98,6 +103,8 @@ public final class HeatedItem {
         if (!inWater && !hasCooled(stack, level, pos)) return;
 
         Item cooled = getCooledItem(stack.getItem(), level);
+        // Eternally hot items with no cooled form can't be quenched; skip the smoke/sound spam
+        if (cooled == null && isEternallyHot(stack)) return;
 
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.SMOKE,
@@ -230,6 +237,7 @@ public final class HeatedItem {
     private static boolean hasCooled(ItemStack stack, Level level, boolean skipThrottle) {
         if (stack.isEmpty()) return false;
         if (!isHeated(stack)) return false;
+        if (isEternallyHot(stack)) return false;
 
         long tick = level.getGameTime();
         if (!skipThrottle && tick % 10 != 0) return false;
