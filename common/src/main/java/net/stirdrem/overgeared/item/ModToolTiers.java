@@ -1,11 +1,14 @@
 package net.stirdrem.overgeared.item;
 
+import com.google.common.base.Suppliers;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.stirdrem.overgeared.util.ModTags;
+
+import java.util.function.Supplier;
 
 public enum ModToolTiers implements Tier {
 
@@ -15,7 +18,7 @@ public enum ModToolTiers implements Tier {
             1.0f,
             12,
             ModTags.Blocks.INCORRECT_FOR_COPPER_TOOL,
-            Ingredient.of(Items.COPPER_INGOT)
+            () -> Ingredient.of(Items.COPPER_INGOT)
     ),
     STEEL(
             500,
@@ -23,7 +26,7 @@ public enum ModToolTiers implements Tier {
             3.0f,
             12,
             ModTags.Blocks.INCORRECT_FOR_STEEL_TOOL,
-            Ingredient.of(ModItems.STEEL_INGOT.get())
+            () -> Ingredient.of(ModItems.STEEL_INGOT.get())
     );
 
     private final int uses;
@@ -31,7 +34,9 @@ public enum ModToolTiers implements Tier {
     private final float damage;
     private final int enchantmentValue;
     private final TagKey<Block> incorrectBlocks;
-    private final Ingredient repairIngredient;
+    // Resolved lazily: other mods may reference these tiers during item registration,
+    // before ModItems.STEEL_INGOT is bound.
+    private final Supplier<Ingredient> repairIngredient;
 
     ModToolTiers(
             int uses,
@@ -39,14 +44,14 @@ public enum ModToolTiers implements Tier {
             float damage,
             int enchantmentValue,
             TagKey<Block> incorrectBlocks,
-            Ingredient repairIngredient
+            Supplier<Ingredient> repairIngredient
     ) {
         this.uses = uses;
         this.speed = speed;
         this.damage = damage;
         this.enchantmentValue = enchantmentValue;
         this.incorrectBlocks = incorrectBlocks;
-        this.repairIngredient = repairIngredient;
+        this.repairIngredient = Suppliers.memoize(repairIngredient::get);
     }
 
     @Override
@@ -71,7 +76,7 @@ public enum ModToolTiers implements Tier {
 
     @Override
     public Ingredient getRepairIngredient() {
-        return repairIngredient;
+        return repairIngredient.get();
     }
 
     @Override
