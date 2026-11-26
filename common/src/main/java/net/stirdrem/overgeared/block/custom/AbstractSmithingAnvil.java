@@ -6,8 +6,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,11 +40,10 @@ import net.stirdrem.overgeared.Overgeared;
 import net.stirdrem.overgeared.block.entity.AbstractSmithingAnvilBlockEntity;
 import net.stirdrem.overgeared.client.AnvilMinigameEvents;
 import net.stirdrem.overgeared.client.ClientAnvilMinigameData;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.sound.AnvilSoundServices;
 import net.stirdrem.overgeared.util.ModTags;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Random;
-import org.joml.Vector3f;
 
 import java.util.UUID;
 
@@ -206,28 +204,18 @@ public abstract class AbstractSmithingAnvil extends BaseEntityBlock implements F
     }
 
     protected void spawnAnvilParticles(Level level, BlockPos pos) {
-        if (level instanceof ServerLevel serverLevel) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
 
-            Random random = new Random();
-            for (int i = 0; i < 6; i++) {
-                double offsetX = 0.5 + (random.nextFloat() - 0.5);
-                double offsetY = 1.0 + random.nextFloat() * 0.5;
-                double offsetZ = 0.5 + (random.nextFloat() - 0.5);
-                double velocityX = (random.nextFloat() - 0.5) * 0.1;
-                double velocityY = random.nextFloat() * 0.1;
-                double velocityZ = (random.nextFloat() - 0.5) * 0.1;
-
-                // For orange-colored dust particles
-                /*serverLevel.sendParticles(ParticleTypes.FLAME,
-                        pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ,
-                        velocityX, velocityY, velocityZ);*/
-                serverLevel.sendParticles(new DustParticleOptions(new Vector3f(1.0f, 0.5f, 0.0f), 1.0f),
-                        pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
-                        velocityX, velocityY, velocityZ, 1);
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                        pos.getX() + offsetX, pos.getY() + offsetY, pos.getZ() + offsetZ, 1,
-                        velocityX, velocityY, velocityZ, 1);
-            }
+        RandomSource random = level.getRandom();
+        double x = pos.getX() + 0.5;
+        double y = pos.getY() + 1.05;
+        double z = pos.getZ() + 0.5;
+        for (int i = 0; i < 10; i++) {
+            float angle = random.nextFloat() * Mth.TWO_PI;
+            float speed = 0.12F + random.nextFloat() * 0.18F;
+            // count 0 makes sendParticles use the offset arguments as this spark's velocity
+            serverLevel.sendParticles(ModParticles.SPARK.get(), x, y, z, 0,
+                    Mth.cos(angle) * speed, 0.15 + random.nextFloat() * 0.2, Mth.sin(angle) * speed, 1.0);
         }
     }
 

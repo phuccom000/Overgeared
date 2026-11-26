@@ -30,6 +30,7 @@ import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.screen.ModMenuTypes;
 import net.stirdrem.overgeared.sound.AnvilSoundServices;
 import net.stirdrem.overgeared.sound.FabricAnvilSoundService;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.sound.ModSounds;
 import org.jetbrains.annotations.Nullable;
 
@@ -99,6 +100,7 @@ public class OvergearedFabric implements ModInitializer {
         ModCreativeModeTabs.register();
         ModEntities.init();
         ModSounds.init();
+        ModParticles.init();
         AnvilSoundServices.register(new FabricAnvilSoundService());
 
         ToolTypeRegistry.init();

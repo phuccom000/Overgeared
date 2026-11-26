@@ -255,12 +255,12 @@ public class ServerConfig {
 
         builder.push("Durability & Grinding");
         BASE_DURABILITY_MULTIPLIER = builder.comment("Defines the base durability multiplier of all items that has durability.").defineInRange("durability", 1f, 0, 10000);
-        BASE_DURABILITY_BLACKLIST = builder.comment("Items or tags that will NOT receive base durability multiplier").defineListAllowEmpty("base_durability_blacklist", List.of("minecraft:flint_and_steel", "overgeared:fired_tool_cast"), o -> o instanceof String);
+        BASE_DURABILITY_BLACKLIST = builder.comment("Items or tags that will NOT receive base durability multiplier").defineListAllowEmpty("base_durability_blacklist", List.of("minecraft:flint_and_steel", "overgeared:clay_tool_cast"), o -> o instanceof String);
         GRINDING_RESTORE_DURABILITY = builder.comment("Can the grindstone be used for restoring durability or not").define("grindingToggle", true);
         GRINDING_BLACKLIST = builder
                 .comment("Items or tags that cannot be repaired or affected by grinding. " +
                         "Prefix with '#' to use a tag, e.g. '#forge:ingots/iron'")
-                .defineList("grindingBlacklist", List.of("minecraft:elytra", "overgeared:wooden_tongs", "overgeared:fired_tool_cast"), obj -> obj instanceof String);
+                .defineList("grindingBlacklist", List.of("minecraft:elytra", "overgeared:wooden_tongs", "overgeared:clay_tool_cast"), obj -> obj instanceof String);
         DURABILITY_REDUCE_PER_GRIND = builder.comment("How much the item durability reduce per grindstone use").defineInRange("durabilityReduce", 0.05, 0, 1);
         DAMAGE_RESTORE_PER_GRIND = builder.comment("How much the item's durability restore per grindstone use").defineInRange("damageRestore", 0.1, 0, 1);
         builder.pop();
@@ -321,7 +321,7 @@ public class ServerConfig {
                 .define("enableQualityBreakSystem", true);
         QUALITY_BREAK_BLACKLIST = builder
                 .comment("Items or tags that will NOT receive quality-based break chance system")
-                .defineListAllowEmpty("qualityBreakBlacklist", List.of("minecraft:flint_and_steel", "overgeared:fired_tool_cast"), o -> o instanceof String);
+                .defineListAllowEmpty("qualityBreakBlacklist", List.of("minecraft:flint_and_steel", "overgeared:clay_tool_cast"), o -> o instanceof String);
 
         BREAK_CHANCE_POOR = builder
                 .comment("Break chance at 0 durability for POOR quality")

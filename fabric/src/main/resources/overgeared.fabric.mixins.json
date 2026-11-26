@@ -4,6 +4,7 @@
   "package": "net.stirdrem.overgeared.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AbstractFurnaceCastMixin",
     "BrewingStandBlockEntityMixin",
     "DiggerItemMixin",
     "ItemStackAttributeMixin",

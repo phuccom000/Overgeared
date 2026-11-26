@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.RegisterRecipeBookCategoriesEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
@@ -70,6 +71,8 @@ import net.stirdrem.overgeared.recipe.ModRecipes;
 import net.stirdrem.overgeared.screen.*;
 import net.stirdrem.overgeared.sound.AnvilSoundServices;
 import net.stirdrem.overgeared.sound.ForgeAnvilSoundService;
+import net.stirdrem.overgeared.client.SparkParticle;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.sound.ModSounds;
 import net.stirdrem.overgeared.util.ModTags;
 
@@ -115,6 +118,7 @@ public class OvergearedForge {
         ModLootModifiers.register(modEventBus);
 
         ModSounds.init();
+        ModParticles.init();
 
         AnvilSoundServices.register(new ForgeAnvilSoundService());
 
@@ -543,6 +547,11 @@ public class OvergearedForge {
                         if (tag.contains("Potion") || tag.contains("CustomPotionEffects")) return 1.0F;
                         return 0.0F;
                     });
+        }
+
+        @SubscribeEvent
+        public static void registerParticles(RegisterParticleProvidersEvent event) {
+            event.registerSpriteSet(ModParticles.SPARK.get(), SparkParticle.Provider::new);
         }
 
         @SubscribeEvent

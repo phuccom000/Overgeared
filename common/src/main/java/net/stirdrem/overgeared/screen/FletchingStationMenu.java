@@ -338,20 +338,29 @@ public class FletchingStationMenu extends AbstractContainerMenu {
             copiedStack = slotStack.copy();
 
             if (index == OUTPUT_SLOT) {
-                while (canStillCraft()) {
+                while (canStillCraft() && slot.hasItem()) {
                     ItemStack craftResult = slot.getItem().copy();
-                    int maxTransfer = craftResult.getMaxStackSize();
-
-                    int craftCount = Math.min(craftResult.getCount(), maxTransfer);
-                    craftResult.setCount(craftCount);
+                    int offered = craftResult.getCount();
+                    int outPer = getOutputPerCraft();
 
                     if (!moveItemStackTo(craftResult, PLAYER_INVENTORY_START, PLAYER_HOTBAR_END + 1, true)) {
                         break;
                     }
-                    slot.onQuickCraft(craftResult, copiedStack);
-                    consumeInputs(copiedStack);
 
-                    if (slot.getItem().isEmpty()) break;
+                    // charge only the batches that reached the inventory; a half-moved batch drops its rest
+                    int moved = offered - craftResult.getCount();
+                    int batches = (moved + outPer - 1) / outPer;
+                    int spare = batches * outPer - moved;
+
+                    ItemStack taken = slot.getItem().copy();
+                    taken.setCount(batches * outPer);
+                    consumeInputs(taken);
+
+                    if (spare > 0) {
+                        craftResult.setCount(spare);
+                        player.drop(craftResult, false);
+                    }
+                    if (moved < offered) break;
                 }
 
                 slot.setChanged();
@@ -383,6 +392,11 @@ public class FletchingStationMenu extends AbstractContainerMenu {
         }
 
         return copiedStack;
+    }
+
+    private int getOutputPerCraft() {
+        Optional<FletchingRecipe> opt = recipeManager.getRecipeFor(ModRecipeTypes.FLETCHING.get(), input, world);
+        return opt.isPresent() ? opt.get().assemble(input, world.registryAccess()).getCount() : 1;
     }
 
     private boolean canStillCraft() {

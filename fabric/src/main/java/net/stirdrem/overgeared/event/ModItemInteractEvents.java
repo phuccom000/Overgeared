@@ -430,8 +430,12 @@ public class ModItemInteractEvents {
                     continue;
                 }
 
-                long started = getOrStampHeatedSince(stack, now);
-                boolean cooled = now - started >= Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
+                // Eternally hot items never cool on a timer; only water can quench them
+                boolean cooled = false;
+                if (!stack.is(ModTags.Items.HOT_ITEMS)) {
+                    long started = getOrStampHeatedSince(stack, now);
+                    cooled = now - started >= Overgeared.getConfig().HEATED_ITEM_COOLDOWN_TICKS();
+                }
 
                 BlockPos pos = entity.blockPosition(); // floors correctly at negative coordinates
 

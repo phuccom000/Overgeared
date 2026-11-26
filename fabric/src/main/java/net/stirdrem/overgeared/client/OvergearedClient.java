@@ -1,6 +1,7 @@
 package net.stirdrem.overgeared.client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.stirdrem.overgeared.OvergearedFabric;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
@@ -22,6 +23,7 @@ import net.stirdrem.overgeared.entity.ModEntities;
 import net.stirdrem.overgeared.entity.renderer.LingeringArrowEntityRenderer;
 import net.stirdrem.overgeared.entity.renderer.UpgradeArrowEntityRenderer;
 import net.stirdrem.overgeared.item.ModItems;
+import net.stirdrem.overgeared.registry.ModParticles;
 import net.stirdrem.overgeared.item.armor.model.CustomCopperHelmet;
 import net.stirdrem.overgeared.item.armor.model.CustomCopperLeggings;
 import net.stirdrem.overgeared.screen.*;
@@ -31,6 +33,7 @@ public class OvergearedClient implements ClientModInitializer {
     public void onInitializeClient() {
         OvergearedFabric.registerTieredAnvils();
         ClientModMessages.register();
+        ParticleFactoryRegistry.getInstance().register(ModParticles.SPARK.get(), SparkParticle.Provider::new);
         FabricAnvilMinigameEvents.register();
         AnvilMinigameOverlay.register();
         PopupOverlay.register();

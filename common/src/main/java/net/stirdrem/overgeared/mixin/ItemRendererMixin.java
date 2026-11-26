@@ -47,10 +47,10 @@ public abstract class ItemRendererMixin {
         return VertexMultiConsumer.create(buffers.getBuffer(glintType), base);
     }
 
-    // Same heat test the cooling code uses (ItemStackMixin#onInventoryTick).
+    // Same heat test the burn code uses (ItemStackMixin#onInventoryTick), eternally hot items included.
     @Unique
     private static boolean overgeared$isHeated(ItemStack stack) {
-        if (stack.is(ModTags.Items.HEATED_METALS)) return true;
+        if (stack.is(ModTags.Items.HEATED_METALS) || stack.is(ModTags.Items.HOT_ITEMS)) return true;
         CompoundTag tag = stack.getTag();
         return tag != null && tag.contains("Heated");
     }
